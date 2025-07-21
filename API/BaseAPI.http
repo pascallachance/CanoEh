@@ -1,0 +1,6 @@
+@WIredBrainCoffeeAPI_HostAddress = http://localhost:5269
+
+GET {{WIredBrainCoffeeAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

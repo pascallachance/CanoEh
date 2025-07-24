@@ -22,12 +22,12 @@
             ErrorCode = errorCode;
         }
 
-        public static Result Success() => new Result(true, null);
-        public static Result<T> Success<T>(T value) => new Result<T>(true, value, null);
-        public static Result Failure(string error) => new Result(false, error);
-        public static Result Failure(string error, int code) => new Result(false, error, code);
-        public static Result<T> Failure<T>(string error) => new Result<T>(false, default(T), error);
-        public static Result<T> Failure<T>(string error, int code) => new Result<T>(false, default(T), error, code);
+        public static Result Success() => new (true, null);
+        public static Result<T> Success<T>(T value) => new (true, value, null);
+        public static Result Failure(string error) => new (false, error);
+        public static Result Failure(string error, int code) => new (false, error, code);
+        public static Result<T> Failure<T>(string error) => new (false, default, error);
+        public static Result<T> Failure<T>(string error, int code) => new(false, default, error, code);
     }
 
     public class Result<T> : Result

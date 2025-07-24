@@ -27,7 +27,7 @@ namespace BaseClient
         {
             if (string.IsNullOrEmpty(jwt))
             {
-                frmLogin frmLogin = new frmLogin();
+                FrmLogin frmLogin = new FrmLogin();
                 frmLogin.ShowDialog();
                 jwt = frmLogin.Jwt;
             }

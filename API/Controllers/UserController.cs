@@ -112,6 +112,12 @@ namespace API.Controllers
                     return BadRequest(ModelState);
                 }
 
+                // Validate that the username in the URL matches the username in the request body
+                if (!string.Equals(username, updateRequest.UserName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest("Username in URL must match username in request body.");
+                }
+
                 var authenticatedUsername = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
                 // Ensure user can only update their own information

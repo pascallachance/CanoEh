@@ -30,6 +30,7 @@ namespace API.Tests
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {
+                UserName = username,
                 Firstname = "UpdatedFirst",
                 Lastname = "UpdatedLast", 
                 Email = "updated@example.com",
@@ -79,6 +80,7 @@ namespace API.Tests
             var authenticatedUsername = "testuser";
             var updateRequest = new UpdateUserRequest
             {
+                UserName = targetUsername,
                 Firstname = "UpdatedFirst",
                 Lastname = "UpdatedLast",
                 Email = "updated@example.com"
@@ -109,6 +111,7 @@ namespace API.Tests
             var username = "";
             var updateRequest = new UpdateUserRequest
             {
+                UserName = username,
                 Firstname = "Test",
                 Lastname = "User", 
                 Email = "test@example.com"
@@ -130,6 +133,7 @@ namespace API.Tests
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {
+                UserName = username,
                 Firstname = "",
                 Lastname = "User",
                 Email = "test@example.com"
@@ -163,6 +167,7 @@ namespace API.Tests
             var username = "nonexistentuser";
             var updateRequest = new UpdateUserRequest
             {
+                UserName = username,
                 Firstname = "Test",
                 Lastname = "User",
                 Email = "test@example.com"
@@ -197,6 +202,7 @@ namespace API.Tests
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {
+                UserName = username,
                 Firstname = "UpdatedFirst",
                 Lastname = "UpdatedLast",
                 Email = "updated@example.com",
@@ -264,6 +270,7 @@ namespace API.Tests
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {
+                UserName = username,
                 Firstname = "UpdatedFirst",
                 Lastname = "UpdatedLast",
                 Email = "updated@example.com"
@@ -326,6 +333,7 @@ namespace API.Tests
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {
+                UserName = username,
                 Firstname = "Test",
                 Lastname = "User",
                 Email = "invalidemail" // Missing @
@@ -340,6 +348,35 @@ namespace API.Tests
             Assert.True(result.IsFailure);
             Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
             Assert.Contains("Email must contain '@'", result.Error);
+        }
+
+        [Fact]
+        public async Task ReturnBadRequest_WhenUrlUsernameDoesNotMatchRequestUsername()
+        {
+            // Arrange
+            var urlUsername = "userInUrl";
+            var requestUsername = "userInRequest";
+            var updateRequest = new UpdateUserRequest
+            {
+                UserName = requestUsername,
+                Firstname = "Test",
+                Lastname = "User",
+                Email = "test@example.com"
+            };
+
+            // Setup authenticated user context
+            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, urlUsername) };
+            var identity = new ClaimsIdentity(claims, "TestAuthType");
+            var principal = new ClaimsPrincipal(identity);
+            _controller.ControllerContext.HttpContext = new DefaultHttpContext { User = principal };
+
+            // Act
+            var response = await _controller.UpdateUser(urlUsername, updateRequest);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+            Assert.Equal("Username in URL must match username in request body.", badRequestResult.Value);
         }
     }
 }

@@ -8,6 +8,6 @@ namespace Domain.Services.Interfaces
     {
         Task<Result> CreateUserAsync(CreateUserRequest newUser);
 
-        Task<Result<User>> GetUserAsync(string username);
+        Task<Result<GetUserResponse>> GetUserAsync(string username);
     }
 }

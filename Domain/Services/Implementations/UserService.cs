@@ -48,18 +48,20 @@ namespace Domain.Services.Implementations
             return Result.Success(createdUser);
         }
 
-        public async Task<Result<User>> GetUserAsync(string username)
+        public async Task<Result<GetUserResponse>> GetUserAsync(string username)
         {
             if (string.IsNullOrWhiteSpace(username))
             {
-                return Result.Failure<User>("Username is required.", StatusCodes.Status400BadRequest);
+                return Result.Failure<GetUserResponse>("Username is required.", StatusCodes.Status400BadRequest);
             }
-            var user = await Task.Run(() => _userRepository.Find(u => u.Uname == username).FirstOrDefault());
-            if (user == null)
+            var userFound = await Task.Run(() => _userRepository.Find(u => u.Uname == username).FirstOrDefault());
+            if (userFound == null)
             {
-                return Result.Failure<User>("User not found.", StatusCodes.Status404NotFound);
+                return Result.Failure<GetUserResponse>("User not found.", StatusCodes.Status404NotFound);
             }
-            return Result.Success(user);
+
+            GetUserResponse userResponse = userFound.ConvertToGetUserResponse();
+            return Result.Success(userResponse);
         }
     }
 } 

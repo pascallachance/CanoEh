@@ -54,7 +54,7 @@ namespace API.Controllers
         /// </summary>
         [Authorize]
         [HttpGet("GetUser/{username}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(User))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetUserResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetUser(string username)
@@ -70,7 +70,7 @@ namespace API.Controllers
 
                 if (!string.Equals(username, authenticatedUsername, StringComparison.OrdinalIgnoreCase))
                 {
-                    return Forbid("You can only access your own user information.");
+                    return StatusCode(StatusCodes.Status403Forbidden, "You can only access your own user information.");
                 }
 
                 var result = await _userService.GetUserAsync(username);

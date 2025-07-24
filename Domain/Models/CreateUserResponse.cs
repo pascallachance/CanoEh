@@ -1,6 +1,6 @@
-﻿namespace Infrastructure.Data
+namespace Domain.Models
 {
-    public class User
+    public class CreateUserResponse
     {
         public Guid ID { get; set; }
         public required string Uname { get; set; }
@@ -9,9 +9,8 @@
         public required string Email { get; set; }
         public string? Phone { get; set; }
         public DateTime? Lastlogin { get; set; }
-        public DateTime Createdat { get; set; }
-        public DateTime? Lastupdatedat { get; set; }
-        public required string Password { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? LastupdatedAt { get; set; }
         public bool Deleted { get; set; }
     }
 }

@@ -1,14 +1,10 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Domain.Models;
+﻿using Domain.Models;
 using Helpers.Common;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
-using Microsoft.IdentityModel.Tokens;
 
-namespace Domain.Services
+namespace Domain.Services.Implementations
 {
     public class LoginService
     {
@@ -26,16 +22,16 @@ namespace Domain.Services
             {
                 return validationResult;
             }
-            var foundUser = await Task.Run(() => _userRepository.Find(u => u.uname == request.Username).FirstOrDefault());
+            var foundUser = await Task.Run(() => _userRepository.Find(u => u.Uname == request.Username).FirstOrDefault());
             if (foundUser == null)
             {
-                return Result.Failure<CreateUser>("Invalid username or password", StatusCodes.Status401Unauthorized);
+                return Result.Failure<CreateUserRequest>("Invalid username or password", StatusCodes.Status401Unauthorized);
             }
 
             var hasher = new PasswordHasher();
-            if (string.IsNullOrEmpty(request.Password) || !hasher.VerifyPassword(request.Password, foundUser.password))
+            if (string.IsNullOrEmpty(request.Password) || !hasher.VerifyPassword(request.Password, foundUser.Password))
             {
-                return Result.Failure<CreateUser>("Invalid username or password", StatusCodes.Status401Unauthorized);
+                return Result.Failure<CreateUserRequest>("Invalid username or password", StatusCodes.Status401Unauthorized);
             }
             return Result.Success();
         }

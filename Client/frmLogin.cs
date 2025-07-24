@@ -4,32 +4,34 @@ using Newtonsoft.Json;
 
 namespace BaseClient
 {
-    public partial class frmLogin : Form
+    public partial class FrmLogin : Form
     {
-        public string Jwt { get; private set; }
+        public string Jwt { get; private set; } = string.Empty; 
 
-        public frmLogin()
+        public FrmLogin()
         {
             InitializeComponent();
         }
 
-        private void btnLogin_Click(object sender, EventArgs e)
+        private void BtnLogin_Click(object sender, EventArgs e)
         {
-            LoginRequest loginRequest = new LoginRequest 
-            { 
+            LoginRequest loginRequest = new()
+            {
                 Username = txtUsername.Text,
-                Password= txtPassword.Text
+                Password = txtPassword.Text
             };
             Jwt = Login(loginRequest).Result;
             this.Close();
         }
-        private async Task<string> Login(LoginRequest loginRequest)
+
+        private static async Task<string> Login(LoginRequest loginRequest)
         {
             var handler = new HttpClientHandler();
 
-            HttpClient client = new HttpClient(handler);
-
-            client.BaseAddress = new Uri("https://localhost:7182/");
+            HttpClient client = new(handler)
+            {
+                BaseAddress = new Uri("https://localhost:7182/")
+            };
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
@@ -39,13 +41,20 @@ namespace BaseClient
             {
                 string data = await response.Content.ReadAsStringAsync();
 
-
                 LoginResponse? loginResponse = JsonConvert.DeserializeObject<LoginResponse>(data);
-                return loginResponse.Token;
+
+                if (loginResponse?.Token != null)
+                {
+                    return loginResponse.Token;
+                }
+                else
+                {
+                    return string.Empty;
+                }
             }
             else
             {
-                return "null";
+                return string.Empty;
             }
         }
     }

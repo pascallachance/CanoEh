@@ -3,12 +3,8 @@ using Infrastructure.Data;
 
 namespace Infrastructure.Repositories
 {
-    public class UserRepository : GenericRepository<User>
+    public class UserRepository(string connectionString) : GenericRepository<User>(connectionString)
     {
-        public UserRepository(string connectionString) : base(connectionString)
-        {
-        }
-
         public override User Add(User entity)
         {            
             var query = @"
@@ -38,18 +34,18 @@ VALUES (
 
             var parameters = new
             {
-                entity.uname,
-                entity.firstname,
-                entity.lastname,
-                entity.email,
-                entity.phone,
-                entity.lastlogin,
-                entity.createdat,
-                entity.lastupdatedat,
-                entity.password,
-                entity.deleted
+                entity.Uname,
+                entity.Firstname,
+                entity.Lastname,
+                entity.Email,
+                entity.Phone,
+                entity.Lastlogin,
+                entity.Createdat,
+                entity.Lastupdatedat,
+                entity.Password,
+                entity.Deleted
             };
-            var result = dbConnection.ExecuteAsync(query, parameters);
+            dbConnection.ExecuteAsync(query, parameters);
             return entity;
         }
 
@@ -60,7 +56,7 @@ VALUES (
 
         public override void Delete(User entity)
         {
-            entity.deleted = true;
+            entity.Deleted = true;
             Update(entity);
         }
 
@@ -103,15 +99,15 @@ WHERE dbo.Users.id = @id";
 
             var parameters = new
             {
-                entity.id,
-                entity.uname,
-                entity.firstname,
-                entity.lastname,
-                entity.email,
-                entity.phone,
-                entity.lastupdatedat,
-                entity.password,
-                entity.deleted
+                entity.ID,
+                entity.Uname,
+                entity.Firstname,
+                entity.Lastname,
+                entity.Email,
+                entity.Phone,
+                entity.Lastupdatedat,
+                entity.Password,
+                entity.Deleted
             };
             dbConnection.Execute(query, parameters);
             return entity;

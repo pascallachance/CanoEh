@@ -3,14 +3,9 @@ using Microsoft.Data.SqlClient;
 
 namespace Infrastructure.Repositories
 {
-    public abstract class GenericRepository<T> : IRepository<T> where T : class
+    public abstract class GenericRepository<T>(string connectionString) : IRepository<T> where T : class
     {
-        protected IDbConnection dbConnection;
-
-        public GenericRepository(string connectionString)
-        {
-            dbConnection = new SqlConnection(connectionString);
-        }
+        protected IDbConnection dbConnection = new SqlConnection(connectionString);
 
         public abstract T Add(T entity);
 

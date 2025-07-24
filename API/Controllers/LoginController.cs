@@ -1,24 +1,27 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using System.Diagnostics;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Domain.Models;
-using Domain.Services;
+using Domain.Services.Implementations;
 using Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.Controllers
 {
     [Route("api/[controller]")]
-    public class LoginController : Controller
+    public class LoginController : ControllerBase
     {
         private readonly IConfiguration _configuration;
         private readonly string _connectionString;
 
         public LoginController(IConfiguration configuration)
         {
-            _configuration = configuration;
-            _connectionString = _configuration.GetConnectionString("DefaultConnection");
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _connectionString = _configuration.GetConnectionString("DefaultConnection") 
+                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
         }
 
         [HttpPost("login")]
@@ -33,6 +36,7 @@ namespace API.Controllers
             }
             var userRepository = new UserRepository(_connectionString);
             var loginService = new LoginService(userRepository);
+
             var loginResult = await loginService.LoginAsync(request);
             if (loginResult.IsFailure)
             {
@@ -52,7 +56,8 @@ namespace API.Controllers
             {
                 new Claim(JwtRegisteredClaimNames.Sub, username),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.Role, "Admin")
+                new Claim(ClaimTypes.Role, "Admin"),
+                new Claim(ClaimTypes.NameIdentifier, username)
             };
 
             var key = new SymmetricSecurityKey(secretKey);
@@ -67,5 +72,17 @@ namespace API.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        [Authorize]
+        [HttpGet("user/claims")]
+        public IActionResult GetUserClaims()
+        {
+            Debug.WriteLine($"Identity.Name: {User.Identity?.Name}");
+            foreach (var claim in User.Claims)
+                Debug.WriteLine($"{claim.Type}: {claim.Value}");
+
+            return Ok();
+        }
+
     }
 }

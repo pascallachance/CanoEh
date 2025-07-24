@@ -1,6 +1,6 @@
 ﻿namespace BaseClient
 {
-    partial class frmLogin
+    partial class FrmLogin
     {
         /// <summary>
         ///  Required designer variable.
@@ -79,7 +79,7 @@
             btnLogin.TabIndex = 5;
             btnLogin.Text = "Login";
             btnLogin.UseVisualStyleBackColor = true;
-            btnLogin.Click += btnLogin_Click;
+            btnLogin.Click += BtnLogin_Click;
             // 
             // frmLogin
             // 

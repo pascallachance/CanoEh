@@ -52,12 +52,12 @@ namespace Domain.Services.Implementations
         {
             if (string.IsNullOrWhiteSpace(username))
             {
-                return (Result<User>)Result.Failure("Username is required.",StatusCodes.Status400BadRequest);
+                return Result.Failure<User>("Username is required.", StatusCodes.Status400BadRequest);
             }
             var user = await Task.Run(() => _userRepository.Find(u => u.Uname == username).FirstOrDefault());
             if (user == null)
             {
-                return (Result<User>)Result.Failure("User not found.", StatusCodes.Status404NotFound);
+                return Result.Failure<User>("User not found.", StatusCodes.Status404NotFound);
             }
             return Result.Success(user);
         }

@@ -9,5 +9,7 @@ namespace Domain.Services.Interfaces
         Task<Result<CreateUserResponse>> CreateUserAsync(CreateUserRequest newUser);
 
         Task<Result<GetUserResponse>> GetUserAsync(string username);
+
+        Task<Result<UpdateUserResponse>> UpdateUserAsync(string username, UpdateUserRequest updateRequest);
     }
 }

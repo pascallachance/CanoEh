@@ -86,5 +86,53 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Updates the details of a user by their username.
+        /// The user must be authenticated and can only update their own information.
+        /// </summary>
+        [Authorize]
+        [HttpPut("UpdateUser/{username}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UpdateUserResponse))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateUser(string username, [FromBody] UpdateUserRequest updateRequest)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(username))
+                {
+                    return BadRequest("Username is required.");
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var authenticatedUsername = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                // Ensure user can only update their own information
+                if (!string.Equals(username, authenticatedUsername, StringComparison.OrdinalIgnoreCase))
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden, "You can only update your own user information.");
+                }
+
+                var result = await _userService.UpdateUserAsync(username, updateRequest);
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
+                }
+
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+            }
+        }
     }
 }

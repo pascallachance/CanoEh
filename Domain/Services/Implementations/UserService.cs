@@ -101,5 +101,40 @@ namespace Domain.Services.Implementations
             Debug.WriteLine($"User {username} updated successfully.");
             return Result.Success(response);
         }
+
+        public async Task<Result<DeleteUserResponse>> DeleteUserAsync(string username)
+        {
+            // Validate input
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return Result.Failure<DeleteUserResponse>("Username is required.", StatusCodes.Status400BadRequest);
+            }
+
+            // Find the user to delete
+            var userToDelete = await Task.Run(() => _userRepository.Find(u => u.Uname == username).FirstOrDefault());
+            if (userToDelete == null)
+            {
+                return Result.Failure<DeleteUserResponse>("User not found.", StatusCodes.Status404NotFound);
+            }
+
+            // Check if user is already deleted
+            if (userToDelete.Deleted)
+            {
+                return Result.Failure<DeleteUserResponse>("User is already deleted.", StatusCodes.Status400BadRequest);
+            }
+
+            // Perform soft delete
+            userToDelete.Deleted = true;
+            userToDelete.Lastupdatedat = DateTime.UtcNow;
+
+            // Save changes
+            var deletedUser = await Task.Run(() => _userRepository.Update(userToDelete));
+
+            // Convert to response model
+            DeleteUserResponse response = deletedUser.ConvertToDeleteUserResponse();
+
+            Debug.WriteLine($"User {username} deleted successfully.");
+            return Result.Success(response);
+        }
     }
 } 

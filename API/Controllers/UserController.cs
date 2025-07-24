@@ -140,5 +140,48 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Deletes a user by their username (soft delete).
+        /// The user must be authenticated and can only delete their own account.
+        /// </summary>
+        [Authorize]
+        [HttpDelete("DeleteUser/{username}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DeleteUserResponse))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteUser(string username)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(username))
+                {
+                    return BadRequest("Username is required.");
+                }
+
+                var authenticatedUsername = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                // Ensure user can only delete their own account
+                if (!string.Equals(username, authenticatedUsername, StringComparison.OrdinalIgnoreCase))
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden, "You can only delete your own user account.");
+                }
+
+                var result = await _userService.DeleteUserAsync(username);
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
+                }
+
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+            }
+        }
     }
 }

@@ -115,7 +115,7 @@ namespace API.Controllers
                     return StatusCode(StatusCodes.Status403Forbidden, "You can only update your own user information.");
                 }
 
-                var result = await _userService.UpdateUserAsync(updateRequest.UserName, updateRequest);
+                var result = await _userService.UpdateUserAsync(updateRequest);
                 if (result.IsFailure)
                 {
                     return StatusCode(result.ErrorCode ?? 500, result.Error);

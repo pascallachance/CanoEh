@@ -52,7 +52,7 @@ namespace API.Tests
             };
 
             var result = Result.Success(updateResponse);
-            _mockUserService.Setup(s => s.UpdateUserAsync(username, updateRequest)).ReturnsAsync(result);
+            _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, username) };
@@ -118,7 +118,7 @@ namespace API.Tests
             };
 
             var result = Result.Failure<UpdateUserResponse>("Username is required.", StatusCodes.Status400BadRequest);
-            _mockUserService.Setup(s => s.UpdateUserAsync(username, updateRequest)).ReturnsAsync(result);
+            _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, username) };
@@ -152,7 +152,7 @@ namespace API.Tests
             };
 
             var result = Result.Failure<UpdateUserResponse>("First name is required.", StatusCodes.Status400BadRequest);
-            _mockUserService.Setup(s => s.UpdateUserAsync(username, updateRequest)).ReturnsAsync(result);
+            _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, username) };
@@ -186,7 +186,7 @@ namespace API.Tests
             };
 
             var result = Result.Failure<UpdateUserResponse>("User not found.", StatusCodes.Status404NotFound);
-            _mockUserService.Setup(s => s.UpdateUserAsync(username, updateRequest)).ReturnsAsync(result);
+            _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, username) };
@@ -252,7 +252,7 @@ namespace API.Tests
             var userService = new UserService(mockRepo.Object);
 
             // Act
-            var result = await userService.UpdateUserAsync(username, updateRequest);
+            var result = await userService.UpdateUserAsync(updateRequest);
             var timeAfterUpdate = DateTime.UtcNow;
 
             // Assert
@@ -323,7 +323,7 @@ namespace API.Tests
             var userService = new UserService(mockRepo.Object);
 
             // Act
-            var result = await userService.UpdateUserAsync(username, updateRequest);
+            var result = await userService.UpdateUserAsync(updateRequest);
 
             // Assert
             Assert.True(result.IsSuccess);
@@ -354,7 +354,7 @@ namespace API.Tests
             var userService = new UserService(mockRepo.Object);
 
             // Act
-            var result = await userService.UpdateUserAsync(username, updateRequest);
+            var result = await userService.UpdateUserAsync(updateRequest);
 
             // Assert
             Assert.True(result.IsFailure);

@@ -64,10 +64,10 @@ namespace Domain.Services.Implementations
             return Result.Success(userResponse);
         }
 
-        public async Task<Result<UpdateUserResponse>> UpdateUserAsync(string username, UpdateUserRequest updateRequest)
+        public async Task<Result<UpdateUserResponse>> UpdateUserAsync(UpdateUserRequest updateRequest)
         {
             // Validate input
-            if (string.IsNullOrWhiteSpace(username))
+            if (string.IsNullOrWhiteSpace(updateRequest.UserName))
             {
                 return Result.Failure<UpdateUserResponse>("Username is required.", StatusCodes.Status400BadRequest);
             }
@@ -79,7 +79,7 @@ namespace Domain.Services.Implementations
             }
 
             // Find the user to update
-            var userToUpdate = await Task.Run(() => _userRepository.Find(u => u.Uname == username).FirstOrDefault());
+            var userToUpdate = await Task.Run(() => _userRepository.Find(u => u.Uname == updateRequest.UserName).FirstOrDefault());
             if (userToUpdate == null)
             {
                 return Result.Failure<UpdateUserResponse>("User not found.", StatusCodes.Status404NotFound);
@@ -98,7 +98,7 @@ namespace Domain.Services.Implementations
             // Convert to response model
             UpdateUserResponse response = updatedUser.ConvertToUpdateUserResponse();
 
-            Debug.WriteLine($"User {username} updated successfully.");
+            Debug.WriteLine($"User {updateRequest.UserName} updated successfully.");
             return Result.Success(response);
         }
     }

@@ -36,6 +36,6 @@ namespace Domain.Models.Converters
                 LastupdatedAt = user.Lastupdatedat,
                 Deleted = user.Deleted
             };
-       }
+        }
     }
 }

@@ -49,6 +49,9 @@ namespace API.Controllers
         }
 
         /// <summary>
+        /// Retrieves the details of a user by their username.
+        /// The user must be authenticated and can only access their own information.
+        /// </summary>
         [Authorize]
         [HttpGet("GetUser/{username}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(User))]

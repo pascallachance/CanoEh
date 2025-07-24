@@ -1,5 +1,6 @@
 ﻿using API.Controllers;
-using Domain.Models;
+using Domain.Models.Requests;
+using Domain.Models.Responses;
 using Domain.Services.Implementations;
 using Domain.Services.Interfaces;
 using Helpers.Common;

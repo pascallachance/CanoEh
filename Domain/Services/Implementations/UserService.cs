@@ -1,6 +1,7 @@
 using System.Diagnostics;
-using Domain.Models;
 using Domain.Models.Converters;
+using Domain.Models.Requests;
+using Domain.Models.Responses;
 using Domain.Services.Interfaces;
 using Helpers.Common;
 using Infrastructure.Data;
@@ -18,7 +19,10 @@ namespace Domain.Services.Implementations
             var validationResult = newUser.Validate();
             if (validationResult.IsFailure)
             {
-                return Result.Failure<CreateUserResponse>(validationResult.Error, validationResult.ErrorCode ?? StatusCodes.Status400BadRequest);
+                return Result.Failure<CreateUserResponse>(
+                    validationResult.Error ?? "Validation failed.", 
+                    validationResult.ErrorCode ?? StatusCodes.Status400BadRequest
+                );
             }
 
             var existingUser = await Task.Run(() => _userRepository.Find(u => u.Uname == newUser.Uname).FirstOrDefault());
@@ -64,10 +68,10 @@ namespace Domain.Services.Implementations
             return Result.Success(userResponse);
         }
 
-        public async Task<Result<UpdateUserResponse>> UpdateUserAsync(string username, UpdateUserRequest updateRequest)
+        public async Task<Result<UpdateUserResponse>> UpdateUserAsync(UpdateUserRequest updateRequest)
         {
             // Validate input
-            if (string.IsNullOrWhiteSpace(username))
+            if (string.IsNullOrWhiteSpace(updateRequest.UserName))
             {
                 return Result.Failure<UpdateUserResponse>("Username is required.", StatusCodes.Status400BadRequest);
             }
@@ -75,11 +79,11 @@ namespace Domain.Services.Implementations
             var validationResult = updateRequest.Validate();
             if (validationResult.IsFailure)
             {
-                return Result.Failure<UpdateUserResponse>(validationResult.Error, validationResult.ErrorCode ?? StatusCodes.Status400BadRequest);
+                return Result.Failure<UpdateUserResponse>(validationResult.Error ?? "Invalid update data.", validationResult.ErrorCode ?? StatusCodes.Status400BadRequest);
             }
 
             // Find the user to update
-            var userToUpdate = await Task.Run(() => _userRepository.Find(u => u.Uname == username).FirstOrDefault());
+            var userToUpdate = await Task.Run(() => _userRepository.Find(u => u.Uname == updateRequest.UserName).FirstOrDefault());
             if (userToUpdate == null)
             {
                 return Result.Failure<UpdateUserResponse>("User not found.", StatusCodes.Status404NotFound);
@@ -98,7 +102,7 @@ namespace Domain.Services.Implementations
             // Convert to response model
             UpdateUserResponse response = updatedUser.ConvertToUpdateUserResponse();
 
-            Debug.WriteLine($"User {username} updated successfully.");
+            Debug.WriteLine($"User {updateRequest.UserName} updated successfully.");
             return Result.Success(response);
         }
 

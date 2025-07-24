@@ -2,7 +2,7 @@
 using Helpers.Common;
 using Microsoft.AspNetCore.Http;
 
-namespace Domain.Models
+namespace Domain.Models.Requests
 {
     public class CreateUserRequest
     {

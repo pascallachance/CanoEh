@@ -1,3 +1,4 @@
+using Domain.Models.Responses;
 using Infrastructure.Data;
 
 namespace Domain.Models.Converters

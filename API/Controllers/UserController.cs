@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Security.Claims;
-using Domain.Models;
+using Domain.Models.Requests;
+using Domain.Models.Responses;
 using Domain.Services.Interfaces;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -88,45 +89,34 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Updates the details of a user by their username.
+        /// Updates the details of a user.
         /// The user must be authenticated and can only update their own information.
         /// </summary>
         [Authorize]
-        [HttpPut("UpdateUser/{username}")]
+        [HttpPut("UpdateUser")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UpdateUserResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateUser(string username, [FromBody] UpdateUserRequest updateRequest)
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserRequest updateRequest)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(username))
-                {
-                    return BadRequest("Username is required.");
-                }
-
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
 
-                // Validate that the username in the URL matches the username in the request body
-                if (!string.Equals(username, updateRequest.UserName, StringComparison.OrdinalIgnoreCase))
-                {
-                    return BadRequest("Username in URL must match username in request body.");
-                }
-
                 var authenticatedUsername = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
                 // Ensure user can only update their own information
-                if (!string.Equals(username, authenticatedUsername, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(updateRequest.UserName, authenticatedUsername, StringComparison.OrdinalIgnoreCase))
                 {
                     return StatusCode(StatusCodes.Status403Forbidden, "You can only update your own user information.");
                 }
 
-                var result = await _userService.UpdateUserAsync(username, updateRequest);
+                var result = await _userService.UpdateUserAsync(updateRequest);
                 if (result.IsFailure)
                 {
                     return StatusCode(result.ErrorCode ?? 500, result.Error);

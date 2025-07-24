@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using API.Controllers;
-using Domain.Models;
+using Domain.Models.Responses;
 using Domain.Services.Interfaces;
 using Helpers.Common;
 using Microsoft.AspNetCore.Http;
@@ -100,7 +100,9 @@ namespace API.Tests
             var response = await _controller.GetUser(requestedUsername);
 
             // Assert
-            var forbidResult = Assert.IsType<ForbidResult>(response);
+            var objectResult = Assert.IsType<ObjectResult>(response);
+            Assert.Equal(StatusCodes.Status403Forbidden, objectResult.StatusCode);
+            Assert.Equal("You can only access your own user information.", objectResult.Value);
         }
 
         [Fact]

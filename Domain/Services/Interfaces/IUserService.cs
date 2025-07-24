@@ -1,4 +1,5 @@
-using Domain.Models;
+using Domain.Models.Requests;
+using Domain.Models.Responses;
 using Helpers.Common;
 using Infrastructure.Data;
 
@@ -10,8 +11,8 @@ namespace Domain.Services.Interfaces
 
         Task<Result<GetUserResponse>> GetUserAsync(string username);
 
-        Task<Result<UpdateUserResponse>> UpdateUserAsync(string username, UpdateUserRequest updateRequest);
-
         Task<Result<DeleteUserResponse>> DeleteUserAsync(string username);
+
+        Task<Result<UpdateUserResponse>> UpdateUserAsync(UpdateUserRequest updateRequest);
     }
 }

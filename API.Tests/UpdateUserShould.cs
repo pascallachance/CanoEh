@@ -1,5 +1,6 @@
 using API.Controllers;
-using Domain.Models;
+using Domain.Models.Requests;
+using Domain.Models.Responses;
 using Domain.Services.Implementations;
 using Domain.Services.Interfaces;
 using Helpers.Common;
@@ -55,7 +56,7 @@ namespace API.Tests
             _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, username) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, username) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -87,7 +88,7 @@ namespace API.Tests
             };
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, authenticatedUsername) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, authenticatedUsername) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -121,7 +122,7 @@ namespace API.Tests
             _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, username) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, username) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -155,7 +156,7 @@ namespace API.Tests
             _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, username) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, username) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -189,7 +190,7 @@ namespace API.Tests
             _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, username) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, username) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -311,7 +312,7 @@ namespace API.Tests
             User? updatedUser = null;
 
             mockRepo.Setup(repo => repo.Find(It.IsAny<Func<User, bool>>()))
-                   .Returns(new List<User> { existingUser });
+                   .Returns([existingUser]);
 
             mockRepo.Setup(repo => repo.Update(It.IsAny<User>()))
                    .Returns((User u) =>

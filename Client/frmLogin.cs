@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
-using Domain.Models;
+using Domain.Models.Requests;
+using Domain.Models.Responses;
 using Newtonsoft.Json;
 
 namespace BaseClient

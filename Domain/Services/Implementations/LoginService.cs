@@ -1,4 +1,4 @@
-﻿using Domain.Models;
+﻿using Domain.Models.Requests;
 using Helpers.Common;
 using Infrastructure.Data;
 using Infrastructure.Repositories;

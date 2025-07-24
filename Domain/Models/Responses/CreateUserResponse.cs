@@ -1,4 +1,4 @@
-namespace Domain.Models
+namespace Domain.Models.Responses
 {
     public class CreateUserResponse
     {

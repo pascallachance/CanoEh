@@ -1,6 +1,7 @@
 using System.Diagnostics;
-using Domain.Models;
 using Domain.Models.Converters;
+using Domain.Models.Requests;
+using Domain.Models.Responses;
 using Domain.Services.Interfaces;
 using Helpers.Common;
 using Infrastructure.Data;
@@ -18,7 +19,10 @@ namespace Domain.Services.Implementations
             var validationResult = newUser.Validate();
             if (validationResult.IsFailure)
             {
-                return Result.Failure<CreateUserResponse>(validationResult.Error, validationResult.ErrorCode ?? StatusCodes.Status400BadRequest);
+                return Result.Failure<CreateUserResponse>(
+                    validationResult.Error ?? "Validation failed.", 
+                    validationResult.ErrorCode ?? StatusCodes.Status400BadRequest
+                );
             }
 
             var existingUser = await Task.Run(() => _userRepository.Find(u => u.Uname == newUser.Uname).FirstOrDefault());
@@ -75,7 +79,7 @@ namespace Domain.Services.Implementations
             var validationResult = updateRequest.Validate();
             if (validationResult.IsFailure)
             {
-                return Result.Failure<UpdateUserResponse>(validationResult.Error, validationResult.ErrorCode ?? StatusCodes.Status400BadRequest);
+                return Result.Failure<UpdateUserResponse>(validationResult.Error ?? "Invalid update data.", validationResult.ErrorCode ?? StatusCodes.Status400BadRequest);
             }
 
             // Find the user to update

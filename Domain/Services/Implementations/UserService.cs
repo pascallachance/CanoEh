@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Domain.Models;
 using Domain.Models.Converters;
 using Domain.Services.Interfaces;
@@ -13,18 +13,18 @@ namespace Domain.Services.Implementations
     {
         private readonly IRepository<User> _userRepository = userRepository;
 
-        public async Task<Result> CreateUserAsync(CreateUserRequest newUser)
+        public async Task<Result<CreateUserResponse>> CreateUserAsync(CreateUserRequest newUser)
         {
             var validationResult = newUser.Validate();
             if (validationResult.IsFailure)
             {
-                return validationResult;
+                return Result.Failure<CreateUserResponse>(validationResult.Error, validationResult.ErrorCode ?? StatusCodes.Status400BadRequest);
             }
 
             var existingUser = await Task.Run(() => _userRepository.Find(u => u.Uname == newUser.Uname).FirstOrDefault());
             if (existingUser != null)
             {
-                return Result.Failure<CreateUserRequest>("Username already exists.", StatusCodes.Status400BadRequest);
+                return Result.Failure<CreateUserResponse>("Username already exists.", StatusCodes.Status400BadRequest);
             }
 
             var hasher = new PasswordHasher();

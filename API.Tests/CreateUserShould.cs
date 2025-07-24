@@ -34,7 +34,19 @@ namespace API.Tests
                 Email = "test@example.com",
                 Password = "password123"
             };
-            var result = Result.Success($"User {newUser.Uname} created successfully.");
+            var result = Result.Success(new CreateUserResponse 
+            { 
+                ID = Guid.NewGuid(),
+                Uname = newUser.Uname,
+                Firstname = newUser.Firstname,
+                Lastname = newUser.Lastname,
+                Email = newUser.Email,
+                Phone = newUser.Phone,
+                Lastlogin = null,
+                CreatedAt = DateTime.UtcNow,
+                LastupdatedAt = null,
+                Deleted = false
+            });
             _mockUserService.Setup(s => s.CreateUserAsync(newUser)).ReturnsAsync(result);
 
             // Act
@@ -216,7 +228,7 @@ namespace API.Tests
                 Password = "password123"
             };
 
-            var result = Result.Failure("Username already exists.", StatusCodes.Status400BadRequest);
+            var result = Result.Failure<CreateUserResponse>("Username already exists.", StatusCodes.Status400BadRequest);
             _mockUserService.Setup(s => s.CreateUserAsync(newUser)).ReturnsAsync(result);
 
             var response = await _controller.CreateUser(newUser);

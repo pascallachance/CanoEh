@@ -20,5 +20,22 @@ namespace Domain.Models.Converters
                 Deleted = user.Deleted
             };
         }
+
+        public static GetUserResponse ConvertToGetUserResponse(this User user)
+        {
+            return new GetUserResponse
+            {
+                ID = user.ID,
+                Uname = user.Uname,
+                Firstname = user.Firstname,
+                Lastname = user.Lastname,
+                Email = user.Email,
+                Phone = user.Phone,
+                Lastlogin = user.Lastlogin,
+                CreatedAt = user.Createdat,
+                LastupdatedAt = user.Lastupdatedat,
+                Deleted = user.Deleted
+            };
+        }
     }
 }

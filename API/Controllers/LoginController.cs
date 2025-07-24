@@ -2,7 +2,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Domain.Models;
+using Domain.Models.Requests;
 using Domain.Services.Implementations;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authorization;

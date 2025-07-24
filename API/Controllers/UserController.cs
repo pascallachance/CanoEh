@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Security.Claims;
-using Domain.Models;
+using Domain.Models.Requests;
+using Domain.Models.Responses;
 using Domain.Services.Interfaces;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;

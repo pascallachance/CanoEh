@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using API.Controllers;
-using Domain.Models;
+using Domain.Models.Responses;
 using Domain.Services.Interfaces;
 using Helpers.Common;
 using Microsoft.AspNetCore.Http;

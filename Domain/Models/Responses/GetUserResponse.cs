@@ -1,6 +1,6 @@
-namespace Domain.Models
+namespace Domain.Models.Responses
 {
-    public class UpdateUserResponse
+    public class GetUserResponse
     {
         public Guid ID { get; set; }
         public required string Uname { get; set; }

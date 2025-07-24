@@ -241,7 +241,7 @@ namespace API.Tests
             var timeBeforeUpdate = DateTime.UtcNow;
 
             mockRepo.Setup(repo => repo.Find(It.IsAny<Func<User, bool>>()))
-                   .Returns([existingUser]);
+                   .Returns(new List<User> { existingUser });
 
             mockRepo.Setup(repo => repo.Update(It.IsAny<User>()))
                    .Returns((User u) =>

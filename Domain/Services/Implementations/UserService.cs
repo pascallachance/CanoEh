@@ -34,7 +34,7 @@ namespace Domain.Services.Implementations
                 Firstname = newUser.Firstname,
                 Lastname = newUser.Lastname,
                 Email = newUser.Email,
-                Phone = newUser.Phone ?? string.Empty, 
+                Phone = newUser.Phone, 
                 Lastlogin = null,
                 Createdat = DateTime.UtcNow,
                 Lastupdatedat = null,

@@ -10,6 +10,6 @@ namespace Domain.Services.Interfaces
 
         Task<Result<GetUserResponse>> GetUserAsync(string username);
 
-        Task<Result<UpdateUserResponse>> UpdateUserAsync(string username, UpdateUserRequest updateRequest);
+        Task<Result<UpdateUserResponse>> UpdateUserAsync(UpdateUserRequest updateRequest);
     }
 }

@@ -52,7 +52,7 @@ namespace API.Tests
             };
 
             var result = Result.Success(updateResponse);
-            _mockUserService.Setup(s => s.UpdateUserAsync(username, updateRequest)).ReturnsAsync(result);
+            _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, username) };
@@ -64,7 +64,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.UpdateUser(username, updateRequest);
+            var response = await _controller.UpdateUser(updateRequest);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(response);
@@ -96,7 +96,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.UpdateUser(targetUsername, updateRequest);
+            var response = await _controller.UpdateUser(updateRequest);
 
             // Assert
             var forbiddenResult = Assert.IsType<ObjectResult>(response);
@@ -117,13 +117,25 @@ namespace API.Tests
                 Email = "test@example.com"
             };
 
+            var result = Result.Failure<UpdateUserResponse>("Username is required.", StatusCodes.Status400BadRequest);
+            _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
+
+            // Setup authenticated user context
+            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, username) };
+            var identity = new ClaimsIdentity(claims, "TestAuthType");
+            var claimsPrincipal = new ClaimsPrincipal(identity);
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
+
             // Act
-            var response = await _controller.UpdateUser(username, updateRequest);
+            var response = await _controller.UpdateUser(updateRequest);
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
+            var badRequestResult = Assert.IsType<ObjectResult>(response);
             Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
-            Assert.Equal("Username is required.", badRequestResult.Value);
+            Assert.Equal(result.Error, badRequestResult.Value);
         }
 
         [Fact]
@@ -140,7 +152,7 @@ namespace API.Tests
             };
 
             var result = Result.Failure<UpdateUserResponse>("First name is required.", StatusCodes.Status400BadRequest);
-            _mockUserService.Setup(s => s.UpdateUserAsync(username, updateRequest)).ReturnsAsync(result);
+            _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, username) };
@@ -152,7 +164,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.UpdateUser(username, updateRequest);
+            var response = await _controller.UpdateUser(updateRequest);
 
             // Assert
             var badRequestResult = Assert.IsType<ObjectResult>(response);
@@ -174,7 +186,7 @@ namespace API.Tests
             };
 
             var result = Result.Failure<UpdateUserResponse>("User not found.", StatusCodes.Status404NotFound);
-            _mockUserService.Setup(s => s.UpdateUserAsync(username, updateRequest)).ReturnsAsync(result);
+            _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, username) };
@@ -186,7 +198,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.UpdateUser(username, updateRequest);
+            var response = await _controller.UpdateUser(updateRequest);
 
             // Assert
             var notFoundResult = Assert.IsType<ObjectResult>(response);
@@ -240,7 +252,7 @@ namespace API.Tests
             var userService = new UserService(mockRepo.Object);
 
             // Act
-            var result = await userService.UpdateUserAsync(username, updateRequest);
+            var result = await userService.UpdateUserAsync(updateRequest);
             var timeAfterUpdate = DateTime.UtcNow;
 
             // Assert
@@ -311,7 +323,7 @@ namespace API.Tests
             var userService = new UserService(mockRepo.Object);
 
             // Act
-            var result = await userService.UpdateUserAsync(username, updateRequest);
+            var result = await userService.UpdateUserAsync(updateRequest);
 
             // Assert
             Assert.True(result.IsSuccess);
@@ -342,7 +354,7 @@ namespace API.Tests
             var userService = new UserService(mockRepo.Object);
 
             // Act
-            var result = await userService.UpdateUserAsync(username, updateRequest);
+            var result = await userService.UpdateUserAsync(updateRequest);
 
             // Assert
             Assert.True(result.IsFailure);
@@ -350,33 +362,5 @@ namespace API.Tests
             Assert.Contains("Email must contain '@'", result.Error);
         }
 
-        [Fact]
-        public async Task ReturnBadRequest_WhenUrlUsernameDoesNotMatchRequestUsername()
-        {
-            // Arrange
-            var urlUsername = "userInUrl";
-            var requestUsername = "userInRequest";
-            var updateRequest = new UpdateUserRequest
-            {
-                UserName = requestUsername,
-                Firstname = "Test",
-                Lastname = "User",
-                Email = "test@example.com"
-            };
-
-            // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, urlUsername) };
-            var identity = new ClaimsIdentity(claims, "TestAuthType");
-            var principal = new ClaimsPrincipal(identity);
-            _controller.ControllerContext.HttpContext = new DefaultHttpContext { User = principal };
-
-            // Act
-            var response = await _controller.UpdateUser(urlUsername, updateRequest);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
-            Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
-            Assert.Equal("Username in URL must match username in request body.", badRequestResult.Value);
-        }
     }
 }

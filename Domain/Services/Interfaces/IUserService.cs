@@ -1,7 +1,6 @@
 using Domain.Models.Requests;
 using Domain.Models.Responses;
 using Helpers.Common;
-using Infrastructure.Data;
 
 namespace Domain.Services.Interfaces
 {

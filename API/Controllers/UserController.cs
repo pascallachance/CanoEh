@@ -111,7 +111,7 @@ namespace API.Controllers
                 var authenticatedUsername = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
                 // Ensure user can only update their own information
-                if (!string.Equals(updateRequest.UserName, authenticatedUsername, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(updateRequest.Username, authenticatedUsername, StringComparison.OrdinalIgnoreCase))
                 {
                     return StatusCode(StatusCodes.Status403Forbidden, "You can only update your own user information.");
                 }

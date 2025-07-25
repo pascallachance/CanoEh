@@ -27,7 +27,10 @@ namespace Domain.Services.Implementations
             {
                 return Result.Failure<CreateUserRequest>("Invalid username or password", StatusCodes.Status401Unauthorized);
             }
-
+            if (foundUser.Deleted)
+            {
+                return Result.Failure<CreateUserRequest>("User account is deleted", StatusCodes.Status401Unauthorized);
+            }
             var hasher = new PasswordHasher();
             if (string.IsNullOrEmpty(request.Password) || !hasher.VerifyPassword(request.Password, foundUser.Password))
             {

@@ -25,7 +25,7 @@ namespace Domain.Services.Implementations
                 );
             }
 
-            var existingUser = await Task.Run(() => _userRepository.Find(u => u.Uname == newUser.Uname).FirstOrDefault());
+            var existingUser = await Task.Run(() => _userRepository.Find(u => u.Uname == newUser.Username).FirstOrDefault());
             if (existingUser != null)
             {
                 return Result.Failure<CreateUserResponse>("Username already exists.", StatusCodes.Status400BadRequest);
@@ -34,7 +34,7 @@ namespace Domain.Services.Implementations
             var hasher = new PasswordHasher();
             var user = await Task.Run(() => _userRepository.Add(new User
             {
-                Uname = newUser.Uname,
+                Uname = newUser.Username,
                 Firstname = newUser.Firstname,
                 Lastname = newUser.Lastname,
                 Email = newUser.Email,
@@ -48,7 +48,7 @@ namespace Domain.Services.Implementations
 
             CreateUserResponse createdUser = UserConverters.ConvertToCreateUserResponse(user);
 
-            Debug.WriteLine($"User {newUser.Uname} created successfully.");
+            Debug.WriteLine($"User {newUser.Username} created successfully.");
             return Result.Success(createdUser);
         }
 
@@ -63,7 +63,10 @@ namespace Domain.Services.Implementations
             {
                 return Result.Failure<GetUserResponse>("User not found.", StatusCodes.Status404NotFound);
             }
-
+            if (userFound.Deleted)
+            {
+                return Result.Failure<GetUserResponse>("User is deleted.", StatusCodes.Status401Unauthorized);
+            }
             GetUserResponse userResponse = userFound.ConvertToGetUserResponse();
             return Result.Success(userResponse);
         }
@@ -71,7 +74,7 @@ namespace Domain.Services.Implementations
         public async Task<Result<UpdateUserResponse>> UpdateUserAsync(UpdateUserRequest updateRequest)
         {
             // Validate input
-            if (string.IsNullOrWhiteSpace(updateRequest.UserName))
+             if (string.IsNullOrWhiteSpace(updateRequest.Username))
             {
                 return Result.Failure<UpdateUserResponse>("Username is required.", StatusCodes.Status400BadRequest);
             }
@@ -83,12 +86,15 @@ namespace Domain.Services.Implementations
             }
 
             // Find the user to update
-            var userToUpdate = await Task.Run(() => _userRepository.Find(u => u.Uname == updateRequest.UserName).FirstOrDefault());
+            var userToUpdate = await Task.Run(() => _userRepository.Find(u => u.Uname == updateRequest.Username).FirstOrDefault());
             if (userToUpdate == null)
             {
                 return Result.Failure<UpdateUserResponse>("User not found.", StatusCodes.Status404NotFound);
             }
-
+            if (userToUpdate.Deleted)
+            {
+                return Result.Failure<UpdateUserResponse>("User is deleted.", StatusCodes.Status401Unauthorized);
+            }
             // Update only the allowed fields
             userToUpdate.Firstname = updateRequest.Firstname;
             userToUpdate.Lastname = updateRequest.Lastname;
@@ -102,7 +108,7 @@ namespace Domain.Services.Implementations
             // Convert to response model
             UpdateUserResponse response = updatedUser.ConvertToUpdateUserResponse();
 
-            Debug.WriteLine($"User {updateRequest.UserName} updated successfully.");
+            Debug.WriteLine($"User {updateRequest.Username} updated successfully.");
             return Result.Success(response);
         }
 
@@ -120,8 +126,6 @@ namespace Domain.Services.Implementations
             {
                 return Result.Failure<DeleteUserResponse>("User not found.", StatusCodes.Status404NotFound);
             }
-
-            // Check if user is already deleted
             if (userToDelete.Deleted)
             {
                 return Result.Failure<DeleteUserResponse>("User is already deleted.", StatusCodes.Status400BadRequest);

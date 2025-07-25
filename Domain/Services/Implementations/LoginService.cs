@@ -1,4 +1,5 @@
 ﻿using Domain.Models.Requests;
+using Domain.Models.Responses;
 using Helpers.Common;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
@@ -25,16 +26,16 @@ namespace Domain.Services.Implementations
             var foundUser = await Task.Run(() => _userRepository.Find(u => u.Uname == request.Username).FirstOrDefault());
             if (foundUser == null)
             {
-                return Result.Failure<CreateUserRequest>("Invalid username or password", StatusCodes.Status401Unauthorized);
+                return Result.Failure<LoginResponse>("Invalid username or password", StatusCodes.Status401Unauthorized);
             }
             if (foundUser.Deleted)
             {
-                return Result.Failure<CreateUserRequest>("User account is deleted", StatusCodes.Status401Unauthorized);
+                return Result.Failure<LoginResponse>("User account is deleted", StatusCodes.Status401Unauthorized);
             }
             var hasher = new PasswordHasher();
             if (string.IsNullOrEmpty(request.Password) || !hasher.VerifyPassword(request.Password, foundUser.Password))
             {
-                return Result.Failure<CreateUserRequest>("Invalid username or password", StatusCodes.Status401Unauthorized);
+                return Result.Failure<LoginResponse>("Invalid username or password", StatusCodes.Status401Unauthorized);
             }
             return Result.Success();
         }

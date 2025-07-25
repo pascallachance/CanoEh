@@ -34,7 +34,7 @@ namespace API.Tests
             mockRepo.Setup(repo => repo.Find(It.IsAny<Func<User, bool>>()))
                     .Returns(new List<User> { existingUser });
 
-            var loginService = new LoginService(mockRepo.Object);
+            var loginService = new LoginService(mockRepo.Object, mockEmailService.Object);
             var loginRequest = new LoginRequest { Username = "testuser", Password = "password123" };
 
             // Act
@@ -69,7 +69,7 @@ namespace API.Tests
             mockRepo.Setup(repo => repo.Find(It.IsAny<Func<User, bool>>()))
                     .Returns(new List<User> { existingUser });
 
-            var loginService = new LoginService(mockRepo.Object);
+            var loginService = new LoginService(mockRepo.Object, mockEmailService.Object);
             var loginRequest = new LoginRequest { Username = "testuser", Password = "password123" };
 
             // Act

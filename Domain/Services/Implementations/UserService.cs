@@ -28,14 +28,15 @@ namespace Domain.Services.Implementations
                 );
             }
 
-            var existingUser = await Task.Run(() => _userRepository.Find(u => u.Uname == newUser.Username).FirstOrDefault());
+            var existingUsers = await _userRepository.FindAsync(u => u.Uname == newUser.Username);
+            var existingUser = existingUsers.FirstOrDefault();
             if (existingUser != null)
             {
                 return Result.Failure<CreateUserResponse>("Username already exists.", StatusCodes.Status400BadRequest);
             }
 
             var hasher = new PasswordHasher();
-            var user = await Task.Run(() => _userRepository.Add(new User
+            var user = await _userRepository.AddAsync(new User
             {
                 Uname = newUser.Username,
                 Firstname = newUser.Firstname,
@@ -48,7 +49,7 @@ namespace Domain.Services.Implementations
                 Password = hasher.HashPassword(newUser.Password),
                 Deleted = false,
                 ValidEmail = false
-            }));
+            });
 
             // Send email validation
             try
@@ -84,7 +85,8 @@ namespace Domain.Services.Implementations
             {
                 return Result.Failure<GetUserResponse>("Username is required.", StatusCodes.Status400BadRequest);
             }
-            var userFound = await Task.Run(() => _userRepository.Find(u => u.Uname == username).FirstOrDefault());
+            var users = await _userRepository.FindAsync(u => u.Uname == username);
+            var userFound = users.FirstOrDefault();
             if (userFound == null)
             {
                 return Result.Failure<GetUserResponse>("User not found.", StatusCodes.Status404NotFound);
@@ -112,7 +114,8 @@ namespace Domain.Services.Implementations
             }
 
             // Find the user to update
-            var userToUpdate = await Task.Run(() => _userRepository.Find(u => u.Uname == updateRequest.Username).FirstOrDefault());
+            var users = await _userRepository.FindAsync(u => u.Uname == updateRequest.Username);
+            var userToUpdate = users.FirstOrDefault();
             if (userToUpdate == null)
             {
                 return Result.Failure<UpdateUserResponse>("User not found.", StatusCodes.Status404NotFound);
@@ -129,7 +132,7 @@ namespace Domain.Services.Implementations
             userToUpdate.Lastupdatedat = DateTime.UtcNow; // Update LastUpdatedAt as required
 
             // Save changes
-            var updatedUser = await Task.Run(() => _userRepository.Update(userToUpdate));
+            var updatedUser = await _userRepository.UpdateAsync(userToUpdate);
 
             // Convert to response model
             UpdateUserResponse response = updatedUser.ConvertToUpdateUserResponse();
@@ -147,7 +150,8 @@ namespace Domain.Services.Implementations
             }
 
             // Find the user to delete
-            var userToDelete = await Task.Run(() => _userRepository.Find(u => u.Uname == username).FirstOrDefault());
+            var users = await _userRepository.FindAsync(u => u.Uname == username);
+            var userToDelete = users.FirstOrDefault();
             if (userToDelete == null)
             {
                 return Result.Failure<DeleteUserResponse>("User not found.", StatusCodes.Status404NotFound);
@@ -162,7 +166,7 @@ namespace Domain.Services.Implementations
             userToDelete.Lastupdatedat = DateTime.UtcNow;
 
             // Save changes
-            var deletedUser = await Task.Run(() => _userRepository.Update(userToDelete));
+            var deletedUser = await _userRepository.UpdateAsync(userToDelete);
 
             // Convert to response model
             DeleteUserResponse response = deletedUser.ConvertToDeleteUserResponse();
@@ -174,7 +178,8 @@ namespace Domain.Services.Implementations
         public async Task<Result<bool>> ValidateEmailAsync(Guid userId)
         {
             // Find the user by ID
-            var user = _userRepository.Find(u => u.ID == userId).FirstOrDefault();
+            var users = await _userRepository.FindAsync(u => u.ID == userId);
+            var user = users.FirstOrDefault();
             if (user == null)
             {
                 return Result.Failure<bool>("User not found.", StatusCodes.Status404NotFound);
@@ -193,7 +198,7 @@ namespace Domain.Services.Implementations
             user.Lastupdatedat = DateTime.UtcNow;
 
             // Save changes
-            _userRepository.Update(user);
+            await _userRepository.UpdateAsync(user);
 
             Debug.WriteLine($"Email validated for user {user.Uname}");
             return Result.Success(true);
@@ -207,7 +212,8 @@ namespace Domain.Services.Implementations
                 return Result.Failure("Username is required.", StatusCodes.Status400BadRequest);
             }
             // Find the user to update
-            var userToUpdate = _userRepository.Find(u => u.Uname == username).FirstOrDefault();
+            var users = await _userRepository.FindAsync(u => u.Uname == username);
+            var userToUpdate = users.FirstOrDefault();
             if (userToUpdate == null)
             {
                 return Result.Failure("User not found.", StatusCodes.Status404NotFound);
@@ -219,7 +225,7 @@ namespace Domain.Services.Implementations
             // Update LastLogin field
             userToUpdate.Lastlogin = DateTime.UtcNow;
             // Save changes
-            await Task.Run(() => _userRepository.Update(userToUpdate));
+            await _userRepository.UpdateAsync(userToUpdate);
             Debug.WriteLine($"Last login updated for user {username}");
             return Result.Success();
         }

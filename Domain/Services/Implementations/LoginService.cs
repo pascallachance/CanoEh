@@ -27,7 +27,8 @@ namespace Domain.Services.Implementations
             {
                 return Result.Failure<LoginResponse>(validationResult.Error ?? "Validation failed.", validationResult.ErrorCode ?? StatusCodes.Status400BadRequest);
             }
-            var foundUser = _userRepository.Find(u => u.Uname == request.Username).FirstOrDefault();
+            var users = await _userRepository.FindAsync(u => u.Uname == request.Username);
+            var foundUser = users.FirstOrDefault();
             if (foundUser == null)
             {
                 return Result.Failure<LoginResponse>("Invalid username or password", StatusCodes.Status401Unauthorized);
@@ -57,7 +58,8 @@ namespace Domain.Services.Implementations
                 return Result.Failure<bool>("Username is required.", StatusCodes.Status400BadRequest);
             }
 
-            var user = _userRepository.Find(u => u.Uname == username).FirstOrDefault();
+            var users = await _userRepository.FindAsync(u => u.Uname == username);
+            var user = users.FirstOrDefault();
             if (user == null)
             {
                 return Result.Failure<bool>("User not found.", StatusCodes.Status404NotFound);

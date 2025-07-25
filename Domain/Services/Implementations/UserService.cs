@@ -207,7 +207,7 @@ namespace Domain.Services.Implementations
                 return Result.Failure("Username is required.", StatusCodes.Status400BadRequest);
             }
             // Find the user to update
-            var userToUpdate = await Task.Run(() => _userRepository.Find(u => u.Uname == username).FirstOrDefault());
+            var userToUpdate = _userRepository.Find(u => u.Uname == username).FirstOrDefault();
             if (userToUpdate == null)
             {
                 return Result.Failure("User not found.", StatusCodes.Status404NotFound);

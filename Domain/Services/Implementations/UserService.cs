@@ -219,7 +219,7 @@ namespace Domain.Services.Implementations
             // Update LastLogin field
             userToUpdate.Lastlogin = DateTime.UtcNow;
             // Save changes
-            _userRepository.Update(userToUpdate);
+            await Task.Run(() => _userRepository.Update(userToUpdate));
             Debug.WriteLine($"Last login updated for user {username}");
             return Result.Success();
         }

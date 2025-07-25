@@ -174,7 +174,7 @@ namespace Domain.Services.Implementations
         public async Task<Result<bool>> ValidateEmailAsync(Guid userId)
         {
             // Find the user by ID
-            var user = await Task.Run(() => _userRepository.Find(u => u.ID == userId).FirstOrDefault());
+            var user = _userRepository.Find(u => u.ID == userId).FirstOrDefault();
             if (user == null)
             {
                 return Result.Failure<bool>("User not found.", StatusCodes.Status404NotFound);
@@ -193,7 +193,7 @@ namespace Domain.Services.Implementations
             user.Lastupdatedat = DateTime.UtcNow;
 
             // Save changes
-            await Task.Run(() => _userRepository.Update(user));
+            _userRepository.Update(user);
 
             Debug.WriteLine($"Email validated for user {user.Uname}");
             return Result.Success(true);

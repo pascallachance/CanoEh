@@ -11,10 +11,10 @@ namespace Domain.Services.Implementations
 {
     public class LoginService : ILoginService
     {
-        private readonly IRepository<User> _userRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IEmailService _emailService;
 
-        public LoginService(IRepository<User> userRepository, IEmailService emailService)
+        public LoginService(IUserRepository userRepository, IEmailService emailService)
         {
             _userRepository = userRepository;
             _emailService = emailService;
@@ -27,8 +27,7 @@ namespace Domain.Services.Implementations
             {
                 return Result.Failure<LoginResponse>(validationResult.Error ?? "Validation failed.", validationResult.ErrorCode ?? StatusCodes.Status400BadRequest);
             }
-            var users = await _userRepository.FindAsync(u => u.Uname == request.Username);
-            var foundUser = users.FirstOrDefault();
+            var foundUser = await _userRepository.FindByUsernameAsync(request.Username);
             if (foundUser == null)
             {
                 return Result.Failure<LoginResponse>("Invalid username or password", StatusCodes.Status401Unauthorized);
@@ -58,8 +57,7 @@ namespace Domain.Services.Implementations
                 return Result.Failure<bool>("Username is required.", StatusCodes.Status400BadRequest);
             }
 
-            var users = await _userRepository.FindAsync(u => u.Uname == username);
-            var user = users.FirstOrDefault();
+            var user = await _userRepository.FindByUsernameAsync(username);
             if (user == null)
             {
                 return Result.Failure<bool>("User not found.", StatusCodes.Status404NotFound);

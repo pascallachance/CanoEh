@@ -15,7 +15,7 @@ namespace API.Tests
         public async Task BlockLogin_WhenEmailNotValidated()
         {
             // Arrange
-            var mockRepo = new Mock<IRepository<User>>();
+            var mockRepo = new Mock<IUserRepository>();
             var mockEmailService = new Mock<IEmailService>();
             
             var existingUser = new User
@@ -31,8 +31,8 @@ namespace API.Tests
                 ValidEmail = false // Email not validated
             };
 
-            mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Func<User, bool>>()))
-                    .ReturnsAsync(new List<User> { existingUser });
+            mockRepo.Setup(repo => repo.FindByUsernameAsync("testuser"))
+                    .ReturnsAsync(existingUser);
 
             var loginService = new LoginService(mockRepo.Object, mockEmailService.Object);
             var loginRequest = new LoginRequest { Username = "testuser", Password = "password123" };
@@ -50,7 +50,7 @@ namespace API.Tests
         public async Task AllowLogin_WhenEmailIsValidated()
         {
             // Arrange
-            var mockRepo = new Mock<IRepository<User>>();
+            var mockRepo = new Mock<IUserRepository>();
             var mockEmailService = new Mock<IEmailService>();
             
             var existingUser = new User
@@ -66,8 +66,8 @@ namespace API.Tests
                 ValidEmail = true // Email validated
             };
 
-            mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Func<User, bool>>()))
-                    .ReturnsAsync(new List<User> { existingUser });
+            mockRepo.Setup(repo => repo.FindByUsernameAsync("testuser"))
+                    .ReturnsAsync(existingUser);
 
             var loginService = new LoginService(mockRepo.Object, mockEmailService.Object);
             var loginRequest = new LoginRequest { Username = "testuser", Password = "password123" };
@@ -83,7 +83,7 @@ namespace API.Tests
         public async Task ValidateEmail_ChangesValidEmailToTrue()
         {
             // Arrange
-            var mockRepo = new Mock<IRepository<User>>();
+            var mockRepo = new Mock<IUserRepository>();
             var mockEmailService = new Mock<IEmailService>();
             
             var existingUser = new User
@@ -100,8 +100,8 @@ namespace API.Tests
             };
 
             User? updatedUser = null;
-            mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Func<User, bool>>()))
-                    .ReturnsAsync(new List<User> { existingUser });
+            mockRepo.Setup(repo => repo.GetByIdAsync(existingUser.ID))
+                    .ReturnsAsync(existingUser);
             mockRepo.Setup(repo => repo.UpdateAsync(It.IsAny<User>()))
                     .ReturnsAsync((User u) => {
                         updatedUser = u;

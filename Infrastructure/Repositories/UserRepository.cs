@@ -4,7 +4,7 @@ using Infrastructure.Data;
 
 namespace Infrastructure.Repositories
 {
-    public class UserRepository(string connectionString) : GenericRepository<User>(connectionString)
+    public class UserRepository(string connectionString) : GenericRepository<User>(connectionString), IUserRepository
     {
         public override async Task<User> AddAsync(User entity)
         {
@@ -153,6 +153,64 @@ WHERE dbo.Users.id = @id";
             };
             await dbConnection.ExecuteAsync(query, parameters);
             return entity;
+        }
+
+        // IUserRepository specific methods
+        public async Task<User?> FindByUsernameAsync(string username)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            var query = @"
+SELECT TOP(1) * 
+FROM dbo.Users 
+WHERE uname = @username AND deleted = 0";
+            return await dbConnection.QueryFirstOrDefaultAsync<User>(query, new { username });
+        }
+
+        public async Task<User?> FindByEmailAsync(string email)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            var query = @"
+SELECT TOP(1) * 
+FROM dbo.Users 
+WHERE email = @email AND deleted = 0";
+            return await dbConnection.QueryFirstOrDefaultAsync<User>(query, new { email });
+        }
+
+        public async Task<IEnumerable<User>> FindByDeletedStatusAsync(bool deleted)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            var query = @"
+SELECT * 
+FROM dbo.Users 
+WHERE deleted = @deleted";
+            return await dbConnection.QueryAsync<User>(query, new { deleted });
+        }
+
+        public async Task<bool> ExistsByUsernameAsync(string username)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.Users WHERE uname = @username AND deleted = 0", new { username });
+        }
+
+        public async Task<bool> ExistsByEmailAsync(string email)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.Users WHERE email = @email AND deleted = 0", new { email });
         }
     }
 }

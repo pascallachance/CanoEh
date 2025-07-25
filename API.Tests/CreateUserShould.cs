@@ -65,7 +65,7 @@ namespace API.Tests
         public async Task CreatedUser_HasSameValues_AsInputModel()
         {
             // Arrange
-            var mockRepo = new Mock<IRepository<User>>();
+            var mockRepo = new Mock<IUserRepository>();
             var mockEmailService = new Mock<IEmailService>();
             var inputModel = new CreateUserRequest
             {
@@ -85,6 +85,9 @@ namespace API.Tests
                     createdUser = u;
                     return u;
                 });
+            mockRepo
+                .Setup(repo => repo.FindByUsernameAsync(It.IsAny<string>()))
+                .ReturnsAsync((User?)null); // No existing user found
 
             mockEmailService
                 .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>()))
@@ -193,7 +196,7 @@ namespace API.Tests
         public async Task CreatedUser_IsNotDeleted()
         {
             // Arrange
-            var mockRepo = new Mock<IRepository<User>>();
+            var mockRepo = new Mock<IUserRepository>();
             var mockEmailService = new Mock<IEmailService>();
             var inputModel = new CreateUserRequest
             {
@@ -213,6 +216,9 @@ namespace API.Tests
                     createdUser = u;
                     return u;
                 });
+            mockRepo
+                .Setup(repo => repo.FindByUsernameAsync(It.IsAny<string>()))
+                .ReturnsAsync((User?)null); // No existing user found
 
             mockEmailService
                 .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>()))
@@ -233,7 +239,7 @@ namespace API.Tests
         public async Task CreatedUser_HasValidEmailSetToFalse()
         {
             // Arrange
-            var mockRepo = new Mock<IRepository<User>>();
+            var mockRepo = new Mock<IUserRepository>();
             var mockEmailService = new Mock<IEmailService>();
             var inputModel = new CreateUserRequest
             {
@@ -253,6 +259,9 @@ namespace API.Tests
                     createdUser = u;
                     return u;
                 });
+            mockRepo
+                .Setup(repo => repo.FindByUsernameAsync(It.IsAny<string>()))
+                .ReturnsAsync((User?)null); // No existing user found
 
             mockEmailService
                 .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>()))

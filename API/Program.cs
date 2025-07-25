@@ -47,10 +47,11 @@ internal class Program
 
         // Register services
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<ILoginService, LoginService>();
         builder.Services.AddScoped<IEmailService, EmailService>();
 
         // Register Repositories
-        builder.Services.AddScoped<IRepository<User>>(provider =>
+        builder.Services.AddScoped<IUserRepository>(provider =>
         {
             var config = provider.GetRequiredService<IConfiguration>();
             var connectionString = config.GetConnectionString("DefaultConnection");

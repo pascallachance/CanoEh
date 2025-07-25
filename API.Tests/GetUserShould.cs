@@ -36,7 +36,8 @@ namespace API.Tests
                 Lastlogin = DateTime.UtcNow.AddDays(-1),
                 CreatedAt = DateTime.UtcNow.AddDays(-30),
                 LastupdatedAt = DateTime.UtcNow.AddDays(-2),
-                Deleted = false
+                Deleted = false,
+                ValidEmail = true
             };
 
             var result = Result.Success(getUserResponse);
@@ -150,7 +151,8 @@ namespace API.Tests
                 Lastlogin = DateTime.UtcNow.AddDays(-1),
                 CreatedAt = DateTime.UtcNow.AddDays(-30),
                 LastupdatedAt = DateTime.UtcNow.AddDays(-2),
-                Deleted = false
+                Deleted = false,
+                ValidEmail = true
             };
 
             var result = Result.Success(getUserResponse);

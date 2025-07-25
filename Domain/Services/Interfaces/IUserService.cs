@@ -13,5 +13,7 @@ namespace Domain.Services.Interfaces
         Task<Result<DeleteUserResponse>> DeleteUserAsync(string username);
 
         Task<Result<UpdateUserResponse>> UpdateUserAsync(UpdateUserRequest updateRequest);
+
+        Task<Result<bool>> ValidateEmailAsync(Guid userId);
     }
 }

@@ -55,9 +55,19 @@ namespace Domain.Services.Implementations
                 await _emailService.SendEmailValidationAsync(user.Email, user.Uname, user.ID);
                 Debug.WriteLine($"Validation email sent to {user.Email}");
             }
+            catch (SmtpException smtpEx)
+            {
+                Debug.WriteLine($"SMTP error while sending validation email: {smtpEx.Message}");
+                // Continue with user creation even if email fails
+            }
+            catch (HttpRequestException httpEx)
+            {
+                Debug.WriteLine($"HTTP error while sending validation email: {httpEx.Message}");
+                // Continue with user creation even if email fails
+            }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to send validation email: {ex.Message}");
+                Debug.WriteLine($"Unexpected error while sending validation email: {ex.Message}");
                 // Continue with user creation even if email fails
             }
 

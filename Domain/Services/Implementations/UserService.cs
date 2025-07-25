@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Net.Mail;
 using Domain.Models.Converters;
 using Domain.Models.Requests;
 using Domain.Models.Responses;
@@ -173,7 +174,7 @@ namespace Domain.Services.Implementations
         public async Task<Result<bool>> ValidateEmailAsync(Guid userId)
         {
             // Find the user by ID
-            var user = await _userRepository.FindAsync(u => u.ID == userId).FirstOrDefaultAsync();
+            var user = _userRepository.Find(u => u.ID == userId).FirstOrDefault();
             if (user == null)
             {
                 return Result.Failure<bool>("User not found.", StatusCodes.Status404NotFound);

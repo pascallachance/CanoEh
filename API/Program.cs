@@ -3,6 +3,7 @@ using System.Text;
 using Domain.Services.Implementations;
 using Domain.Services.Interfaces;
 using Helpers.Common;
+using Infrastructure.Configuration;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
@@ -20,6 +21,7 @@ internal class Program
         var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Secret"]);
 
         builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("ConnectionStrings"));
+        builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
         builder.Services
             .AddAuthentication(options =>
             {

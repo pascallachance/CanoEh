@@ -12,7 +12,8 @@ namespace Infrastructure.Services
             
             Debug.WriteLine($"Email validation sent to: {email}");
             Debug.WriteLine($"Username: {username}");
-            Debug.WriteLine($"Validation link: https://localhost:7182/api/User/ValidateEmail/{userId}");
+            var validationUrl = $"{_baseUrl}/api/User/ValidateEmail/{userId}";
+            Debug.WriteLine($"Validation link: {validationUrl}");
             
             return true;
         }

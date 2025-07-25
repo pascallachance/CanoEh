@@ -173,5 +173,34 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Validates a user's email address using the validation ID.
+        /// </summary>
+        /// <param name="userId">The user ID from the validation link.</param>
+        /// <returns>Returns success if email is validated or an error response.</returns>
+        [HttpGet("ValidateEmail/{userId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ValidateEmail(Guid userId)
+        {
+            try
+            {
+                var result = await _userService.ValidateEmailAsync(userId);
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
+                }
+
+                return Ok(new { message = "Email validated successfully" });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+            }
+        }
     }
 }

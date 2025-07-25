@@ -6,6 +6,7 @@ using Domain.Services.Interfaces;
 using Helpers.Common;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -46,7 +47,8 @@ namespace API.Tests
                 Lastlogin = null,
                 CreatedAt = DateTime.UtcNow,
                 LastupdatedAt = null,
-                Deleted = false
+                Deleted = false,
+                ValidEmail = false
             });
             _mockUserService.Setup(s => s.CreateUserAsync(newUser)).ReturnsAsync(result);
 
@@ -64,6 +66,7 @@ namespace API.Tests
         {
             // Arrange
             var mockRepo = new Mock<IRepository<User>>();
+            var mockEmailService = new Mock<IEmailService>();
             var inputModel = new CreateUserRequest
             {
                 Username = "plachance",
@@ -83,7 +86,11 @@ namespace API.Tests
                     return u;
                 });
 
-            var userService = new UserService(mockRepo.Object);
+            mockEmailService
+                .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>()))
+                .ReturnsAsync(true);
+
+            var userService = new UserService(mockRepo.Object, mockEmailService.Object);
 
             // Act
             var result = await userService.CreateUserAsync(inputModel);
@@ -187,6 +194,7 @@ namespace API.Tests
         {
             // Arrange
             var mockRepo = new Mock<IRepository<User>>();
+            var mockEmailService = new Mock<IEmailService>();
             var inputModel = new CreateUserRequest
             {
                 Username = "plachance",
@@ -206,7 +214,11 @@ namespace API.Tests
                     return u;
                 });
 
-            var userService = new UserService(mockRepo.Object);
+            mockEmailService
+                .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>()))
+                .ReturnsAsync(true);
+
+            var userService = new UserService(mockRepo.Object, mockEmailService.Object);
 
             // Act
             var result = await userService.CreateUserAsync(inputModel);
@@ -215,6 +227,50 @@ namespace API.Tests
             Assert.True(result.IsSuccess);
             Assert.NotNull(createdUser);
             Assert.False(createdUser.Deleted);
+        }
+
+        [Fact]
+        public async Task CreatedUser_HasValidEmailSetToFalse()
+        {
+            // Arrange
+            var mockRepo = new Mock<IRepository<User>>();
+            var mockEmailService = new Mock<IEmailService>();
+            var inputModel = new CreateUserRequest
+            {
+                Username = "plachance",
+                Firstname = "Pascal",
+                Lastname = "Lachance",
+                Email = "plachance@gmail.com",
+                Phone = "1234567890",
+                Password = "password123",
+            };
+
+            User? createdUser = null;
+            mockRepo
+                .Setup(repo => repo.Add(It.IsAny<User>()))
+                .Returns((User u) =>
+                {
+                    createdUser = u;
+                    return u;
+                });
+
+            mockEmailService
+                .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>()))
+                .ReturnsAsync(true);
+
+            var userService = new UserService(mockRepo.Object, mockEmailService.Object);
+
+            // Act
+            var result = await userService.CreateUserAsync(inputModel);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(createdUser);
+            Assert.False(createdUser.ValidEmail);
+            mockEmailService.Verify(es => es.SendEmailValidationAsync(
+                inputModel.Email, 
+                inputModel.Username, 
+                It.IsAny<Guid>()), Times.Once);
         }
 
         [Fact]

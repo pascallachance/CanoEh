@@ -18,7 +18,8 @@ namespace Domain.Models.Converters
                 Lastlogin = user.Lastlogin,
                 CreatedAt = user.Createdat,
                 LastupdatedAt = user.Lastupdatedat,
-                Deleted = user.Deleted
+                Deleted = user.Deleted,
+                ValidEmail = user.ValidEmail
             };
         }
 
@@ -35,7 +36,8 @@ namespace Domain.Models.Converters
                 Lastlogin = user.Lastlogin,
                 CreatedAt = user.Createdat,
                 LastupdatedAt = user.Lastupdatedat,
-                Deleted = user.Deleted
+                Deleted = user.Deleted,
+                ValidEmail = user.ValidEmail
             };
         }
 

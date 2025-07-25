@@ -6,6 +6,7 @@ using Domain.Services.Interfaces;
 using Helpers.Common;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -250,7 +251,7 @@ namespace API.Tests
                        return u;
                    });
 
-            var userService = new UserService(mockRepo.Object);
+            var userService = new UserService(mockRepo.Object, new Mock<IEmailService>().Object);
 
             // Act
             var result = await userService.UpdateUserAsync(updateRequest);
@@ -321,7 +322,7 @@ namespace API.Tests
                        return u;
                    });
 
-            var userService = new UserService(mockRepo.Object);
+            var userService = new UserService(mockRepo.Object, new Mock<IEmailService>().Object);
 
             // Act
             var result = await userService.UpdateUserAsync(updateRequest);
@@ -352,7 +353,7 @@ namespace API.Tests
                 Email = "invalidemail" // Missing @
             };
 
-            var userService = new UserService(mockRepo.Object);
+            var userService = new UserService(mockRepo.Object, new Mock<IEmailService>().Object);
 
             // Act
             var result = await userService.UpdateUserAsync(updateRequest);

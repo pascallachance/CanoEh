@@ -13,5 +13,6 @@
         public DateTime? Lastupdatedat { get; set; }
         public required string Password { get; set; }
         public bool Deleted { get; set; }
+        public bool ValidEmail { get; set; }
     }
 }

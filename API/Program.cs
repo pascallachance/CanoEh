@@ -3,8 +3,10 @@ using System.Text;
 using Domain.Services.Implementations;
 using Domain.Services.Interfaces;
 using Helpers.Common;
+using Infrastructure.Configuration;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -19,6 +21,7 @@ internal class Program
         var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Secret"]);
 
         builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("ConnectionStrings"));
+        builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
         builder.Services
             .AddAuthentication(options =>
             {
@@ -44,6 +47,7 @@ internal class Program
 
         // Register services
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<IEmailService, EmailService>();
 
         // Register Repositories
         builder.Services.AddScoped<IRepository<User>>(provider =>

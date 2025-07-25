@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Net.Mail;
 using Domain.Models.Converters;
 using Domain.Models.Requests;
 using Domain.Models.Responses;
@@ -6,13 +7,15 @@ using Domain.Services.Interfaces;
 using Helpers.Common;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
 
 namespace Domain.Services.Implementations
 {
-    public class UserService(IRepository<User> userRepository) : IUserService
+    public class UserService(IRepository<User> userRepository, IEmailService emailService) : IUserService
     {
         private readonly IRepository<User> _userRepository = userRepository;
+        private readonly IEmailService _emailService = emailService;
 
         public async Task<Result<CreateUserResponse>> CreateUserAsync(CreateUserRequest newUser)
         {
@@ -43,8 +46,31 @@ namespace Domain.Services.Implementations
                 Createdat = DateTime.UtcNow,
                 Lastupdatedat = null,
                 Password = hasher.HashPassword(newUser.Password),
-                Deleted = false
+                Deleted = false,
+                ValidEmail = false
             }));
+
+            // Send email validation
+            try
+            {
+                await _emailService.SendEmailValidationAsync(user.Email, user.Uname, user.ID);
+                Debug.WriteLine($"Validation email sent to {user.Email}");
+            }
+            catch (SmtpException smtpEx)
+            {
+                Debug.WriteLine($"SMTP error while sending validation email: {smtpEx.Message}");
+                // Continue with user creation even if email fails
+            }
+            catch (HttpRequestException httpEx)
+            {
+                Debug.WriteLine($"HTTP error while sending validation email: {httpEx.Message}");
+                // Continue with user creation even if email fails
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Unexpected error while sending validation email: {ex.Message}");
+                // Continue with user creation even if email fails
+            }
 
             CreateUserResponse createdUser = UserConverters.ConvertToCreateUserResponse(user);
 
@@ -143,6 +169,34 @@ namespace Domain.Services.Implementations
 
             Debug.WriteLine($"User {username} deleted successfully.");
             return Result.Success(response);
+        }
+
+        public async Task<Result<bool>> ValidateEmailAsync(Guid userId)
+        {
+            // Find the user by ID
+            var user = _userRepository.Find(u => u.ID == userId).FirstOrDefault();
+            if (user == null)
+            {
+                return Result.Failure<bool>("User not found.", StatusCodes.Status404NotFound);
+            }
+            if (user.Deleted)
+            {
+                return Result.Failure<bool>("User is deleted.", StatusCodes.Status410Gone);
+            }
+            if (user.ValidEmail)
+            {
+                return Result.Failure<bool>("Email is already validated.", StatusCodes.Status400BadRequest);
+            }
+
+            // Mark email as validated
+            user.ValidEmail = true;
+            user.Lastupdatedat = DateTime.UtcNow;
+
+            // Save changes
+            _userRepository.Update(user);
+
+            Debug.WriteLine($"Email validated for user {user.Uname}");
+            return Result.Success(true);
         }
     }
 } 

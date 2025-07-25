@@ -32,6 +32,10 @@ namespace Domain.Services.Implementations
             {
                 return Result.Failure<LoginResponse>("User account is deleted", StatusCodes.Status401Unauthorized);
             }
+            if (!foundUser.ValidEmail)
+            {
+                return Result.Failure<LoginResponse>("Please validate your email address before logging in", StatusCodes.Status403Forbidden);
+            }
             var hasher = new PasswordHasher();
             if (string.IsNullOrEmpty(request.Password) || !hasher.VerifyPassword(request.Password, foundUser.Password))
             {

@@ -144,7 +144,7 @@ WHERE dbo.Users.id = @id";
                 entity.Email,
                 entity.Phone,
                 entity.Lastlogin,
-                DateTime.UtcNow, //Lastupdatedat is set to current time
+                entity.Lastupdatedat, //Use entity's Lastupdatedat value
                 entity.Password,
                 entity.Deleted,
                 entity.ValidEmail,

@@ -192,7 +192,7 @@ namespace Domain.Services.Implementations
             user.Lastupdatedat = DateTime.UtcNow;
 
             // Save changes
-            await Task.Run(() => _userRepository.Update(user));
+            _userRepository.Update(user);
 
             Debug.WriteLine($"Email validated for user {user.Uname}");
             return Result.Success(true);

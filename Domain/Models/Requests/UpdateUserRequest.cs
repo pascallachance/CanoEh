@@ -6,7 +6,7 @@ namespace Domain.Models.Requests
 {
     public class UpdateUserRequest
     {
-        public required string UserName { get; set; }
+        public required string Username { get; set; }
         public required string Firstname { get; set; }
         public required string Lastname { get; set; }
         public required string Email { get; set; }
@@ -18,7 +18,7 @@ namespace Domain.Models.Requests
             {
                 return Result.Failure("User data is required.", StatusCodes.Status400BadRequest);
             }
-            if (string.IsNullOrWhiteSpace(UserName))
+            if (string.IsNullOrWhiteSpace(Username))
             {
                 return Result.Failure("Username is required.", StatusCodes.Status400BadRequest);
             }

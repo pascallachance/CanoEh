@@ -29,7 +29,7 @@ namespace API.Tests
             // Arrange
             var newUser = new CreateUserRequest
             {
-                Uname = "testuser",
+                Username = "testuser",
                 Firstname = "Test",
                 Lastname = "User",
                 Email = "test@example.com",
@@ -38,7 +38,7 @@ namespace API.Tests
             var result = Result.Success(new CreateUserResponse 
             { 
                 ID = Guid.NewGuid(),
-                Uname = newUser.Uname,
+                Uname = newUser.Username,
                 Firstname = newUser.Firstname,
                 Lastname = newUser.Lastname,
                 Email = newUser.Email,
@@ -66,7 +66,7 @@ namespace API.Tests
             var mockRepo = new Mock<IRepository<User>>();
             var inputModel = new CreateUserRequest
             {
-                Uname = "plachance",
+                Username = "plachance",
                 Firstname = "Pascal",
                 Lastname = "Lachance",
                 Email = "plachance@gmail.com",
@@ -91,7 +91,7 @@ namespace API.Tests
             // Assert
             Assert.True(result.IsSuccess);
             Assert.NotNull(createdUser);
-            Assert.Equal(inputModel.Uname, createdUser.Uname);
+            Assert.Equal(inputModel.Username, createdUser.Uname);
             Assert.Equal(inputModel.Firstname, createdUser.Firstname);
             Assert.Equal(inputModel.Lastname, createdUser.Lastname);
             Assert.Equal(inputModel.Email, createdUser.Email);
@@ -103,7 +103,7 @@ namespace API.Tests
         {
             var newUser = new CreateUserRequest
             {
-                Uname = "",
+                Username = "",
                 Firstname = "Pascal",
                 Lastname = "Lachance",
                 Email = "plachance@gmail.com",
@@ -124,7 +124,7 @@ namespace API.Tests
         {
             var newUser = new CreateUserRequest
             {
-                Uname = "plachance",
+                Username = "plachance",
                 Firstname = "",
                 Lastname = "Lachance",
                 Email = "plachance@gmail.com",
@@ -145,7 +145,7 @@ namespace API.Tests
         {
             var newUser = new CreateUserRequest
             {
-                Uname = "plachance",
+                Username = "plachance",
                 Firstname = "Pascal",
                 Lastname = "",
                 Email = "plachance@gmail.com",
@@ -166,7 +166,7 @@ namespace API.Tests
         {
             var newUser = new CreateUserRequest
             {
-                Uname = "plachance",
+                Username = "plachance",
                 Firstname = "Pascal",
                 Lastname = "Lachance",
                 Email = "",
@@ -189,7 +189,7 @@ namespace API.Tests
             var mockRepo = new Mock<IRepository<User>>();
             var inputModel = new CreateUserRequest
             {
-                Uname = "plachance",
+                Username = "plachance",
                 Firstname = "Pascal",
                 Lastname = "Lachance",
                 Email = "plachance@gmail.com",
@@ -222,7 +222,7 @@ namespace API.Tests
         {
             var newUser = new CreateUserRequest
             {
-                Uname = "failuser",
+                Username = "failuser",
                 Firstname = "Fail",
                 Lastname = "User",
                 Email = "fail@example.com",

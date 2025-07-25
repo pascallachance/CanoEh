@@ -31,7 +31,7 @@ namespace API.Tests
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {
-                UserName = username,
+                Username = username,
                 Firstname = "UpdatedFirst",
                 Lastname = "UpdatedLast", 
                 Email = "updated@example.com",
@@ -81,7 +81,7 @@ namespace API.Tests
             var authenticatedUsername = "testuser";
             var updateRequest = new UpdateUserRequest
             {
-                UserName = targetUsername,
+                Username = targetUsername,
                 Firstname = "UpdatedFirst",
                 Lastname = "UpdatedLast",
                 Email = "updated@example.com"
@@ -112,7 +112,7 @@ namespace API.Tests
             var username = "";
             var updateRequest = new UpdateUserRequest
             {
-                UserName = username,
+                Username = username,
                 Firstname = "Test",
                 Lastname = "User", 
                 Email = "test@example.com"
@@ -146,7 +146,7 @@ namespace API.Tests
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {
-                UserName = username,
+                Username = username,
                 Firstname = "",
                 Lastname = "User",
                 Email = "test@example.com"
@@ -180,7 +180,7 @@ namespace API.Tests
             var username = "nonexistentuser";
             var updateRequest = new UpdateUserRequest
             {
-                UserName = username,
+                Username = username,
                 Firstname = "Test",
                 Lastname = "User",
                 Email = "test@example.com"
@@ -215,7 +215,7 @@ namespace API.Tests
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {
-                UserName = username,
+                Username = username,
                 Firstname = "UpdatedFirst",
                 Lastname = "UpdatedLast",
                 Email = "updated@example.com",
@@ -283,7 +283,7 @@ namespace API.Tests
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {
-                UserName = username,
+                Username = username,
                 Firstname = "UpdatedFirst",
                 Lastname = "UpdatedLast",
                 Email = "updated@example.com"
@@ -346,7 +346,7 @@ namespace API.Tests
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {
-                UserName = username,
+                Username = username,
                 Firstname = "Test",
                 Lastname = "User",
                 Email = "invalidemail" // Missing @

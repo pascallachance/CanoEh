@@ -6,7 +6,7 @@ namespace Domain.Models.Requests
 {
     public class CreateUserRequest
     {
-        public required string Uname { get; set; }
+        public required string Username { get; set; }
         public required string Firstname { get; set; }
         public required string Lastname { get; set; }
         public required string Email { get; set; }
@@ -19,7 +19,7 @@ namespace Domain.Models.Requests
             {
                 return Result.Failure("User data is required.", StatusCodes.Status400BadRequest);
             }
-            if (string.IsNullOrWhiteSpace(Uname))
+            if (string.IsNullOrWhiteSpace(Username))
             {
                 return Result.Failure("Username is required.", StatusCodes.Status400BadRequest);
             }
@@ -39,7 +39,7 @@ namespace Domain.Models.Requests
             {
                 return Result.Failure("Email is required.", StatusCodes.Status400BadRequest);
             }
-            if (Uname.Length < 8)
+            if (Username.Length < 8)
             {
                 return Result.Failure("Username must be at least 8 characters long.", StatusCodes.Status400BadRequest);
             }

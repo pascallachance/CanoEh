@@ -45,7 +45,7 @@ namespace API.Tests
             // Set up the authenticated user context
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, username)
+                new(ClaimTypes.NameIdentifier, username)
             };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var principal = new ClaimsPrincipal(identity);
@@ -87,7 +87,7 @@ namespace API.Tests
             // Set up the authenticated user context
             var claims = new List<Claim>
            {
-               new Claim(ClaimTypes.NameIdentifier, authenticatedUsername)
+               new(ClaimTypes.NameIdentifier, authenticatedUsername)
            };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var principal = new ClaimsPrincipal(identity);
@@ -116,7 +116,7 @@ namespace API.Tests
             // Set up the authenticated user context
             var claims = new List<Claim>
            {
-               new Claim(ClaimTypes.NameIdentifier, username)
+               new(ClaimTypes.NameIdentifier, username)
            };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var principal = new ClaimsPrincipal(identity);
@@ -159,7 +159,7 @@ namespace API.Tests
             // Set up the authenticated user context
             var claims = new List<Claim>
            {
-               new Claim(ClaimTypes.NameIdentifier, username)
+               new(ClaimTypes.NameIdentifier, username)
            };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var principal = new ClaimsPrincipal(identity);

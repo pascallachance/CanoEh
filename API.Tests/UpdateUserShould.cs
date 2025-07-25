@@ -212,7 +212,7 @@ namespace API.Tests
         public async Task UpdateUser_SetsLastUpdatedAt_ToCurrentTime()
         {
             // Arrange
-            var mockRepo = new Mock<IRepository<User>>();
+            var mockRepo = new Mock<IUserRepository>();
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {
@@ -241,8 +241,8 @@ namespace API.Tests
             User? updatedUser = null;
             var timeBeforeUpdate = DateTime.UtcNow;
 
-            mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Func<User, bool>>()))
-                   .ReturnsAsync(new List<User> { existingUser });
+            mockRepo.Setup(repo => repo.FindByUsernameAsync(It.IsAny<string>()))
+                   .ReturnsAsync(existingUser);
 
             mockRepo.Setup(repo => repo.UpdateAsync(It.IsAny<User>()))
                    .ReturnsAsync((User u) =>
@@ -280,7 +280,7 @@ namespace API.Tests
         public async Task UpdateUser_DoesNotModify_ImmutableFields()
         {
             // Arrange
-            var mockRepo = new Mock<IRepository<User>>();
+            var mockRepo = new Mock<IUserRepository>();
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {
@@ -312,8 +312,8 @@ namespace API.Tests
 
             User? updatedUser = null;
 
-            mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Func<User, bool>>()))
-                   .ReturnsAsync(new[] { existingUser });
+            mockRepo.Setup(repo => repo.FindByUsernameAsync(It.IsAny<string>()))
+                   .ReturnsAsync(existingUser);
 
             mockRepo.Setup(repo => repo.UpdateAsync(It.IsAny<User>()))
                    .ReturnsAsync((User u) =>
@@ -343,7 +343,7 @@ namespace API.Tests
         public async Task ReturnBadRequest_WhenEmailIsInvalid()
         {
             // Arrange
-            var mockRepo = new Mock<IRepository<User>>();
+            var mockRepo = new Mock<IUserRepository>();
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {

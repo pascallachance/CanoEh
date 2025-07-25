@@ -10,13 +10,13 @@ namespace API.Tests
 {
     public class LoginServiceSendValidationEmailShould
     {
-        private readonly Mock<IRepository<User>> _mockUserRepository;
+        private readonly Mock<IUserRepository> _mockUserRepository;
         private readonly Mock<IEmailService> _mockEmailService;
         private readonly LoginService _loginService;
 
         public LoginServiceSendValidationEmailShould()
         {
-            _mockUserRepository = new Mock<IRepository<User>>();
+            _mockUserRepository = new Mock<IUserRepository>();
             _mockEmailService = new Mock<IEmailService>();
             _loginService = new LoginService(_mockUserRepository.Object, _mockEmailService.Object);
         }
@@ -38,8 +38,8 @@ namespace API.Tests
                 Deleted = false
             };
 
-            _mockUserRepository.Setup(r => r.FindAsync(It.IsAny<Func<User, bool>>()))
-                             .ReturnsAsync(new[] { user });
+            _mockUserRepository.Setup(r => r.FindByUsernameAsync(username))
+                             .ReturnsAsync(user);
             _mockEmailService.Setup(e => e.SendEmailValidationAsync(user.Email, user.Uname, user.ID))
                            .ReturnsAsync(true);
 
@@ -69,8 +69,8 @@ namespace API.Tests
         {
             // Arrange
             var username = "nonexistentuser";
-            _mockUserRepository.Setup(r => r.FindAsync(It.IsAny<Func<User, bool>>()))
-                             .ReturnsAsync(Array.Empty<User>());
+            _mockUserRepository.Setup(r => r.FindByUsernameAsync(username))
+                             .ReturnsAsync((User?)null);
 
             // Act
             var result = await _loginService.SendValidationEmailAsync(username);
@@ -98,8 +98,8 @@ namespace API.Tests
                 Deleted = true
             };
 
-            _mockUserRepository.Setup(r => r.FindAsync(It.IsAny<Func<User, bool>>()))
-                             .ReturnsAsync(new[] { user });
+            _mockUserRepository.Setup(r => r.FindByUsernameAsync(username))
+                             .ReturnsAsync(user);
 
             // Act
             var result = await _loginService.SendValidationEmailAsync(username);
@@ -127,8 +127,8 @@ namespace API.Tests
                 Deleted = false
             };
 
-            _mockUserRepository.Setup(r => r.FindAsync(It.IsAny<Func<User, bool>>()))
-                             .ReturnsAsync(new[] { user });
+            _mockUserRepository.Setup(r => r.FindByUsernameAsync(username))
+                             .ReturnsAsync(user);
 
             // Act
             var result = await _loginService.SendValidationEmailAsync(username);
@@ -156,8 +156,8 @@ namespace API.Tests
                 Deleted = false
             };
 
-            _mockUserRepository.Setup(r => r.FindAsync(It.IsAny<Func<User, bool>>()))
-                             .ReturnsAsync(new[] { user });
+            _mockUserRepository.Setup(r => r.FindByUsernameAsync(username))
+                             .ReturnsAsync(user);
             _mockEmailService.Setup(e => e.SendEmailValidationAsync(user.Email, user.Uname, user.ID))
                            .ReturnsAsync(false);
 
@@ -187,8 +187,8 @@ namespace API.Tests
                 Deleted = false
             };
 
-            _mockUserRepository.Setup(r => r.FindAsync(It.IsAny<Func<User, bool>>()))
-                             .ReturnsAsync(new[] { user });
+            _mockUserRepository.Setup(r => r.FindByUsernameAsync(username))
+                             .ReturnsAsync(user);
             _mockEmailService.Setup(e => e.SendEmailValidationAsync(user.Email, user.Uname, user.ID))
                            .ThrowsAsync(new Exception("SMTP error"));
 

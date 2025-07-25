@@ -40,7 +40,7 @@ namespace API.Controllers
                 return BadRequest(ModelState);
             }
             var userRepository = new UserRepository(_connectionString);
-            var loginService = new LoginService(userRepository);
+            var loginService = new LoginService(userRepository, _emailService);
             var userService = new UserService(userRepository, _emailService);
 
             var loginResult = await loginService.LoginAsync(request);

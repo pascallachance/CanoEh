@@ -6,7 +6,7 @@ namespace Infrastructure.Repositories
 {
     public class UserRepository(string connectionString) : GenericRepository<User>(connectionString)
     {
-        public override User Add(User entity)
+        public override async Task<User> AddAsync(User entity)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -53,57 +53,59 @@ VALUES (
                 entity.Deleted,
                 entity.ValidEmail,
             };
-            dbConnection.Execute(query, parameters);
+            await dbConnection.ExecuteAsync(query, parameters);
             return entity;
         }
 
-        public override int Count(Func<User, bool> predicate)
+        public override async Task<int> CountAsync(Func<User, bool> predicate)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
                 dbConnection.Open();
             }
-            return dbConnection.Query<User>("SELECT * FROM dbo.Users").Count(predicate);
+            var users = await dbConnection.QueryAsync<User>("SELECT * FROM dbo.Users");
+            return users.Count(predicate);
         }
 
-        public override void Delete(User entity)
+        public override async Task DeleteAsync(User entity)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
                 dbConnection.Open();
             }
             entity.Deleted = true;
-            Update(entity);
+            await UpdateAsync(entity);
         }
 
-        public override bool Exists(Guid id)
+        public override async Task<bool> ExistsAsync(Guid id)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
                 dbConnection.Open();
             }
-            return dbConnection.ExecuteScalar<bool>("SELECT COUNT(1) FROM dbo.Users WHERE id = @id", new { id });
+            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.Users WHERE id = @id", new { id });
         }
 
-        public override IEnumerable<User> Find(Func<User, bool> predicate)
+        public override async Task<IEnumerable<User>> FindAsync(Func<User, bool> predicate)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
                 dbConnection.Open();
             }
-            return dbConnection.Query<User>("SELECT * FROM dbo.Users").Where(predicate);
+            var users = await dbConnection.QueryAsync<User>("SELECT * FROM dbo.Users");
+            return users.Where(predicate);
         }
 
-        public override IEnumerable<User> GetAll()
+        public override async Task<IEnumerable<User>> GetAllAsync()
         {
             if (dbConnection.State != ConnectionState.Open)
             {
                 dbConnection.Open();
             }
-            return dbConnection.Query<User>("SELECT * FROM dbo.Users");
+            return await dbConnection.QueryAsync<User>("SELECT * FROM dbo.Users");
         }
 
-        public override User GetById(Guid id)
+        public override async Task<User> GetByIdAsync(Guid id)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -113,10 +115,10 @@ VALUES (
 SELECT TOP(1) * 
 FROM dbo.Users 
 WHERE id = @id";
-            return dbConnection.QueryFirst<User>(query, new { id });
+            return await dbConnection.QueryFirstAsync<User>(query, new { id });
         }
 
-        public override User Update(User entity)
+        public override async Task<User> UpdateAsync(User entity)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -149,7 +151,7 @@ WHERE dbo.Users.id = @id";
                 entity.Deleted,
                 entity.ValidEmail,
             };
-            dbConnection.Execute(query, parameters);
+            await dbConnection.ExecuteAsync(query, parameters);
             return entity;
         }
     }

@@ -2,20 +2,20 @@
 {
     public interface IRepository<T>
     {
-        T Add(T entity);
+        Task<T> AddAsync(T entity);
 
-        T Update(T entity);
+        Task<T> UpdateAsync(T entity);
 
-        void Delete(T entity);
+        Task DeleteAsync(T entity);
 
-        T GetById(Guid id);
+        Task<T> GetByIdAsync(Guid id);
 
-        IEnumerable<T> GetAll();
+        Task<IEnumerable<T>> GetAllAsync();
 
-        IEnumerable<T> Find(Func<T, bool> predicate);
+        Task<IEnumerable<T>> FindAsync(Func<T, bool> predicate);
 
-        int Count(Func<T, bool> predicate);
+        Task<int> CountAsync(Func<T, bool> predicate);
 
-        bool Exists(Guid id);
+        Task<bool> ExistsAsync(Guid id);
     }
 }

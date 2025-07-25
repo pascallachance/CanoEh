@@ -79,8 +79,8 @@ namespace API.Tests
 
             User? createdUser = null;
             mockRepo
-                .Setup(repo => repo.Add(It.IsAny<User>()))
-                .Returns((User u) =>
+                .Setup(repo => repo.AddAsync(It.IsAny<User>()))
+                .ReturnsAsync((User u) =>
                 {
                     createdUser = u;
                     return u;
@@ -207,8 +207,8 @@ namespace API.Tests
 
             User? createdUser = null;
             mockRepo
-                .Setup(repo => repo.Add(It.IsAny<User>()))
-                .Returns((User u) =>
+                .Setup(repo => repo.AddAsync(It.IsAny<User>()))
+                .ReturnsAsync((User u) =>
                 {
                     createdUser = u;
                     return u;
@@ -247,8 +247,8 @@ namespace API.Tests
 
             User? createdUser = null;
             mockRepo
-                .Setup(repo => repo.Add(It.IsAny<User>()))
-                .Returns((User u) =>
+                .Setup(repo => repo.AddAsync(It.IsAny<User>()))
+                .ReturnsAsync((User u) =>
                 {
                     createdUser = u;
                     return u;

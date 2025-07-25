@@ -7,20 +7,20 @@ namespace Infrastructure.Repositories
     {
         protected IDbConnection dbConnection = new SqlConnection(connectionString);
 
-        public abstract T Add(T entity);
+        public abstract Task<T> AddAsync(T entity);
 
-        public abstract T Update(T entity);
+        public abstract Task<T> UpdateAsync(T entity);
 
-        public abstract void Delete(T entity);
+        public abstract Task DeleteAsync(T entity);
 
-        public abstract T GetById(Guid id);
+        public abstract Task<T> GetByIdAsync(Guid id);
 
-        public abstract IEnumerable<T> GetAll();
+        public abstract Task<IEnumerable<T>> GetAllAsync();
 
-        public abstract IEnumerable<T> Find(Func<T, bool> predicate);
+        public abstract Task<IEnumerable<T>> FindAsync(Func<T, bool> predicate);
 
-        public abstract int Count(Func<T, bool> predicate);
+        public abstract Task<int> CountAsync(Func<T, bool> predicate);
 
-        public abstract bool Exists(Guid id);
+        public abstract Task<bool> ExistsAsync(Guid id);
     }
 }

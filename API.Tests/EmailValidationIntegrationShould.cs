@@ -31,8 +31,8 @@ namespace API.Tests
                 ValidEmail = false // Email not validated
             };
 
-            mockRepo.Setup(repo => repo.Find(It.IsAny<Func<User, bool>>()))
-                    .Returns(new List<User> { existingUser });
+            mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Func<User, bool>>()))
+                    .ReturnsAsync(new List<User> { existingUser });
 
             var loginService = new LoginService(mockRepo.Object, mockEmailService.Object);
             var loginRequest = new LoginRequest { Username = "testuser", Password = "password123" };
@@ -66,8 +66,8 @@ namespace API.Tests
                 ValidEmail = true // Email validated
             };
 
-            mockRepo.Setup(repo => repo.Find(It.IsAny<Func<User, bool>>()))
-                    .Returns(new List<User> { existingUser });
+            mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Func<User, bool>>()))
+                    .ReturnsAsync(new List<User> { existingUser });
 
             var loginService = new LoginService(mockRepo.Object, mockEmailService.Object);
             var loginRequest = new LoginRequest { Username = "testuser", Password = "password123" };
@@ -100,10 +100,10 @@ namespace API.Tests
             };
 
             User? updatedUser = null;
-            mockRepo.Setup(repo => repo.Find(It.IsAny<Func<User, bool>>()))
-                    .Returns(new List<User> { existingUser });
-            mockRepo.Setup(repo => repo.Update(It.IsAny<User>()))
-                    .Returns((User u) => {
+            mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Func<User, bool>>()))
+                    .ReturnsAsync(new List<User> { existingUser });
+            mockRepo.Setup(repo => repo.UpdateAsync(It.IsAny<User>()))
+                    .ReturnsAsync((User u) => {
                         updatedUser = u;
                         return u;
                     });

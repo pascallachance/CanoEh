@@ -241,11 +241,11 @@ namespace API.Tests
             User? updatedUser = null;
             var timeBeforeUpdate = DateTime.UtcNow;
 
-            mockRepo.Setup(repo => repo.Find(It.IsAny<Func<User, bool>>()))
-                   .Returns(new List<User> { existingUser });
+            mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Func<User, bool>>()))
+                   .ReturnsAsync(new List<User> { existingUser });
 
-            mockRepo.Setup(repo => repo.Update(It.IsAny<User>()))
-                   .Returns((User u) =>
+            mockRepo.Setup(repo => repo.UpdateAsync(It.IsAny<User>()))
+                   .ReturnsAsync((User u) =>
                    {
                        updatedUser = u;
                        return u;
@@ -312,11 +312,11 @@ namespace API.Tests
 
             User? updatedUser = null;
 
-            mockRepo.Setup(repo => repo.Find(It.IsAny<Func<User, bool>>()))
-                   .Returns([existingUser]);
+            mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Func<User, bool>>()))
+                   .ReturnsAsync(new[] { existingUser });
 
-            mockRepo.Setup(repo => repo.Update(It.IsAny<User>()))
-                   .Returns((User u) =>
+            mockRepo.Setup(repo => repo.UpdateAsync(It.IsAny<User>()))
+                   .ReturnsAsync((User u) =>
                    {
                        updatedUser = u;
                        return u;

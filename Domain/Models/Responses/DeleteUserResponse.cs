@@ -12,5 +12,6 @@ namespace Domain.Models.Responses
         public DateTime CreatedAt { get; set; }
         public DateTime? LastupdatedAt { get; set; }
         public bool Deleted { get; set; }
+        public bool ValidEmail { get; set; }
     }
 }

@@ -53,7 +53,7 @@ VALUES (
                 entity.Deleted,
                 entity.ValidEmail,
             };
-            dbConnection.ExecuteAsync(query, parameters);
+            await dbConnection.ExecuteAsync(query, parameters);
             return entity;
         }
 

@@ -93,7 +93,7 @@ namespace Domain.Services.Implementations
             }
             if (userToUpdate.Deleted)
             {
-                return Result.Failure<UpdateUserResponse>("User is deleted.", StatusCodes.Status401Unauthorized);
+                return Result.Failure<UpdateUserResponse>("User is deleted.", StatusCodes.Status410Gone);
             }
             // Update only the allowed fields
             userToUpdate.Firstname = updateRequest.Firstname;

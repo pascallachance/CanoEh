@@ -65,7 +65,7 @@ namespace Domain.Services.Implementations
             }
             if (userFound.Deleted)
             {
-                return Result.Failure<GetUserResponse>("User is deleted.", StatusCodes.Status401Unauthorized);
+                return Result.Failure<GetUserResponse>("User is deleted.", StatusCodes.Status410Gone);
             }
             GetUserResponse userResponse = userFound.ConvertToGetUserResponse();
             return Result.Success(userResponse);

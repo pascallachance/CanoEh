@@ -1,8 +1,9 @@
 ﻿using System.Data;
 using Dapper;
 using Infrastructure.Data;
+using Infrastructure.Repositories.Interfaces;
 
-namespace Infrastructure.Repositories
+namespace Infrastructure.Repositories.Implementations
 {
     public class UserRepository(string connectionString) : GenericRepository<User>(connectionString), IUserRepository
     {

@@ -1,7 +1,8 @@
 ﻿using System.Data;
+using Infrastructure.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 
-namespace Infrastructure.Repositories
+namespace Infrastructure.Repositories.Implementations
 {
     public abstract class GenericRepository<T>(string connectionString) : IRepository<T> where T : class
     {

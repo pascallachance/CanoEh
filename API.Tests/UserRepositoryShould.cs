@@ -1,5 +1,5 @@
 using Infrastructure.Data;
-using Infrastructure.Repositories;
+using Infrastructure.Repositories.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Moq;
 

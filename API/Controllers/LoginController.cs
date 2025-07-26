@@ -4,7 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using Domain.Models.Requests;
 using Domain.Services.Implementations;
-using Infrastructure.Repositories.Implementations;
+using Infrastructure.Repositories.Interfaces;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

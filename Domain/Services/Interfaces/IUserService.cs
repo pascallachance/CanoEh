@@ -15,5 +15,7 @@ namespace Domain.Services.Interfaces
         Task<Result<UpdateUserResponse>> UpdateUserAsync(UpdateUserRequest updateRequest);
 
         Task<Result<bool>> ValidateEmailAsync(Guid userId);
+
+        Task<Result<bool>> UpdateLastLoginAsync(string username);
     }
 }

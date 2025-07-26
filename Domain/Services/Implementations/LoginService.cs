@@ -9,16 +9,10 @@ using Microsoft.AspNetCore.Http;
 
 namespace Domain.Services.Implementations
 {
-    public class LoginService : ILoginService
+    public class LoginService(IUserRepository userRepository, IEmailService emailService) : ILoginService
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IEmailService _emailService;
-
-        public LoginService(IUserRepository userRepository, IEmailService emailService)
-        {
-            _userRepository = userRepository;
-            _emailService = emailService;
-        }
+        private readonly IUserRepository _userRepository = userRepository;
+        private readonly IEmailService _emailService = emailService;
 
         public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)
         {

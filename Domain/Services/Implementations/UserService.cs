@@ -199,29 +199,28 @@ namespace Domain.Services.Implementations
             return Result.Success(true);
         }
 
-        public async Task<Result> UpdateLastLoginAsync (string username)
+        public async Task<Result<bool>> UpdateLastLoginAsync(string username)
         {
-            // Validate input
             if (string.IsNullOrWhiteSpace(username))
             {
-                return Result.Failure("Username is required.", StatusCodes.Status400BadRequest);
+                return Result.Failure<bool>("Username is required.", StatusCodes.Status400BadRequest);
             }
-            // Find the user to update
+
             var userToUpdate = await _userRepository.FindByUsernameAsync(username);
             if (userToUpdate == null)
             {
-                return Result.Failure("User not found.", StatusCodes.Status404NotFound);
+                return Result.Failure<bool>("User not found.", StatusCodes.Status404NotFound);
             }
             if (userToUpdate.Deleted)
             {
-                return Result.Failure("User is deleted.", StatusCodes.Status410Gone);
+                return Result.Failure<bool>("User is deleted.", StatusCodes.Status410Gone);
             }
-            // Update LastLogin field
+
             userToUpdate.Lastlogin = DateTime.UtcNow;
-            // Save changes
             await _userRepository.UpdateAsync(userToUpdate);
+
             Debug.WriteLine($"Last login updated for user {username}");
-            return Result.Success();
+            return Result.Success(true);
         }
     }
 } 

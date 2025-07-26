@@ -3,9 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Domain.Models.Requests;
-using Domain.Services.Implementations;
-using Infrastructure.Repositories.Interfaces;
-using Infrastructure.Services;
+using Domain.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -13,21 +11,14 @@ using Microsoft.IdentityModel.Tokens;
 namespace API.Controllers
 {
     [Route("api/[controller]")]
-    public class LoginController : ControllerBase
+    public class LoginController(
+        IConfiguration configuration,
+        ILoginService loginService,
+        IUserService userService) : ControllerBase
     {
-        private readonly IConfiguration _configuration;
-        private readonly IEmailService _emailService;
-        private readonly string _connectionString;
-
-        public LoginController(IConfiguration configuration, IEmailService emailService)
-        {
-            _configuration = configuration 
-                ?? throw new ArgumentNullException(nameof(configuration));
-            _connectionString = _configuration.GetConnectionString("DefaultConnection") 
-                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
-            _emailService = emailService 
-                ?? throw new ArgumentNullException(nameof(emailService));
-        }
+        private readonly IConfiguration _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        private readonly ILoginService _loginService = loginService ?? throw new ArgumentNullException(nameof(loginService));
+        private readonly IUserService _userService = userService ?? throw new ArgumentNullException(nameof(userService));
 
         [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LoginRequest))]
@@ -39,16 +30,13 @@ namespace API.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var userRepository = new UserRepository(_connectionString);
-            var loginService = new LoginService(userRepository, _emailService);
-            var userService = new UserService(userRepository, _emailService);
 
-            var loginResult = await loginService.LoginAsync(request);
+            var loginResult = await _loginService.LoginAsync(request);
             if (loginResult.IsFailure)
             {
                 return StatusCode(loginResult.ErrorCode ?? 501, loginResult.Error);
             }
-            var result = await userService.UpdateLastLoginAsync(request.Username);
+            var result = await _userService.UpdateLastLoginAsync(request.Username);
             if (result.IsFailure) {
                 return StatusCode(result.ErrorCode ?? 501, result.Error);
             }

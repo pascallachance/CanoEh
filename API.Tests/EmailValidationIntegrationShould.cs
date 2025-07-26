@@ -2,7 +2,7 @@ using Domain.Models.Requests;
 using Domain.Services.Implementations;
 using Helpers.Common;
 using Infrastructure.Data;
-using Infrastructure.Repositories;
+using Infrastructure.Repositories.Interfaces;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
 using Moq;

@@ -16,7 +16,7 @@ namespace API.Controllers
         ILoginService loginService,
         IUserService userService) : ControllerBase
     {
-        private readonly IConfiguration _configuration  = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        private readonly IConfiguration _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         private readonly ILoginService _loginService = loginService ?? throw new ArgumentNullException(nameof(loginService));
         private readonly IUserService _userService = userService ?? throw new ArgumentNullException(nameof(userService));
 

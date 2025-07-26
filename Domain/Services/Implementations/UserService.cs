@@ -199,7 +199,7 @@ namespace Domain.Services.Implementations
             return Result.Success(true);
         }
 
-        async Task<Result<bool>> IUserService.UpdateLastLoginAsync(string username)
+        public async Task<Result<bool>> UpdateLastLoginAsync(string username)
         {
             if (string.IsNullOrWhiteSpace(username))
             {

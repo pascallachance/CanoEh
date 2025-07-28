@@ -172,5 +172,48 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Changes the password for the authenticated user.
+        /// The user must be authenticated and can only change their own password.
+        /// </summary>
+        [Authorize]
+        [HttpPost("ChangePassword")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChangePasswordResponse))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest changePasswordRequest)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var authenticatedUsername = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                // Ensure user can only change their own password
+                if (!string.Equals(changePasswordRequest.Username, authenticatedUsername, StringComparison.OrdinalIgnoreCase))
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden, "You can only change your own password.");
+                }
+
+                var result = await _userService.ChangePasswordAsync(changePasswordRequest);
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
+                }
+
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+            }
+        }
     }
 }

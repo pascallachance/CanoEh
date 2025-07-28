@@ -8,34 +8,40 @@
       "sslPort": 44317
     }
   },
-  "profiles": {
-    "http": {
-      "commandName": "Project",
-      "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "applicationUrl": "http://localhost:5269",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "https": {
-      "commandName": "Project",
-      "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "applicationUrl": "https://localhost:7182;http://localhost:5269",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+    "profiles": {
+        "http": {
+            "commandName": "Project",
+            "dotnetRunMessages": true,
+            "launchBrowser": true,
+            "launchUrl": "swagger",
+            "applicationUrl": "http://localhost:5269",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "EmailSettings__Username": "93356f001@smtp-brevo.com",
+                "EmailSettings__Password": "gkhTDCtPJM8LSdjH"
+            }
+        },
+        "https": {
+            "commandName": "Project",
+            "dotnetRunMessages": true,
+            "launchBrowser": true,
+            "launchUrl": "swagger",
+            "applicationUrl": "https://localhost:7182;http://localhost:5269",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "EmailSettings__Username": "93356f001@smtp-brevo.com",
+                "EmailSettings__Password": "gkhTDCtPJM8LSdjH"
+            }
+        },
+        "IIS Express": {
+            "commandName": "IISExpress",
+            "launchBrowser": true,
+            "launchUrl": "swagger",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "EmailSettings__Username": "93356f001@smtp-brevo.com",
+                "EmailSettings__Password": "gkhTDCtPJM8LSdjH"
+            }
+        }
     }
-  }
 }

@@ -13,10 +13,10 @@ namespace API.Controllers
             _userService = userService;
         }
 
-        [HttpGet("ValidateEmail/{userId}")]
-        public async Task<IActionResult> Index(Guid userId)
+        [HttpGet("ValidateEmail/{token}")]
+        public async Task<IActionResult> Index(string token)
         {
-            var result = await _userService.ValidateEmailAsync(userId);
+            var result = await _userService.ValidateEmailByTokenAsync(token);
             ViewBag.Message = result.IsFailure ? GetUserFriendlyErrorMessage(result.Error) : "Email validated successfully!";
             return View("ValidateEmail");
         }
@@ -27,6 +27,10 @@ namespace API.Controllers
             {
                 "InvalidUserId" => "The provided user ID is invalid.",
                 "EmailNotFound" => "The email address could not be found.",
+                "Validation token is required." => "Invalid validation link.",
+                "Invalid or expired validation token." => "Invalid or expired validation link.",
+                "User not found." => "Invalid validation link.",
+                "Email is already validated." => "This email address has already been validated.",
                 _ => "An unexpected error occurred. Please try again later."
             };
         }

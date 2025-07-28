@@ -18,11 +18,11 @@ namespace Infrastructure.Services
             _logger = logger;
         }
 
-        public async Task<bool> SendEmailValidationAsync(string email, string username, Guid userId)
+        public async Task<bool> SendEmailValidationAsync(string email, string username, string validationToken)
         {
             try
             {
-                var validationUrl = $"{_emailSettings.BaseUrl}/api/EmailValidation/ValidateEmail/{userId}";
+                var validationUrl = $"{_emailSettings.BaseUrl}/api/EmailValidation/ValidateEmail/{validationToken}";
                 
                 // If SMTP credentials are not configured, fall back to debug logging
                 if (string.IsNullOrEmpty(_emailSettings.Username) || string.IsNullOrEmpty(_emailSettings.Password))

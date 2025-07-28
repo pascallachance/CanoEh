@@ -86,6 +86,7 @@ namespace API.Tests
             var mockRepo = new Mock<IUserRepository>();
             var mockEmailService = new Mock<IEmailService>();
             
+            var validationToken = "test-validation-token";
             var existingUser = new User
             {
                 ID = Guid.NewGuid(),
@@ -96,11 +97,12 @@ namespace API.Tests
                 Password = new Helpers.Common.PasswordHasher().HashPassword("password123"),
                 Createdat = DateTime.UtcNow,
                 Deleted = false,
-                ValidEmail = false
+                ValidEmail = false,
+                EmailValidationToken = validationToken
             };
 
             User? updatedUser = null;
-            mockRepo.Setup(repo => repo.GetByIdAsync(existingUser.ID))
+            mockRepo.Setup(repo => repo.FindByEmailValidationTokenAsync(validationToken))
                     .ReturnsAsync(existingUser);
             mockRepo.Setup(repo => repo.UpdateAsync(It.IsAny<User>()))
                     .ReturnsAsync((User u) => {
@@ -111,12 +113,13 @@ namespace API.Tests
             var userService = new UserService(mockRepo.Object, mockEmailService.Object);
 
             // Act
-            var result = await userService.ValidateEmailAsync(existingUser.ID);
+            var result = await userService.ValidateEmailByTokenAsync(validationToken);
 
             // Assert
             Assert.True(result.IsSuccess);
             Assert.NotNull(updatedUser);
             Assert.True(updatedUser.ValidEmail);
+            Assert.Null(updatedUser.EmailValidationToken); // Token should be cleared after use
         }
     }
 }

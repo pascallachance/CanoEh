@@ -9,5 +9,6 @@ namespace Infrastructure.Repositories.Interfaces
         Task<IEnumerable<User>> FindByDeletedStatusAsync(bool deleted);
         Task<bool> ExistsByUsernameAsync(string username);
         Task<bool> ExistsByEmailAsync(string email);
+        Task<User?> FindByEmailValidationTokenAsync(string token);
     }
 }

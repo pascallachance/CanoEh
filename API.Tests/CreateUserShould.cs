@@ -90,7 +90,7 @@ namespace API.Tests
                 .ReturnsAsync((User?)null); // No existing user found
 
             mockEmailService
-                .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>()))
+                .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(true);
 
             var userService = new UserService(mockRepo.Object, mockEmailService.Object);
@@ -221,7 +221,7 @@ namespace API.Tests
                 .ReturnsAsync((User?)null); // No existing user found
 
             mockEmailService
-                .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>()))
+                .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(true);
 
             var userService = new UserService(mockRepo.Object, mockEmailService.Object);
@@ -264,7 +264,7 @@ namespace API.Tests
                 .ReturnsAsync((User?)null); // No existing user found
 
             mockEmailService
-                .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>()))
+                .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(true);
 
             var userService = new UserService(mockRepo.Object, mockEmailService.Object);
@@ -279,7 +279,7 @@ namespace API.Tests
             mockEmailService.Verify(es => es.SendEmailValidationAsync(
                 inputModel.Email, 
                 inputModel.Username, 
-                It.IsAny<Guid>()), Times.Once);
+                It.IsAny<string>()), Times.Once);
         }
 
         [Fact]

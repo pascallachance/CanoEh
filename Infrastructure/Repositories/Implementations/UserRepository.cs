@@ -26,7 +26,8 @@ INSERT INTO dbo.Users (
     lastupdatedat, 
     password, 
     deleted, 
-    validEmail)
+    validEmail,
+    emailValidationToken)
 OUTPUT INSERTED.ID
 VALUES (
     @Uname, 
@@ -39,7 +40,8 @@ VALUES (
     @Lastupdatedat, 
     @Password, 
     @Deleted, 
-    @ValidEmail)";
+    @ValidEmail,
+    @EmailValidationToken)";
 
             var parameters = new
             {
@@ -54,6 +56,7 @@ VALUES (
                 entity.Password,
                 entity.Deleted,
                 entity.ValidEmail,
+                entity.EmailValidationToken,
             };
             Guid newUserId = await dbConnection.ExecuteScalarAsync<Guid>(query, parameters);
             entity.ID = newUserId; 
@@ -137,7 +140,8 @@ SET
     dbo.Users.lastlogin = @lastlogin,
     dbo.Users.lastupdatedat = @lastupdatedat,
     dbo.Users.deleted = @deleted,
-    dbo.Users.validemail = @validemail
+    dbo.Users.validemail = @validemail,
+    dbo.Users.emailValidationToken = @emailValidationToken
 WHERE dbo.Users.id = @id";
 
             var parameters = new
@@ -153,6 +157,7 @@ WHERE dbo.Users.id = @id";
                 entity.Password,
                 entity.Deleted,
                 entity.ValidEmail,
+                entity.EmailValidationToken,
             };
             await dbConnection.ExecuteAsync(query, parameters);
             return entity;
@@ -214,6 +219,19 @@ WHERE deleted = @deleted";
                 dbConnection.Open();
             }
             return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.Users WHERE email = @email AND deleted = 0", new { email });
+        }
+
+        public async Task<User?> FindByEmailValidationTokenAsync(string token)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            var query = @"
+SELECT TOP(1) * 
+FROM dbo.Users 
+WHERE emailValidationToken = @token AND deleted = 0";
+            return await dbConnection.QueryFirstOrDefaultAsync<User>(query, new { token });
         }
     }
 }

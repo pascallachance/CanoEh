@@ -258,6 +258,55 @@ namespace Domain.Services.Implementations
             return Result.Success(true);
         }
 
+        public async Task<Result<ChangePasswordResponse>> ChangePasswordAsync(ChangePasswordRequest changePasswordRequest)
+        {
+            // Validate input
+            var validationResult = changePasswordRequest.Validate();
+            if (validationResult.IsFailure)
+            {
+                return Result.Failure<ChangePasswordResponse>(
+                    validationResult.Error ?? "Validation failed.", 
+                    validationResult.ErrorCode ?? StatusCodes.Status400BadRequest
+                );
+            }
+
+            // Find the user
+            var user = await _userRepository.FindByUsernameAsync(changePasswordRequest.Username!);
+            if (user == null)
+            {
+                return Result.Failure<ChangePasswordResponse>("User not found.", StatusCodes.Status404NotFound);
+            }
+            if (user.Deleted)
+            {
+                return Result.Failure<ChangePasswordResponse>("User is deleted.", StatusCodes.Status410Gone);
+            }
+
+            // Verify current password
+            var passwordHasher = new PasswordHasher();
+            if (!passwordHasher.VerifyPassword(changePasswordRequest.CurrentPassword!, user.Password))
+            {
+                return Result.Failure<ChangePasswordResponse>("Current password is incorrect.", StatusCodes.Status400BadRequest);
+            }
+
+            // Hash and update the new password
+            user.Password = passwordHasher.HashPassword(changePasswordRequest.NewPassword!);
+            user.Lastupdatedat = DateTime.UtcNow;
+
+            // Save changes
+            var updatedUser = await _userRepository.UpdateAsync(user);
+
+            // Create response
+            var response = new ChangePasswordResponse
+            {
+                Username = updatedUser.Uname,
+                LastUpdatedAt = updatedUser.Lastupdatedat ?? DateTime.UtcNow,
+                Message = "Password changed successfully."
+            };
+
+            Debug.WriteLine($"Password changed successfully for user {changePasswordRequest.Username}");
+            return Result.Success(response);
+        }
+
         private static string GenerateSecureToken()
         {
             // Generate a cryptographically secure random token

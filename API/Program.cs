@@ -60,6 +60,7 @@ internal class Program
 
         // Add services to the container.
         builder.Services.AddControllers();
+        builder.Services.AddControllersWithViews();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
         {
@@ -105,6 +106,7 @@ internal class Program
         app.UseAuthorization();
 
         app.MapControllers();
+        app.MapDefaultControllerRoute();
 
         app.Run();
     }

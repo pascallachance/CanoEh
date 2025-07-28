@@ -2,6 +2,7 @@
 using Dapper;
 using Infrastructure.Data;
 using Infrastructure.Repositories.Interfaces;
+using Microsoft.Data.SqlClient;
 
 namespace Infrastructure.Repositories.Implementations
 {
@@ -24,21 +25,21 @@ INSERT INTO dbo.Users (
     createdat, 
     lastupdatedat, 
     password, 
-    deleted,
-    validemail) 
+    deleted, 
+    validEmail)
+OUTPUT INSERTED.ID
 VALUES (
-    @uname, 
-    @firstname, 
-    @lastname, 
-    @email, 
-    @phone, 
-    @lastlogin, 
-    @createdat, 
-    @lastupdatedat, 
-    @password, 
-    @deleted,
-    @validemail)
-";
+    @Uname, 
+    @Firstname, 
+    @Lastname, 
+    @Email, 
+    @Phone, 
+    @Lastlogin, 
+    @Createdat, 
+    @Lastupdatedat, 
+    @Password, 
+    @Deleted, 
+    @ValidEmail)";
 
             var parameters = new
             {
@@ -54,7 +55,8 @@ VALUES (
                 entity.Deleted,
                 entity.ValidEmail,
             };
-            await dbConnection.ExecuteAsync(query, parameters);
+            Guid newUserId = await dbConnection.ExecuteScalarAsync<Guid>(query, parameters);
+            entity.ID = newUserId; 
             return entity;
         }
 

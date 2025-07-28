@@ -53,7 +53,7 @@ namespace Domain.Services.Implementations
             // Send email validation
             try
             {
-                await _emailService.SendEmailValidationAsync(user.Email, user.Uname, user.ID);
+                await _emailService. (user.Email, user.Uname, user.ID);
                 Debug.WriteLine($"Validation email sent to {user.Email}");
             }
             catch (SmtpException smtpEx)

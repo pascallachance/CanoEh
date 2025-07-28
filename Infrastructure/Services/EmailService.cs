@@ -22,7 +22,7 @@ namespace Infrastructure.Services
         {
             try
             {
-                var validationUrl = $"{_emailSettings.BaseUrl}/api/User/ValidateEmail/{userId}";
+                var validationUrl = $"{_emailSettings.BaseUrl}/api/EmailValidation/ValidateEmail/{userId}";
                 
                 // If SMTP credentials are not configured, fall back to debug logging
                 if (string.IsNullOrEmpty(_emailSettings.Username) || string.IsNullOrEmpty(_emailSettings.Password))
@@ -31,7 +31,7 @@ namespace Infrastructure.Services
                     Debug.WriteLine($"Email validation sent to: {email}");
                     Debug.WriteLine($"Username: {username}");
                     Debug.WriteLine($"Validation link: {validationUrl}");
-                    return true;
+                    return true;  
                 }
 
                 var subject = "Email Validation Required - BaseApp";

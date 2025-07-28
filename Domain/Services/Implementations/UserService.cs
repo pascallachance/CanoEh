@@ -19,41 +19,41 @@ namespace Domain.Services.Implementations
 
         public async Task<Result<CreateUserResponse>> CreateUserAsync(CreateUserRequest newUser)
         {
-            var validationResult = newUser.Validate();
-            if (validationResult.IsFailure)
-            {
-                return Result.Failure<CreateUserResponse>(
-                    validationResult.Error ?? "Validation failed.", 
-                    validationResult.ErrorCode ?? StatusCodes.Status400BadRequest
-                );
-            }
+            User user = null; 
+            try { 
+                var validationResult = newUser.Validate();
+                if (validationResult.IsFailure)
+                {
+                    return Result.Failure<CreateUserResponse>(
+                        validationResult.Error ?? "Validation failed.", 
+                        validationResult.ErrorCode ?? StatusCodes.Status400BadRequest
+                    );
+                }
 
-            var existingUser = await _userRepository.FindByUsernameAsync(newUser.Username);
-            if (existingUser != null)
-            {
-                return Result.Failure<CreateUserResponse>("Username already exists.", StatusCodes.Status400BadRequest);
-            }
+                var existingUser = await _userRepository.FindByUsernameAsync(newUser.Username);
+                if (existingUser != null)
+                {
+                    return Result.Failure<CreateUserResponse>("Username already exists.", StatusCodes.Status400BadRequest);
+                }
 
-            var hasher = new PasswordHasher();
-            var user = await _userRepository.AddAsync(new User
-            {
-                Uname = newUser.Username,
-                Firstname = newUser.Firstname,
-                Lastname = newUser.Lastname,
-                Email = newUser.Email,
-                Phone = newUser.Phone, 
-                Lastlogin = null,
-                Createdat = DateTime.UtcNow,
-                Lastupdatedat = null,
-                Password = hasher.HashPassword(newUser.Password),
-                Deleted = false,
-                ValidEmail = false,
-                EmailValidationToken = GenerateSecureToken()
-            });
+                var hasher = new PasswordHasher();
+                user = await _userRepository.AddAsync(new User
+                {
+                    Uname = newUser.Username,
+                    Firstname = newUser.Firstname,
+                    Lastname = newUser.Lastname,
+                    Email = newUser.Email,
+                    Phone = newUser.Phone, 
+                    Lastlogin = null,
+                    Createdat = DateTime.UtcNow,
+                    Lastupdatedat = null,
+                    Password = hasher.HashPassword(newUser.Password),
+                    Deleted = false,
+                    ValidEmail = false,
+                    EmailValidationToken = GenerateSecureToken()
+                });
 
-            // Send email validation
-            try
-            {
+                // Send email validation
                 await _emailService.SendEmailValidationAsync(user.Email, user.Uname, user.EmailValidationToken!);
                 Debug.WriteLine($"Validation email sent to {user.Email}");
             }
@@ -73,6 +73,10 @@ namespace Domain.Services.Implementations
                 // Continue with user creation even if email fails
             }
 
+            if (user == null)
+            {
+                return Result.Failure<CreateUserResponse>("Failed to create user.", StatusCodes.Status500InternalServerError);
+            }
             CreateUserResponse createdUser = UserConverters.ConvertToCreateUserResponse(user);
 
             Debug.WriteLine($"User {newUser.Username} created successfully.");

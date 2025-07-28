@@ -47,13 +47,14 @@ namespace Domain.Services.Implementations
                 Lastupdatedat = null,
                 Password = hasher.HashPassword(newUser.Password),
                 Deleted = false,
-                ValidEmail = false
+                ValidEmail = false,
+                EmailValidationToken = GenerateSecureToken()
             });
 
             // Send email validation
             try
             {
-                await _emailService.SendEmailValidationAsync(user.Email, user.Uname, user.ID);
+                await _emailService.SendEmailValidationAsync(user.Email, user.Uname, user.EmailValidationToken!);
                 Debug.WriteLine($"Validation email sent to {user.Email}");
             }
             catch (SmtpException smtpEx)
@@ -221,6 +222,49 @@ namespace Domain.Services.Implementations
 
             Debug.WriteLine($"Last login updated for user {username}");
             return Result.Success(true);
+        }
+
+        public async Task<Result<bool>> ValidateEmailByTokenAsync(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return Result.Failure<bool>("Validation token is required.", StatusCodes.Status400BadRequest);
+            }
+
+            // Find the user by validation token
+            var user = await _userRepository.FindByEmailValidationTokenAsync(token);
+            if (user == null)
+            {
+                return Result.Failure<bool>("Invalid or expired validation token.", StatusCodes.Status404NotFound);
+            }
+            if (user.Deleted)
+            {
+                return Result.Failure<bool>("User is deleted.", StatusCodes.Status410Gone);
+            }
+            if (user.ValidEmail)
+            {
+                return Result.Failure<bool>("Email is already validated.", StatusCodes.Status400BadRequest);
+            }
+
+            // Mark email as validated and clear the token
+            user.ValidEmail = true;
+            user.EmailValidationToken = null; // Clear the token after use
+            user.Lastupdatedat = DateTime.UtcNow;
+
+            // Save changes
+            await _userRepository.UpdateAsync(user);
+
+            Debug.WriteLine($"Email validated for user {user.Uname}");
+            return Result.Success(true);
+        }
+
+        private static string GenerateSecureToken()
+        {
+            // Generate a cryptographically secure random token
+            const int tokenLength = 32; // 256 bits
+            var tokenBytes = new byte[tokenLength];
+            System.Security.Cryptography.RandomNumberGenerator.Fill(tokenBytes);
+            return Convert.ToBase64String(tokenBytes).Replace("+", "-").Replace("/", "_").Replace("=", "");
         }
     }
 } 

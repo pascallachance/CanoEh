@@ -14,5 +14,6 @@
         public required string Password { get; set; }
         public bool Deleted { get; set; }
         public bool ValidEmail { get; set; }
+        public string? EmailValidationToken { get; set; }
     }
 }

@@ -69,7 +69,12 @@ namespace Domain.Services.Implementations
 
             try
             {
-                var emailSent = await _emailService.SendEmailValidationAsync(user.Email, user.Uname, user.ID);
+                // Generate a new validation token
+                user.EmailValidationToken = GenerateSecureToken();
+                user.Lastupdatedat = DateTime.UtcNow;
+                await _userRepository.UpdateAsync(user);
+
+                var emailSent = await _emailService.SendEmailValidationAsync(user.Email, user.Uname, user.EmailValidationToken);
                 if (!emailSent)
                 {
                     return Result.Failure<bool>("Failed to send validation email.", StatusCodes.Status500InternalServerError);
@@ -81,6 +86,15 @@ namespace Domain.Services.Implementations
             {
                 return Result.Failure<bool>($"Error sending validation email: {ex.Message}", StatusCodes.Status500InternalServerError);
             }
+        }
+
+        private static string GenerateSecureToken()
+        {
+            // Generate a cryptographically secure random token
+            const int tokenLength = 32; // 256 bits
+            var tokenBytes = new byte[tokenLength];
+            System.Security.Cryptography.RandomNumberGenerator.Fill(tokenBytes);
+            return Convert.ToBase64String(tokenBytes).Replace("+", "-").Replace("/", "_").Replace("=", "");
         }
     }
 }

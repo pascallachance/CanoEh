@@ -35,12 +35,15 @@ namespace API.Tests
                 Lastname = "User",
                 Password = "hashedpassword",
                 ValidEmail = false,
-                Deleted = false
+                Deleted = false,
+                EmailValidationToken = null
             };
 
             _mockUserRepository.Setup(r => r.FindByUsernameAsync(username))
                              .ReturnsAsync(user);
-            _mockEmailService.Setup(e => e.SendEmailValidationAsync(user.Email, user.Uname, user.ID))
+            _mockUserRepository.Setup(r => r.UpdateAsync(It.IsAny<User>()))
+                             .ReturnsAsync((User u) => u);
+            _mockEmailService.Setup(e => e.SendEmailValidationAsync(user.Email, user.Uname, It.IsAny<string>()))
                            .ReturnsAsync(true);
 
             // Act
@@ -49,7 +52,8 @@ namespace API.Tests
             // Assert
             Assert.True(result.IsSuccess);
             Assert.True(result.Value);
-            _mockEmailService.Verify(e => e.SendEmailValidationAsync(user.Email, user.Uname, user.ID), Times.Once);
+            _mockUserRepository.Verify(r => r.UpdateAsync(It.Is<User>(u => !string.IsNullOrEmpty(u.EmailValidationToken))), Times.Once);
+            _mockEmailService.Verify(e => e.SendEmailValidationAsync(user.Email, user.Uname, It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
@@ -153,12 +157,15 @@ namespace API.Tests
                 Lastname = "User",
                 Password = "hashedpassword",
                 ValidEmail = false,
-                Deleted = false
+                Deleted = false,
+                EmailValidationToken = null
             };
 
             _mockUserRepository.Setup(r => r.FindByUsernameAsync(username))
                              .ReturnsAsync(user);
-            _mockEmailService.Setup(e => e.SendEmailValidationAsync(user.Email, user.Uname, user.ID))
+            _mockUserRepository.Setup(r => r.UpdateAsync(It.IsAny<User>()))
+                             .ReturnsAsync((User u) => u);
+            _mockEmailService.Setup(e => e.SendEmailValidationAsync(user.Email, user.Uname, It.IsAny<string>()))
                            .ReturnsAsync(false);
 
             // Act
@@ -184,12 +191,15 @@ namespace API.Tests
                 Lastname = "User",
                 Password = "hashedpassword",
                 ValidEmail = false,
-                Deleted = false
+                Deleted = false,
+                EmailValidationToken = null
             };
 
             _mockUserRepository.Setup(r => r.FindByUsernameAsync(username))
                              .ReturnsAsync(user);
-            _mockEmailService.Setup(e => e.SendEmailValidationAsync(user.Email, user.Uname, user.ID))
+            _mockUserRepository.Setup(r => r.UpdateAsync(It.IsAny<User>()))
+                             .ReturnsAsync((User u) => u);
+            _mockEmailService.Setup(e => e.SendEmailValidationAsync(user.Email, user.Uname, It.IsAny<string>()))
                            .ThrowsAsync(new Exception("SMTP error"));
 
             // Act

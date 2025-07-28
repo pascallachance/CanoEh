@@ -16,6 +16,8 @@ namespace Domain.Services.Interfaces
 
         Task<Result<bool>> ValidateEmailAsync(Guid userId);
 
+        Task<Result<bool>> ValidateEmailByTokenAsync(string token);
+
         Task<Result<bool>> UpdateLastLoginAsync(string username);
     }
 }

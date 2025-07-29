@@ -14,11 +14,13 @@ namespace API.Controllers
     public class LoginController(
         IConfiguration configuration,
         ILoginService loginService,
-        IUserService userService) : ControllerBase
+        IUserService userService,
+        ISessionService sessionService) : ControllerBase
     {
         private readonly IConfiguration _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         private readonly ILoginService _loginService = loginService ?? throw new ArgumentNullException(nameof(loginService));
         private readonly IUserService _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        private readonly ISessionService _sessionService = sessionService ?? throw new ArgumentNullException(nameof(sessionService));
 
         [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LoginRequest))]
@@ -31,7 +33,11 @@ namespace API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var loginResult = await _loginService.LoginAsync(request);
+            // Capture client information from headers
+            var userAgent = Request.Headers.UserAgent.ToString();
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+            var loginResult = await _loginService.LoginAsync(request, userAgent, ipAddress);
             if (loginResult.IsFailure)
             {
                 return StatusCode(loginResult.ErrorCode ?? 501, loginResult.Error);
@@ -42,7 +48,10 @@ namespace API.Controllers
             }
 
             var token = GenerateJwtToken(request.Username);
-            return Ok(new { token });
+            return Ok(new { 
+                token, 
+                sessionId = loginResult.Value?.SessionId 
+            });
         }
 
         private string GenerateJwtToken(string username)
@@ -77,7 +86,7 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Logout()
+        public async Task<IActionResult> Logout([FromQuery] Guid? sessionId = null, [FromHeader(Name = "X-Session-Id")] Guid? headerSessionId = null)
         {
             // Get username from JWT claims
             var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -92,7 +101,19 @@ namespace API.Controllers
                 return StatusCode(result.ErrorCode ?? 500, result.Error);
             }
 
-            return Ok(new { message = "Logged out successfully.", username });
+            // Handle session logout if sessionId is provided
+            var targetSessionId = sessionId ?? headerSessionId;
+            if (targetSessionId.HasValue)
+            {
+                var sessionResult = await _sessionService.LogoutSessionAsync(targetSessionId.Value);
+                if (sessionResult.IsFailure)
+                {
+                    // Log the error but don't fail the entire logout process
+                    Debug.WriteLine($"Failed to logout session {targetSessionId}: {sessionResult.Error}");
+                }
+            }
+
+            return Ok(new { message = "Logged out successfully.", username, sessionId = targetSessionId });
         }
 
         [Authorize]

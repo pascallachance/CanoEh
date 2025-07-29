@@ -1,6 +1,7 @@
 using Domain.Models.Requests;
 using Domain.Models.Responses;
 using Helpers.Common;
+using Infrastructure.Data;
 
 namespace Domain.Services.Interfaces
 {
@@ -9,6 +10,8 @@ namespace Domain.Services.Interfaces
         Task<Result<CreateUserResponse>> CreateUserAsync(CreateUserRequest newUser);
 
         Task<Result<GetUserResponse>> GetUserAsync(string username);
+        
+        Task<Result<User?>> GetUserEntityAsync(string username);
 
         Task<Result<DeleteUserResponse>> DeleteUserAsync(string username);
 

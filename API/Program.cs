@@ -47,6 +47,7 @@ internal class Program
         // Register services
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<ILoginService, LoginService>();
+        builder.Services.AddScoped<ISessionService, SessionService>();
         builder.Services.AddScoped<IEmailService, EmailService>();
 
         // Register Repositories
@@ -55,6 +56,13 @@ internal class Program
             var config = provider.GetRequiredService<IConfiguration>();
             var connectionString = config.GetConnectionString("DefaultConnection");
             return new UserRepository(connectionString);
+        });
+        
+        builder.Services.AddScoped<ISessionRepository>(provider =>
+        {
+            var config = provider.GetRequiredService<IConfiguration>();
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            return new SessionRepository(connectionString);
         });
 
         // Add services to the container.

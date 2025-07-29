@@ -1,4 +1,5 @@
 using Domain.Services.Implementations;
+using Domain.Services.Interfaces;
 using Helpers.Common;
 using Infrastructure.Data;
 using Infrastructure.Repositories.Interfaces;
@@ -12,13 +13,17 @@ namespace API.Tests
     {
         private readonly Mock<IUserRepository> _mockUserRepository;
         private readonly Mock<IEmailService> _mockEmailService;
+        private readonly Mock<ISessionService> _mockSessionService;
+        private readonly Mock<IUserService> _mockUserService;
         private readonly LoginService _loginService;
 
         public LoginServiceSendValidationEmailShould()
         {
             _mockUserRepository = new Mock<IUserRepository>();
             _mockEmailService = new Mock<IEmailService>();
-            _loginService = new LoginService(_mockUserRepository.Object, _mockEmailService.Object);
+            _mockSessionService = new Mock<ISessionService>();
+            _mockUserService = new Mock<IUserService>();
+            _loginService = new LoginService(_mockUserRepository.Object, _mockEmailService.Object, _mockSessionService.Object, _mockUserService.Object);
         }
 
         [Fact]

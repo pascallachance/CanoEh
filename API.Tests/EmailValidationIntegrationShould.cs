@@ -1,5 +1,6 @@
 using Domain.Models.Requests;
 using Domain.Services.Implementations;
+using Domain.Services.Interfaces;
 using Helpers.Common;
 using Infrastructure.Data;
 using Infrastructure.Repositories.Interfaces;
@@ -34,11 +35,13 @@ namespace API.Tests
             mockRepo.Setup(repo => repo.FindByUsernameAsync("testuser"))
                     .ReturnsAsync(existingUser);
 
-            var loginService = new LoginService(mockRepo.Object, mockEmailService.Object);
+            var mockSessionService = new Mock<ISessionService>();
+            var mockUserService = new Mock<IUserService>();
+            var loginService = new LoginService(mockRepo.Object, mockEmailService.Object, mockSessionService.Object, mockUserService.Object);
             var loginRequest = new LoginRequest { Username = "testuser", Password = "password123" };
 
             // Act
-            var result = await loginService.LoginAsync(loginRequest);
+            var result = await loginService.LoginAsync(loginRequest, null, null);
 
             // Assert
             Assert.True(result.IsFailure);
@@ -69,11 +72,25 @@ namespace API.Tests
             mockRepo.Setup(repo => repo.FindByUsernameAsync("testuser"))
                     .ReturnsAsync(existingUser);
 
-            var loginService = new LoginService(mockRepo.Object, mockEmailService.Object);
+            var mockSessionService = new Mock<ISessionService>();
+            var mockUserService = new Mock<IUserService>();
+            
+            // Setup session service to return successful session creation
+            var session = new Session 
+            { 
+                SessionId = Guid.NewGuid(), 
+                UserId = existingUser.ID, 
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddHours(24)
+            };
+            mockSessionService.Setup(s => s.CreateSessionAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+                             .ReturnsAsync(Result.Success(session));
+            
+            var loginService = new LoginService(mockRepo.Object, mockEmailService.Object, mockSessionService.Object, mockUserService.Object);
             var loginRequest = new LoginRequest { Username = "testuser", Password = "password123" };
 
             // Act
-            var result = await loginService.LoginAsync(loginRequest);
+            var result = await loginService.LoginAsync(loginRequest, null, null);
 
             // Assert
             Assert.True(result.IsSuccess);

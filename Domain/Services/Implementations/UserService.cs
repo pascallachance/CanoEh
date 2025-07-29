@@ -110,6 +110,24 @@ namespace Domain.Services.Implementations
             return Result.Success(userResponse);
         }
 
+        public async Task<Result<User?>> GetUserEntityAsync(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return Result.Failure<User?>("Username is required.", StatusCodes.Status400BadRequest);
+            }
+            var userFound = await _userRepository.FindByUsernameAsync(username);
+            if (userFound == null)
+            {
+                return Result.Success<User?>(null);
+            }
+            if (userFound.Deleted)
+            {
+                return Result.Success<User?>(null);
+            }
+            return Result.Success<User?>(userFound);
+        }
+
         public async Task<Result<UpdateUserResponse>> UpdateUserAsync(UpdateUserRequest updateRequest)
         {
             // Validate input

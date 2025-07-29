@@ -1,4 +1,4 @@
-﻿using Helpers.Common;
+using Helpers.Common;
 using Microsoft.AspNetCore.Http;
 
 namespace Domain.Models.Requests

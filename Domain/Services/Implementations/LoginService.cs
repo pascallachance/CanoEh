@@ -9,12 +9,14 @@ using Microsoft.AspNetCore.Http;
 
 namespace Domain.Services.Implementations
 {
-    public class LoginService(IUserRepository userRepository, IEmailService emailService) : ILoginService
+    public class LoginService(IUserRepository userRepository, IEmailService emailService, ISessionService sessionService, IUserService userService) : ILoginService
     {
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IEmailService _emailService = emailService;
+        private readonly ISessionService _sessionService = sessionService;
+        private readonly IUserService _userService = userService;
 
-        public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)
+        public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request, string? userAgent = null, string? ipAddress = null)
         {
             var validationResult = request.Validate();
             if (validationResult.IsFailure)
@@ -40,8 +42,17 @@ namespace Domain.Services.Implementations
                 return Result.Failure<LoginResponse>("Invalid username or password", StatusCodes.Status401Unauthorized);
             }
             
-            // Login successful - return empty LoginResponse (token generation handled in controller)
-            return Result.Success(new LoginResponse());
+            // Login successful - create a new session
+            var sessionResult = await _sessionService.CreateSessionAsync(foundUser.ID, userAgent, ipAddress);
+            if (sessionResult.IsFailure)
+            {
+                return Result.Failure<LoginResponse>("Login successful but failed to create session", StatusCodes.Status500InternalServerError);
+            }
+
+            return Result.Success(new LoginResponse 
+            { 
+                SessionId = sessionResult.Value?.SessionId 
+            });
         }
 
         public async Task<Result<bool>> SendValidationEmailAsync(string username)

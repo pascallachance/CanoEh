@@ -14,6 +14,7 @@ namespace API.Tests
         private readonly Mock<IConfiguration> _mockConfiguration;
         private readonly Mock<ILoginService> _mockLoginService;
         private readonly Mock<IUserService> _mockUserService;
+        private readonly Mock<ISessionService> _mockSessionService;
         private readonly LoginController _controller;
 
         public LogoutShould()
@@ -21,7 +22,8 @@ namespace API.Tests
             _mockConfiguration = new Mock<IConfiguration>();
             _mockLoginService = new Mock<ILoginService>();
             _mockUserService = new Mock<IUserService>();
-            _controller = new LoginController(_mockConfiguration.Object, _mockLoginService.Object, _mockUserService.Object);
+            _mockSessionService = new Mock<ISessionService>();
+            _controller = new LoginController(_mockConfiguration.Object, _mockLoginService.Object, _mockUserService.Object, _mockSessionService.Object);
         }
 
         [Fact]

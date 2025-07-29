@@ -6,7 +6,7 @@ namespace Domain.Services.Interfaces
 {
     public interface ILoginService
     {
-        Task<Result<LoginResponse>> LoginAsync(LoginRequest request);
+        Task<Result<LoginResponse>> LoginAsync(LoginRequest request, string? userAgent = null, string? ipAddress = null);
         Task<Result<bool>> SendValidationEmailAsync(string username);
     }
 }

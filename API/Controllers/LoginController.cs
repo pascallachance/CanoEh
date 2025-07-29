@@ -33,11 +33,11 @@ namespace API.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Capture client information
-            request.UserAgent = Request.Headers.UserAgent.ToString();
-            request.IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+            // Capture client information from headers
+            var userAgent = Request.Headers.UserAgent.ToString();
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
 
-            var loginResult = await _loginService.LoginAsync(request);
+            var loginResult = await _loginService.LoginAsync(request, userAgent, ipAddress);
             if (loginResult.IsFailure)
             {
                 return StatusCode(loginResult.ErrorCode ?? 501, loginResult.Error);

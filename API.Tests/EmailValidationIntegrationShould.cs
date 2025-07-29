@@ -41,7 +41,7 @@ namespace API.Tests
             var loginRequest = new LoginRequest { Username = "testuser", Password = "password123" };
 
             // Act
-            var result = await loginService.LoginAsync(loginRequest);
+            var result = await loginService.LoginAsync(loginRequest, null, null);
 
             // Assert
             Assert.True(result.IsFailure);
@@ -90,7 +90,7 @@ namespace API.Tests
             var loginRequest = new LoginRequest { Username = "testuser", Password = "password123" };
 
             // Act
-            var result = await loginService.LoginAsync(loginRequest);
+            var result = await loginService.LoginAsync(loginRequest, null, null);
 
             // Assert
             Assert.True(result.IsSuccess);

@@ -16,7 +16,7 @@ namespace Domain.Services.Implementations
         private readonly ISessionService _sessionService = sessionService;
         private readonly IUserService _userService = userService;
 
-        public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)
+        public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request, string? userAgent = null, string? ipAddress = null)
         {
             var validationResult = request.Validate();
             if (validationResult.IsFailure)
@@ -43,7 +43,7 @@ namespace Domain.Services.Implementations
             }
             
             // Login successful - create a new session
-            var sessionResult = await _sessionService.CreateSessionAsync(foundUser.ID, request.UserAgent, request.IpAddress);
+            var sessionResult = await _sessionService.CreateSessionAsync(foundUser.ID, userAgent, ipAddress);
             if (sessionResult.IsFailure)
             {
                 return Result.Failure<LoginResponse>("Login successful but failed to create session", StatusCodes.Status500InternalServerError);

@@ -58,7 +58,7 @@ namespace API.Tests
                 SessionId = sessionId
             };
 
-            _mockLoginService.Setup(s => s.LoginAsync(It.IsAny<LoginRequest>()))
+            _mockLoginService.Setup(s => s.LoginAsync(It.IsAny<LoginRequest>(), It.IsAny<string>(), It.IsAny<string>()))
                            .ReturnsAsync(Result.Success(loginResponse));
             _mockUserService.Setup(s => s.UpdateLastLoginAsync(It.IsAny<string>()))
                           .ReturnsAsync(Result.Success(true));

@@ -1,4 +1,4 @@
-﻿using Helpers.Common;
+using Helpers.Common;
 using Microsoft.AspNetCore.Http;
 
 namespace Domain.Models.Requests
@@ -7,8 +7,6 @@ namespace Domain.Models.Requests
     {
         public string? Username { get; set; }
         public string? Password { get; set; }
-        public string? UserAgent { get; set; }
-        public string? IpAddress { get; set; }
 
         public Result Validate()
         {

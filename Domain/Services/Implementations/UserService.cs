@@ -54,8 +54,16 @@ namespace Domain.Services.Implementations
                 });
 
                 // Send email validation
-                await _emailService.SendEmailValidationAsync(user.Email, user.Uname, user.EmailValidationToken!);
-                Debug.WriteLine($"Validation email sent to {user.Email}");
+                var result = await _emailService.SendEmailValidationAsync(user.Email, user.Uname, user.EmailValidationToken!);
+                if (result.IsFailure)
+                {
+                    Debug.WriteLine($"Email send failed: {result.Error}");
+                }
+                else
+                {
+                    Debug.WriteLine($"Validation email sent to {user.Email}");
+                }
+                    
             }
             catch (SmtpException smtpEx)
             {

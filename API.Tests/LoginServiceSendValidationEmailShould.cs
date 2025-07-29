@@ -44,7 +44,7 @@ namespace API.Tests
             _mockUserRepository.Setup(r => r.UpdateAsync(It.IsAny<User>()))
                              .ReturnsAsync((User u) => u);
             _mockEmailService.Setup(e => e.SendEmailValidationAsync(user.Email, user.Uname, It.IsAny<string>()))
-                           .ReturnsAsync(true);
+                              .ReturnsAsync(Result.Success());
 
             // Act
             var result = await _loginService.SendValidationEmailAsync(username);
@@ -166,7 +166,7 @@ namespace API.Tests
             _mockUserRepository.Setup(r => r.UpdateAsync(It.IsAny<User>()))
                              .ReturnsAsync((User u) => u);
             _mockEmailService.Setup(e => e.SendEmailValidationAsync(user.Email, user.Uname, It.IsAny<string>()))
-                           .ReturnsAsync(false);
+                             .ReturnsAsync(Result.Failure("Failed to send validation email."));
 
             // Act
             var result = await _loginService.SendValidationEmailAsync(username);

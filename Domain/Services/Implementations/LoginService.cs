@@ -75,7 +75,7 @@ namespace Domain.Services.Implementations
                 await _userRepository.UpdateAsync(user);
 
                 var emailSent = await _emailService.SendEmailValidationAsync(user.Email, user.Uname, user.EmailValidationToken);
-                if (!emailSent)
+                if (emailSent.IsFailure)
                 {
                     return Result.Failure<bool>("Failed to send validation email.", StatusCodes.Status500InternalServerError);
                 }

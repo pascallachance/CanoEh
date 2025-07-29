@@ -236,6 +236,31 @@ namespace Domain.Services.Implementations
             return Result.Success(true);
         }
 
+        public async Task<Result<bool>> LogoutAsync(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return Result.Failure<bool>("Username is required.", StatusCodes.Status400BadRequest);
+            }
+
+            var userToUpdate = await _userRepository.FindByUsernameAsync(username);
+            if (userToUpdate == null)
+            {
+                return Result.Failure<bool>("User not found.", StatusCodes.Status404NotFound);
+            }
+            if (userToUpdate.Deleted)
+            {
+                return Result.Failure<bool>("User is deleted.", StatusCodes.Status410Gone);
+            }
+
+            userToUpdate.Lastlogout = DateTime.UtcNow;
+            userToUpdate.Lastupdatedat = DateTime.UtcNow;
+            await _userRepository.UpdateAsync(userToUpdate);
+
+            Debug.WriteLine($"User {username} logged out successfully");
+            return Result.Success(true);
+        }
+
         public async Task<Result<bool>> ValidateEmailByTokenAsync(string token)
         {
             if (string.IsNullOrWhiteSpace(token))

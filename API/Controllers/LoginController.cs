@@ -72,6 +72,30 @@ namespace API.Controllers
         }
 
         [Authorize]
+        [HttpPost("logout")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Logout()
+        {
+            // Get username from JWT claims
+            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Invalid or missing authentication token.");
+            }
+
+            var result = await _userService.LogoutAsync(username);
+            if (result.IsFailure)
+            {
+                return StatusCode(result.ErrorCode ?? 500, result.Error);
+            }
+
+            return Ok(new { message = "Logged out successfully.", username });
+        }
+
+        [Authorize]
         [HttpGet("user/claims")]
         public IActionResult GetUserClaims()
         {

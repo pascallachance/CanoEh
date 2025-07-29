@@ -9,6 +9,7 @@
         public required string Email { get; set; }
         public string? Phone { get; set; }
         public DateTime? Lastlogin { get; set; }
+        public DateTime? Lastlogout { get; set; }
         public DateTime Createdat { get; set; }
         public DateTime? Lastupdatedat { get; set; }
         public required string Password { get; set; }

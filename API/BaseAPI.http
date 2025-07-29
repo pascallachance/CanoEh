@@ -44,3 +44,9 @@ Authorization: Bearer {{your_jwt_token_here}}
 }
 
 ###
+
+# Logout (requires authentication)
+POST {{WIredBrainCoffeeAPI_HostAddress}}/api/Login/logout
+Authorization: Bearer {{your_jwt_token_here}}
+
+###

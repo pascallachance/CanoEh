@@ -91,7 +91,7 @@ namespace API.Tests
 
             mockEmailService
                 .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(true);
+                .ReturnsAsync(Result.Success());
 
             var userService = new UserService(mockRepo.Object, mockEmailService.Object);
 
@@ -222,7 +222,7 @@ namespace API.Tests
 
             mockEmailService
                 .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(true);
+                .ReturnsAsync(Result.Success());
 
             var userService = new UserService(mockRepo.Object, mockEmailService.Object);
 
@@ -265,7 +265,7 @@ namespace API.Tests
 
             mockEmailService
                 .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(true);
+                .ReturnsAsync(Result.Success());
 
             var userService = new UserService(mockRepo.Object, mockEmailService.Object);
 

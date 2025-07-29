@@ -20,7 +20,6 @@ internal class Program
         var jwtSettings = builder.Configuration.GetSection("JwtSettings");
         var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Secret"]);
 
-        builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("ConnectionStrings"));
         builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
         builder.Services
             .AddAuthentication(options =>

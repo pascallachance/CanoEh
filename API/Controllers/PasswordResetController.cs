@@ -76,5 +76,16 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
             }
         }
+
+        [HttpGet("ResetPassword")]
+        public IActionResult ResetPassword([FromQuery] string token)
+        {
+            if (string.IsNullOrEmpty(token))
+                return BadRequest("Missing token.");
+
+            // Redirect to your frontend password reset page
+            var frontendUrl = $"https://yourfrontend.com/reset-password?token={Uri.EscapeDataString(token)}";
+            return Redirect(frontendUrl);
+        }
     }
 }

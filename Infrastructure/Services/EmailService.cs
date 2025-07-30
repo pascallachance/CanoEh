@@ -37,7 +37,7 @@ namespace Infrastructure.Services
                 var validationUrl = $"{_baseUrl}/api/EmailValidation/ValidateEmail/{validationToken}";
                 var body = $@"Hello {username},
 
-Thank you for registering with BaseApp! To complete your registration, please click the link below to validate your email address:
+Thank you for registering with CanoEh! To complete your registration, please click the link below to validate your email address:
 
 {validationUrl}
 
@@ -97,14 +97,14 @@ The CanoEh Team";
                 var resetUrl = $"{_baseUrl}/api/PasswordReset/ResetPassword?token={resetToken}";
                 var body = $@"Hello {username},
 
-You have requested to reset your password for your BaseApp account. To reset your password, please click the link below:
+You have requested to reset your password for your CanoEh account. To reset your password, please click the link below:
 
 {resetUrl}
 
 This link will expire in 24 hours. If you did not request a password reset, please ignore this email.
 
 Best regards,
-The BaseApp Team";
+The CanoEh Team";
 
                 using var smtp = new SmtpClient(_smtpServer, _smtpPort.Value)
                 {

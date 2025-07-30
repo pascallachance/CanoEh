@@ -26,5 +26,9 @@ namespace Domain.Services.Interfaces
         Task<Result<bool>> LogoutAsync(string username);
 
         Task<Result<ChangePasswordResponse>> ChangePasswordAsync(ChangePasswordRequest changePasswordRequest);
+
+        Task<Result<ForgotPasswordResponse>> ForgotPasswordAsync(ForgotPasswordRequest forgotPasswordRequest);
+
+        Task<Result<ResetPasswordResponse>> ResetPasswordAsync(ResetPasswordRequest resetPasswordRequest);
     }
 }

@@ -141,7 +141,9 @@ SET
     dbo.Users.lastupdatedat = @lastupdatedat,
     dbo.Users.deleted = @deleted,
     dbo.Users.validemail = @validemail,
-    dbo.Users.emailValidationToken = @emailValidationToken
+    dbo.Users.emailValidationToken = @emailValidationToken,
+    dbo.Users.passwordResetToken = @passwordResetToken,
+    dbo.Users.passwordResetTokenExpiry = @passwordResetTokenExpiry
 WHERE dbo.Users.id = @id";
 
             var parameters = new
@@ -158,6 +160,8 @@ WHERE dbo.Users.id = @id";
                 entity.Deleted,
                 entity.ValidEmail,
                 entity.EmailValidationToken,
+                entity.PasswordResetToken,
+                entity.PasswordResetTokenExpiry,
             };
             await dbConnection.ExecuteAsync(query, parameters);
             return entity;
@@ -232,6 +236,47 @@ SELECT TOP(1) *
 FROM dbo.Users 
 WHERE emailValidationToken = @token AND deleted = 0";
             return await dbConnection.QueryFirstOrDefaultAsync<User>(query, new { token });
+        }
+
+        public async Task<User?> FindByPasswordResetTokenAsync(string token)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            var query = @"
+SELECT TOP(1) * 
+FROM dbo.Users 
+WHERE passwordResetToken = @token AND deleted = 0 AND passwordResetTokenExpiry > @now";
+            return await dbConnection.QueryFirstOrDefaultAsync<User>(query, new { token, now = DateTime.UtcNow });
+        }
+
+        public async Task<bool> UpdatePasswordResetTokenAsync(string email, string token, DateTime expiry)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            var query = @"
+UPDATE dbo.Users 
+SET passwordResetToken = @token, passwordResetTokenExpiry = @expiry, lastupdatedat = @now
+WHERE email = @email AND deleted = 0";
+            var rowsAffected = await dbConnection.ExecuteAsync(query, new { email, token, expiry, now = DateTime.UtcNow });
+            return rowsAffected > 0;
+        }
+
+        public async Task<bool> ClearPasswordResetTokenAsync(string username)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            var query = @"
+UPDATE dbo.Users 
+SET passwordResetToken = NULL, passwordResetTokenExpiry = NULL, lastupdatedat = @now
+WHERE uname = @username AND deleted = 0";
+            var rowsAffected = await dbConnection.ExecuteAsync(query, new { username, now = DateTime.UtcNow });
+            return rowsAffected > 0;
         }
     }
 }

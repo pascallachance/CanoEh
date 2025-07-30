@@ -75,5 +75,65 @@ The CanoEh Team";
                 return Result.Failure($"Unexpected error while sending validation email: {ex.Message}");
             }
         }
+
+        public async Task<Result> SendPasswordResetAsync(string email, string username, string resetToken)
+        {
+            // Check configuration and return error messages if missing
+            if (string.IsNullOrWhiteSpace(_smtpServer))
+                return Result.Failure("EmailSettings:Host is not configured.");
+            if (string.IsNullOrWhiteSpace(_smtpUsername))
+                return Result.Failure("EmailSettings:Username is not configured.");
+            if (string.IsNullOrWhiteSpace(_smtpPassword))
+                return Result.Failure("EmailSettings:Password is not configured.");
+            if (string.IsNullOrWhiteSpace(_baseUrl))
+                return Result.Failure("App:BaseUrl is not configured.");
+            if (_smtpPort == null)
+                return Result.Failure("EmailSettings:Port is not configured or is invalid.");
+            if (_smtpEnableSsl == null)
+                return Result.Failure("EmailSettings:EnableSsl is not configured or is invalid.");
+
+            try
+            {
+                var resetUrl = $"{_baseUrl}/api/PasswordReset/ResetPassword?token={resetToken}";
+                var body = $@"Hello {username},
+
+You have requested to reset your password for your BaseApp account. To reset your password, please click the link below:
+
+{resetUrl}
+
+This link will expire in 24 hours. If you did not request a password reset, please ignore this email.
+
+Best regards,
+The BaseApp Team";
+
+                using var smtp = new SmtpClient(_smtpServer, _smtpPort.Value)
+                {
+                    EnableSsl = _smtpEnableSsl.Value,
+                    Credentials = new System.Net.NetworkCredential(_smtpUsername, _smtpPassword)
+                };
+                var mail = new MailMessage(_smtpUsername, email)
+                {
+                    From = new MailAddress(_fromEmail ?? "Unknown", _fromName),
+                    Subject = "Password Reset Request",
+                    Body = body
+                };
+                await smtp.SendMailAsync(mail);
+
+                Debug.WriteLine($"Password reset email sent to {email} for user {username} with token {resetToken}");
+                return Result.Success();
+            }
+            catch (SmtpException smtpEx)
+            {
+                return Result.Failure($"SMTP error while sending password reset email: {smtpEx.Message}");
+            }
+            catch (System.Net.Http.HttpRequestException httpEx)
+            {
+                return Result.Failure($"HTTP error while sending password reset email: {httpEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"Unexpected error while sending password reset email: {ex.Message}");
+            }
+        }
     }
 }

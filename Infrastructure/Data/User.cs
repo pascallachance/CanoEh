@@ -16,5 +16,7 @@
         public bool Deleted { get; set; }
         public bool ValidEmail { get; set; }
         public string? EmailValidationToken { get; set; }
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetTokenExpiry { get; set; }
     }
 }

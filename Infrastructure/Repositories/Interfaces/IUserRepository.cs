@@ -10,5 +10,8 @@ namespace Infrastructure.Repositories.Interfaces
         Task<bool> ExistsByUsernameAsync(string username);
         Task<bool> ExistsByEmailAsync(string email);
         Task<User?> FindByEmailValidationTokenAsync(string token);
+        Task<User?> FindByPasswordResetTokenAsync(string token);
+        Task<bool> UpdatePasswordResetTokenAsync(string email, string token, DateTime expiry);
+        Task<bool> ClearPasswordResetTokenAsync(string username);
     }
 }

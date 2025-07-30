@@ -362,6 +362,109 @@ namespace Domain.Services.Implementations
             return Result.Success(response);
         }
 
+        public async Task<Result<ForgotPasswordResponse>> ForgotPasswordAsync(ForgotPasswordRequest forgotPasswordRequest)
+        {
+            var validationResult = forgotPasswordRequest.Validate();
+            if (validationResult.IsFailure)
+            {
+                return Result.Failure<ForgotPasswordResponse>(
+                    validationResult.Error ?? "Validation failed.", 
+                    validationResult.ErrorCode ?? StatusCodes.Status400BadRequest
+                );
+            }
+
+            // Find user by email - don't reveal if email exists or not for security
+            var user = await _userRepository.FindByEmailAsync(forgotPasswordRequest.Email!);
+            
+            // Always return success response to prevent email enumeration attacks
+            var response = new ForgotPasswordResponse
+            {
+                Email = forgotPasswordRequest.Email!,
+                Message = "If the email address exists in our system, you will receive a password reset link shortly."
+            };
+
+            // Only send email if user exists and is not deleted
+            if (user != null && !user.Deleted)
+            {
+                // Generate password reset token
+                var resetToken = GenerateSecureToken();
+                var tokenExpiry = DateTime.UtcNow.AddHours(24); // Token expires in 24 hours
+
+                // Update user with reset token
+                var updateResult = await _userRepository.UpdatePasswordResetTokenAsync(user.Email, resetToken, tokenExpiry);
+                if (updateResult)
+                {
+                    // Send password reset email
+                    var emailResult = await _emailService.SendPasswordResetAsync(user.Email, user.Uname, resetToken);
+                    if (emailResult.IsFailure)
+                    {
+                        Debug.WriteLine($"Failed to send password reset email to {user.Email}: {emailResult.Error}");
+                        // Don't return error to user for security reasons
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"Password reset email sent to {user.Email}");
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine($"Failed to update password reset token for user {user.Email}");
+                    // Don't return error to user for security reasons
+                }
+            }
+            else
+            {
+                Debug.WriteLine($"Password reset requested for non-existent or deleted email: {forgotPasswordRequest.Email}");
+            }
+
+            return Result.Success(response);
+        }
+
+        public async Task<Result<ResetPasswordResponse>> ResetPasswordAsync(ResetPasswordRequest resetPasswordRequest)
+        {
+            var validationResult = resetPasswordRequest.Validate();
+            if (validationResult.IsFailure)
+            {
+                return Result.Failure<ResetPasswordResponse>(
+                    validationResult.Error ?? "Validation failed.", 
+                    validationResult.ErrorCode ?? StatusCodes.Status400BadRequest
+                );
+            }
+
+            // Find user by reset token
+            var user = await _userRepository.FindByPasswordResetTokenAsync(resetPasswordRequest.Token!);
+            if (user == null)
+            {
+                return Result.Failure<ResetPasswordResponse>("Invalid or expired reset token.", StatusCodes.Status400BadRequest);
+            }
+            if (user.Deleted)
+            {
+                return Result.Failure<ResetPasswordResponse>("User account is no longer active.", StatusCodes.Status410Gone);
+            }
+
+            // Hash the new password
+            var hasher = new PasswordHasher();
+            user.Password = hasher.HashPassword(resetPasswordRequest.NewPassword!);
+            user.Lastupdatedat = DateTime.UtcNow;
+
+            // Clear the reset token
+            user.PasswordResetToken = null;
+            user.PasswordResetTokenExpiry = null;
+
+            // Update user
+            await _userRepository.UpdateAsync(user);
+
+            // Create response
+            var response = new ResetPasswordResponse
+            {
+                Message = "Password has been reset successfully.",
+                ResetAt = DateTime.UtcNow
+            };
+
+            Debug.WriteLine($"Password reset successfully for user {user.Uname}");
+            return Result.Success(response);
+        }
+
         private static string GenerateSecureToken()
         {
             // Generate a cryptographically secure random token

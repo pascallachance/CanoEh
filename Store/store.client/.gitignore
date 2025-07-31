@@ -1,3 +1,12 @@
+# Ignore build artifacts and generated files
+node_modules/
+dist/
+build/
+.env
+   obj/
+   bin/
+   *.log
+
 # Logs
 logs
 *.log

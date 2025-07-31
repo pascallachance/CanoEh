@@ -30,5 +30,9 @@ namespace Domain.Services.Interfaces
         Task<Result<ForgotPasswordResponse>> ForgotPasswordAsync(ForgotPasswordRequest forgotPasswordRequest);
 
         Task<Result<ResetPasswordResponse>> ResetPasswordAsync(ResetPasswordRequest resetPasswordRequest);
+
+        Task<Result<SendRestoreUserEmailResponse>> SendRestoreUserEmailAsync(SendRestoreUserEmailRequest sendRestoreUserEmailRequest);
+
+        Task<Result<RestoreUserResponse>> RestoreUserAsync(RestoreUserRequest restoreUserRequest);
     }
 }

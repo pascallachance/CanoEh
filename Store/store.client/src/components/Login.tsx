@@ -47,7 +47,7 @@ function Login({ onLoginSuccess }: LoginProps) {
                 password
             };
 
-            const response = await fetch('/api/login/login', {
+            const response = await fetch('/api/store/demologin/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -138,6 +138,11 @@ function Login({ onLoginSuccess }: LoginProps) {
                 </button>
                 
                 <div className="security-info">
+                    <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#e7f3ff', borderRadius: '5px', fontSize: '14px' }}>
+                        <strong>Demo Credentials:</strong><br />
+                        Username: <code>testuser123</code><br />
+                        Password: <code>password123</code>
+                    </div>
                     <p><small>🔒 This login uses secure HTTP-only cookies and CSRF protection</small></p>
                     <p><small>🌐 Ensure you're using HTTPS in production</small></p>
                 </div>

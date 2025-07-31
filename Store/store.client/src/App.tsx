@@ -31,7 +31,7 @@ function App() {
 
     const checkAuthStatus = async () => {
         try {
-            const response = await fetch('/api/login/status', {
+            const response = await fetch('/api/store/demologin/status', {
                 credentials: 'include', // Include cookies
             });
             
@@ -55,7 +55,7 @@ function App() {
 
     const handleLogout = async () => {
         try {
-            const response = await fetch('/api/login/logout', {
+            const response = await fetch('/api/store/demologin/logout', {
                 method: 'POST',
                 credentials: 'include',
                 headers: {

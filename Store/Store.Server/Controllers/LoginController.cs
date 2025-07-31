@@ -10,7 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Store.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/store/[controller]")]
     public class LoginController(
         IConfiguration configuration,
         ILoginService loginService,

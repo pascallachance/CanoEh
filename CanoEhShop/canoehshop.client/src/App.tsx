@@ -47,10 +47,17 @@ function App() {
     );
 
     async function populateWeatherData() {
-        const response = await fetch('weatherforecast');
-        if (response.ok) {
-            const data = await response.json();
-            setForecasts(data);
+        try {
+            const response = await fetch('weatherforecast');
+            if (response.ok) {
+                const data = await response.json();
+                setForecasts(data);
+                setError(null); // Clear any previous errors
+            } else {
+                setError(`Failed to fetch data: ${response.status} ${response.statusText}`);
+            }
+        } catch (err) {
+            setError(`Network error: ${err.message}`);
         }
     }
 }

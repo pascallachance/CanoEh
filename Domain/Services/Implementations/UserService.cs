@@ -465,6 +465,97 @@ namespace Domain.Services.Implementations
             return Result.Success(response);
         }
 
+        public async Task<Result<SendRestoreUserEmailResponse>> SendRestoreUserEmailAsync(SendRestoreUserEmailRequest sendRestoreUserEmailRequest)
+        {
+            var validationResult = sendRestoreUserEmailRequest.Validate();
+            if (validationResult.IsFailure)
+            {
+                return Result.Failure<SendRestoreUserEmailResponse>(validationResult.Error!, validationResult.ErrorCode!.Value);
+            }
+
+            try
+            {
+                // Find deleted user by email
+                var deletedUser = await _userRepository.FindDeletedByEmailAsync(sendRestoreUserEmailRequest.Email!);
+                
+                if (deletedUser != null)
+                {
+                    // Generate restore token and set expiry (24 hours)
+                    var restoreToken = GenerateSecureToken();
+                    var tokenExpiry = DateTime.UtcNow.AddHours(24);
+
+                    // Update user with restore token
+                    var tokenUpdateResult = await _userRepository.UpdateRestoreUserTokenAsync(sendRestoreUserEmailRequest.Email!, restoreToken, tokenExpiry);
+                    
+                    if (tokenUpdateResult)
+                    {
+                        // Send restore email
+                        var emailResult = await _emailService.SendRestoreUserEmailAsync(sendRestoreUserEmailRequest.Email!, deletedUser.Uname, restoreToken);
+                        
+                        if (emailResult.IsFailure)
+                        {
+                            Debug.WriteLine($"Failed to send restore email: {emailResult.Error}");
+                            // Don't expose email sending failures to the client for security
+                        }
+                    }
+                }
+
+                // Always return success for security reasons (don't reveal if email exists or not)
+                var response = new SendRestoreUserEmailResponse
+                {
+                    Email = sendRestoreUserEmailRequest.Email!
+                };
+
+                return Result.Success(response);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in SendRestoreUserEmailAsync: {ex.Message}");
+                return Result.Failure<SendRestoreUserEmailResponse>("An error occurred while processing the restore request.", 500);
+            }
+        }
+
+        public async Task<Result<RestoreUserResponse>> RestoreUserAsync(RestoreUserRequest restoreUserRequest)
+        {
+            var validationResult = restoreUserRequest.Validate();
+            if (validationResult.IsFailure)
+            {
+                return Result.Failure<RestoreUserResponse>(validationResult.Error!, validationResult.ErrorCode!.Value);
+            }
+
+            try
+            {
+                // Find deleted user by restore token
+                var user = await _userRepository.FindByRestoreUserTokenAsync(restoreUserRequest.Token!);
+                
+                if (user == null)
+                {
+                    return Result.Failure<RestoreUserResponse>("Invalid or expired restore token.", 404);
+                }
+
+                // Restore the user (set deleted = false and clear token)
+                var restoreResult = await _userRepository.RestoreUserByTokenAsync(restoreUserRequest.Token!);
+                
+                if (!restoreResult)
+                {
+                    return Result.Failure<RestoreUserResponse>("Failed to restore user account.", 500);
+                }
+
+                var response = new RestoreUserResponse
+                {
+                    Username = user.Uname
+                };
+
+                Debug.WriteLine($"User {user.Uname} has been successfully restored");
+                return Result.Success(response);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in RestoreUserAsync: {ex.Message}");
+                return Result.Failure<RestoreUserResponse>("An error occurred while restoring the user account.", 500);
+            }
+        }
+
         private static string GenerateSecureToken()
         {
             // Generate a cryptographically secure random token

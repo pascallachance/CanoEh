@@ -6,5 +6,6 @@ namespace Infrastructure.Services
     {
         Task<Result> SendEmailValidationAsync(string email, string username, string validationToken);
         Task<Result> SendPasswordResetAsync(string email, string username, string resetToken);
+        Task<Result> SendRestoreUserEmailAsync(string email, string username, string restoreToken);
     }
 }

@@ -143,7 +143,9 @@ SET
     dbo.Users.validemail = @validemail,
     dbo.Users.emailValidationToken = @emailValidationToken,
     dbo.Users.passwordResetToken = @passwordResetToken,
-    dbo.Users.passwordResetTokenExpiry = @passwordResetTokenExpiry
+    dbo.Users.passwordResetTokenExpiry = @passwordResetTokenExpiry,
+    dbo.Users.restoreUserToken = @restoreUserToken,
+    dbo.Users.restoreUserTokenExpiry = @restoreUserTokenExpiry
 WHERE dbo.Users.id = @id";
 
             var parameters = new
@@ -162,6 +164,8 @@ WHERE dbo.Users.id = @id";
                 entity.EmailValidationToken,
                 entity.PasswordResetToken,
                 entity.PasswordResetTokenExpiry,
+                entity.RestoreUserToken,
+                entity.RestoreUserTokenExpiry,
             };
             await dbConnection.ExecuteAsync(query, parameters);
             return entity;
@@ -276,6 +280,60 @@ UPDATE dbo.Users
 SET passwordResetToken = NULL, passwordResetTokenExpiry = NULL, lastupdatedat = @now
 WHERE uname = @username AND deleted = 0";
             var rowsAffected = await dbConnection.ExecuteAsync(query, new { username, now = DateTime.UtcNow });
+            return rowsAffected > 0;
+        }
+
+        public async Task<User?> FindDeletedByEmailAsync(string email)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            var query = @"
+SELECT TOP(1) * 
+FROM dbo.Users 
+WHERE email = @email AND deleted = 1";
+            return await dbConnection.QueryFirstOrDefaultAsync<User>(query, new { email });
+        }
+
+        public async Task<User?> FindByRestoreUserTokenAsync(string token)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            var query = @"
+SELECT TOP(1) * 
+FROM dbo.Users 
+WHERE restoreUserToken = @token AND deleted = 1 AND restoreUserTokenExpiry > @now";
+            return await dbConnection.QueryFirstOrDefaultAsync<User>(query, new { token, now = DateTime.UtcNow });
+        }
+
+        public async Task<bool> UpdateRestoreUserTokenAsync(string email, string token, DateTime expiry)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            var query = @"
+UPDATE dbo.Users 
+SET restoreUserToken = @token, restoreUserTokenExpiry = @expiry, lastupdatedat = @now
+WHERE email = @email AND deleted = 1";
+            var rowsAffected = await dbConnection.ExecuteAsync(query, new { email, token, expiry, now = DateTime.UtcNow });
+            return rowsAffected > 0;
+        }
+
+        public async Task<bool> RestoreUserByTokenAsync(string token)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            var query = @"
+UPDATE dbo.Users 
+SET deleted = 0, restoreUserToken = NULL, restoreUserTokenExpiry = NULL, lastupdatedat = @now
+WHERE restoreUserToken = @token AND deleted = 1 AND restoreUserTokenExpiry > @now";
+            var rowsAffected = await dbConnection.ExecuteAsync(query, new { token, now = DateTime.UtcNow });
             return rowsAffected > 0;
         }
     }

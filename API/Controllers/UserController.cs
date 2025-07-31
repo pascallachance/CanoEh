@@ -215,5 +215,72 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Sends a restore account email to a deleted user.
+        /// </summary>
+        /// <param name="sendRestoreUserEmailRequest">The email address of the deleted user.</param>
+        /// <returns>Returns a success message regardless of whether the email exists for security reasons.</returns>
+        [HttpPost("SendRestoreUserEmail")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SendRestoreUserEmailResponse))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> SendRestoreUserEmail([FromBody] SendRestoreUserEmailRequest sendRestoreUserEmailRequest)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var result = await _userService.SendRestoreUserEmailAsync(sendRestoreUserEmailRequest);
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
+                }
+
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Restores a deleted user account using a restore token.
+        /// </summary>
+        /// <param name="restoreUserRequest">The restore token received via email.</param>
+        /// <returns>Returns success if the user account is restored.</returns>
+        [HttpPost("RestoreUser")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RestoreUserResponse))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> RestoreUser([FromBody] RestoreUserRequest restoreUserRequest)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var result = await _userService.RestoreUserAsync(restoreUserRequest);
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
+                }
+
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+            }
+        }
     }
 }

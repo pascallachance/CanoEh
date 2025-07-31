@@ -135,5 +135,65 @@ The CanoEh Team";
                 return Result.Failure($"Unexpected error while sending password reset email: {ex.Message}");
             }
         }
+
+        public async Task<Result> SendRestoreUserEmailAsync(string email, string username, string restoreToken)
+        {
+            // Check configuration and return error messages if missing
+            if (string.IsNullOrWhiteSpace(_smtpServer))
+                return Result.Failure("EmailSettings:Host is not configured.");
+            if (string.IsNullOrWhiteSpace(_smtpUsername))
+                return Result.Failure("EmailSettings:Username is not configured.");
+            if (string.IsNullOrWhiteSpace(_smtpPassword))
+                return Result.Failure("EmailSettings:Password is not configured.");
+            if (string.IsNullOrWhiteSpace(_baseUrl))
+                return Result.Failure("App:BaseUrl is not configured.");
+            if (_smtpPort == null)
+                return Result.Failure("EmailSettings:Port is not configured or is invalid.");
+            if (_smtpEnableSsl == null)
+                return Result.Failure("EmailSettings:EnableSsl is not configured or is invalid.");
+
+            try
+            {
+                var restoreUrl = $"{_baseUrl}/api/User/RestoreUser?token={restoreToken}";
+                var body = $@"Hello {username},
+
+You have requested to restore your deleted CanoEh account. To restore your account, please click the link below:
+
+{restoreUrl}
+
+This link will expire in 24 hours. If you did not request account restoration, please ignore this email.
+
+Best regards,
+The CanoEh Team";
+
+                using var smtp = new SmtpClient(_smtpServer, _smtpPort.Value)
+                {
+                    EnableSsl = _smtpEnableSsl.Value,
+                    Credentials = new System.Net.NetworkCredential(_smtpUsername, _smtpPassword)
+                };
+                var mail = new MailMessage(_smtpUsername, email)
+                {
+                    From = new MailAddress(_fromEmail ?? "Unknown", _fromName),
+                    Subject = "Account Restoration Request",
+                    Body = body
+                };
+                await smtp.SendMailAsync(mail);
+
+                Debug.WriteLine($"Restore account email sent to {email} for user {username} with token {restoreToken}");
+                return Result.Success();
+            }
+            catch (SmtpException smtpEx)
+            {
+                return Result.Failure($"SMTP error while sending restore account email: {smtpEx.Message}");
+            }
+            catch (System.Net.Http.HttpRequestException httpEx)
+            {
+                return Result.Failure($"HTTP error while sending restore account email: {httpEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"Unexpected error while sending restore account email: {ex.Message}");
+            }
+        }
     }
 }

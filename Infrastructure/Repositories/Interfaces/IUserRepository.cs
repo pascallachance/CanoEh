@@ -13,5 +13,9 @@ namespace Infrastructure.Repositories.Interfaces
         Task<User?> FindByPasswordResetTokenAsync(string token);
         Task<bool> UpdatePasswordResetTokenAsync(string email, string token, DateTime expiry);
         Task<bool> ClearPasswordResetTokenAsync(string username);
+        Task<User?> FindDeletedByEmailAsync(string email);
+        Task<User?> FindByRestoreUserTokenAsync(string token);
+        Task<bool> UpdateRestoreUserTokenAsync(string email, string token, DateTime expiry);
+        Task<bool> RestoreUserByTokenAsync(string token);
     }
 }

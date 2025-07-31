@@ -18,5 +18,7 @@
         public string? EmailValidationToken { get; set; }
         public string? PasswordResetToken { get; set; }
         public DateTime? PasswordResetTokenExpiry { get; set; }
+        public string? RestoreUserToken { get; set; }
+        public DateTime? RestoreUserTokenExpiry { get; set; }
     }
 }

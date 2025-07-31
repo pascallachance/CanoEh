@@ -1,0 +1,149 @@
+import { useState } from 'react';
+import './Login.css';
+
+interface LoginRequest {
+    username: string;
+    password: string;
+}
+
+interface LoginResponse {
+    message: string;
+    sessionId: string;
+    csrfToken: string;
+}
+
+interface LoginProps {
+    onLoginSuccess?: () => void;
+}
+
+function Login({ onLoginSuccess }: LoginProps) {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
+
+    const getCsrfToken = (): string => {
+        // Get CSRF token from cookie for API calls
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'X-CSRF-Token') {
+                return value;
+            }
+        }
+        return '';
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+        setSuccess(false);
+
+        try {
+            const loginRequest: LoginRequest = {
+                username,
+                password
+            };
+
+            const response = await fetch('/api/login/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': getCsrfToken(), // Include CSRF token if available
+                },
+                credentials: 'include', // Important: Include cookies in request
+                body: JSON.stringify(loginRequest),
+            });
+
+            if (response.ok) {
+                const result: LoginResponse = await response.json();
+                setSuccess(true);
+                console.log('Login successful:', result);
+                
+                // Store CSRF token for future requests (stored in cookie by server)
+                console.log('CSRF Token received:', result.csrfToken);
+                
+                // Notify parent component of successful login
+                if (onLoginSuccess) {
+                    setTimeout(() => onLoginSuccess(), 1500); // Small delay to show success message
+                }
+            } else {
+                const errorText = await response.text();
+                setError(errorText || 'Login failed');
+            }
+        } catch (err) {
+            setError('Network error occurred. Please try again.');
+            console.error('Login error:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (success) {
+        return (
+            <div className="login-container">
+                <div className="login-form">
+                    <h2>Login Successful!</h2>
+                    <p>You have been successfully authenticated.</p>
+                    <p>Your session is now secured with HTTP-only cookies.</p>
+                    <p>Redirecting...</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="login-container">
+            <form className="login-form" onSubmit={handleSubmit}>
+                <h2>Store Login</h2>
+                
+                {error && <div className="error-message">{error}</div>}
+                
+                <div className="form-group">
+                    <label htmlFor="username">Username:</label>
+                    <input
+                        type="text"
+                        id="username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                        minLength={8}
+                        placeholder="Enter your username (min 8 characters)"
+                        autoComplete="username"
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="password">Password:</label>
+                    <input
+                        type="password"
+                        id="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={8}
+                        placeholder="Enter your password (min 8 characters)"
+                        autoComplete="current-password"
+                    />
+                </div>
+
+                <button
+                    type="submit"
+                    className="connect-button"
+                    disabled={loading}
+                >
+                    {loading ? 'Connecting...' : 'Connect'}
+                </button>
+                
+                <div className="security-info">
+                    <p><small>🔒 This login uses secure HTTP-only cookies and CSRF protection</small></p>
+                    <p><small>🌐 Ensure you're using HTTPS in production</small></p>
+                </div>
+            </form>
+        </div>
+    );
+}
+
+export default Login;

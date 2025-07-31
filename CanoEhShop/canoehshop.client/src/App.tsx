@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import './App.css';
+import Login from './components/Login';
 
 interface Forecast {
     date: string;
@@ -10,9 +11,16 @@ interface Forecast {
 
 function App() {
     const [forecasts, setForecasts] = useState<Forecast[]>();
+    const [error, setError] = useState<string | null>(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
-        populateWeatherData();
+        // Check if user is already logged in
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            setIsLoggedIn(true);
+            populateWeatherData();
+        }
     }, []);
 
     const contents = forecasts === undefined
@@ -38,10 +46,32 @@ function App() {
             </tbody>
         </table>;
 
+    const handleLogout = () => {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('sessionId');
+        setIsLoggedIn(false);
+        setForecasts(undefined);
+    };
+
+    const handleLoginSuccess = () => {
+        setIsLoggedIn(true);
+        populateWeatherData();
+    };
+
+    if (!isLoggedIn) {
+        return <Login onLoginSuccess={handleLoginSuccess} />;
+    }
+
     return (
         <div>
-            <h1 id="tableLabel">Weather forecast</h1>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h1 id="tableLabel">Weather forecast</h1>
+                <button onClick={handleLogout} style={{ padding: '0.5rem 1rem', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                    Logout
+                </button>
+            </div>
             <p>This component demonstrates fetching data from the server.</p>
+            {error && <p style={{ color: 'red' }}>Error: {error}</p>}
             {contents}
         </div>
     );
@@ -57,7 +87,7 @@ function App() {
                 setError(`Failed to fetch data: ${response.status} ${response.statusText}`);
             }
         } catch (err) {
-            setError(`Network error: ${err.message}`);
+            setError(`Network error: ${err instanceof Error ? err.message : 'Unknown error'}`);
         }
     }
 }

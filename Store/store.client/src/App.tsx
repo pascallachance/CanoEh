@@ -47,10 +47,18 @@ function App() {
     );
 
     async function populateWeatherData() {
-        const response = await fetch('weatherforecast');
-        if (response.ok) {
-            const data = await response.json();
-            setForecasts(data);
+        try {
+            const response = await fetch('weatherforecast');
+            if (response.ok) {
+                const data = await response.json();
+                setForecasts(data);
+            } else {
+                console.error(`Failed to fetch weather data: ${response.status} ${response.statusText}`);
+                alert('Failed to fetch weather data. Please try again later.');
+            }
+        } catch (error) {
+            console.error('An error occurred while fetching weather data:', error);
+            alert('An error occurred while fetching weather data. Please check your network connection and try again.');
         }
     }
 }

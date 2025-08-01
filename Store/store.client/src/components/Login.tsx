@@ -137,10 +137,12 @@ function Login({ onLoginSuccess }: LoginProps) {
                     >
                         {loading ? 'Connecting...' : 'Connect'}
                     </button>
-                
+                    <div className="separator"></div>
                     <div className="other-options">
-                        <a href="">Create account?</a>
-                        <a href="">Forgot Password?</a>
+                        <a href="/CreateUser" className="other-options">
+                            Create account?
+                        </a>
+                        <a href="/RestorePassword">Forgot Password?</a>
                     </div>
                 </form>
             </div>

@@ -46,8 +46,7 @@ function Login({ onLoginSuccess }: LoginProps) {
                 username,
                 password
             };
-
-            const response = await fetch('/api/store/demologin/login', {
+            const response = await fetch('https://localhost:7182/api/Login/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -96,57 +95,54 @@ function Login({ onLoginSuccess }: LoginProps) {
 
     return (
         <div className="login-container">
-            <form className="login-form" onSubmit={handleSubmit}>
-                <h2>Store Login</h2>
-                
-                {error && <div className="error-message">{error}</div>}
-                
-                <div className="form-group">
-                    <label htmlFor="username">Username:</label>
-                    <input
-                        type="text"
-                        id="username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                        minLength={8}
-                        placeholder="Enter your username (min 8 characters)"
-                        autoComplete="username"
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="password">Password:</label>
-                    <input
-                        type="password"
-                        id="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        minLength={8}
-                        placeholder="Enter your password (min 8 characters)"
-                        autoComplete="current-password"
-                    />
-                </div>
-
-                <button
-                    type="submit"
-                    className="connect-button"
-                    disabled={loading}
-                >
-                    {loading ? 'Connecting...' : 'Connect'}
-                </button>
-                
-                <div className="security-info">
-                    <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#e7f3ff', borderRadius: '5px', fontSize: '14px' }}>
-                        <strong>Demo Credentials:</strong><br />
-                        Username: <code>testuser123</code><br />
-                        Password: <code>password123</code>
+            <div style={{ width: "100%" }}>
+                <h1 className="login-title">CanoEh!</h1>
+                <form className="login-form" onSubmit={handleSubmit}>
+                    <h2>Sign in or create account</h2>
+                    <div className="form-group">
+                        <label htmlFor="username">Username:</label>
+                        <input
+                            type="text"
+                            id="username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                            minLength={8}
+                            placeholder="Enter your username (min 8 characters)"
+                            autoComplete="username"
+                        />
                     </div>
-                    <p><small>🔒 This login uses secure HTTP-only cookies and CSRF protection</small></p>
-                    <p><small>🌐 Ensure you're using HTTPS in production</small></p>
-                </div>
-            </form>
+
+                    <div className="form-group">
+                        <label htmlFor="password">Password:</label>
+                        <input
+                            type="password"
+                            id="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            minLength={8}
+                            placeholder="Enter your password (min 8 characters)"
+                            autoComplete="current-password"
+                        />
+                    </div>
+
+                    {error && <div className="error-message">{error}</div>}
+
+                    <button
+                        type="submit"
+                        className="connect-button"
+                        disabled={loading}
+                    >
+                        {loading ? 'Connecting...' : 'Connect'}
+                    </button>
+                
+                    <div className="other-options">
+                        <a href="">Create account?</a>
+                        <a href="">Forgot Password?</a>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }

@@ -44,6 +44,15 @@ internal class Program
                 };
             });
 
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+                policy.WithOrigins("https://localhost:64941") // <-- Add your React app's URL here
+                      .AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials());
+        });
+
         // Register services
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<ILoginService, LoginService>();
@@ -111,6 +120,8 @@ internal class Program
          
         app.UseAuthentication();
         app.UseAuthorization();
+
+        app.UseCors();
 
         app.MapControllers();
         app.MapDefaultControllerRoute();

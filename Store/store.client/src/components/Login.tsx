@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './Login.css';
 
 interface LoginRequest {
@@ -26,7 +27,7 @@ function Login({ onLoginSuccess }: LoginProps) {
     const getCsrfToken = (): string => {
         // Get CSRF token from cookie for API calls
         const cookies = document.cookie.split(';');
-        for (let cookie of cookies) {
+        for (const cookie of cookies) {
             const [name, value] = cookie.trim().split('=');
             if (name === 'X-CSRF-Token') {
                 return value;

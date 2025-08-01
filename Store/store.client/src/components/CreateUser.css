@@ -3,18 +3,20 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-width: 50vh;
+    background: linear-gradient(135deg, #f000 0%, #f000 100%);
     padding: 20px;
 }
 
 .createuser-form {
     background: white;
-    padding: 40px;
+    padding: 20px 26px 20px 26px;
     border-radius: 10px;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 450px;
+    max-width: 400px;
     text-align: center;
+    border: 1px solid #e0dede;
 }
 
 .createuser-form h2 {
@@ -22,6 +24,12 @@
     color: #333;
     font-size: 28px;
     font-weight: 600;
+}
+
+.create-user-title {
+    margin: 0 0 5px 0;
+    text-align: center;
+    padding-left: 0px;
 }
 
 .form-group {
@@ -54,12 +62,12 @@
 
 .complete-button {
     width: 100%;
-    padding: 12px;
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    padding: 8px 16px 8px 16px;
+    background: linear-gradient(135deg, #f00 0%, #f00 100%);
     color: white;
     border: none;
-    border-radius: 5px;
-    font-size: 18px;
+    border-radius: 25px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -68,7 +76,7 @@
 
 .complete-button:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
 }
 
 .complete-button:disabled {

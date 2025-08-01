@@ -4,20 +4,12 @@ import './App.css';
 import Login from './components/Login';
 import CreateUser from './components/CreateUser';
 
-interface Forecast {
-    date: string;
-    temperatureC: number;
-    temperatureF: number;
-    summary: string;
-}
-
 interface AuthStatus {
     isAuthenticated: boolean;
     username?: string;
 }
 
 function App() {
-    const [forecasts, setForecasts] = useState<Forecast[]>();
     const [authStatus, setAuthStatus] = useState<AuthStatus>({ isAuthenticated: false });
     const [authLoading, setAuthLoading] = useState(true);
 
@@ -27,7 +19,7 @@ function App() {
 
     useEffect(() => {
         if (authStatus.isAuthenticated) {
-            populateWeatherData();
+            displaywelcome();
         }
     }, [authStatus.isAuthenticated]);
 
@@ -67,33 +59,17 @@ function App() {
             
             if (response.ok) {
                 setAuthStatus({ isAuthenticated: false });
-                setForecasts(undefined);
             }
         } catch (error) {
             console.error('Logout error:', error);
         }
     };
 
-    async function populateWeatherData() {
+    async function displaywelcome() {
         try {
-            const response = await fetch('weatherforecast', {
-                credentials: 'include', // Include cookies for authenticated requests
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setForecasts(data);
-            } else {
-                console.error(`Failed to fetch weather data: ${response.status} ${response.statusText}`);
-                if (response.status === 401) {
-                    // Token expired or invalid, update auth status
-                    setAuthStatus({ isAuthenticated: false });
-                } else {
-                    alert('Failed to fetch weather data. Please try again later.');
-                }
-            }
         } catch (error) {
-            console.error('An error occurred while fetching weather data:', error);
-            alert('An error occurred while fetching weather data. Please check your network connection and try again.');
+            console.error('An error occurred:', error);
+            alert('An error occurred. Please check your network connection and try again.');
         }
     }
 
@@ -112,36 +88,12 @@ function App() {
             <Router>
                 <Routes>
                     <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
-                    <Route path="/create-account" element={<CreateUser onCreateSuccess={() => {/* Navigate to login after creation */}} />} />
+                    <Route path="/CreateUser" element={<CreateUser onCreateSuccess={() => {/* Navigate to login after creation */}} />} />
                     <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>
             </Router>
         );
     }
-
-    // Show main app content if authenticated
-    const contents = forecasts === undefined
-        ? <p><em>Loading weather data...</em></p>
-        : <table className="table table-striped" aria-labelledby="tableLabel">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Temp. (C)</th>
-                    <th>Temp. (F)</th>
-                    <th>Summary</th>
-                </tr>
-            </thead>
-            <tbody>
-                {forecasts.map(forecast =>
-                    <tr key={forecast.date}>
-                        <td>{forecast.date}</td>
-                        <td>{forecast.temperatureC}</td>
-                        <td>{forecast.temperatureF}</td>
-                        <td>{forecast.summary}</td>
-                    </tr>
-                )}
-            </tbody>
-        </table>;
 
     return (
         <div>
@@ -152,7 +104,7 @@ function App() {
                 padding: '1rem',
                 borderBottom: '1px solid #eee'
             }}>
-                <h1 id="tableLabel">Weather forecast</h1>
+                <h1 id="tableLabel">CanoEh!</h1>
                 <div>
                     <span>Welcome, {authStatus.username || 'User'}!</span>
                     <button 
@@ -172,8 +124,7 @@ function App() {
                 </div>
             </header>
             <main style={{ padding: '1rem' }}>
-                <p>This component demonstrates fetching data from the server with secure authentication.</p>
-                {contents}
+                <p>You have sucessfully connected</p>
             </main>
         </div>
     );

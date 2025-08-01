@@ -23,6 +23,7 @@ function CreateUser({ onCreateSuccess }: CreateUserProps) {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
+    const [retypePassword, setRetypePassword] = useState(''); 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
@@ -45,6 +46,13 @@ function CreateUser({ onCreateSuccess }: CreateUserProps) {
         setError('');
         setSuccess(false);
 
+        // Password match validation
+        if (password !== retypePassword) {
+            setError('Passwords do not match.');
+            setLoading(false);
+            return;
+        }
+
         try {
             const createUserRequest: CreateUserRequest = {
                 username,
@@ -55,7 +63,7 @@ function CreateUser({ onCreateSuccess }: CreateUserProps) {
                 password
             };
 
-            const response = await fetch('/api/user/CreateUser', {
+            const response = await fetch('https://localhost:7182/api/User/CreateUser', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -104,102 +112,119 @@ function CreateUser({ onCreateSuccess }: CreateUserProps) {
 
     return (
         <div className="createuser-container">
-            <form className="createuser-form" onSubmit={handleSubmit}>
-                <h2>Create Account</h2>
+            <div style={{ width: "100%" }}>
+                <h1 className="create-user-title">CanoEh!</h1>
+                <form className="createuser-form" onSubmit={handleSubmit}>
+                    <h2>Create Account</h2>
                 
-                {error && <div className="error-message">{error}</div>}
+                    {error && <div className="error-message">{error}</div>}
                 
-                <div className="form-group">
-                    <label htmlFor="username">Username:</label>
-                    <input
-                        type="text"
-                        id="username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                        minLength={8}
-                        placeholder="Enter your username (min 8 characters)"
-                        autoComplete="username"
-                    />
-                </div>
+                    <div className="form-group">
+                        <label htmlFor="username">Username:</label>
+                        <input
+                            type="text"
+                            id="username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                            minLength={8}
+                            placeholder="Enter your username (min 8 characters)"
+                            autoComplete="username"
+                        />
+                    </div>
 
-                <div className="form-group">
-                    <label htmlFor="firstname">First Name:</label>
-                    <input
-                        type="text"
-                        id="firstname"
-                        value={firstname}
-                        onChange={(e) => setFirstname(e.target.value)}
-                        required
-                        placeholder="Enter your first name"
-                        autoComplete="given-name"
-                    />
-                </div>
+                    <div className="form-group">
+                        <label htmlFor="firstname">First Name:</label>
+                        <input
+                            type="text"
+                            id="firstname"
+                            value={firstname}
+                            onChange={(e) => setFirstname(e.target.value)}
+                            required
+                            placeholder="Enter your first name"
+                            autoComplete="given-name"
+                        />
+                    </div>
 
-                <div className="form-group">
-                    <label htmlFor="lastname">Last Name:</label>
-                    <input
-                        type="text"
-                        id="lastname"
-                        value={lastname}
-                        onChange={(e) => setLastname(e.target.value)}
-                        required
-                        placeholder="Enter your last name"
-                        autoComplete="family-name"
-                    />
-                </div>
+                    <div className="form-group">
+                        <label htmlFor="lastname">Last Name:</label>
+                        <input
+                            type="text"
+                            id="lastname"
+                            value={lastname}
+                            onChange={(e) => setLastname(e.target.value)}
+                            required
+                            placeholder="Enter your last name"
+                            autoComplete="family-name"
+                        />
+                    </div>
 
-                <div className="form-group">
-                    <label htmlFor="email">Email:</label>
-                    <input
-                        type="email"
-                        id="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        placeholder="Enter your email address"
-                        autoComplete="email"
-                    />
-                </div>
+                    <div className="form-group">
+                        <label htmlFor="email">Email:</label>
+                        <input
+                            type="email"
+                            id="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            placeholder="Enter your email address"
+                            autoComplete="email"
+                        />
+                    </div>
 
-                <div className="form-group">
-                    <label htmlFor="phone">Phone (optional):</label>
-                    <input
-                        type="tel"
-                        id="phone"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="Enter your phone number"
-                        autoComplete="tel"
-                    />
-                </div>
+                    <div className="form-group">
+                        <label htmlFor="phone">Phone (optional):</label>
+                        <input
+                            type="tel"
+                            id="phone"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            placeholder="Enter your phone number"
+                            autoComplete="tel"
+                        />
+                    </div>
 
-                <div className="form-group">
-                    <label htmlFor="password">Password:</label>
-                    <input
-                        type="password"
-                        id="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        minLength={8}
-                        placeholder="Enter your password (min 8 characters)"
-                        autoComplete="new-password"
-                    />
-                </div>
+                    <div className="form-group">
+                        <label htmlFor="password">Password:</label>
+                        <input
+                            type="password"
+                            id="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            minLength={8}
+                            placeholder="Enter your password (min 8 characters)"
+                            autoComplete="new-password"
+                        />
+                    </div>
 
-                <button
-                    type="submit"
-                    className="complete-button"
-                    disabled={loading}
-                >
-                    {loading ? 'Creating Account...' : 'Complete'}
-                </button>
+                    <div className="form-group">
+                        <label htmlFor="retypePassword">Retype Password:</label>
+                        <input
+                            type="password"
+                            id="retypePassword"
+                            value={retypePassword}
+                            onChange={(e) => setRetypePassword(e.target.value)}
+                            required
+                            minLength={8}
+                            placeholder="Retype your password"
+                            autoComplete="new-password"
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="complete-button"
+                        disabled={loading}
+                    >
+                        {loading ? 'Creating Account...' : 'Complete'}
+                    </button>
                 
-                <div className="login-link">
-                    <Link to="/login">Already have an account? Login here</Link>
-                </div>
-            </form>
+                    <div className="login-link">
+                        <Link to="/login">Already have an account? Login here</Link>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }

@@ -124,7 +124,7 @@ function App() {
                 </div>
             </header>
             <main style={{ padding: '1rem' }}>
-                <p>You have sucessfully connected</p>
+                <p>You have successfully connected</p>
             </main>
         </div>
     );

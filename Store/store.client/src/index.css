@@ -46,7 +46,7 @@ h1 {
 button {
     width: 100%;
     padding: 8px 16px 8px 16px;
-    background: linear-gradient(135deg, #f00 0%, #f00 100%);
+    background-color: #f00;
     color: white;
     border: none;
     border-radius: 25px;

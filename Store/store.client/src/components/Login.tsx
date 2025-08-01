@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './Login.css';
 
 interface LoginRequest {
@@ -145,6 +146,12 @@ function Login({ onLoginSuccess }: LoginProps) {
                     </div>
                     <p><small>🔒 This login uses secure HTTP-only cookies and CSRF protection</small></p>
                     <p><small>🌐 Ensure you're using HTTPS in production</small></p>
+                    
+                    <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid #e1e1e1' }}>
+                        <Link to="/create-account" style={{ color: '#667eea', textDecoration: 'none', fontSize: '14px' }}>
+                            Create account?
+                        </Link>
+                    </div>
                 </div>
             </form>
         </div>

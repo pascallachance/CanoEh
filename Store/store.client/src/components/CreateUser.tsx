@@ -1,0 +1,207 @@
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import './CreateUser.css';
+
+interface CreateUserRequest {
+    username: string;
+    firstname: string;
+    lastname: string;
+    email: string;
+    phone?: string;
+    password: string;
+}
+
+interface CreateUserProps {
+    onCreateSuccess?: () => void;
+}
+
+function CreateUser({ onCreateSuccess }: CreateUserProps) {
+    const navigate = useNavigate();
+    const [username, setUsername] = useState('');
+    const [firstname, setFirstname] = useState('');
+    const [lastname, setLastname] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
+
+    const getCsrfToken = (): string => {
+        // Get CSRF token from cookie for API calls
+        const cookies = document.cookie.split(';');
+        for (const cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'X-CSRF-Token') {
+                return value;
+            }
+        }
+        return '';
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+        setSuccess(false);
+
+        try {
+            const createUserRequest: CreateUserRequest = {
+                username,
+                firstname,
+                lastname,
+                email,
+                phone: phone || undefined,
+                password
+            };
+
+            const response = await fetch('/api/user/CreateUser', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': getCsrfToken(),
+                },
+                credentials: 'include',
+                body: JSON.stringify(createUserRequest),
+            });
+
+            if (response.ok) {
+                setSuccess(true);
+                console.log('User created successfully');
+                
+                if (onCreateSuccess) {
+                    setTimeout(() => onCreateSuccess(), 2000);
+                } else {
+                    // Navigate to login after 2 seconds
+                    setTimeout(() => navigate('/login'), 2000);
+                }
+            } else {
+                const errorText = await response.text();
+                setError(errorText || 'Account creation failed');
+            }
+        } catch (err) {
+            setError('Network error occurred. Please try again.');
+            console.error('Create user error:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (success) {
+        return (
+            <div className="createuser-container">
+                <div className="createuser-form">
+                    <h2>Account Created Successfully!</h2>
+                    <p>Your account has been created successfully.</p>
+                    <p>You can now login with your credentials.</p>
+                    <Link to="/login" className="back-to-login-button">
+                        Go to Login
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="createuser-container">
+            <form className="createuser-form" onSubmit={handleSubmit}>
+                <h2>Create Account</h2>
+                
+                {error && <div className="error-message">{error}</div>}
+                
+                <div className="form-group">
+                    <label htmlFor="username">Username:</label>
+                    <input
+                        type="text"
+                        id="username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                        minLength={8}
+                        placeholder="Enter your username (min 8 characters)"
+                        autoComplete="username"
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="firstname">First Name:</label>
+                    <input
+                        type="text"
+                        id="firstname"
+                        value={firstname}
+                        onChange={(e) => setFirstname(e.target.value)}
+                        required
+                        placeholder="Enter your first name"
+                        autoComplete="given-name"
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="lastname">Last Name:</label>
+                    <input
+                        type="text"
+                        id="lastname"
+                        value={lastname}
+                        onChange={(e) => setLastname(e.target.value)}
+                        required
+                        placeholder="Enter your last name"
+                        autoComplete="family-name"
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="email">Email:</label>
+                    <input
+                        type="email"
+                        id="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        placeholder="Enter your email address"
+                        autoComplete="email"
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="phone">Phone (optional):</label>
+                    <input
+                        type="tel"
+                        id="phone"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="Enter your phone number"
+                        autoComplete="tel"
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="password">Password:</label>
+                    <input
+                        type="password"
+                        id="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={8}
+                        placeholder="Enter your password (min 8 characters)"
+                        autoComplete="new-password"
+                    />
+                </div>
+
+                <button
+                    type="submit"
+                    className="complete-button"
+                    disabled={loading}
+                >
+                    {loading ? 'Creating Account...' : 'Complete'}
+                </button>
+                
+                <div className="login-link">
+                    <Link to="/login">Already have an account? Login here</Link>
+                </div>
+            </form>
+        </div>
+    );
+}
+
+export default CreateUser;

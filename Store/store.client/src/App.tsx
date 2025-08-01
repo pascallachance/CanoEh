@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import Login from './components/Login';
+import CreateUser from './components/CreateUser';
 
 interface Forecast {
     date: string;
@@ -106,7 +108,15 @@ function App() {
 
     // Show login form if not authenticated
     if (!authStatus.isAuthenticated) {
-        return <Login onLoginSuccess={handleLoginSuccess} />;
+        return (
+            <Router>
+                <Routes>
+                    <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
+                    <Route path="/create-account" element={<CreateUser onCreateSuccess={() => {/* Navigate to login after creation */}} />} />
+                    <Route path="*" element={<Navigate to="/login" replace />} />
+                </Routes>
+            </Router>
+        );
     }
 
     // Show main app content if authenticated

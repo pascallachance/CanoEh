@@ -3,10 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import './CreateUser.css';
 
 interface CreateUserRequest {
-    username: string;
+    email: string;
     firstname: string;
     lastname: string;
-    email: string;
     phone?: string;
     password: string;
 }
@@ -17,10 +16,9 @@ interface CreateUserProps {
 
 function CreateUser({ onCreateSuccess }: CreateUserProps) {
     const navigate = useNavigate();
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [firstname, setFirstname] = useState('');
     const [lastname, setLastname] = useState('');
-    const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [retypePassword, setRetypePassword] = useState(''); 
@@ -55,10 +53,9 @@ function CreateUser({ onCreateSuccess }: CreateUserProps) {
 
         try {
             const createUserRequest: CreateUserRequest = {
-                username,
+                email,
                 firstname,
                 lastname,
-                email,
                 phone: phone || undefined,
                 password
             };
@@ -120,12 +117,12 @@ function CreateUser({ onCreateSuccess }: CreateUserProps) {
                     {error && <div className="error-message">{error}</div>}
                 
                     <div className="form-group">
-                        <label htmlFor="username">Username:</label>
+                        <label htmlFor="username">Email:</label>
                         <input
                             type="text"
-                            id="username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            id="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                             minLength={8}
                             placeholder="Enter your username (min 8 characters)"
@@ -156,19 +153,6 @@ function CreateUser({ onCreateSuccess }: CreateUserProps) {
                             required
                             placeholder="Enter your last name"
                             autoComplete="family-name"
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="email">Email:</label>
-                        <input
-                            type="email"
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            placeholder="Enter your email address"
-                            autoComplete="email"
                         />
                     </div>
 

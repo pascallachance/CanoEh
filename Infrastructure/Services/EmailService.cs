@@ -1,6 +1,7 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Net.Mail;
 using Helpers.Common;
+using Infrastructure.Data;
 using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Services
@@ -16,7 +17,7 @@ namespace Infrastructure.Services
         private readonly int? _smtpPort = int.TryParse(configuration["EmailSettings:SmtpPort"], out var port) ? port : null;
         private readonly bool? _smtpEnableSsl = bool.TryParse(configuration["EmailSettings:EnableSsl"], out var ssl) ? ssl : null;
 
-        public async Task<Result> SendEmailValidationAsync(string email, string firstname, string lastname, string validationToken)
+        public async Task<Result> SendEmailValidationAsync(User user)
         {
             // Check configuration and return error messages if missing
             if (string.IsNullOrWhiteSpace(_smtpServer))
@@ -34,8 +35,8 @@ namespace Infrastructure.Services
 
             try
             {
-                var validationUrl = $"{_baseUrl}/api/EmailValidation/ValidateEmail/{validationToken}";
-                var body = $@"Hello {firstname} {lastname},
+                var validationUrl = $"{_baseUrl}/api/EmailValidation/ValidateEmail/{user.EmailValidationToken}";
+                var body = $@"Hello {user.Firstname} {user.Lastname},
 
 Thank you for registering with CanoEh! To complete your registration, please click the link below to validate your email address:
 
@@ -51,7 +52,7 @@ The CanoEh Team";
                     EnableSsl = _smtpEnableSsl.Value,
                     Credentials = new System.Net.NetworkCredential(_smtpUsername, _smtpPassword)
                 };
-                var mail = new MailMessage(_smtpUsername, email)
+                var mail = new MailMessage(_smtpUsername, user.Email)
                 {
                     From = new MailAddress(_fromEmail ?? "Unknown", _fromName),
                     Subject = "Email Validation",
@@ -59,7 +60,7 @@ The CanoEh Team";
                 };
                 await smtp.SendMailAsync(mail);
 
-                Debug.WriteLine($"Validation email sent to {email} for user {email} with token {validationToken}");
+                Debug.WriteLine($"Validation email sent to {user.Email} for user {user.Email} with token {user.EmailValidationToken}");
                 return Result.Success();
             }
             catch (SmtpException smtpEx)
@@ -76,7 +77,7 @@ The CanoEh Team";
             }
         }
 
-        public async Task<Result> SendPasswordResetAsync(string email, string firstname, string lastname, string resetToken)
+        public async Task<Result> SendPasswordResetAsync(User user)
         {
             // Check configuration and return error messages if missing
             if (string.IsNullOrWhiteSpace(_smtpServer))
@@ -94,8 +95,8 @@ The CanoEh Team";
 
             try
             {
-                var resetUrl = $"{_baseUrl}/api/PasswordReset/ResetPassword?token={resetToken}";
-                var body = $@"Hello {firstname} {lastname},
+                var resetUrl = $"{_baseUrl}/api/PasswordReset/ResetPassword?token={user.PasswordResetToken}";
+                var body = $@"Hello {user.Firstname} {user.Lastname},
 
 You have requested to reset your password for your CanoEh account. To reset your password, please click the link below:
 
@@ -111,7 +112,7 @@ The CanoEh Team";
                     EnableSsl = _smtpEnableSsl.Value,
                     Credentials = new System.Net.NetworkCredential(_smtpUsername, _smtpPassword)
                 };
-                var mail = new MailMessage(_smtpUsername, email)
+                var mail = new MailMessage(_smtpUsername, user.Email)
                 {
                     From = new MailAddress(_fromEmail ?? "Unknown", _fromName),
                     Subject = "Password Reset Request",
@@ -119,7 +120,7 @@ The CanoEh Team";
                 };
                 await smtp.SendMailAsync(mail);
 
-                Debug.WriteLine($"Password reset email sent to {email} for user {email} with token {resetToken}");
+                Debug.WriteLine($"Password reset email sent to {user.Email} for user {user.Email} with token {user.PasswordResetToken}");
                 return Result.Success();
             }
             catch (SmtpException smtpEx)
@@ -136,7 +137,7 @@ The CanoEh Team";
             }
         }
 
-        public async Task<Result> SendRestoreUserEmailAsync(string email, string firstname, string lastname, string restoreToken)
+        public async Task<Result> SendRestoreUserEmailAsync(User user)
         {
             // Check configuration and return error messages if missing
             if (string.IsNullOrWhiteSpace(_smtpServer))
@@ -154,8 +155,8 @@ The CanoEh Team";
 
             try
             {
-                var restoreUrl = $"{_baseUrl}/api/User/RestoreUser?token={restoreToken}";
-                var body = $@"Hello {firstname} {lastname},
+                var restoreUrl = $"{_baseUrl}/api/User/RestoreUser?token={user.RestoreUserToken}";
+                var body = $@"Hello {user.Firstname} {user.Lastname},
 
 You have requested to restore your deleted CanoEh account. To restore your account, please click the link below:
 
@@ -171,7 +172,7 @@ The CanoEh Team";
                     EnableSsl = _smtpEnableSsl.Value,
                     Credentials = new System.Net.NetworkCredential(_smtpUsername, _smtpPassword)
                 };
-                var mail = new MailMessage(_smtpUsername, email)
+                var mail = new MailMessage(_smtpUsername, user.Email)
                 {
                     From = new MailAddress(_fromEmail ?? "Unknown", _fromName),
                     Subject = "Account Restoration Request",
@@ -179,7 +180,7 @@ The CanoEh Team";
                 };
                 await smtp.SendMailAsync(mail);
 
-                Debug.WriteLine($"Restore account email sent to {email} for user {email} with token {restoreToken}");
+                Debug.WriteLine($"Restore account email sent to {user.Email} for user {user.Email} with token {user.RestoreUserToken}");
                 return Result.Success();
             }
             catch (SmtpException smtpEx)

@@ -53,7 +53,7 @@ namespace Domain.Services.Implementations
                 });
 
                 // Send email validation
-                var result = await _emailService.SendEmailValidationAsync(user.Email, user.Firstname, user.Lastname, user.EmailValidationToken!);
+                var result = await _emailService.SendEmailValidationAsync(user);
                 if (result.IsFailure)
                 {
                     Debug.WriteLine($"Email send failed: {result.Error}");
@@ -393,8 +393,12 @@ namespace Domain.Services.Implementations
                 var updateResult = await _userRepository.UpdatePasswordResetTokenAsync(user.Email, resetToken, tokenExpiry);
                 if (updateResult)
                 {
+                    // Update user object in memory to reflect the token
+                    user.PasswordResetToken = resetToken;
+                    user.PasswordResetTokenExpiry = tokenExpiry;
+                    
                     // Send password reset email
-                    var emailResult = await _emailService.SendPasswordResetAsync(user.Email, user.Firstname, user.Lastname, resetToken);
+                    var emailResult = await _emailService.SendPasswordResetAsync(user);
                     if (emailResult.IsFailure)
                     {
                         Debug.WriteLine($"Failed to send password reset email to {user.Email}: {emailResult.Error}");
@@ -488,8 +492,12 @@ namespace Domain.Services.Implementations
                     
                     if (tokenUpdateResult)
                     {
+                        // Update user object in memory to reflect the token
+                        deletedUser.RestoreUserToken = restoreToken;
+                        deletedUser.RestoreUserTokenExpiry = tokenExpiry;
+                        
                         // Send restore email
-                        var emailResult = await _emailService.SendRestoreUserEmailAsync(sendRestoreUserEmailRequest.Email!, deletedUser.Firstname, deletedUser.Lastname, restoreToken);
+                        var emailResult = await _emailService.SendRestoreUserEmailAsync(deletedUser);
                         
                         if (emailResult.IsFailure)
                         {

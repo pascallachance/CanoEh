@@ -3,9 +3,9 @@
     public class User
     {
         public Guid ID { get; set; }
+        public required string Email { get; set; }
         public required string Firstname { get; set; }
         public required string Lastname { get; set; }
-        public required string Email { get; set; }
         public string? Phone { get; set; }
         public DateTime? Lastlogin { get; set; }
         public DateTime? Lastlogout { get; set; }

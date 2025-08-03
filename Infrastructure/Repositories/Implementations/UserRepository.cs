@@ -16,9 +16,9 @@ namespace Infrastructure.Repositories.Implementations
             }
             var query = @"
 INSERT INTO dbo.Users (
+    email,
     firstname, 
     lastname, 
-    email, 
     phone, 
     lastlogin, 
     createdat, 
@@ -29,9 +29,9 @@ INSERT INTO dbo.Users (
     emailValidationToken)
 OUTPUT INSERTED.ID
 VALUES (
+    @Email,
     @Firstname, 
     @Lastname, 
-    @Email, 
     @Phone, 
     @Lastlogin, 
     @Createdat, 
@@ -43,9 +43,9 @@ VALUES (
 
             var parameters = new
             {
+                entity.Email,
                 entity.Firstname,
                 entity.Lastname,
-                entity.Email,
                 entity.Phone,
                 entity.Lastlogin,
                 entity.Createdat,
@@ -148,9 +148,9 @@ WHERE dbo.Users.id = @id";
             var parameters = new
             {
                 entity.ID,
+                entity.Email,
                 entity.Firstname,
                 entity.Lastname,
-                entity.Email,
                 entity.Phone,
                 entity.Lastlogin,
                 entity.Lastupdatedat, //Use entity's Lastupdatedat value

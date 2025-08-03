@@ -5,16 +5,16 @@ namespace Domain.Models.Requests
 {
     public class ChangePasswordRequest
     {
-        public string? Username { get; set; }
+        public string? Email { get; set; }
         public string? CurrentPassword { get; set; }
         public string? NewPassword { get; set; }
         public string? ConfirmNewPassword { get; set; }
 
         public Result Validate()
         {
-            if (string.IsNullOrWhiteSpace(Username))
+            if (string.IsNullOrWhiteSpace(Email))
             {
-                return Result.Failure("Username is required.", StatusCodes.Status400BadRequest);
+                return Result.Failure("Email is required.", StatusCodes.Status400BadRequest);
             }
             if (string.IsNullOrWhiteSpace(CurrentPassword))
             {
@@ -28,9 +28,9 @@ namespace Domain.Models.Requests
             {
                 return Result.Failure("Confirm new password is required.", StatusCodes.Status400BadRequest);
             }
-            if (Username.Length < 8)
+            if (!Email.Contains('@'))
             {
-                return Result.Failure("Username must be at least 8 characters long.", StatusCodes.Status400BadRequest);
+                return Result.Failure("Email must contain '@'.", StatusCodes.Status400BadRequest);
             }
             if (CurrentPassword.Length < 8)
             {

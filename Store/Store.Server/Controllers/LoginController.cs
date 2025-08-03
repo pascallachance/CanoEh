@@ -43,13 +43,13 @@ namespace Store.Server.Controllers
                 return StatusCode(loginResult.ErrorCode ?? 501, loginResult.Error);
             }
             
-            var result = await _userService.UpdateLastLoginAsync(request.Username ?? "");
+            var result = await _userService.UpdateLastLoginAsync(request.Email ?? "");
             if (result.IsFailure) 
             {
                 return StatusCode(result.ErrorCode ?? 501, result.Error);
             }
 
-            var token = GenerateJwtToken(request.Username ?? "");
+            var token = GenerateJwtToken(request.Email ?? "");
             
             // Set HTTP-only cookie with security flags
             var cookieOptions = new CookieOptions
@@ -81,17 +81,17 @@ namespace Store.Server.Controllers
             });
         }
 
-        private string GenerateJwtToken(string username)
+        private string GenerateJwtToken(string email)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
             var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Secret"] ?? "YourSecretKeyHereForDevelopment123456789012345678901234567890");
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, username),
+                new Claim(JwtRegisteredClaimNames.Sub, email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Role, "User"),
-                new Claim(ClaimTypes.NameIdentifier, username)
+                new Claim(ClaimTypes.NameIdentifier, email)
             };
 
             var key = new SymmetricSecurityKey(secretKey);
@@ -115,14 +115,14 @@ namespace Store.Server.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Logout([FromQuery] Guid? sessionId = null, [FromHeader(Name = "X-Session-Id")] Guid? headerSessionId = null)
         {
-            // Get username from JWT claims
-            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(username))
+            // Get email from JWT claims
+            var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(email))
             {
                 return Unauthorized("Invalid or missing authentication token.");
             }
 
-            var result = await _userService.LogoutAsync(username);
+            var result = await _userService.LogoutAsync(email);
             if (result.IsFailure)
             {
                 return StatusCode(result.ErrorCode ?? 500, result.Error);
@@ -152,7 +152,7 @@ namespace Store.Server.Controllers
             Response.Cookies.Append("AuthToken", "", cookieOptions);
             Response.Cookies.Append("X-CSRF-Token", "", cookieOptions);
 
-            return Ok(new { message = "Logged out successfully.", username, sessionId = targetSessionId });
+            return Ok(new { message = "Logged out successfully.", email, sessionId = targetSessionId });
         }
 
         [Authorize]
@@ -164,7 +164,7 @@ namespace Store.Server.Controllers
                 Debug.WriteLine($"{claim.Type}: {claim.Value}");
 
             return Ok(new { 
-                username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value,
+                email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value,
                 isAuthenticated = User.Identity?.IsAuthenticated ?? false,
                 claims = User.Claims.Select(c => new { type = c.Type, value = c.Value })
             });
@@ -175,11 +175,11 @@ namespace Store.Server.Controllers
         public IActionResult GetAuthStatus()
         {
             var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
-            var username = isAuthenticated ? User.FindFirst(ClaimTypes.NameIdentifier)?.Value : null;
+            var email = isAuthenticated ? User.FindFirst(ClaimTypes.NameIdentifier)?.Value : null;
             
             return Ok(new { 
                 isAuthenticated,
-                username
+                email
             });
         }
     }

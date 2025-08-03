@@ -230,14 +230,14 @@ namespace Domain.Services.Implementations
             return Result.Success(true);
         }
 
-        public async Task<Result<bool>> UpdateLastLoginAsync(string username)
+        public async Task<Result<bool>> UpdateLastLoginAsync(string email)
         {
-            if (string.IsNullOrWhiteSpace(username))
+            if (string.IsNullOrWhiteSpace(email))
             {
-                return Result.Failure<bool>("Username is required.", StatusCodes.Status400BadRequest);
+                return Result.Failure<bool>("Email is required.", StatusCodes.Status400BadRequest);
             }
 
-            var userToUpdate = await _userRepository.FindByUsernameAsync(username);
+            var userToUpdate = await _userRepository.FindByEmailAsync(email);
             if (userToUpdate == null)
             {
                 return Result.Failure<bool>("User not found.", StatusCodes.Status404NotFound);
@@ -250,18 +250,18 @@ namespace Domain.Services.Implementations
             userToUpdate.Lastlogin = DateTime.UtcNow;
             await _userRepository.UpdateAsync(userToUpdate);
 
-            Debug.WriteLine($"Last login updated for user {username}");
+            Debug.WriteLine($"Last login updated for user {email}");
             return Result.Success(true);
         }
 
-        public async Task<Result<bool>> LogoutAsync(string username)
+        public async Task<Result<bool>> LogoutAsync(string email)
         {
-            if (string.IsNullOrWhiteSpace(username))
+            if (string.IsNullOrWhiteSpace(email))
             {
-                return Result.Failure<bool>("Username is required.", StatusCodes.Status400BadRequest);
+                return Result.Failure<bool>("Email is required.", StatusCodes.Status400BadRequest);
             }
 
-            var userToUpdate = await _userRepository.FindByUsernameAsync(username);
+            var userToUpdate = await _userRepository.FindByEmailAsync(email);
             if (userToUpdate == null)
             {
                 return Result.Failure<bool>("User not found.", StatusCodes.Status404NotFound);
@@ -275,7 +275,7 @@ namespace Domain.Services.Implementations
             userToUpdate.Lastupdatedat = DateTime.UtcNow;
             await _userRepository.UpdateAsync(userToUpdate);
 
-            Debug.WriteLine($"User {username} logged out successfully");
+            Debug.WriteLine($"User {email} logged out successfully");
             return Result.Success(true);
         }
 

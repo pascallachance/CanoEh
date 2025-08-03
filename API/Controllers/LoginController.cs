@@ -42,29 +42,29 @@ namespace API.Controllers
             {
                 return StatusCode(loginResult.ErrorCode ?? 501, loginResult.Error);
             }
-            var result = await _userService.UpdateLastLoginAsync(request.Username);
+            var result = await _userService.UpdateLastLoginAsync(request.Email);
             if (result.IsFailure) {
                 return StatusCode(result.ErrorCode ?? 501, result.Error);
             }
 
-            var token = GenerateJwtToken(request.Username);
+            var token = GenerateJwtToken(request.Email);
             return Ok(new { 
                 token, 
                 sessionId = loginResult.Value?.SessionId 
             });
         }
 
-        private string GenerateJwtToken(string username)
+        private string GenerateJwtToken(string email)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
             var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Secret"]);
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, username),
+                new Claim(JwtRegisteredClaimNames.Sub, email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Role, "Admin"),
-                new Claim(ClaimTypes.NameIdentifier, username)
+                new Claim(ClaimTypes.NameIdentifier, email)
             };
 
             var key = new SymmetricSecurityKey(secretKey);
@@ -88,14 +88,14 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Logout([FromQuery] Guid? sessionId = null, [FromHeader(Name = "X-Session-Id")] Guid? headerSessionId = null)
         {
-            // Get username from JWT claims
-            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(username))
+            // Get email from JWT claims
+            var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(email))
             {
                 return Unauthorized("Invalid or missing authentication token.");
             }
 
-            var result = await _userService.LogoutAsync(username);
+            var result = await _userService.LogoutAsync(email);
             if (result.IsFailure)
             {
                 return StatusCode(result.ErrorCode ?? 500, result.Error);
@@ -113,7 +113,7 @@ namespace API.Controllers
                 }
             }
 
-            return Ok(new { message = "Logged out successfully.", username, sessionId = targetSessionId });
+            return Ok(new { message = "Logged out successfully.", email, sessionId = targetSessionId });
         }
 
         [Authorize]

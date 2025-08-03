@@ -23,10 +23,10 @@ namespace Domain.Services.Implementations
             {
                 return Result.Failure<LoginResponse>(validationResult.Error ?? "Validation failed.", validationResult.ErrorCode ?? StatusCodes.Status400BadRequest);
             }
-            var foundUser = await _userRepository.FindByUsernameAsync(request.Username);
+            var foundUser = await _userRepository.FindByEmailAsync(request.Email);
             if (foundUser == null)
             {
-                return Result.Failure<LoginResponse>("Invalid username or password", StatusCodes.Status401Unauthorized);
+                return Result.Failure<LoginResponse>("Invalid email or password", StatusCodes.Status401Unauthorized);
             }
             if (foundUser.Deleted)
             {
@@ -39,7 +39,7 @@ namespace Domain.Services.Implementations
             var hasher = new PasswordHasher();
             if (string.IsNullOrEmpty(request.Password) || !hasher.VerifyPassword(request.Password, foundUser.Password))
             {
-                return Result.Failure<LoginResponse>("Invalid username or password", StatusCodes.Status401Unauthorized);
+                return Result.Failure<LoginResponse>("Invalid email or password", StatusCodes.Status401Unauthorized);
             }
             
             // Login successful - create a new session

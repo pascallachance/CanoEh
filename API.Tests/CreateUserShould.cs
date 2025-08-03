@@ -39,7 +39,6 @@ namespace API.Tests
             var result = Result.Success(new CreateUserResponse 
             { 
                 ID = Guid.NewGuid(),
-                Uname = newUser.Username,
                 Firstname = newUser.Firstname,
                 Lastname = newUser.Lastname,
                 Email = newUser.Email,

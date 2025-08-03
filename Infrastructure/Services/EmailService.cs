@@ -60,7 +60,7 @@ The CanoEh Team";
                 };
                 await smtp.SendMailAsync(mail);
 
-                Debug.WriteLine($"Validation email sent to {user.Email} for user {user.Email} with token {user.EmailValidationToken}");
+                Debug.WriteLine($"Validation email sent to {user.Email} with token {user.EmailValidationToken}");
                 return Result.Success();
             }
             catch (SmtpException smtpEx)

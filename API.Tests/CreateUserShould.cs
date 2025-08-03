@@ -39,7 +39,6 @@ namespace API.Tests
             var result = Result.Success(new CreateUserResponse 
             { 
                 ID = Guid.NewGuid(),
-                Uname = newUser.Username,
                 Firstname = newUser.Firstname,
                 Lastname = newUser.Lastname,
                 Email = newUser.Email,
@@ -69,10 +68,9 @@ namespace API.Tests
             var mockEmailService = new Mock<IEmailService>();
             var inputModel = new CreateUserRequest
             {
-                Username = "plachance",
+                Email = "plachance@gmail.com",
                 Firstname = "Pascal",
                 Lastname = "Lachance",
-                Email = "plachance@gmail.com",
                 Phone = "1234567890",
                 Password = "password123",
             };
@@ -85,12 +83,9 @@ namespace API.Tests
                     createdUser = u;
                     return u;
                 });
-            mockRepo
-                .Setup(repo => repo.FindByUsernameAsync(It.IsAny<string>()))
-                .ReturnsAsync((User?)null); // No existing user found
 
             mockEmailService
-                .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(es => es.SendEmailValidationAsync(It.IsAny<User>()))
                 .ReturnsAsync(Result.Success());
 
             var userService = new UserService(mockRepo.Object, mockEmailService.Object);

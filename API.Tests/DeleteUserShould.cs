@@ -24,14 +24,13 @@ namespace API.Tests
         public async Task ReturnOk_WhenUserDeletedSuccessfully()
         {
             // Arrange
-            var username = "testuser";
+            var email = "test@example.com";
             var deleteResponse = new DeleteUserResponse
             {
                 ID = Guid.NewGuid(),
-                Uname = username,
                 Firstname = "Test",
                 Lastname = "User",
-                Email = "test@example.com",
+                Email = email,
                 Phone = null,
                 Lastlogin = null,
                 CreatedAt = DateTime.UtcNow.AddDays(-30),

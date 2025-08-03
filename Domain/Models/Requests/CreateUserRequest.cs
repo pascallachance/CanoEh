@@ -1,15 +1,15 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using Helpers.Common;
 using Microsoft.AspNetCore.Http;
+using System.Net.Mail;
 
 namespace Domain.Models.Requests
 {
     public class CreateUserRequest
     {
-        public required string Username { get; set; }
+        public required string Email { get; set; }
         public required string Firstname { get; set; }
         public required string Lastname { get; set; }
-        public required string Email { get; set; }
         public string? Phone { get; set; }
         public required string Password { get; set; }
 
@@ -19,9 +19,9 @@ namespace Domain.Models.Requests
             {
                 return Result.Failure("User data is required.", StatusCodes.Status400BadRequest);
             }
-            if (string.IsNullOrWhiteSpace(Username))
+            if (string.IsNullOrWhiteSpace(Email))
             {
-                return Result.Failure("Username is required.", StatusCodes.Status400BadRequest);
+                return Result.Failure("Email is required.", StatusCodes.Status400BadRequest);
             }
             if (string.IsNullOrWhiteSpace(Firstname))
             {
@@ -39,19 +39,28 @@ namespace Domain.Models.Requests
             {
                 return Result.Failure("Email is required.", StatusCodes.Status400BadRequest);
             }
-            if (Username.Length < 8)
+            if (!IsValidEmail(Email))
             {
-                return Result.Failure("Username must be at least 8 characters long.", StatusCodes.Status400BadRequest);
+                return Result.Failure("Email must be a valid email address.", StatusCodes.Status400BadRequest);
             }
             if (Password.Length < 8)
             {
                 return Result.Failure("Password must be at least 8 characters long.", StatusCodes.Status400BadRequest);
             }
-            if (!Email.Contains('@'))
-            {
-                return Result.Failure("Email must contain '@'.", StatusCodes.Status400BadRequest);
-            }
             return Result.Success();
+        }
+
+        private static bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

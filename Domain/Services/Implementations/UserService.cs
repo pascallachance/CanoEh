@@ -30,19 +30,18 @@ namespace Domain.Services.Implementations
                     );
                 }
 
-                var existingUser = await _userRepository.FindByUsernameAsync(newUser.Username);
+                var existingUser = await _userRepository.FindByEmailAsync(newUser.Email);
                 if (existingUser != null)
                 {
-                    return Result.Failure<CreateUserResponse>("Username already exists.", StatusCodes.Status400BadRequest);
+                    return Result.Failure<CreateUserResponse>("Email already exists.", StatusCodes.Status400BadRequest);
                 }
 
                 var hasher = new PasswordHasher();
                 user = await _userRepository.AddAsync(new User
                 {
-                    Uname = newUser.Username,
+                    Email = newUser.Email,
                     Firstname = newUser.Firstname,
                     Lastname = newUser.Lastname,
-                    Email = newUser.Email,
                     Phone = newUser.Phone, 
                     Lastlogin = null,
                     Createdat = DateTime.UtcNow,
@@ -54,7 +53,7 @@ namespace Domain.Services.Implementations
                 });
 
                 // Send email validation
-                var result = await _emailService.SendEmailValidationAsync(user.Email, user.Uname, user.EmailValidationToken!);
+                var result = await _emailService.SendEmailValidationAsync(user);
                 if (result.IsFailure)
                 {
                     Debug.WriteLine($"Email send failed: {result.Error}");
@@ -87,17 +86,17 @@ namespace Domain.Services.Implementations
             }
             CreateUserResponse createdUser = UserConverters.ConvertToCreateUserResponse(user);
 
-            Debug.WriteLine($"User {newUser.Username} created successfully.");
+            Debug.WriteLine($"User {newUser.Email} created successfully.");
             return Result.Success(createdUser);
         }
 
-        public async Task<Result<GetUserResponse>> GetUserAsync(string username)
+        public async Task<Result<GetUserResponse>> GetUserAsync(string email)
         {
-            if (string.IsNullOrWhiteSpace(username))
+            if (string.IsNullOrWhiteSpace(email))
             {
-                return Result.Failure<GetUserResponse>("Username is required.", StatusCodes.Status400BadRequest);
+                return Result.Failure<GetUserResponse>("Email is required.", StatusCodes.Status400BadRequest);
             }
-            var userFound = await _userRepository.FindByUsernameAsync(username);
+            var userFound = await _userRepository.FindByEmailAsync(email);
             if (userFound == null)
             {
                 return Result.Failure<GetUserResponse>("User not found.", StatusCodes.Status404NotFound);
@@ -110,13 +109,13 @@ namespace Domain.Services.Implementations
             return Result.Success(userResponse);
         }
 
-        public async Task<Result<User?>> GetUserEntityAsync(string username)
+        public async Task<Result<User?>> GetUserEntityAsync(string email)
         {
-            if (string.IsNullOrWhiteSpace(username))
+            if (string.IsNullOrWhiteSpace(email))
             {
-                return Result.Failure<User?>("Username is required.", StatusCodes.Status400BadRequest);
+                return Result.Failure<User?>("Email is required.", StatusCodes.Status400BadRequest);
             }
-            var userFound = await _userRepository.FindByUsernameAsync(username);
+            var userFound = await _userRepository.FindByEmailAsync(email);
             if (userFound == null)
             {
                 return Result.Success<User?>(null);
@@ -131,9 +130,9 @@ namespace Domain.Services.Implementations
         public async Task<Result<UpdateUserResponse>> UpdateUserAsync(UpdateUserRequest updateRequest)
         {
             // Validate input
-             if (string.IsNullOrWhiteSpace(updateRequest.Username))
+             if (string.IsNullOrWhiteSpace(updateRequest.Email))
             {
-                return Result.Failure<UpdateUserResponse>("Username is required.", StatusCodes.Status400BadRequest);
+                return Result.Failure<UpdateUserResponse>("Email is required.", StatusCodes.Status400BadRequest);
             }
 
             var validationResult = updateRequest.Validate();
@@ -143,7 +142,7 @@ namespace Domain.Services.Implementations
             }
 
             // Find the user to update
-            var userToUpdate = await _userRepository.FindByUsernameAsync(updateRequest.Username);
+            var userToUpdate = await _userRepository.FindByEmailAsync(updateRequest.Email);
             if (userToUpdate == null)
             {
                 return Result.Failure<UpdateUserResponse>("User not found.", StatusCodes.Status404NotFound);
@@ -165,20 +164,20 @@ namespace Domain.Services.Implementations
             // Convert to response model
             UpdateUserResponse response = updatedUser.ConvertToUpdateUserResponse();
 
-            Debug.WriteLine($"User {updateRequest.Username} updated successfully.");
+            Debug.WriteLine($"User {updateRequest.Email} updated successfully.");
             return Result.Success(response);
         }
 
-        public async Task<Result<DeleteUserResponse>> DeleteUserAsync(string username)
+        public async Task<Result<DeleteUserResponse>> DeleteUserAsync(string email)
         {
             // Validate input
-            if (string.IsNullOrWhiteSpace(username))
+            if (string.IsNullOrWhiteSpace(email))
             {
-                return Result.Failure<DeleteUserResponse>("Username is required.", StatusCodes.Status400BadRequest);
+                return Result.Failure<DeleteUserResponse>("Email is required.", StatusCodes.Status400BadRequest);
             }
 
             // Find the user to delete
-            var userToDelete = await _userRepository.FindByUsernameAsync(username);
+            var userToDelete = await _userRepository.FindByEmailAsync(email);
             if (userToDelete == null)
             {
                 return Result.Failure<DeleteUserResponse>("User not found.", StatusCodes.Status404NotFound);
@@ -198,7 +197,7 @@ namespace Domain.Services.Implementations
             // Convert to response model
             DeleteUserResponse response = deletedUser.ConvertToDeleteUserResponse();
 
-            Debug.WriteLine($"User {username} deleted successfully.");
+            Debug.WriteLine($"User {email} deleted successfully.");
             return Result.Success(response);
         }
 
@@ -226,18 +225,18 @@ namespace Domain.Services.Implementations
             // Save changes
             await _userRepository.UpdateAsync(user);
 
-            Debug.WriteLine($"Email validated for user {user.Uname}");
+            Debug.WriteLine($"Email validated for user {user.Email}");
             return Result.Success(true);
         }
 
-        public async Task<Result<bool>> UpdateLastLoginAsync(string username)
+        public async Task<Result<bool>> UpdateLastLoginAsync(string email)
         {
-            if (string.IsNullOrWhiteSpace(username))
+            if (string.IsNullOrWhiteSpace(email))
             {
-                return Result.Failure<bool>("Username is required.", StatusCodes.Status400BadRequest);
+                return Result.Failure<bool>("Email is required.", StatusCodes.Status400BadRequest);
             }
 
-            var userToUpdate = await _userRepository.FindByUsernameAsync(username);
+            var userToUpdate = await _userRepository.FindByEmailAsync(email);
             if (userToUpdate == null)
             {
                 return Result.Failure<bool>("User not found.", StatusCodes.Status404NotFound);
@@ -250,18 +249,18 @@ namespace Domain.Services.Implementations
             userToUpdate.Lastlogin = DateTime.UtcNow;
             await _userRepository.UpdateAsync(userToUpdate);
 
-            Debug.WriteLine($"Last login updated for user {username}");
+            Debug.WriteLine($"Last login updated for user {email}");
             return Result.Success(true);
         }
 
-        public async Task<Result<bool>> LogoutAsync(string username)
+        public async Task<Result<bool>> LogoutAsync(string email)
         {
-            if (string.IsNullOrWhiteSpace(username))
+            if (string.IsNullOrWhiteSpace(email))
             {
-                return Result.Failure<bool>("Username is required.", StatusCodes.Status400BadRequest);
+                return Result.Failure<bool>("Email is required.", StatusCodes.Status400BadRequest);
             }
 
-            var userToUpdate = await _userRepository.FindByUsernameAsync(username);
+            var userToUpdate = await _userRepository.FindByEmailAsync(email);
             if (userToUpdate == null)
             {
                 return Result.Failure<bool>("User not found.", StatusCodes.Status404NotFound);
@@ -275,7 +274,7 @@ namespace Domain.Services.Implementations
             userToUpdate.Lastupdatedat = DateTime.UtcNow;
             await _userRepository.UpdateAsync(userToUpdate);
 
-            Debug.WriteLine($"User {username} logged out successfully");
+            Debug.WriteLine($"User {email} logged out successfully");
             return Result.Success(true);
         }
 
@@ -309,7 +308,7 @@ namespace Domain.Services.Implementations
             // Save changes
             await _userRepository.UpdateAsync(user);
 
-            Debug.WriteLine($"Email validated for user {user.Uname}");
+            Debug.WriteLine($"Email validated for user {user.Email}");
             return Result.Success(true);
         }
 
@@ -326,7 +325,7 @@ namespace Domain.Services.Implementations
             }
 
             // Find the user
-            var user = await _userRepository.FindByUsernameAsync(changePasswordRequest.Username!);
+            var user = await _userRepository.FindByEmailAsync(changePasswordRequest.Email!);
             if (user == null)
             {
                 return Result.Failure<ChangePasswordResponse>("User not found.", StatusCodes.Status404NotFound);
@@ -353,12 +352,12 @@ namespace Domain.Services.Implementations
             // Create response
             var response = new ChangePasswordResponse
             {
-                Username = updatedUser.Uname,
+                Email = updatedUser.Email,
                 LastUpdatedAt = updatedUser.Lastupdatedat ?? DateTime.UtcNow,
                 Message = "Password changed successfully."
             };
 
-            Debug.WriteLine($"Password changed successfully for user {changePasswordRequest.Username}");
+            Debug.WriteLine($"Password changed successfully for user {changePasswordRequest.Email}");
             return Result.Success(response);
         }
 
@@ -394,8 +393,12 @@ namespace Domain.Services.Implementations
                 var updateResult = await _userRepository.UpdatePasswordResetTokenAsync(user.Email, resetToken, tokenExpiry);
                 if (updateResult)
                 {
+                    // Update user object in memory to reflect the token
+                    user.PasswordResetToken = resetToken;
+                    user.PasswordResetTokenExpiry = tokenExpiry;
+                    
                     // Send password reset email
-                    var emailResult = await _emailService.SendPasswordResetAsync(user.Email, user.Uname, resetToken);
+                    var emailResult = await _emailService.SendPasswordResetAsync(user);
                     if (emailResult.IsFailure)
                     {
                         Debug.WriteLine($"Failed to send password reset email to {user.Email}: {emailResult.Error}");
@@ -461,7 +464,7 @@ namespace Domain.Services.Implementations
                 ResetAt = DateTime.UtcNow
             };
 
-            Debug.WriteLine($"Password reset successfully for user {user.Uname}");
+            Debug.WriteLine($"Password reset successfully for user {user.Email}");
             return Result.Success(response);
         }
 
@@ -489,8 +492,12 @@ namespace Domain.Services.Implementations
                     
                     if (tokenUpdateResult)
                     {
+                        // Update user object in memory to reflect the token
+                        deletedUser.RestoreUserToken = restoreToken;
+                        deletedUser.RestoreUserTokenExpiry = tokenExpiry;
+                        
                         // Send restore email
-                        var emailResult = await _emailService.SendRestoreUserEmailAsync(sendRestoreUserEmailRequest.Email!, deletedUser.Uname, restoreToken);
+                        var emailResult = await _emailService.SendRestoreUserEmailAsync(deletedUser);
                         
                         if (emailResult.IsFailure)
                         {
@@ -543,10 +550,10 @@ namespace Domain.Services.Implementations
 
                 var response = new RestoreUserResponse
                 {
-                    Username = user.Uname
+                    Email = user.Email
                 };
 
-                Debug.WriteLine($"User {user.Uname} has been successfully restored");
+                Debug.WriteLine($"User {user.Email} has been successfully restored");
                 return Result.Success(response);
             }
             catch (Exception ex)

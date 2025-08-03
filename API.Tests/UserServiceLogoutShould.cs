@@ -25,14 +25,13 @@ namespace API.Tests
         public async Task ReturnSuccess_WhenUserLoggedOutSuccessfully()
         {
             // Arrange
-            var username = "testuser";
+            var email = "test@example.com";
             var user = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = username,
+                Email = email,
                 Firstname = "Test",
                 Lastname = "User",
-                Email = "test@example.com",
                 Password = "hashedpassword",
                 Deleted = false,
                 ValidEmail = true,
@@ -41,11 +40,11 @@ namespace API.Tests
                 Lastlogout = null
             };
 
-            _mockUserRepository.Setup(r => r.FindByUsernameAsync(username)).ReturnsAsync(user);
+            _mockUserRepository.Setup(r => r.FindByEmailAsync(email)).ReturnsAsync(user);
             _mockUserRepository.Setup(r => r.UpdateAsync(It.IsAny<User>())).ReturnsAsync(user);
 
             // Act
-            var result = await _userService.LogoutAsync(username);
+            var result = await _userService.LogoutAsync(email);
 
             // Assert
             Assert.True(result.IsSuccess);
@@ -55,7 +54,7 @@ namespace API.Tests
             _mockUserRepository.Verify(r => r.UpdateAsync(It.Is<User>(u => 
                 u.Lastlogout.HasValue && 
                 u.Lastupdatedat.HasValue &&
-                u.Uname == username)), Times.Once);
+                u.Email == email)), Times.Once);
         }
 
         [Fact]
@@ -66,10 +65,10 @@ namespace API.Tests
 
             // Assert
             Assert.True(result.IsFailure);
-            Assert.Equal("Username is required.", result.Error);
+            Assert.Equal("Email is required.", result.Error);
             Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
 
-            _mockUserRepository.Verify(r => r.FindByUsernameAsync(It.IsAny<string>()), Times.Never);
+            _mockUserRepository.Verify(r => r.FindByEmailAsync(It.IsAny<string>()), Times.Never);
             _mockUserRepository.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Never);
         }
 
@@ -81,10 +80,10 @@ namespace API.Tests
 
             // Assert
             Assert.True(result.IsFailure);
-            Assert.Equal("Username is required.", result.Error);
+            Assert.Equal("Email is required.", result.Error);
             Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
 
-            _mockUserRepository.Verify(r => r.FindByUsernameAsync(It.IsAny<string>()), Times.Never);
+            _mockUserRepository.Verify(r => r.FindByEmailAsync(It.IsAny<string>()), Times.Never);
             _mockUserRepository.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Never);
         }
 
@@ -96,10 +95,10 @@ namespace API.Tests
 
             // Assert
             Assert.True(result.IsFailure);
-            Assert.Equal("Username is required.", result.Error);
+            Assert.Equal("Email is required.", result.Error);
             Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
 
-            _mockUserRepository.Verify(r => r.FindByUsernameAsync(It.IsAny<string>()), Times.Never);
+            _mockUserRepository.Verify(r => r.FindByEmailAsync(It.IsAny<string>()), Times.Never);
             _mockUserRepository.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Never);
         }
 
@@ -107,18 +106,18 @@ namespace API.Tests
         public async Task ReturnFailure_WhenUserNotFound()
         {
             // Arrange
-            var username = "nonexistentuser";
-            _mockUserRepository.Setup(r => r.FindByUsernameAsync(username)).ReturnsAsync((User?)null);
+            var email = "nonexistent@example.com";
+            _mockUserRepository.Setup(r => r.FindByEmailAsync(email)).ReturnsAsync((User?)null);
 
             // Act
-            var result = await _userService.LogoutAsync(username);
+            var result = await _userService.LogoutAsync(email);
 
             // Assert
             Assert.True(result.IsFailure);
             Assert.Equal("User not found.", result.Error);
             Assert.Equal(StatusCodes.Status404NotFound, result.ErrorCode);
 
-            _mockUserRepository.Verify(r => r.FindByUsernameAsync(username), Times.Once);
+            _mockUserRepository.Verify(r => r.FindByEmailAsync(email), Times.Once);
             _mockUserRepository.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Never);
         }
 
@@ -126,31 +125,30 @@ namespace API.Tests
         public async Task ReturnFailure_WhenUserIsDeleted()
         {
             // Arrange
-            var username = "deleteduser";
+            var email = "deleted@example.com";
             var user = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = username,
+                Email = email,
                 Firstname = "Deleted",
                 Lastname = "User",
-                Email = "deleted@example.com",
                 Password = "hashedpassword",
                 Deleted = true, // User is deleted
                 ValidEmail = true,
                 Createdat = DateTime.UtcNow.AddDays(-1)
             };
 
-            _mockUserRepository.Setup(r => r.FindByUsernameAsync(username)).ReturnsAsync(user);
+            _mockUserRepository.Setup(r => r.FindByEmailAsync(email)).ReturnsAsync(user);
 
             // Act
-            var result = await _userService.LogoutAsync(username);
+            var result = await _userService.LogoutAsync(email);
 
             // Assert
             Assert.True(result.IsFailure);
             Assert.Equal("User is deleted.", result.Error);
             Assert.Equal(StatusCodes.Status410Gone, result.ErrorCode);
 
-            _mockUserRepository.Verify(r => r.FindByUsernameAsync(username), Times.Once);
+            _mockUserRepository.Verify(r => r.FindByEmailAsync(email), Times.Once);
             _mockUserRepository.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Never);
         }
 
@@ -158,15 +156,14 @@ namespace API.Tests
         public async Task UpdateLastlogoutAndLastupdatedat_WhenLogoutSuccessful()
         {
             // Arrange
-            var username = "testuser";
+            var email = "test@example.com";
             var beforeLogout = DateTime.UtcNow;
             var user = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = username,
                 Firstname = "Test",
                 Lastname = "User",
-                Email = "test@example.com",
+                Email = email,
                 Password = "hashedpassword",
                 Deleted = false,
                 ValidEmail = true,
@@ -176,11 +173,11 @@ namespace API.Tests
                 Lastupdatedat = DateTime.UtcNow.AddHours(-1)
             };
 
-            _mockUserRepository.Setup(r => r.FindByUsernameAsync(username)).ReturnsAsync(user);
+            _mockUserRepository.Setup(r => r.FindByEmailAsync(email)).ReturnsAsync(user);
             _mockUserRepository.Setup(r => r.UpdateAsync(It.IsAny<User>())).ReturnsAsync(user);
 
             // Act
-            var result = await _userService.LogoutAsync(username);
+            var result = await _userService.LogoutAsync(email);
             var afterLogout = DateTime.UtcNow;
 
             // Assert

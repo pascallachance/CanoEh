@@ -21,9 +21,9 @@ namespace Domain.Services.Interfaces
 
         Task<Result<bool>> ValidateEmailByTokenAsync(string token);
 
-        Task<Result<bool>> UpdateLastLoginAsync(string username);
+        Task<Result<bool>> UpdateLastLoginAsync(string email);
 
-        Task<Result<bool>> LogoutAsync(string username);
+        Task<Result<bool>> LogoutAsync(string email);
 
         Task<Result<ChangePasswordResponse>> ChangePasswordAsync(ChangePasswordRequest changePasswordRequest);
 

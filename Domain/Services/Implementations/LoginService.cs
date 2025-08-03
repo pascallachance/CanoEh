@@ -23,10 +23,10 @@ namespace Domain.Services.Implementations
             {
                 return Result.Failure<LoginResponse>(validationResult.Error ?? "Validation failed.", validationResult.ErrorCode ?? StatusCodes.Status400BadRequest);
             }
-            var foundUser = await _userRepository.FindByUsernameAsync(request.Username);
+            var foundUser = await _userRepository.FindByEmailAsync(request.Email);
             if (foundUser == null)
             {
-                return Result.Failure<LoginResponse>("Invalid username or password", StatusCodes.Status401Unauthorized);
+                return Result.Failure<LoginResponse>("Invalid email or password", StatusCodes.Status401Unauthorized);
             }
             if (foundUser.Deleted)
             {
@@ -39,7 +39,7 @@ namespace Domain.Services.Implementations
             var hasher = new PasswordHasher();
             if (string.IsNullOrEmpty(request.Password) || !hasher.VerifyPassword(request.Password, foundUser.Password))
             {
-                return Result.Failure<LoginResponse>("Invalid username or password", StatusCodes.Status401Unauthorized);
+                return Result.Failure<LoginResponse>("Invalid email or password", StatusCodes.Status401Unauthorized);
             }
             
             // Login successful - create a new session
@@ -55,14 +55,14 @@ namespace Domain.Services.Implementations
             });
         }
 
-        public async Task<Result<bool>> SendValidationEmailAsync(string username)
+        public async Task<Result<bool>> SendValidationEmailAsync(string email)
         {
-            if (string.IsNullOrWhiteSpace(username))
+            if (string.IsNullOrWhiteSpace(email))
             {
-                return Result.Failure<bool>("Username is required.", StatusCodes.Status400BadRequest);
+                return Result.Failure<bool>("Email is required.", StatusCodes.Status400BadRequest);
             }
 
-            var user = await _userRepository.FindByUsernameAsync(username);
+            var user = await _userRepository.FindByEmailAsync(email);
             if (user == null)
             {
                 return Result.Failure<bool>("User not found.", StatusCodes.Status404NotFound);
@@ -85,7 +85,7 @@ namespace Domain.Services.Implementations
                 user.Lastupdatedat = DateTime.UtcNow;
                 await _userRepository.UpdateAsync(user);
 
-                var emailSent = await _emailService.SendEmailValidationAsync(user.Email, user.Uname, user.EmailValidationToken);
+                var emailSent = await _emailService.SendEmailValidationAsync(user);
                 if (emailSent.IsFailure)
                 {
                     return Result.Failure<bool>("Failed to send validation email.", StatusCodes.Status500InternalServerError);

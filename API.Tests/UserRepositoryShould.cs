@@ -8,53 +8,6 @@ namespace API.Tests
     public class UserRepositoryShould
     {
         [Fact]
-        public async Task FindByUsernameAsync_ReturnUser_WhenUserExists()
-        {
-            // Arrange
-            var mockRepo = new Mock<IUserRepository>();
-            var testUser = new User
-            {
-                ID = Guid.NewGuid(),
-                Uname = "testuser",
-                Firstname = "Test",
-                Lastname = "User",
-                Email = "test@example.com",
-                Password = "hashedpassword",
-                Deleted = false,
-                ValidEmail = true,
-                Createdat = DateTime.UtcNow
-            };
-
-            mockRepo.Setup(repo => repo.FindByUsernameAsync("testuser"))
-                   .ReturnsAsync(testUser);
-
-            // Act
-            var result = await mockRepo.Object.FindByUsernameAsync("testuser");
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal("testuser", result.Uname);
-            Assert.Equal("test@example.com", result.Email);
-            mockRepo.Verify(repo => repo.FindByUsernameAsync("testuser"), Times.Once);
-        }
-
-        [Fact]
-        public async Task FindByUsernameAsync_ReturnNull_WhenUserNotExists()
-        {
-            // Arrange
-            var mockRepo = new Mock<IUserRepository>();
-            mockRepo.Setup(repo => repo.FindByUsernameAsync("nonexistentuser"))
-                   .ReturnsAsync((User?)null);
-
-            // Act
-            var result = await mockRepo.Object.FindByUsernameAsync("nonexistentuser");
-
-            // Assert
-            Assert.Null(result);
-            mockRepo.Verify(repo => repo.FindByUsernameAsync("nonexistentuser"), Times.Once);
-        }
-
-        [Fact]
         public async Task FindByEmailAsync_ReturnUser_WhenUserExists()
         {
             // Arrange
@@ -62,10 +15,9 @@ namespace API.Tests
             var testUser = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = "testuser",
+                Email = "test@example.com",
                 Firstname = "Test",
                 Lastname = "User",
-                Email = "test@example.com",
                 Password = "hashedpassword",
                 Deleted = false,
                 ValidEmail = true,
@@ -81,40 +33,7 @@ namespace API.Tests
             // Assert
             Assert.NotNull(result);
             Assert.Equal("test@example.com", result.Email);
-            Assert.Equal("testuser", result.Uname);
             mockRepo.Verify(repo => repo.FindByEmailAsync("test@example.com"), Times.Once);
-        }
-
-        [Fact]
-        public async Task ExistsByUsernameAsync_ReturnTrue_WhenUserExists()
-        {
-            // Arrange
-            var mockRepo = new Mock<IUserRepository>();
-            mockRepo.Setup(repo => repo.ExistsByUsernameAsync("existinguser"))
-                   .ReturnsAsync(true);
-
-            // Act
-            var result = await mockRepo.Object.ExistsByUsernameAsync("existinguser");
-
-            // Assert
-            Assert.True(result);
-            mockRepo.Verify(repo => repo.ExistsByUsernameAsync("existinguser"), Times.Once);
-        }
-
-        [Fact]
-        public async Task ExistsByUsernameAsync_ReturnFalse_WhenUserNotExists()
-        {
-            // Arrange
-            var mockRepo = new Mock<IUserRepository>();
-            mockRepo.Setup(repo => repo.ExistsByUsernameAsync("nonexistentuser"))
-                   .ReturnsAsync(false);
-
-            // Act
-            var result = await mockRepo.Object.ExistsByUsernameAsync("nonexistentuser");
-
-            // Assert
-            Assert.False(result);
-            mockRepo.Verify(repo => repo.ExistsByUsernameAsync("nonexistentuser"), Times.Once);
         }
 
         [Fact]
@@ -127,10 +46,9 @@ namespace API.Tests
                 new User
                 {
                     ID = Guid.NewGuid(),
-                    Uname = "user1",
+                    Email = "user1@example.com",
                     Firstname = "User",
                     Lastname = "One",
-                    Email = "user1@example.com",
                     Password = "hashedpassword",
                     Deleted = false,
                     ValidEmail = true,
@@ -139,10 +57,9 @@ namespace API.Tests
                 new User
                 {
                     ID = Guid.NewGuid(),
-                    Uname = "user2",
+                    Email = "user2@example.com",
                     Firstname = "User",
                     Lastname = "Two",
-                    Email = "user2@example.com",
                     Password = "hashedpassword",
                     Deleted = false,
                     ValidEmail = true,

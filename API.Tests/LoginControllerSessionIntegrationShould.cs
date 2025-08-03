@@ -49,7 +49,7 @@ namespace API.Tests
             var sessionId = Guid.NewGuid();
             var loginRequest = new LoginRequest
             {
-                Username = "testuser12345",
+                Email = "test@example.com",
                 Password = "testpass123"
             };
 

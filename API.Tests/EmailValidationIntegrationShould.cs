@@ -32,13 +32,13 @@ namespace API.Tests
                 ValidEmail = false // Email not validated
             };
 
-            mockRepo.Setup(repo => repo.FindByUsernameAsync("testuser"))
+            mockRepo.Setup(repo => repo.FindByEmailAsync("test@example.com"))
                     .ReturnsAsync(existingUser);
 
             var mockSessionService = new Mock<ISessionService>();
             var mockUserService = new Mock<IUserService>();
             var loginService = new LoginService(mockRepo.Object, mockEmailService.Object, mockSessionService.Object, mockUserService.Object);
-            var loginRequest = new LoginRequest { Username = "testuser", Password = "password123" };
+            var loginRequest = new LoginRequest { Email = "test@example.com", Password = "password123" };
 
             // Act
             var result = await loginService.LoginAsync(loginRequest, null, null);
@@ -69,7 +69,7 @@ namespace API.Tests
                 ValidEmail = true // Email validated
             };
 
-            mockRepo.Setup(repo => repo.FindByUsernameAsync("testuser"))
+            mockRepo.Setup(repo => repo.FindByEmailAsync("test@example.com"))
                     .ReturnsAsync(existingUser);
 
             var mockSessionService = new Mock<ISessionService>();
@@ -87,7 +87,7 @@ namespace API.Tests
                              .ReturnsAsync(Result.Success(session));
             
             var loginService = new LoginService(mockRepo.Object, mockEmailService.Object, mockSessionService.Object, mockUserService.Object);
-            var loginRequest = new LoginRequest { Username = "testuser", Password = "password123" };
+            var loginRequest = new LoginRequest { Email = "test@example.com", Password = "password123" };
 
             // Act
             var result = await loginService.LoginAsync(loginRequest, null, null);

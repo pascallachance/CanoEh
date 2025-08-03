@@ -103,7 +103,7 @@ function Login({ onLoginSuccess }: LoginProps) {
                     <div className="form-group">
                         <label htmlFor="email">Email:</label>
                         <input
-                            type="text"
+                            type="email"
                             id="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}

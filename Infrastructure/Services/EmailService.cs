@@ -120,7 +120,7 @@ The CanoEh Team";
                 };
                 await smtp.SendMailAsync(mail);
 
-                Debug.WriteLine($"Password reset email sent to {user.Email} for user {user.Email} with token {user.PasswordResetToken}");
+                Debug.WriteLine($"Password reset email sent to {user.Email} with token {user.PasswordResetToken}");
                 return Result.Success();
             }
             catch (SmtpException smtpEx)
@@ -180,7 +180,7 @@ The CanoEh Team";
                 };
                 await smtp.SendMailAsync(mail);
 
-                Debug.WriteLine($"Restore account email sent to {user.Email} for user {user.Email} with token {user.RestoreUserToken}");
+                Debug.WriteLine($"Restore account email sent to {user.Email} with token {user.RestoreUserToken}");
                 return Result.Success();
             }
             catch (SmtpException smtpEx)

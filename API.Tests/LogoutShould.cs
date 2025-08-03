@@ -30,12 +30,12 @@ namespace API.Tests
         public async Task ReturnOk_WhenUserLoggedOutSuccessfully()
         {
             // Arrange
-            var username = "testuser";
+            var email = "test@example.com";
             var result = Result.Success(true);
-            _mockUserService.Setup(s => s.LogoutAsync(username)).ReturnsAsync(result);
+            _mockUserService.Setup(s => s.LogoutAsync(email)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, username) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -56,14 +56,14 @@ namespace API.Tests
             
             // Use reflection to check anonymous object properties
             var messageProperty = responseValue.GetType().GetProperty("message");
-            var usernameProperty = responseValue.GetType().GetProperty("username");
+            var emailProperty = responseValue.GetType().GetProperty("email");
             
             Assert.NotNull(messageProperty);
-            Assert.NotNull(usernameProperty);
+            Assert.NotNull(emailProperty);
             Assert.Equal("Logged out successfully.", messageProperty.GetValue(responseValue));
-            Assert.Equal(username, usernameProperty.GetValue(responseValue));
+            Assert.Equal(email, emailProperty.GetValue(responseValue));
 
-            _mockUserService.Verify(s => s.LogoutAsync(username), Times.Once);
+            _mockUserService.Verify(s => s.LogoutAsync(email), Times.Once);
         }
 
         [Fact]
@@ -113,12 +113,12 @@ namespace API.Tests
         public async Task ReturnNotFound_WhenUserNotFound()
         {
             // Arrange
-            var username = "nonexistentuser";
+            var email = "nonexistent@example.com";
             var result = Result.Failure<bool>("User not found.", StatusCodes.Status404NotFound);
-            _mockUserService.Setup(s => s.LogoutAsync(username)).ReturnsAsync(result);
+            _mockUserService.Setup(s => s.LogoutAsync(email)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, username) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -134,19 +134,19 @@ namespace API.Tests
             Assert.Equal(StatusCodes.Status404NotFound, objectResult.StatusCode);
             Assert.Equal("User not found.", objectResult.Value);
 
-            _mockUserService.Verify(s => s.LogoutAsync(username), Times.Once);
+            _mockUserService.Verify(s => s.LogoutAsync(email), Times.Once);
         }
 
         [Fact]
         public async Task ReturnGone_WhenUserIsDeleted()
         {
             // Arrange
-            var username = "deleteduser";
+            var email = "deleted@example.com";
             var result = Result.Failure<bool>("User is deleted.", StatusCodes.Status410Gone);
-            _mockUserService.Setup(s => s.LogoutAsync(username)).ReturnsAsync(result);
+            _mockUserService.Setup(s => s.LogoutAsync(email)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, username) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -162,19 +162,19 @@ namespace API.Tests
             Assert.Equal(StatusCodes.Status410Gone, objectResult.StatusCode);
             Assert.Equal("User is deleted.", objectResult.Value);
 
-            _mockUserService.Verify(s => s.LogoutAsync(username), Times.Once);
+            _mockUserService.Verify(s => s.LogoutAsync(email), Times.Once);
         }
 
         [Fact]
         public async Task ReturnInternalServerError_WhenServiceThrowsException()
         {
             // Arrange
-            var username = "testuser";
+            var email = "test@example.com";
             var result = Result.Failure<bool>("Database connection failed.", StatusCodes.Status500InternalServerError);
-            _mockUserService.Setup(s => s.LogoutAsync(username)).ReturnsAsync(result);
+            _mockUserService.Setup(s => s.LogoutAsync(email)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, username) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -190,7 +190,7 @@ namespace API.Tests
             Assert.Equal(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
             Assert.Equal("Database connection failed.", objectResult.Value);
 
-            _mockUserService.Verify(s => s.LogoutAsync(username), Times.Once);
+            _mockUserService.Verify(s => s.LogoutAsync(email), Times.Once);
         }
     }
 }

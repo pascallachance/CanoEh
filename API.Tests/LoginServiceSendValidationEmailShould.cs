@@ -30,12 +30,11 @@ namespace API.Tests
         public async Task ReturnSuccess_WhenEmailSentSuccessfully()
         {
             // Arrange
-            var username = "testuser";
+            var email = "test@example.com";
             var user = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = username,
-                Email = "test@example.com",
+                Email = email,
                 Firstname = "Test",
                 Lastname = "User",
                 Password = "hashedpassword",
@@ -44,32 +43,32 @@ namespace API.Tests
                 EmailValidationToken = null
             };
 
-            _mockUserRepository.Setup(r => r.FindByUsernameAsync(username))
+            _mockUserRepository.Setup(r => r.FindByEmailAsync(email))
                              .ReturnsAsync(user);
             _mockUserRepository.Setup(r => r.UpdateAsync(It.IsAny<User>()))
                              .ReturnsAsync((User u) => u);
-            _mockEmailService.Setup(e => e.SendEmailValidationAsync(user.Email, user.Uname, It.IsAny<string>()))
+            _mockEmailService.Setup(e => e.SendEmailValidationAsync(It.IsAny<User>()))
                               .ReturnsAsync(Result.Success());
 
             // Act
-            var result = await _loginService.SendValidationEmailAsync(username);
+            var result = await _loginService.SendValidationEmailAsync(email);
 
             // Assert
             Assert.True(result.IsSuccess);
             Assert.True(result.Value);
             _mockUserRepository.Verify(r => r.UpdateAsync(It.Is<User>(u => !string.IsNullOrEmpty(u.EmailValidationToken))), Times.Once);
-            _mockEmailService.Verify(e => e.SendEmailValidationAsync(user.Email, user.Uname, It.IsAny<string>()), Times.Once);
+            _mockEmailService.Verify(e => e.SendEmailValidationAsync(It.IsAny<User>()), Times.Once);
         }
 
         [Fact]
-        public async Task ReturnFailure_WhenUsernameIsEmpty()
+        public async Task ReturnFailure_WhenEmailIsEmpty()
         {
             // Act
             var result = await _loginService.SendValidationEmailAsync("");
 
             // Assert
             Assert.True(result.IsFailure);
-            Assert.Equal("Username is required.", result.Error);
+            Assert.Equal("Email is required.", result.Error);
             Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
         }
 
@@ -77,12 +76,12 @@ namespace API.Tests
         public async Task ReturnFailure_WhenUserNotFound()
         {
             // Arrange
-            var username = "nonexistentuser";
-            _mockUserRepository.Setup(r => r.FindByUsernameAsync(username))
+            var email = "nonexistent@example.com";
+            _mockUserRepository.Setup(r => r.FindByEmailAsync(email))
                              .ReturnsAsync((User?)null);
 
             // Act
-            var result = await _loginService.SendValidationEmailAsync(username);
+            var result = await _loginService.SendValidationEmailAsync(email);
 
             // Assert
             Assert.True(result.IsFailure);
@@ -94,12 +93,11 @@ namespace API.Tests
         public async Task ReturnFailure_WhenUserIsDeleted()
         {
             // Arrange
-            var username = "deleteduser";
+            var email = "deleted@example.com";
             var user = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = username,
-                Email = "deleted@example.com",
+                Email = email,
                 Firstname = "Deleted",
                 Lastname = "User",
                 Password = "hashedpassword",
@@ -107,11 +105,11 @@ namespace API.Tests
                 Deleted = true
             };
 
-            _mockUserRepository.Setup(r => r.FindByUsernameAsync(username))
+            _mockUserRepository.Setup(r => r.FindByEmailAsync(email))
                              .ReturnsAsync(user);
 
             // Act
-            var result = await _loginService.SendValidationEmailAsync(username);
+            var result = await _loginService.SendValidationEmailAsync(email);
 
             // Assert
             Assert.True(result.IsFailure);
@@ -123,12 +121,11 @@ namespace API.Tests
         public async Task ReturnFailure_WhenEmailAlreadyValidated()
         {
             // Arrange
-            var username = "validateduser";
+            var email = "validated@example.com";
             var user = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = username,
-                Email = "validated@example.com",
+                Email = email,
                 Firstname = "Validated",
                 Lastname = "User",
                 Password = "hashedpassword",
@@ -136,11 +133,11 @@ namespace API.Tests
                 Deleted = false
             };
 
-            _mockUserRepository.Setup(r => r.FindByUsernameAsync(username))
+            _mockUserRepository.Setup(r => r.FindByEmailAsync(email))
                              .ReturnsAsync(user);
 
             // Act
-            var result = await _loginService.SendValidationEmailAsync(username);
+            var result = await _loginService.SendValidationEmailAsync(email);
 
             // Assert
             Assert.True(result.IsFailure);
@@ -152,12 +149,11 @@ namespace API.Tests
         public async Task ReturnFailure_WhenEmailServiceFails()
         {
             // Arrange
-            var username = "testuser";
+            var email = "test@example.com";
             var user = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = username,
-                Email = "test@example.com",
+                Email = email,
                 Firstname = "Test",
                 Lastname = "User",
                 Password = "hashedpassword",
@@ -166,15 +162,15 @@ namespace API.Tests
                 EmailValidationToken = null
             };
 
-            _mockUserRepository.Setup(r => r.FindByUsernameAsync(username))
+            _mockUserRepository.Setup(r => r.FindByEmailAsync(email))
                              .ReturnsAsync(user);
             _mockUserRepository.Setup(r => r.UpdateAsync(It.IsAny<User>()))
                              .ReturnsAsync((User u) => u);
-            _mockEmailService.Setup(e => e.SendEmailValidationAsync(user.Email, user.Uname, It.IsAny<string>()))
+            _mockEmailService.Setup(e => e.SendEmailValidationAsync(It.IsAny<User>()))
                              .ReturnsAsync(Result.Failure("Failed to send validation email."));
 
             // Act
-            var result = await _loginService.SendValidationEmailAsync(username);
+            var result = await _loginService.SendValidationEmailAsync(email);
 
             // Assert
             Assert.True(result.IsFailure);
@@ -186,12 +182,11 @@ namespace API.Tests
         public async Task ReturnFailure_WhenEmailServiceThrowsException()
         {
             // Arrange
-            var username = "testuser";
+            var email = "test@example.com";
             var user = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = username,
-                Email = "test@example.com",
+                Email = email,
                 Firstname = "Test",
                 Lastname = "User",
                 Password = "hashedpassword",
@@ -200,15 +195,15 @@ namespace API.Tests
                 EmailValidationToken = null
             };
 
-            _mockUserRepository.Setup(r => r.FindByUsernameAsync(username))
+            _mockUserRepository.Setup(r => r.FindByEmailAsync(email))
                              .ReturnsAsync(user);
             _mockUserRepository.Setup(r => r.UpdateAsync(It.IsAny<User>()))
                              .ReturnsAsync((User u) => u);
-            _mockEmailService.Setup(e => e.SendEmailValidationAsync(user.Email, user.Uname, It.IsAny<string>()))
+            _mockEmailService.Setup(e => e.SendEmailValidationAsync(It.IsAny<User>()))
                            .ThrowsAsync(new Exception("SMTP error"));
 
             // Act
-            var result = await _loginService.SendValidationEmailAsync(username);
+            var result = await _loginService.SendValidationEmailAsync(email);
 
             // Assert
             Assert.True(result.IsFailure);

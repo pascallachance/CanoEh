@@ -55,14 +55,14 @@ namespace Domain.Services.Implementations
             });
         }
 
-        public async Task<Result<bool>> SendValidationEmailAsync(string username)
+        public async Task<Result<bool>> SendValidationEmailAsync(string email)
         {
-            if (string.IsNullOrWhiteSpace(username))
+            if (string.IsNullOrWhiteSpace(email))
             {
-                return Result.Failure<bool>("Username is required.", StatusCodes.Status400BadRequest);
+                return Result.Failure<bool>("Email is required.", StatusCodes.Status400BadRequest);
             }
 
-            var user = await _userRepository.FindByUsernameAsync(username);
+            var user = await _userRepository.FindByEmailAsync(email);
             if (user == null)
             {
                 return Result.Failure<bool>("User not found.", StatusCodes.Status404NotFound);

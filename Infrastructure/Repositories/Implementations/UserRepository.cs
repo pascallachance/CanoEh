@@ -168,19 +168,6 @@ WHERE dbo.Users.id = @id";
         }
 
         // IUserRepository specific methods
-        public async Task<User?> FindByUsernameAsync(string username)
-        {
-            if (dbConnection.State != ConnectionState.Open)
-            {
-                dbConnection.Open();
-            }
-            var query = @"
-SELECT TOP(1) * 
-FROM dbo.Users 
-WHERE uname = @username AND deleted = 0";
-            return await dbConnection.QueryFirstOrDefaultAsync<User>(query, new { username });
-        }
-
         public async Task<User?> FindByEmailAsync(string email)
         {
             if (dbConnection.State != ConnectionState.Open)
@@ -205,15 +192,6 @@ SELECT *
 FROM dbo.Users 
 WHERE deleted = @deleted";
             return await dbConnection.QueryAsync<User>(query, new { deleted });
-        }
-
-        public async Task<bool> ExistsByUsernameAsync(string username)
-        {
-            if (dbConnection.State != ConnectionState.Open)
-            {
-                dbConnection.Open();
-            }
-            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.Users WHERE uname = @username AND deleted = 0", new { username });
         }
 
         public async Task<bool> ExistsByEmailAsync(string email)
@@ -265,7 +243,7 @@ WHERE email = @email AND deleted = 0";
             return rowsAffected > 0;
         }
 
-        public async Task<bool> ClearPasswordResetTokenAsync(string username)
+        public async Task<bool> ClearPasswordResetTokenAsync(string email)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -274,8 +252,8 @@ WHERE email = @email AND deleted = 0";
             var query = @"
 UPDATE dbo.Users 
 SET passwordResetToken = NULL, passwordResetTokenExpiry = NULL, lastupdatedat = @now
-WHERE uname = @username AND deleted = 0";
-            var rowsAffected = await dbConnection.ExecuteAsync(query, new { username, now = DateTime.UtcNow });
+WHERE email = @email AND deleted = 0";
+            var rowsAffected = await dbConnection.ExecuteAsync(query, new { email, now = DateTime.UtcNow });
             return rowsAffected > 0;
         }
 

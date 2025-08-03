@@ -29,9 +29,9 @@ namespace API.Tests
             var user = new User
             {
                 ID = Guid.NewGuid(),
+                Email = email,
                 Firstname = "Test",
                 Lastname = "User",
-                Email = email,
                 Password = "hashedpassword",
                 Deleted = false,
                 ValidEmail = true,
@@ -129,10 +129,9 @@ namespace API.Tests
             var user = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = "deleteduser",
+                Email = email,
                 Firstname = "Deleted",
                 Lastname = "User",
-                Email = email,
                 Password = "hashedpassword",
                 Deleted = true, // User is deleted
                 ValidEmail = true,

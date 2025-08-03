@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import './Login.css';
 
 interface LoginRequest {
-    username: string;
+    email: string;
     password: string;
 }
 
@@ -18,7 +18,7 @@ interface LoginProps {
 }
 
 function Login({ onLoginSuccess }: LoginProps) {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -44,7 +44,7 @@ function Login({ onLoginSuccess }: LoginProps) {
 
         try {
             const loginRequest: LoginRequest = {
-                username,
+                email,
                 password
             };
             const response = await fetch('https://localhost:7182/api/Login/login', {
@@ -61,10 +61,10 @@ function Login({ onLoginSuccess }: LoginProps) {
                 const result: LoginResponse = await response.json();
                 setSuccess(true);
                 console.log('Login successful:', result);
-                
+
                 // Store CSRF token for future requests (stored in cookie by server)
                 console.log('CSRF Token received:', result.csrfToken);
-                
+
                 // Notify parent component of successful login
                 if (onLoginSuccess) {
                     setTimeout(() => onLoginSuccess(), 1500); // Small delay to show success message
@@ -101,16 +101,15 @@ function Login({ onLoginSuccess }: LoginProps) {
                 <form className="login-form" onSubmit={handleSubmit}>
                     <h2>Sign in or create account</h2>
                     <div className="form-group">
-                        <label htmlFor="username">Username:</label>
+                        <label htmlFor="email">Email:</label>
                         <input
-                            type="text"
-                            id="username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            type="email"
+                            id="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
-                            minLength={8}
-                            placeholder="Enter your username (min 8 characters)"
-                            autoComplete="username"
+                            placeholder="Enter your email"
+                            autoComplete="email"
                         />
                     </div>
 

@@ -107,10 +107,10 @@ namespace API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var authenticatedUsername = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
                 // Ensure user can only update their own information
-                if (!string.Equals(updateRequest.Email, authenticatedUsername, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(updateRequest.Email, authenticatedEmail, StringComparison.OrdinalIgnoreCase))
                 {
                     return StatusCode(StatusCodes.Status403Forbidden, "You can only update your own user information.");
                 }
@@ -193,10 +193,10 @@ namespace API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var authenticatedUsername = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
                 // Ensure user can only change their own password
-                if (!string.Equals(changePasswordRequest.Email, authenticatedUsername, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(changePasswordRequest.Email, authenticatedEmail, StringComparison.OrdinalIgnoreCase))
                 {
                     return StatusCode(StatusCodes.Status403Forbidden, "You can only change your own password.");
                 }

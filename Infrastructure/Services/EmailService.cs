@@ -16,7 +16,7 @@ namespace Infrastructure.Services
         private readonly int? _smtpPort = int.TryParse(configuration["EmailSettings:SmtpPort"], out var port) ? port : null;
         private readonly bool? _smtpEnableSsl = bool.TryParse(configuration["EmailSettings:EnableSsl"], out var ssl) ? ssl : null;
 
-        public async Task<Result> SendEmailValidationAsync(string email, string validationToken)
+        public async Task<Result> SendEmailValidationAsync(string email, string firstname, string lastname, string validationToken)
         {
             // Check configuration and return error messages if missing
             if (string.IsNullOrWhiteSpace(_smtpServer))
@@ -35,7 +35,7 @@ namespace Infrastructure.Services
             try
             {
                 var validationUrl = $"{_baseUrl}/api/EmailValidation/ValidateEmail/{validationToken}";
-                var body = $@"Hello {email},
+                var body = $@"Hello {firstname} {lastname},
 
 Thank you for registering with CanoEh! To complete your registration, please click the link below to validate your email address:
 
@@ -76,7 +76,7 @@ The CanoEh Team";
             }
         }
 
-        public async Task<Result> SendPasswordResetAsync(string email, string resetToken)
+        public async Task<Result> SendPasswordResetAsync(string email, string firstname, string lastname, string resetToken)
         {
             // Check configuration and return error messages if missing
             if (string.IsNullOrWhiteSpace(_smtpServer))
@@ -95,7 +95,7 @@ The CanoEh Team";
             try
             {
                 var resetUrl = $"{_baseUrl}/api/PasswordReset/ResetPassword?token={resetToken}";
-                var body = $@"Hello {email},
+                var body = $@"Hello {firstname} {lastname},
 
 You have requested to reset your password for your CanoEh account. To reset your password, please click the link below:
 
@@ -136,7 +136,7 @@ The CanoEh Team";
             }
         }
 
-        public async Task<Result> SendRestoreUserEmailAsync(string email, string restoreToken)
+        public async Task<Result> SendRestoreUserEmailAsync(string email, string firstname, string lastname, string restoreToken)
         {
             // Check configuration and return error messages if missing
             if (string.IsNullOrWhiteSpace(_smtpServer))
@@ -155,7 +155,7 @@ The CanoEh Team";
             try
             {
                 var restoreUrl = $"{_baseUrl}/api/User/RestoreUser?token={restoreToken}";
-                var body = $@"Hello {email},
+                var body = $@"Hello {firstname} {lastname},
 
 You have requested to restore your deleted CanoEh account. To restore your account, please click the link below:
 

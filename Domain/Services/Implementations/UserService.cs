@@ -53,7 +53,7 @@ namespace Domain.Services.Implementations
                 });
 
                 // Send email validation
-                var result = await _emailService.SendEmailValidationAsync(user.Email, user.EmailValidationToken!);
+                var result = await _emailService.SendEmailValidationAsync(user.Email, user.Firstname, user.Lastname, user.EmailValidationToken!);
                 if (result.IsFailure)
                 {
                     Debug.WriteLine($"Email send failed: {result.Error}");
@@ -394,7 +394,7 @@ namespace Domain.Services.Implementations
                 if (updateResult)
                 {
                     // Send password reset email
-                    var emailResult = await _emailService.SendPasswordResetAsync(user.Email, resetToken);
+                    var emailResult = await _emailService.SendPasswordResetAsync(user.Email, user.Firstname, user.Lastname, resetToken);
                     if (emailResult.IsFailure)
                     {
                         Debug.WriteLine($"Failed to send password reset email to {user.Email}: {emailResult.Error}");
@@ -489,7 +489,7 @@ namespace Domain.Services.Implementations
                     if (tokenUpdateResult)
                     {
                         // Send restore email
-                        var emailResult = await _emailService.SendRestoreUserEmailAsync(sendRestoreUserEmailRequest.Email!, restoreToken);
+                        var emailResult = await _emailService.SendRestoreUserEmailAsync(sendRestoreUserEmailRequest.Email!, deletedUser.Firstname, deletedUser.Lastname, restoreToken);
                         
                         if (emailResult.IsFailure)
                         {

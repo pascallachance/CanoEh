@@ -108,7 +108,6 @@ function Login({ onLoginSuccess }: LoginProps) {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            minLength={8}
                             placeholder="Enter your email"
                             autoComplete="email"
                         />

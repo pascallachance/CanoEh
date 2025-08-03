@@ -39,7 +39,6 @@ namespace Domain.Services.Implementations
                 var hasher = new PasswordHasher();
                 user = await _userRepository.AddAsync(new User
                 {
-                    Uname = newUser.Username,
                     Firstname = newUser.Firstname,
                     Lastname = newUser.Lastname,
                     Email = newUser.Email,
@@ -54,7 +53,7 @@ namespace Domain.Services.Implementations
                 });
 
                 // Send email validation
-                var result = await _emailService.SendEmailValidationAsync(user.Email, user.Uname, user.EmailValidationToken!);
+                var result = await _emailService.SendEmailValidationAsync(user.Email, user.Email, user.EmailValidationToken!);
                 if (result.IsFailure)
                 {
                     Debug.WriteLine($"Email send failed: {result.Error}");
@@ -226,7 +225,7 @@ namespace Domain.Services.Implementations
             // Save changes
             await _userRepository.UpdateAsync(user);
 
-            Debug.WriteLine($"Email validated for user {user.Uname}");
+            Debug.WriteLine($"Email validated for user {user.Email}");
             return Result.Success(true);
         }
 
@@ -309,7 +308,7 @@ namespace Domain.Services.Implementations
             // Save changes
             await _userRepository.UpdateAsync(user);
 
-            Debug.WriteLine($"Email validated for user {user.Uname}");
+            Debug.WriteLine($"Email validated for user {user.Email}");
             return Result.Success(true);
         }
 
@@ -353,7 +352,7 @@ namespace Domain.Services.Implementations
             // Create response
             var response = new ChangePasswordResponse
             {
-                Username = updatedUser.Uname,
+                Email = updatedUser.Email,
                 LastUpdatedAt = updatedUser.Lastupdatedat ?? DateTime.UtcNow,
                 Message = "Password changed successfully."
             };
@@ -395,7 +394,7 @@ namespace Domain.Services.Implementations
                 if (updateResult)
                 {
                     // Send password reset email
-                    var emailResult = await _emailService.SendPasswordResetAsync(user.Email, user.Uname, resetToken);
+                    var emailResult = await _emailService.SendPasswordResetAsync(user.Email, user.Email, resetToken);
                     if (emailResult.IsFailure)
                     {
                         Debug.WriteLine($"Failed to send password reset email to {user.Email}: {emailResult.Error}");
@@ -461,7 +460,7 @@ namespace Domain.Services.Implementations
                 ResetAt = DateTime.UtcNow
             };
 
-            Debug.WriteLine($"Password reset successfully for user {user.Uname}");
+            Debug.WriteLine($"Password reset successfully for user {user.Email}");
             return Result.Success(response);
         }
 
@@ -490,7 +489,7 @@ namespace Domain.Services.Implementations
                     if (tokenUpdateResult)
                     {
                         // Send restore email
-                        var emailResult = await _emailService.SendRestoreUserEmailAsync(sendRestoreUserEmailRequest.Email!, deletedUser.Uname, restoreToken);
+                        var emailResult = await _emailService.SendRestoreUserEmailAsync(sendRestoreUserEmailRequest.Email!, deletedUser.Email, restoreToken);
                         
                         if (emailResult.IsFailure)
                         {
@@ -543,10 +542,10 @@ namespace Domain.Services.Implementations
 
                 var response = new RestoreUserResponse
                 {
-                    Username = user.Uname
+                    Email = user.Email
                 };
 
-                Debug.WriteLine($"User {user.Uname} has been successfully restored");
+                Debug.WriteLine($"User {user.Email} has been successfully restored");
                 return Result.Success(response);
             }
             catch (Exception ex)

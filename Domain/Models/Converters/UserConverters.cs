@@ -10,7 +10,6 @@ namespace Domain.Models.Converters
             return new CreateUserResponse
             {
                 ID = user.ID,
-                Uname = user.Uname,
                 Firstname = user.Firstname,
                 Lastname = user.Lastname,
                 Email = user.Email,
@@ -28,7 +27,6 @@ namespace Domain.Models.Converters
             return new GetUserResponse
             {
                 ID = user.ID,
-                Uname = user.Uname,
                 Firstname = user.Firstname,
                 Lastname = user.Lastname,
                 Email = user.Email,
@@ -46,7 +44,6 @@ namespace Domain.Models.Converters
             return new UpdateUserResponse
             {
                 ID = user.ID,
-                Uname = user.Uname,
                 Firstname = user.Firstname,
                 Lastname = user.Lastname,
                 Email = user.Email,
@@ -64,7 +61,6 @@ namespace Domain.Models.Converters
             return new DeleteUserResponse
             {
                 ID = user.ID,
-                Uname = user.Uname,
                 Firstname = user.Firstname,
                 Lastname = user.Lastname,
                 Email = user.Email,

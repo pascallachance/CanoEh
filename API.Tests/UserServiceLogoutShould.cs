@@ -162,7 +162,6 @@ namespace API.Tests
             var user = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = "testuser",
                 Firstname = "Test",
                 Lastname = "User",
                 Email = email,

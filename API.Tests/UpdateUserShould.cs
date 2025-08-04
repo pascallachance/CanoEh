@@ -53,7 +53,7 @@ namespace API.Tests
             _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, username) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -115,7 +115,7 @@ namespace API.Tests
             _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, username) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -147,7 +147,7 @@ namespace API.Tests
             _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, username) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -168,10 +168,10 @@ namespace API.Tests
         public async Task ReturnNotFound_WhenUserDoesNotExist()
         {
             // Arrange
-            var username = "nonexistentuser";
+            var email = "nonexistentuser@example.com";
             var updateRequest = new UpdateUserRequest
             {
-                Email = username,
+                Email = email,
                 Firstname = "Test",
                 Lastname = "User"};
 
@@ -179,7 +179,7 @@ namespace API.Tests
             _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, username) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -201,10 +201,10 @@ namespace API.Tests
         {
             // Arrange
             var mockRepo = new Mock<IUserRepository>();
-            var username = "testuser";
+            var email = "testuser@example.com";
             var updateRequest = new UpdateUserRequest
             {
-                Email = username,
+                Email = email,
                 Phone = "9876543210",
                 Firstname = "Test",
                 Lastname = "User"};
@@ -212,7 +212,7 @@ namespace API.Tests
             var existingUser = new User
             {
                 ID = Guid.NewGuid(),
-                Email = username,
+                Email = email,
                 Phone = "1234567890",
                 Lastlogin = null,
                 Createdat = DateTime.UtcNow.AddDays(-30),
@@ -265,10 +265,10 @@ namespace API.Tests
         {
             // Arrange
             var mockRepo = new Mock<IUserRepository>();
-            var username = "testuser";
+            var email = "updated@example.com";
             var updateRequest = new UpdateUserRequest
             {
-                Email = username,
+                Email = email,
                 Firstname = "Test",
                 Lastname = "User"};
 
@@ -280,7 +280,7 @@ namespace API.Tests
             var existingUser = new User
             {
                 ID = originalId,
-                Email = username,
+                Email = email,
                 Phone = "1234567890",
                 Lastlogin = originalLastLogin,
                 Createdat = originalCreateDate,
@@ -313,7 +313,7 @@ namespace API.Tests
             
             // Verify immutable fields remain unchanged
             Assert.Equal(originalId, updatedUser.ID);
-            Assert.Equal(username, updatedUser.Email);
+            Assert.Equal(email, updatedUser.Email);
             Assert.Equal(originalCreateDate, updatedUser.Createdat);
             Assert.Equal(originalLastLogin, updatedUser.Lastlogin);
             Assert.Equal(originalPassword, updatedUser.Password);
@@ -324,10 +324,10 @@ namespace API.Tests
         {
             // Arrange
             var mockRepo = new Mock<IUserRepository>();
-            var username = "testuser";
+            var email = "testuser";
             var updateRequest = new UpdateUserRequest
             {
-                Email = username,
+                Email = email,
                 Firstname = "Test",
                 Lastname = "User"};
 

@@ -44,7 +44,7 @@ namespace API.Tests
             _mockUserService.Setup(s => s.ChangePasswordAsync(changePasswordRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, username) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "testuser@test.com") };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext

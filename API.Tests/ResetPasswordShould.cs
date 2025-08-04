@@ -140,8 +140,7 @@ namespace API.Tests
             var user = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = "testuser",
-                Email = "test@example.com",
+                Email = "testuser",
                 Firstname = "Test",
                 Lastname = "User",
                 Password = "oldhashedpassword",
@@ -178,8 +177,7 @@ namespace API.Tests
             var user = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = "testuser",
-                Email = "test@example.com",
+                Email = "testuser",
                 Firstname = "Test",
                 Lastname = "User",
                 Password = "oldhashedpassword",

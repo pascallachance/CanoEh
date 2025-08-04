@@ -31,11 +31,10 @@ namespace API.Tests
             var newUser = new CreateUserRequest
             {
                 Email = "testuser",
-                Firstname = "Test",
-                Lastname = "User",
-                Email = "test@example.com",
                 Password = "password123"
-            };
+            ,
+                Firstname = "Test",
+                Lastname = "User"};
             var result = Result.Success(new CreateUserResponse 
             { 
                 ID = Guid.NewGuid(),
@@ -104,19 +103,18 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task ReturnBadRequest_WhenUnameNotSupplied()
+        public async Task ReturnBadRequest_WhenEmailNotSupplied()
         {
             var newUser = new CreateUserRequest
             {
                 Email = "",
                 Firstname = "Pascal",
                 Lastname = "Lachance",
-                Email = "plachance@gmail.com",
                 Phone = "1234567890",
                 Password = "password123",
             };
 
-            _controller.ModelState.AddModelError("Uname", "Required");
+            _controller.ModelState.AddModelError("Email", "Required");
 
             var response = await _controller.CreateUser(newUser);
 
@@ -130,12 +128,11 @@ namespace API.Tests
             var newUser = new CreateUserRequest
             {
                 Email = "plachance",
-                Firstname = "",
-                Lastname = "Lachance",
-                Email = "plachance@gmail.com",
                 Phone = "1234567890",
                 Password = "password123",
-            };
+            
+                Firstname = "Test",
+                Lastname = "User",};
 
             _controller.ModelState.AddModelError("FirstName", "Required");
 
@@ -151,12 +148,11 @@ namespace API.Tests
             var newUser = new CreateUserRequest
             {
                 Email = "plachance",
-                Firstname = "Pascal",
-                Lastname = "",
-                Email = "plachance@gmail.com",
                 Phone = "1234567890",
                 Password = "password123",
-            };
+            
+                Firstname = "Test",
+                Lastname = "User",};
 
             _controller.ModelState.AddModelError("LastName", "Required");
 
@@ -167,14 +163,13 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task ReturnBadRequest_WhenEmailNotSupplied()
+        public async Task ReturnBadRequest_WhenEmailIsEmpty()
         {
             var newUser = new CreateUserRequest
             {
-                Email = "plachance",
+                Email = "",
                 Firstname = "Pascal",
                 Lastname = "Lachance",
-                Email = "",
                 Phone = "1234567890",
                 Password = "password123",
             };
@@ -196,12 +191,11 @@ namespace API.Tests
             var inputModel = new CreateUserRequest
             {
                 Email = "plachance",
-                Firstname = "Pascal",
-                Lastname = "Lachance",
-                Email = "plachance@gmail.com",
                 Phone = "1234567890",
                 Password = "password123",
-            };
+            
+                Firstname = "Test",
+                Lastname = "User",};
 
             User? createdUser = null;
             mockRepo
@@ -216,7 +210,7 @@ namespace API.Tests
                 .ReturnsAsync((User?)null); // No existing user found
 
             mockEmailService
-                .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(es => es.SendEmailValidationAsync(It.IsAny<User>()))
                 .ReturnsAsync(Result.Success());
 
             var userService = new UserService(mockRepo.Object, mockEmailService.Object);
@@ -239,12 +233,11 @@ namespace API.Tests
             var inputModel = new CreateUserRequest
             {
                 Email = "plachance",
-                Firstname = "Pascal",
-                Lastname = "Lachance",
-                Email = "plachance@gmail.com",
                 Phone = "1234567890",
                 Password = "password123",
-            };
+            
+                Firstname = "Test",
+                Lastname = "User",};
 
             User? createdUser = null;
             mockRepo
@@ -259,7 +252,7 @@ namespace API.Tests
                 .ReturnsAsync((User?)null); // No existing user found
 
             mockEmailService
-                .Setup(es => es.SendEmailValidationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(es => es.SendEmailValidationAsync(It.IsAny<User>()))
                 .ReturnsAsync(Result.Success());
 
             var userService = new UserService(mockRepo.Object, mockEmailService.Object);
@@ -272,9 +265,7 @@ namespace API.Tests
             Assert.NotNull(createdUser);
             Assert.False(createdUser.ValidEmail);
             mockEmailService.Verify(es => es.SendEmailValidationAsync(
-                inputModel.Email, 
-                inputModel.Email, 
-                It.IsAny<string>()), Times.Once);
+                It.IsAny<User>()), Times.Once);
         }
 
         [Fact]
@@ -283,11 +274,10 @@ namespace API.Tests
             var newUser = new CreateUserRequest
             {
                 Email = "failuser",
-                Firstname = "Fail",
-                Lastname = "User",
-                Email = "fail@example.com",
                 Password = "password123"
-            };
+            ,
+                Firstname = "Test",
+                Lastname = "User"};
 
             var result = Result.Failure<CreateUserResponse>("Username already exists.", StatusCodes.Status400BadRequest);
             _mockUserService.Setup(s => s.CreateUserAsync(newUser)).ReturnsAsync(result);

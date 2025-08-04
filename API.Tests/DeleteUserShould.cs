@@ -39,10 +39,10 @@ namespace API.Tests
             };
 
             var result = Result.Success(deleteResponse);
-            _mockUserService.Setup(s => s.DeleteUserAsync(username)).ReturnsAsync(result);
+            _mockUserService.Setup(s => s.DeleteUserAsync(email)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, username) };
+            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -51,7 +51,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.DeleteUser(username);
+            var response = await _controller.DeleteUser(email);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(response);
@@ -67,7 +67,7 @@ namespace API.Tests
             var authenticatedEmail = "testuser";
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, authenticatedUsername) };
+            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, authenticatedEmail) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -76,7 +76,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.DeleteUser(targetUsername);
+            var response = await _controller.DeleteUser(targetEmail);
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(response);
@@ -88,7 +88,7 @@ namespace API.Tests
         public async Task ReturnBadRequest_WhenEmailIsEmpty()
         {
             // Arrange
-            var username = "";
+            var email = "";
 
             // Setup authenticated user context
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, "testuser") };
@@ -100,7 +100,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.DeleteUser(username);
+            var response = await _controller.DeleteUser(email);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
@@ -112,12 +112,12 @@ namespace API.Tests
         public async Task ReturnNotFound_WhenUserNotFound()
         {
             // Arrange
-            var username = "nonexistentuser";
+            var email = "nonexistentuser";
             var result = Result.Failure<DeleteUserResponse>("User not found.", StatusCodes.Status404NotFound);
-            _mockUserService.Setup(s => s.DeleteUserAsync(username)).ReturnsAsync(result);
+            _mockUserService.Setup(s => s.DeleteUserAsync(email)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, username) };
+            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -126,7 +126,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.DeleteUser(username);
+            var response = await _controller.DeleteUser(email);
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(response);
@@ -138,12 +138,12 @@ namespace API.Tests
         public async Task ReturnBadRequest_WhenUserIsAlreadyDeleted()
         {
             // Arrange
-            var username = "testuser";
+            var email = "testuser";
             var result = Result.Failure<DeleteUserResponse>("User is already deleted.", StatusCodes.Status400BadRequest);
-            _mockUserService.Setup(s => s.DeleteUserAsync(username)).ReturnsAsync(result);
+            _mockUserService.Setup(s => s.DeleteUserAsync(email)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, username) };
+            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -152,7 +152,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.DeleteUser(username);
+            var response = await _controller.DeleteUser(email);
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(response);
@@ -164,11 +164,11 @@ namespace API.Tests
         public async Task ReturnInternalServerError_WhenServiceThrowsException()
         {
             // Arrange
-            var username = "testuser";
-            _mockUserService.Setup(s => s.DeleteUserAsync(username)).ThrowsAsync(new Exception("Database error"));
+            var email = "testuser";
+            _mockUserService.Setup(s => s.DeleteUserAsync(email)).ThrowsAsync(new Exception("Database error"));
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, username) };
+            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -177,7 +177,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.DeleteUser(username);
+            var response = await _controller.DeleteUser(email);
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(response);
@@ -189,7 +189,7 @@ namespace API.Tests
         public async Task ReturnBadRequest_WhenUsernameIsNull()
         {
             // Arrange
-            string? username = null;
+            string? email = null;
 
             // Setup authenticated user context
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, "testuser") };
@@ -201,7 +201,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.DeleteUser(username!);
+            var response = await _controller.DeleteUser(email!);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
@@ -213,7 +213,7 @@ namespace API.Tests
         public async Task ReturnBadRequest_WhenUsernameIsWhitespace()
         {
             // Arrange
-            var username = "   ";
+            var email = "   ";
 
             // Setup authenticated user context
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, "testuser") };
@@ -225,7 +225,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.DeleteUser(username);
+            var response = await _controller.DeleteUser(email);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);

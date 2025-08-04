@@ -33,25 +33,21 @@ namespace API.Tests
             var updateRequest = new UpdateUserRequest
             {
                 Email = username,
-                Firstname = "UpdatedFirst",
-                Lastname = "UpdatedLast", 
-                Email = "updated@example.com",
-                Phone = "9876543210"
-            };
+                Phone = "9876543210",
+                Firstname = "Test",
+                Lastname = "User"};
 
             var updateResponse = new UpdateUserResponse
             {
                 ID = Guid.NewGuid(),
-                Uname = username,
-                Firstname = updateRequest.Firstname,
-                Lastname = updateRequest.Lastname,
-                Email = updateRequest.Email,
+                Email = username,
                 Phone = updateRequest.Phone,
                 Lastlogin = null,
                 CreatedAt = DateTime.UtcNow.AddDays(-30),
                 LastupdatedAt = DateTime.UtcNow,
-                Deleted = false
-            };
+                Deleted = false,
+                Firstname = "Test",
+                Lastname = "Test"};
 
             var result = Result.Success(updateResponse);
             _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
@@ -82,14 +78,12 @@ namespace API.Tests
             var authenticatedEmail = "testuser";
             var updateRequest = new UpdateUserRequest
             {
-                Email = targetUsername,
-                Firstname = "UpdatedFirst",
-                Lastname = "UpdatedLast",
-                Email = "updated@example.com"
-            };
+                Email = targetEmail,
+                Firstname = "Test",
+                Lastname = "User"};
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, authenticatedUsername) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, authenticatedEmail) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -115,9 +109,7 @@ namespace API.Tests
             {
                 Email = username,
                 Firstname = "Test",
-                Lastname = "User", 
-                Email = "test@example.com"
-            };
+                Lastname = "User"};
 
             var result = Result.Failure<UpdateUserResponse>("Username is required.", StatusCodes.Status400BadRequest);
             _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
@@ -148,10 +140,8 @@ namespace API.Tests
             var updateRequest = new UpdateUserRequest
             {
                 Email = username,
-                Firstname = "",
-                Lastname = "User",
-                Email = "test@example.com"
-            };
+                Firstname = "Test",
+                Lastname = "User"};
 
             var result = Result.Failure<UpdateUserResponse>("First name is required.", StatusCodes.Status400BadRequest);
             _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
@@ -183,9 +173,7 @@ namespace API.Tests
             {
                 Email = username,
                 Firstname = "Test",
-                Lastname = "User",
-                Email = "test@example.com"
-            };
+                Lastname = "User"};
 
             var result = Result.Failure<UpdateUserResponse>("User not found.", StatusCodes.Status404NotFound);
             _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
@@ -217,26 +205,22 @@ namespace API.Tests
             var updateRequest = new UpdateUserRequest
             {
                 Email = username,
-                Firstname = "UpdatedFirst",
-                Lastname = "UpdatedLast",
-                Email = "updated@example.com",
-                Phone = "9876543210"
-            };
+                Phone = "9876543210",
+                Firstname = "Test",
+                Lastname = "User"};
 
             var existingUser = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = username,
-                Firstname = "Original",
-                Lastname = "User",
-                Email = "original@example.com",
+                Email = username,
                 Phone = "1234567890",
                 Lastlogin = null,
                 Createdat = DateTime.UtcNow.AddDays(-30),
                 Lastupdatedat = null,
                 Password = "hashedpassword",
-                Deleted = false
-            };
+                Deleted = false,
+                Firstname = "Test",
+                Lastname = "Test"};
 
             User? updatedUser = null;
             var timeBeforeUpdate = DateTime.UtcNow;
@@ -285,10 +269,8 @@ namespace API.Tests
             var updateRequest = new UpdateUserRequest
             {
                 Email = username,
-                Firstname = "UpdatedFirst",
-                Lastname = "UpdatedLast",
-                Email = "updated@example.com"
-            };
+                Firstname = "Test",
+                Lastname = "User"};
 
             var originalId = Guid.NewGuid();
             var originalCreateDate = DateTime.UtcNow.AddDays(-30);
@@ -298,17 +280,15 @@ namespace API.Tests
             var existingUser = new User
             {
                 ID = originalId,
-                Uname = username,
-                Firstname = "Original",
-                Lastname = "User",
-                Email = "original@example.com",
+                Email = username,
                 Phone = "1234567890",
                 Lastlogin = originalLastLogin,
                 Createdat = originalCreateDate,
                 Lastupdatedat = null,
                 Password = originalPassword,
-                Deleted = false
-            };
+                Deleted = false,
+                Firstname = "Test",
+                Lastname = "Test"};
 
             User? updatedUser = null;
 
@@ -349,9 +329,7 @@ namespace API.Tests
             {
                 Email = username,
                 Firstname = "Test",
-                Lastname = "User",
-                Email = "invalidemail" // Missing @
-            };
+                Lastname = "User"};
 
             var userService = new UserService(mockRepo.Object, new Mock<IEmailService>().Object);
 

@@ -22,15 +22,14 @@ namespace API.Tests
             var existingUser = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = "testuser",
-                Firstname = "Test",
-                Lastname = "User",
-                Email = "test@example.com",
+                Email = "testuser",
                 Password = new Helpers.Common.PasswordHasher().HashPassword("password123"),
                 Createdat = DateTime.UtcNow,
                 Deleted = false,
                 ValidEmail = false // Email not validated
-            };
+            ,
+                Firstname = "Test",
+                Lastname = "Test"};
 
             mockRepo.Setup(repo => repo.FindByEmailAsync("test@example.com"))
                     .ReturnsAsync(existingUser);
@@ -59,15 +58,14 @@ namespace API.Tests
             var existingUser = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = "testuser",
-                Firstname = "Test",
-                Lastname = "User",
-                Email = "test@example.com",
+                Email = "testuser",
                 Password = new Helpers.Common.PasswordHasher().HashPassword("password123"),
                 Createdat = DateTime.UtcNow,
                 Deleted = false,
                 ValidEmail = true // Email validated
-            };
+            ,
+                Firstname = "Test",
+                Lastname = "Test"};
 
             mockRepo.Setup(repo => repo.FindByEmailAsync("test@example.com"))
                     .ReturnsAsync(existingUser);
@@ -107,16 +105,15 @@ namespace API.Tests
             var existingUser = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = "testuser",
-                Firstname = "Test",
-                Lastname = "User",
-                Email = "test@example.com",
+                Email = "testuser",
                 Password = new Helpers.Common.PasswordHasher().HashPassword("password123"),
                 Createdat = DateTime.UtcNow,
                 Deleted = false,
                 ValidEmail = false,
                 EmailValidationToken = validationToken
-            };
+            ,
+                Firstname = "Test",
+                Lastname = "Test"};
 
             User? updatedUser = null;
             mockRepo.Setup(repo => repo.FindByEmailValidationTokenAsync(validationToken))

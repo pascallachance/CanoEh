@@ -30,11 +30,11 @@ namespace API.Tests
             // Arrange
             var newUser = new CreateUserRequest
             {
-                Email = "testuser",
-                Password = "password123"
-            ,
+                Email = "testuser@test.com",
                 Firstname = "Test",
-                Lastname = "User"};
+                Lastname = "User",
+                Password = "password123"
+            };
             var result = Result.Success(new CreateUserResponse 
             { 
                 ID = Guid.NewGuid(),
@@ -127,12 +127,12 @@ namespace API.Tests
         {
             var newUser = new CreateUserRequest
             {
-                Email = "plachance",
-                Phone = "1234567890",
-                Password = "password123",
-            
+                Email = "plachance@gmail.com",
                 Firstname = "Test",
-                Lastname = "User",};
+                Lastname = "User",
+                Phone = "1234567890",
+                Password = "password123"
+            };
 
             _controller.ModelState.AddModelError("FirstName", "Required");
 
@@ -147,12 +147,12 @@ namespace API.Tests
         {
             var newUser = new CreateUserRequest
             {
-                Email = "plachance",
-                Phone = "1234567890",
-                Password = "password123",
-            
+                Email = "plachance@gmail.com",
                 Firstname = "Test",
-                Lastname = "User",};
+                Lastname = "User",
+                Phone = "1234567890",
+                Password = "password123"
+            };
 
             _controller.ModelState.AddModelError("LastName", "Required");
 
@@ -190,12 +190,12 @@ namespace API.Tests
             var mockEmailService = new Mock<IEmailService>();
             var inputModel = new CreateUserRequest
             {
-                Email = "plachance",
-                Phone = "1234567890",
-                Password = "password123",
-            
+                Email = "plachance@gmail.com",
                 Firstname = "Test",
-                Lastname = "User",};
+                Lastname = "User",
+                Phone = "1234567890",
+                Password = "password123"
+            };
 
             User? createdUser = null;
             mockRepo
@@ -232,12 +232,12 @@ namespace API.Tests
             var mockEmailService = new Mock<IEmailService>();
             var inputModel = new CreateUserRequest
             {
-                Email = "plachance",
-                Phone = "1234567890",
-                Password = "password123",
-            
+                Email = "plachance@gmail.com",
                 Firstname = "Test",
-                Lastname = "User",};
+                Lastname = "User",
+                Phone = "1234567890",
+                Password = "password123"
+            };
 
             User? createdUser = null;
             mockRepo
@@ -273,11 +273,11 @@ namespace API.Tests
         {
             var newUser = new CreateUserRequest
             {
-                Email = "failuser",
-                Password = "password123"
-            ,
+                Email = "fail@example.com",
                 Firstname = "Test",
-                Lastname = "User"};
+                Lastname = "User",
+                Password = "password123"
+            };
 
             var result = Result.Failure<CreateUserResponse>("Username already exists.", StatusCodes.Status400BadRequest);
             _mockUserService.Setup(s => s.CreateUserAsync(newUser)).ReturnsAsync(result);

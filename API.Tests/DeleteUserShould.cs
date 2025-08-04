@@ -63,8 +63,8 @@ namespace API.Tests
         public async Task ReturnForbidden_WhenUserTriesToDeleteAnotherUser()
         {
             // Arrange
-            var targetEmail = "otheruser";
-            var authenticatedEmail = "testuser";
+            var targetEmail = "otheruser@test.com";
+            var authenticatedEmail = "testuser@test.com";
 
             // Setup authenticated user context
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, authenticatedEmail) };
@@ -112,7 +112,7 @@ namespace API.Tests
         public async Task ReturnNotFound_WhenUserNotFound()
         {
             // Arrange
-            var email = "nonexistentuser";
+            var email = "nonexistentuser@test.com";
             var result = Result.Failure<DeleteUserResponse>("User not found.", StatusCodes.Status404NotFound);
             _mockUserService.Setup(s => s.DeleteUserAsync(email)).ReturnsAsync(result);
 
@@ -138,7 +138,7 @@ namespace API.Tests
         public async Task ReturnBadRequest_WhenUserIsAlreadyDeleted()
         {
             // Arrange
-            var email = "testuser";
+            var email = "testuser@test.com";
             var result = Result.Failure<DeleteUserResponse>("User is already deleted.", StatusCodes.Status400BadRequest);
             _mockUserService.Setup(s => s.DeleteUserAsync(email)).ReturnsAsync(result);
 
@@ -164,7 +164,7 @@ namespace API.Tests
         public async Task ReturnInternalServerError_WhenServiceThrowsException()
         {
             // Arrange
-            var email = "testuser";
+            var email = "testuser@test.com";
             _mockUserService.Setup(s => s.DeleteUserAsync(email)).ThrowsAsync(new Exception("Database error"));
 
             // Setup authenticated user context
@@ -186,13 +186,13 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task ReturnBadRequest_WhenUsernameIsNull()
+        public async Task ReturnBadRequest_WhenEmailIsNull()
         {
             // Arrange
             string? email = null;
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, "testuser") };
+            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, "testuser@test.com") };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -216,7 +216,7 @@ namespace API.Tests
             var email = "   ";
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, "testuser") };
+            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, "testuser@test.com") };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext

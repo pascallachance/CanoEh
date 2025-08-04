@@ -111,15 +111,18 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// Add CORS policy for development
+// Add CORS policy with configurable origins
+var corsSettings = builder.Configuration.GetSection("CorsSettings");
+var allowedOrigins = corsSettings.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "https://localhost:64941" };
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("ReactApp", builder =>
+    options.AddPolicy("AllowClient", policy =>
     {
-        builder.WithOrigins("https://localhost:64941")
-               .AllowAnyMethod()
-               .AllowAnyHeader()
-               .AllowCredentials(); // Required for cookies
+        policy.WithOrigins(allowedOrigins)
+              .AllowCredentials()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
     });
 });
 
@@ -137,7 +140,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Add CORS
-app.UseCors("ReactApp");
+app.UseCors("AllowClient");
 
 // Add authentication and authorization
 app.UseAuthentication();

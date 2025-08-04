@@ -1,4 +1,5 @@
 using Infrastructure.Services;
+using Infrastructure.Data;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
@@ -34,9 +35,23 @@ namespace API.Tests
             var mockConfig = new Mock<IConfiguration>();
             mockConfig.Setup(c => c["EmailSettings:SmtpServer"]).Returns((string?)null);
             var emailService = new EmailService(mockConfig.Object);
+            
+            var user = new User
+            {
+                ID = Guid.NewGuid(),
+                Email = "test@example.com",
+                Firstname = "Test",
+                Lastname = "User",
+                Password = "hashedpassword",
+                Createdat = DateTime.UtcNow,
+                Deleted = false,
+                ValidEmail = true,
+                PasswordResetToken = "token123",
+                PasswordResetTokenExpiry = DateTime.UtcNow.AddHours(24)
+            };
 
             // Act
-            var result = await emailService.SendPasswordResetAsync("test@example.com", "testuser", "token123");
+            var result = await emailService.SendPasswordResetAsync(user);
 
             // Assert
             Assert.True(result.IsFailure);
@@ -55,9 +70,23 @@ namespace API.Tests
             mockConfig.Setup(c => c["EmailSettings:EnableSsl"]).Returns("true");
             mockConfig.Setup(c => c["EmailSettings:BaseUrl"]).Returns((string?)null);
             var emailService = new EmailService(mockConfig.Object);
+            
+            var user = new User
+            {
+                ID = Guid.NewGuid(),
+                Email = "test@example.com",
+                Firstname = "Test",
+                Lastname = "User",
+                Password = "hashedpassword",
+                Createdat = DateTime.UtcNow,
+                Deleted = false,
+                ValidEmail = true,
+                PasswordResetToken = "token123",
+                PasswordResetTokenExpiry = DateTime.UtcNow.AddHours(24)
+            };
 
             // Act
-            var result = await emailService.SendPasswordResetAsync("test@example.com", "testuser", "token123");
+            var result = await emailService.SendPasswordResetAsync(user);
 
             // Assert
             Assert.True(result.IsFailure);
@@ -92,9 +121,23 @@ namespace API.Tests
             mockConfig.Setup(c => c["EmailSettings:EnableSsl"]).Returns("true");
             mockConfig.Setup(c => c["EmailSettings:BaseUrl"]).Returns("https://localhost:7182");
             var emailService = new EmailService(mockConfig.Object);
+            
+            var user = new User
+            {
+                ID = Guid.NewGuid(),
+                Email = "test@example.com",
+                Firstname = "Test",
+                Lastname = "User",
+                Password = "hashedpassword",
+                Createdat = DateTime.UtcNow,
+                Deleted = false,
+                ValidEmail = true,
+                PasswordResetToken = "token123",
+                PasswordResetTokenExpiry = DateTime.UtcNow.AddHours(24)
+            };
 
             // Act
-            var result = await emailService.SendPasswordResetAsync("test@example.com", "testuser", "token123");
+            var result = await emailService.SendPasswordResetAsync(user);
 
             // Assert
             Assert.True(result.IsFailure);
@@ -113,9 +156,23 @@ namespace API.Tests
             mockConfig.Setup(c => c["EmailSettings:EnableSsl"]).Returns("invalid");
             mockConfig.Setup(c => c["EmailSettings:BaseUrl"]).Returns("https://localhost:7182");
             var emailService = new EmailService(mockConfig.Object);
+            
+            var user = new User
+            {
+                ID = Guid.NewGuid(),
+                Email = "test@example.com",
+                Firstname = "Test",
+                Lastname = "User",
+                Password = "hashedpassword",
+                Createdat = DateTime.UtcNow,
+                Deleted = false,
+                ValidEmail = true,
+                PasswordResetToken = "token123",
+                PasswordResetTokenExpiry = DateTime.UtcNow.AddHours(24)
+            };
 
             // Act
-            var result = await emailService.SendPasswordResetAsync("test@example.com", "testuser", "token123");
+            var result = await emailService.SendPasswordResetAsync(user);
 
             // Assert
             Assert.True(result.IsFailure);

@@ -94,7 +94,6 @@ namespace API.Tests
             var deletedUser = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = "deleteduser",
                 Email = "deleted@example.com",
                 Firstname = "John",
                 Lastname = "Doe",
@@ -108,7 +107,7 @@ namespace API.Tests
                 .ReturnsAsync(deletedUser);
             _mockUserRepository.Setup(repo => repo.UpdateRestoreUserTokenAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DateTime>()))
                 .ReturnsAsync(true);
-            _mockEmailService.Setup(service => service.SendRestoreUserEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            _mockEmailService.Setup(service => service.SendRestoreUserEmailAsync(It.IsAny<User>()))
                 .ReturnsAsync(Result.Success());
 
             // Act
@@ -126,9 +125,7 @@ namespace API.Tests
             
             // Verify email was sent
             _mockEmailService.Verify(service => service.SendRestoreUserEmailAsync(
-                It.Is<string>(email => email == request.Email),
-                It.Is<string>(username => username == deletedUser.Uname),
-                It.IsAny<string>()), Times.Once);
+                It.IsAny<User>()), Times.Once);
         }
 
         [Fact]
@@ -139,7 +136,6 @@ namespace API.Tests
             var deletedUser = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = "deleteduser",
                 Email = "deleted@example.com",
                 Firstname = "John",
                 Lastname = "Doe",
@@ -153,7 +149,7 @@ namespace API.Tests
                 .ReturnsAsync(deletedUser);
             _mockUserRepository.Setup(repo => repo.UpdateRestoreUserTokenAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DateTime>()))
                 .ReturnsAsync(true);
-            _mockEmailService.Setup(service => service.SendRestoreUserEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            _mockEmailService.Setup(service => service.SendRestoreUserEmailAsync(It.IsAny<User>()))
                 .ReturnsAsync(Result.Failure("SMTP error"));
 
             // Act
@@ -173,7 +169,6 @@ namespace API.Tests
             var deletedUser = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = "deleteduser",
                 Email = "deleted@example.com",
                 Firstname = "John",
                 Lastname = "Doe",
@@ -197,7 +192,7 @@ namespace API.Tests
             Assert.Equal("deleted@example.com", result.Value!.Email);
             
             // Email should not be sent if token update fails
-            _mockEmailService.Verify(service => service.SendRestoreUserEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _mockEmailService.Verify(service => service.SendRestoreUserEmailAsync(It.IsAny<User>()), Times.Never);
         }
     }
 }

@@ -79,7 +79,6 @@ namespace API.Tests
             var deletedUser = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = "deleteduser",
                 Email = "deleted@example.com",
                 Firstname = "John",
                 Lastname = "Doe",
@@ -113,7 +112,6 @@ namespace API.Tests
             var deletedUser = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = "deleteduser",
                 Email = "deleted@example.com",
                 Firstname = "John",
                 Lastname = "Doe",
@@ -135,7 +133,7 @@ namespace API.Tests
 
             // Assert
             Assert.True(result.IsSuccess);
-            Assert.Equal("deleteduser", result.Value!.Username);
+            Assert.Equal("deleteduser", result.Value!.Email);
             Assert.Contains("successfully restored", result.Value.Message);
             
             // Verify that restore was called
@@ -151,7 +149,6 @@ namespace API.Tests
             var deletedUser = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = "deleteduser",
                 Email = "deleted@example.com",
                 Firstname = "John",
                 Lastname = "Doe",
@@ -173,7 +170,7 @@ namespace API.Tests
 
             // Assert
             Assert.True(result.IsSuccess);
-            Assert.Equal("deleteduser", result.Value!.Username);
+            Assert.Equal("deleteduser", result.Value!.Email);
         }
 
         [Fact]
@@ -185,7 +182,6 @@ namespace API.Tests
             var deletedUser = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = "testuser",
                 Email = "test@example.com",
                 Firstname = "Test",
                 Lastname = "User",

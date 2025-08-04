@@ -80,7 +80,6 @@ namespace API.Tests
             var user = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = "testuser",
                 Email = "test@example.com",
                 Firstname = "Test",
                 Lastname = "User",
@@ -94,7 +93,7 @@ namespace API.Tests
                 .ReturnsAsync(user);
             _mockUserRepository.Setup(r => r.UpdatePasswordResetTokenAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DateTime>()))
                 .ReturnsAsync(true);
-            _mockEmailService.Setup(e => e.SendPasswordResetAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            _mockEmailService.Setup(e => e.SendPasswordResetAsync(It.IsAny<User>()))
                 .ReturnsAsync(Result.Success());
 
             // Act
@@ -105,7 +104,7 @@ namespace API.Tests
             Assert.Equal("test@example.com", result.Value?.Email);
             Assert.Contains("If the email address exists", result.Value?.Message);
             _mockUserRepository.Verify(r => r.UpdatePasswordResetTokenAsync("test@example.com", It.IsAny<string>(), It.IsAny<DateTime>()), Times.Once);
-            _mockEmailService.Verify(e => e.SendPasswordResetAsync("test@example.com", "testuser", It.IsAny<string>()), Times.Once);
+            _mockEmailService.Verify(e => e.SendPasswordResetAsync(It.IsAny<User>()), Times.Once);
         }
 
         [Fact]
@@ -116,7 +115,6 @@ namespace API.Tests
             var user = new User
             {
                 ID = Guid.NewGuid(),
-                Uname = "deleteduser",
                 Email = "deleted@example.com",
                 Firstname = "Deleted",
                 Lastname = "User",
@@ -137,7 +135,7 @@ namespace API.Tests
             Assert.Equal("deleted@example.com", result.Value?.Email);
             Assert.Contains("If the email address exists", result.Value?.Message);
             // Should not send email for deleted users
-            _mockEmailService.Verify(e => e.SendPasswordResetAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _mockEmailService.Verify(e => e.SendPasswordResetAsync(It.IsAny<User>()), Times.Never);
         }
     }
 }

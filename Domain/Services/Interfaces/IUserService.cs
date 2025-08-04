@@ -9,11 +9,11 @@ namespace Domain.Services.Interfaces
     {
         Task<Result<CreateUserResponse>> CreateUserAsync(CreateUserRequest newUser);
 
-        Task<Result<GetUserResponse>> GetUserAsync(string username);
+        Task<Result<GetUserResponse>> GetUserAsync(string email);
         
-        Task<Result<User?>> GetUserEntityAsync(string username);
+        Task<Result<User?>> GetUserEntityAsync(string email);
 
-        Task<Result<DeleteUserResponse>> DeleteUserAsync(string username);
+        Task<Result<DeleteUserResponse>> DeleteUserAsync(string email);
 
         Task<Result<UpdateUserResponse>> UpdateUserAsync(UpdateUserRequest updateRequest);
 

@@ -49,31 +49,31 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Retrieves the details of a user by their username.
+        /// Retrieves the details of a user by their email.
         /// The user must be authenticated and can only access their own information.
         /// </summary>
         [Authorize]
-        [HttpGet("GetUser/{username}")]
+        [HttpGet("GetUser/{email}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetUserResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetUser(string username)
+        public async Task<IActionResult> GetUser(string email)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(username))
+                if (string.IsNullOrWhiteSpace(email))
                 {
-                    return BadRequest("Username is required.");
+                    return BadRequest("Email is required.");
                 }
 
-                var authenticatedUsername = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-                if (!string.Equals(username, authenticatedUsername, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(email, authenticatedEmail, StringComparison.OrdinalIgnoreCase))
                 {
                     return StatusCode(StatusCodes.Status403Forbidden, "You can only access your own user information.");
                 }
 
-                var result = await _userService.GetUserAsync(username);
+                var result = await _userService.GetUserAsync(email);
                 if (result.IsFailure)
                 {
                     return StatusCode(result.ErrorCode ?? 404, result.Error);
@@ -131,34 +131,34 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Deletes a user by their username (soft delete).
+        /// Deletes a user by their email (soft delete).
         /// The user must be authenticated and can only delete their own account.
         /// </summary>
         [Authorize]
-        [HttpDelete("DeleteUser/{username}")]
+        [HttpDelete("DeleteUser/{email}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DeleteUserResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteUser(string username)
+        public async Task<IActionResult> DeleteUser(string email)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(username))
+                if (string.IsNullOrWhiteSpace(email))
                 {
-                    return BadRequest("Username is required.");
+                    return BadRequest("Email is required.");
                 }
 
-                var authenticatedUsername = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
                 // Ensure user can only delete their own account
-                if (!string.Equals(username, authenticatedUsername, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(email, authenticatedEmail, StringComparison.OrdinalIgnoreCase))
                 {
                     return StatusCode(StatusCodes.Status403Forbidden, "You can only delete your own user account.");
                 }
 
-                var result = await _userService.DeleteUserAsync(username);
+                var result = await _userService.DeleteUserAsync(email);
                 if (result.IsFailure)
                 {
                     return StatusCode(result.ErrorCode ?? 500, result.Error);

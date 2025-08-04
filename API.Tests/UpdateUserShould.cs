@@ -111,7 +111,7 @@ namespace API.Tests
                 Firstname = "Test",
                 Lastname = "User"};
 
-            var result = Result.Failure<UpdateUserResponse>("Username is required.", StatusCodes.Status400BadRequest);
+            var result = Result.Failure<UpdateUserResponse>("Email is required.", StatusCodes.Status400BadRequest);
             _mockUserService.Setup(s => s.UpdateUserAsync(updateRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
@@ -339,7 +339,7 @@ namespace API.Tests
             // Assert
             Assert.True(result.IsFailure);
             Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
-            Assert.Contains("Email must contain '@'", result.Error);
+            Assert.Contains("Email must be a valid email address.", result.Error);
         }
 
     }

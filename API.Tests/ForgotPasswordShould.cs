@@ -80,7 +80,7 @@ namespace API.Tests
             var user = new User
             {
                 ID = Guid.NewGuid(),
-                Email = "testuser",
+                Email = "test@example.com",
                 Firstname = "Test",
                 Lastname = "User",
                 Password = "hashedpassword",

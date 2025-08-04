@@ -105,7 +105,7 @@ namespace API.Tests
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
             Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
-            Assert.Equal("Username is required.", badRequestResult.Value);
+            Assert.Equal("Email is required.", badRequestResult.Value);
         }
 
         [Fact]
@@ -206,7 +206,7 @@ namespace API.Tests
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
             Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
-            Assert.Equal("Username is required.", badRequestResult.Value);
+            Assert.Equal("Email is required.", badRequestResult.Value);
         }
 
         [Fact]
@@ -230,7 +230,7 @@ namespace API.Tests
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
             Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
-            Assert.Equal("Username is required.", badRequestResult.Value);
+            Assert.Equal("Email is required.", badRequestResult.Value);
         }
     }
 }

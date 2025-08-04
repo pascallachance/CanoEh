@@ -29,7 +29,7 @@ namespace API.Tests
 
             // Assert
             Assert.True(result.IsFailure);
-            Assert.Equal("Username is required.", result.Error);
+            Assert.Equal("Email is required.", result.Error);
             Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
         }
 

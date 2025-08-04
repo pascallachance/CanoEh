@@ -115,7 +115,7 @@ namespace API.Tests
             var user = new User
             {
                 ID = Guid.NewGuid(),
-                Email = "deleteduser",
+                Email = "deleted@example.com",
                 Firstname = "Deleted",
                 Lastname = "User",
                 Password = "hashedpassword",

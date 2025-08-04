@@ -29,10 +29,10 @@ namespace API.Tests
         public async Task ReturnOk_WhenUserUpdatedSuccessfully()
         {
             // Arrange
-            var username = "testuser";
+            var email = "updated@example.com";
             var updateRequest = new UpdateUserRequest
             {
-                Email = username,
+                Email = email,
                 Phone = "9876543210",
                 Firstname = "Test",
                 Lastname = "User"};
@@ -40,7 +40,7 @@ namespace API.Tests
             var updateResponse = new UpdateUserResponse
             {
                 ID = Guid.NewGuid(),
-                Email = username,
+                Email = email,
                 Phone = updateRequest.Phone,
                 Lastlogin = null,
                 CreatedAt = DateTime.UtcNow.AddDays(-30),
@@ -74,8 +74,8 @@ namespace API.Tests
         public async Task ReturnForbidden_WhenUserTriesToUpdateAnotherUser()
         {
             // Arrange
-            var targetEmail = "otheruser";
-            var authenticatedEmail = "testuser";
+            var targetEmail = "otheruser@example.com";
+            var authenticatedEmail = "testuser@example.com";
             var updateRequest = new UpdateUserRequest
             {
                 Email = targetEmail,
@@ -104,10 +104,10 @@ namespace API.Tests
         public async Task ReturnBadRequest_WhenEmailIsEmpty()
         {
             // Arrange
-            var username = "";
+            var email = "";
             var updateRequest = new UpdateUserRequest
             {
-                Email = username,
+                Email = email,
                 Firstname = "Test",
                 Lastname = "User"};
 
@@ -136,11 +136,11 @@ namespace API.Tests
         public async Task ReturnBadRequest_WhenFirstnameNotSupplied()
         {
             // Arrange
-            var username = "testuser";
+            var email = "test@example.com";
             var updateRequest = new UpdateUserRequest
             {
-                Email = username,
-                Firstname = "Test",
+                Email = email,
+                Firstname = "",
                 Lastname = "User"};
 
             var result = Result.Failure<UpdateUserResponse>("First name is required.", StatusCodes.Status400BadRequest);

@@ -22,7 +22,7 @@ namespace API.Tests
             var existingUser = new User
             {
                 ID = Guid.NewGuid(),
-                Email = "testuser",
+                Email = "testuser@test.com",
                 Password = new Helpers.Common.PasswordHasher().HashPassword("password123"),
                 Createdat = DateTime.UtcNow,
                 Deleted = false,
@@ -58,7 +58,7 @@ namespace API.Tests
             var existingUser = new User
             {
                 ID = Guid.NewGuid(),
-                Email = "testuser",
+                Email = "test@example.com",
                 Password = new Helpers.Common.PasswordHasher().HashPassword("password123"),
                 Createdat = DateTime.UtcNow,
                 Deleted = false,
@@ -105,7 +105,7 @@ namespace API.Tests
             var existingUser = new User
             {
                 ID = Guid.NewGuid(),
-                Email = "testuser",
+                Email = "test@example.com",
                 Password = new Helpers.Common.PasswordHasher().HashPassword("password123"),
                 Createdat = DateTime.UtcNow,
                 Deleted = false,

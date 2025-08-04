@@ -79,7 +79,7 @@ namespace API.Tests
             var deletedUser = new User
             {
                 ID = Guid.NewGuid(),
-                Email = "deleteduser",
+                Email = "deleted@example.com",
                 Firstname = "John",
                 Lastname = "Doe",
                 Password = "hashedpassword",
@@ -112,7 +112,7 @@ namespace API.Tests
             var deletedUser = new User
             {
                 ID = Guid.NewGuid(),
-                Email = "deleteduser",
+                Email = "deleted@example.com",
                 Firstname = "John",
                 Lastname = "Doe",
                 Password = "hashedpassword",
@@ -149,7 +149,7 @@ namespace API.Tests
             var deletedUser = new User
             {
                 ID = Guid.NewGuid(),
-                Email = "deleteduser",
+                Email = "deleted@example.com",
                 Firstname = "John",
                 Lastname = "Doe",
                 Password = "hashedpassword",
@@ -182,7 +182,7 @@ namespace API.Tests
             var deletedUser = new User
             {
                 ID = Guid.NewGuid(),
-                Email = "testuser",
+                Email = "test@example.com",
                 Firstname = "Test",
                 Lastname = "User",
                 Password = "hashedpassword",

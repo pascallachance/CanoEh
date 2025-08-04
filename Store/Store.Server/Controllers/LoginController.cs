@@ -15,12 +15,14 @@ namespace Store.Server.Controllers
         IConfiguration configuration,
         ILoginService loginService,
         IUserService userService,
-        ISessionService sessionService) : ControllerBase
+        ISessionService sessionService,
+        IWebHostEnvironment environment) : ControllerBase
     {
         private readonly IConfiguration _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         private readonly ILoginService _loginService = loginService ?? throw new ArgumentNullException(nameof(loginService));
         private readonly IUserService _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         private readonly ISessionService _sessionService = sessionService ?? throw new ArgumentNullException(nameof(sessionService));
+        private readonly IWebHostEnvironment _environment = environment ?? throw new ArgumentNullException(nameof(environment));
 
         [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -51,12 +53,13 @@ namespace Store.Server.Controllers
 
             var token = GenerateJwtToken(request.Email ?? "");
             
-            // Set HTTP-only cookie with security flags
+            // Set HTTP-only cookie with environment-dependent security flags
+            var isProduction = _environment.IsProduction();
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,      // Prevent XSS attacks
-                Secure = false,       // Allow HTTP for development (should be true in production)
-                SameSite = SameSiteMode.Lax, // Less strict for development
+                Secure = isProduction, // Use HTTPS in production, allow HTTP in development
+                SameSite = isProduction ? SameSiteMode.Lax : SameSiteMode.Lax, // Consistent for now, can be stricter in production if needed
                 Expires = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration.GetSection("JwtSettings")["ExpiryMinutes"])),
                 IsEssential = true    // Required for authentication
             };
@@ -68,8 +71,8 @@ namespace Store.Server.Controllers
             var csrfCookieOptions = new CookieOptions
             {
                 HttpOnly = false,     // Accessible to JavaScript for CSRF protection
-                Secure = false,       // Allow HTTP for development
-                SameSite = SameSiteMode.Lax,
+                Secure = isProduction, // Use HTTPS in production
+                SameSite = isProduction ? SameSiteMode.Lax : SameSiteMode.Lax,
                 Expires = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration.GetSection("JwtSettings")["ExpiryMinutes"]))
             };
             Response.Cookies.Append("X-CSRF-Token", csrfToken, csrfCookieOptions);
@@ -140,12 +143,13 @@ namespace Store.Server.Controllers
                 }
             }
 
-            // Clear authentication cookies
+            // Clear authentication cookies with environment-dependent security flags
+            var isProduction = _environment.IsProduction();
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false,       // Allow HTTP for development
-                SameSite = SameSiteMode.Lax,
+                Secure = isProduction, // Use HTTPS in production
+                SameSite = isProduction ? SameSiteMode.Lax : SameSiteMode.Lax,
                 Expires = DateTime.UtcNow.AddDays(-1) // Expire immediately
             };
             

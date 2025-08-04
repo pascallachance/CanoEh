@@ -22,7 +22,7 @@ namespace API.Tests
             var existingUser = new User
             {
                 ID = Guid.NewGuid(),
-                Email = "testuser@test.com",
+                Email = "test@example.com",
                 Password = new Helpers.Common.PasswordHasher().HashPassword("password123"),
                 Createdat = DateTime.UtcNow,
                 Deleted = false,

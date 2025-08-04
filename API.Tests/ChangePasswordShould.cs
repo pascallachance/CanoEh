@@ -25,9 +25,10 @@ namespace API.Tests
         public async Task ReturnOk_WhenPasswordChangedSuccessfully()
         {
             // Arrange
+            var email = "testuser@test.com";
             var changePasswordRequest = new ChangePasswordRequest
             {
-                Email = "testuser@test.com",
+                Email = email,
                 CurrentPassword = "oldpassword123",
                 NewPassword = "newpassword456",
                 ConfirmNewPassword = "newpassword456"
@@ -35,7 +36,7 @@ namespace API.Tests
 
             var changePasswordResponse = new ChangePasswordResponse
             {
-                Email = "testuser@test.com",
+                Email = email,
                 LastUpdatedAt = DateTime.UtcNow,
                 Message = "Password changed successfully."
             };
@@ -44,7 +45,7 @@ namespace API.Tests
             _mockUserService.Setup(s => s.ChangePasswordAsync(changePasswordRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "testuser@test.com") };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -65,16 +66,18 @@ namespace API.Tests
         public async Task ReturnForbidden_WhenUserTriesToChangeAnotherUsersPassword()
         {
             // Arrange
+            var authenticatedEmail = "user1@test.com";
+            var targetEmail = "user2@test.com";
             var changePasswordRequest = new ChangePasswordRequest
             {
-                Email = "user2@test.com",
+                Email = targetEmail,
                 CurrentPassword = "oldpassword123",
                 NewPassword = "newpassword456",
                 ConfirmNewPassword = "newpassword456"
             };
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "user1@test.com") };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, authenticatedEmail) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -95,9 +98,10 @@ namespace API.Tests
         public async Task ReturnBadRequest_WhenServiceReturnsFailure()
         {
             // Arrange
+            var email = "testuser@test.com";
             var changePasswordRequest = new ChangePasswordRequest
             {
-                Email = "testuser@test.com",
+                Email = email,
                 CurrentPassword = "wrongpassword",
                 NewPassword = "newpassword456",
                 ConfirmNewPassword = "newpassword456"
@@ -107,7 +111,7 @@ namespace API.Tests
             _mockUserService.Setup(s => s.ChangePasswordAsync(changePasswordRequest)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "testuser@test.com") };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -128,16 +132,17 @@ namespace API.Tests
         public async Task ReturnBadRequest_WhenModelStateIsInvalid()
         {
             // Arrange
+            var email = "testuser@test.com";
             var changePasswordRequest = new ChangePasswordRequest
             {
-                Email = "testuser@test.com",
+                Email = email,
                 CurrentPassword = "oldpassword123",
                 NewPassword = "newpassword456",
                 ConfirmNewPassword = "newpassword456"
             };
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "testuser@test.com") };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext

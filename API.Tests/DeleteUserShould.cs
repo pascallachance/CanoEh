@@ -42,7 +42,7 @@ namespace API.Tests
             _mockUserService.Setup(s => s.DeleteUserAsync(email)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, email) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -67,7 +67,7 @@ namespace API.Tests
             var authenticatedEmail = "testuser@test.com";
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, authenticatedEmail) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, authenticatedEmail) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -91,7 +91,7 @@ namespace API.Tests
             var email = "";
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, "testuser") };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "testuser") };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -117,7 +117,7 @@ namespace API.Tests
             _mockUserService.Setup(s => s.DeleteUserAsync(email)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, email) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -143,7 +143,7 @@ namespace API.Tests
             _mockUserService.Setup(s => s.DeleteUserAsync(email)).ReturnsAsync(result);
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, email) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -168,7 +168,7 @@ namespace API.Tests
             _mockUserService.Setup(s => s.DeleteUserAsync(email)).ThrowsAsync(new Exception("Database error"));
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, email) };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, email) };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -192,7 +192,7 @@ namespace API.Tests
             string? email = null;
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, "testuser@test.com") };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "testuser@test.com") };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext
@@ -216,7 +216,7 @@ namespace API.Tests
             var email = "   ";
 
             // Setup authenticated user context
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, "testuser@test.com") };
+            var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "testuser@test.com") };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var claimsPrincipal = new ClaimsPrincipal(identity);
             _controller.ControllerContext = new ControllerContext

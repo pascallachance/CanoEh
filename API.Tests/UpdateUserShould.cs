@@ -32,7 +32,7 @@ namespace API.Tests
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {
-                Username = username,
+                Email = username,
                 Firstname = "UpdatedFirst",
                 Lastname = "UpdatedLast", 
                 Email = "updated@example.com",
@@ -78,11 +78,11 @@ namespace API.Tests
         public async Task ReturnForbidden_WhenUserTriesToUpdateAnotherUser()
         {
             // Arrange
-            var targetUsername = "otheruser";
-            var authenticatedUsername = "testuser";
+            var targetEmail = "otheruser";
+            var authenticatedEmail = "testuser";
             var updateRequest = new UpdateUserRequest
             {
-                Username = targetUsername,
+                Email = targetUsername,
                 Firstname = "UpdatedFirst",
                 Lastname = "UpdatedLast",
                 Email = "updated@example.com"
@@ -107,13 +107,13 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task ReturnBadRequest_WhenUsernameIsEmpty()
+        public async Task ReturnBadRequest_WhenEmailIsEmpty()
         {
             // Arrange
             var username = "";
             var updateRequest = new UpdateUserRequest
             {
-                Username = username,
+                Email = username,
                 Firstname = "Test",
                 Lastname = "User", 
                 Email = "test@example.com"
@@ -147,7 +147,7 @@ namespace API.Tests
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {
-                Username = username,
+                Email = username,
                 Firstname = "",
                 Lastname = "User",
                 Email = "test@example.com"
@@ -181,7 +181,7 @@ namespace API.Tests
             var username = "nonexistentuser";
             var updateRequest = new UpdateUserRequest
             {
-                Username = username,
+                Email = username,
                 Firstname = "Test",
                 Lastname = "User",
                 Email = "test@example.com"
@@ -216,7 +216,7 @@ namespace API.Tests
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {
-                Username = username,
+                Email = username,
                 Firstname = "UpdatedFirst",
                 Lastname = "UpdatedLast",
                 Email = "updated@example.com",
@@ -241,7 +241,7 @@ namespace API.Tests
             User? updatedUser = null;
             var timeBeforeUpdate = DateTime.UtcNow;
 
-            mockRepo.Setup(repo => repo.FindByUsernameAsync(It.IsAny<string>()))
+            mockRepo.Setup(repo => repo.FindByEmailAsync(It.IsAny<string>()))
                    .ReturnsAsync(existingUser);
 
             mockRepo.Setup(repo => repo.UpdateAsync(It.IsAny<User>()))
@@ -270,7 +270,7 @@ namespace API.Tests
             
             // Ensure immutable fields are not changed
             Assert.Equal(existingUser.ID, updatedUser.ID);
-            Assert.Equal(existingUser.Uname, updatedUser.Uname);
+            Assert.Equal(existingUser.Email, updatedUser.Email);
             Assert.Equal(existingUser.Createdat, updatedUser.Createdat);
             Assert.Equal(existingUser.Lastlogin, updatedUser.Lastlogin);
             Assert.Equal(existingUser.Password, updatedUser.Password);
@@ -284,7 +284,7 @@ namespace API.Tests
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {
-                Username = username,
+                Email = username,
                 Firstname = "UpdatedFirst",
                 Lastname = "UpdatedLast",
                 Email = "updated@example.com"
@@ -312,7 +312,7 @@ namespace API.Tests
 
             User? updatedUser = null;
 
-            mockRepo.Setup(repo => repo.FindByUsernameAsync(It.IsAny<string>()))
+            mockRepo.Setup(repo => repo.FindByEmailAsync(It.IsAny<string>()))
                    .ReturnsAsync(existingUser);
 
             mockRepo.Setup(repo => repo.UpdateAsync(It.IsAny<User>()))
@@ -333,7 +333,7 @@ namespace API.Tests
             
             // Verify immutable fields remain unchanged
             Assert.Equal(originalId, updatedUser.ID);
-            Assert.Equal(username, updatedUser.Uname);
+            Assert.Equal(username, updatedUser.Email);
             Assert.Equal(originalCreateDate, updatedUser.Createdat);
             Assert.Equal(originalLastLogin, updatedUser.Lastlogin);
             Assert.Equal(originalPassword, updatedUser.Password);
@@ -347,7 +347,7 @@ namespace API.Tests
             var username = "testuser";
             var updateRequest = new UpdateUserRequest
             {
-                Username = username,
+                Email = username,
                 Firstname = "Test",
                 Lastname = "User",
                 Email = "invalidemail" // Missing @

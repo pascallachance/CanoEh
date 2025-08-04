@@ -24,14 +24,13 @@ namespace API.Tests
         public async Task ReturnOk_WhenUserFoundSuccessfully()
         {
             // Arrange
-            var username = "testuser";
+            var email = "test@example.com";
             var getUserResponse = new GetUserResponse
             {
                 ID = Guid.NewGuid(),
-                Uname = username,
+                Email = email,
                 Firstname = "Test",
                 Lastname = "User",
-                Email = "test@example.com",
                 Phone = "1234567890",
                 Lastlogin = DateTime.UtcNow.AddDays(-1),
                 CreatedAt = DateTime.UtcNow.AddDays(-30),
@@ -41,12 +40,12 @@ namespace API.Tests
             };
 
             var result = Result.Success(getUserResponse);
-            _mockUserService.Setup(s => s.GetUserAsync(username)).ReturnsAsync(result);
+            _mockUserService.Setup(s => s.GetUserAsync(email)).ReturnsAsync(result);
 
             // Set up the authenticated user context
             var claims = new List<Claim>
             {
-                new(ClaimTypes.NameIdentifier, username)
+                new(ClaimTypes.NameIdentifier, email)
             };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var principal = new ClaimsPrincipal(identity);
@@ -56,18 +55,18 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.GetUser(username);
+            var response = await _controller.GetUser(email);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(response);
             Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
             var returnedUser = Assert.IsType<GetUserResponse>(okResult.Value);
-            Assert.Equal(getUserResponse.Uname, returnedUser.Uname);
+            Assert.Equal(getUserResponse.Email, returnedUser.Email);
             Assert.Equal(getUserResponse.Email, returnedUser.Email);
         }
 
         [Fact]
-        public async Task ReturnBadRequest_WhenUsernameIsEmpty()
+        public async Task ReturnBadRequest_WhenEmailIsEmpty()
         {
             // Act
             var response = await _controller.GetUser(string.Empty);
@@ -75,20 +74,20 @@ namespace API.Tests
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
             Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
-            Assert.Equal("Username is required.", badRequestResult.Value);
+            Assert.Equal("Email is required.", badRequestResult.Value);
         }
 
         [Fact]
         public async Task ReturnForbid_WhenUserTriesToAccessAnotherUser()
         {
             // Arrange
-            var authenticatedUsername = "user1";
-            var requestedUsername = "user2";
+            var authenticatedEmail = "user1@example.com";
+            var requestedEmail = "user2@example.com";
 
             // Set up the authenticated user context
             var claims = new List<Claim>
            {
-               new(ClaimTypes.NameIdentifier, authenticatedUsername)
+               new(ClaimTypes.NameIdentifier, authenticatedEmail)
            };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var principal = new ClaimsPrincipal(identity);
@@ -98,7 +97,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.GetUser(requestedUsername);
+            var response = await _controller.GetUser(requestedEmail);
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(response);
@@ -110,14 +109,14 @@ namespace API.Tests
         public async Task ReturnNotFound_WhenUserNotFound()
         {
             // Arrange
-            var username = "nonexistentuser";
+            var email = "nonexistent@example.com";
             var result = Result.Failure<GetUserResponse>("User not found.", StatusCodes.Status404NotFound);
-            _mockUserService.Setup(s => s.GetUserAsync(username)).ReturnsAsync(result);
+            _mockUserService.Setup(s => s.GetUserAsync(email)).ReturnsAsync(result);
 
             // Set up the authenticated user context
             var claims = new List<Claim>
            {
-               new(ClaimTypes.NameIdentifier, username)
+               new(ClaimTypes.NameIdentifier, email)
            };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var principal = new ClaimsPrincipal(identity);
@@ -127,7 +126,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.GetUser(username);
+            var response = await _controller.GetUser(email);
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(response);
@@ -139,14 +138,13 @@ namespace API.Tests
         public async Task ReturnGetUserResponse_WithoutPasswordField()
         {
             // Arrange
-            var username = "testuser";
+            var email = "test@example.com";
             var getUserResponse = new GetUserResponse
             {
                 ID = Guid.NewGuid(),
-                Uname = username,
+                Email = email,
                 Firstname = "Test",
                 Lastname = "User",
-                Email = "test@example.com",
                 Phone = "1234567890",
                 Lastlogin = DateTime.UtcNow.AddDays(-1),
                 CreatedAt = DateTime.UtcNow.AddDays(-30),
@@ -156,12 +154,12 @@ namespace API.Tests
             };
 
             var result = Result.Success(getUserResponse);
-            _mockUserService.Setup(s => s.GetUserAsync(username)).ReturnsAsync(result);
+            _mockUserService.Setup(s => s.GetUserAsync(email)).ReturnsAsync(result);
 
             // Set up the authenticated user context
             var claims = new List<Claim>
            {
-               new(ClaimTypes.NameIdentifier, username)
+               new(ClaimTypes.NameIdentifier, email)
            };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var principal = new ClaimsPrincipal(identity);
@@ -171,7 +169,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.GetUser(username);
+            var response = await _controller.GetUser(email);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(response);

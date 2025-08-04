@@ -28,7 +28,7 @@ namespace API.Tests
             var username = "testuser";
             var changePasswordRequest = new ChangePasswordRequest
             {
-                Username = username,
+                Email = username,
                 CurrentPassword = "oldpassword123",
                 NewPassword = "newpassword456",
                 ConfirmNewPassword = "newpassword456"
@@ -36,7 +36,7 @@ namespace API.Tests
 
             var changePasswordResponse = new ChangePasswordResponse
             {
-                Username = username,
+                Email = username,
                 LastUpdatedAt = DateTime.UtcNow,
                 Message = "Password changed successfully."
             };
@@ -70,7 +70,7 @@ namespace API.Tests
             var targetUser = "user2";
             var changePasswordRequest = new ChangePasswordRequest
             {
-                Username = targetUser,
+                Email = targetUser,
                 CurrentPassword = "oldpassword123",
                 NewPassword = "newpassword456",
                 ConfirmNewPassword = "newpassword456"
@@ -101,7 +101,7 @@ namespace API.Tests
             var username = "testuser";
             var changePasswordRequest = new ChangePasswordRequest
             {
-                Username = username,
+                Email = username,
                 CurrentPassword = "wrongpassword",
                 NewPassword = "newpassword456",
                 ConfirmNewPassword = "newpassword456"
@@ -135,7 +135,7 @@ namespace API.Tests
             var username = "testuser";
             var changePasswordRequest = new ChangePasswordRequest
             {
-                Username = username,
+                Email = username,
                 CurrentPassword = "oldpassword123",
                 NewPassword = "newpassword456",
                 ConfirmNewPassword = "newpassword456"

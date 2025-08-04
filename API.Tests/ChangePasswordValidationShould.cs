@@ -13,12 +13,12 @@ namespace API.Tests
     public class ChangePasswordValidationShould
     {
         [Fact]
-        public void ReturnFailure_WhenUsernameIsEmpty()
+        public void ReturnFailure_WhenEmailIsEmpty()
         {
             // Arrange
             var request = new ChangePasswordRequest
             {
-                Username = "",
+                Email = "",
                 CurrentPassword = "oldpassword123",
                 NewPassword = "newpassword456",
                 ConfirmNewPassword = "newpassword456"
@@ -39,7 +39,7 @@ namespace API.Tests
             // Arrange
             var request = new ChangePasswordRequest
             {
-                Username = "testuser123",
+                Email = "testuser123",
                 CurrentPassword = "",
                 NewPassword = "newpassword456",
                 ConfirmNewPassword = "newpassword456"
@@ -60,7 +60,7 @@ namespace API.Tests
             // Arrange
             var request = new ChangePasswordRequest
             {
-                Username = "testuser123",
+                Email = "testuser123",
                 CurrentPassword = "oldpassword123",
                 NewPassword = "short",
                 ConfirmNewPassword = "short"
@@ -81,7 +81,7 @@ namespace API.Tests
             // Arrange
             var request = new ChangePasswordRequest
             {
-                Username = "testuser123",
+                Email = "testuser123",
                 CurrentPassword = "oldpassword123",
                 NewPassword = "newpassword456",
                 ConfirmNewPassword = "differentpassword"
@@ -102,7 +102,7 @@ namespace API.Tests
             // Arrange
             var request = new ChangePasswordRequest
             {
-                Username = "testuser123",
+                Email = "testuser123",
                 CurrentPassword = "samepassword123",
                 NewPassword = "samepassword123",
                 ConfirmNewPassword = "samepassword123"
@@ -123,7 +123,7 @@ namespace API.Tests
             // Arrange
             var request = new ChangePasswordRequest
             {
-                Username = "testuser123",
+                Email = "testuser123",
                 CurrentPassword = "oldpassword123",
                 NewPassword = "newpassword456",
                 ConfirmNewPassword = "newpassword456"

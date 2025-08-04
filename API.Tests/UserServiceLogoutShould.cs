@@ -58,7 +58,7 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task ReturnFailure_WhenUsernameIsEmpty()
+        public async Task ReturnFailure_WhenEmailIsEmpty()
         {
             // Act
             var result = await _userService.LogoutAsync("");

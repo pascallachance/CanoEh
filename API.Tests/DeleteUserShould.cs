@@ -63,8 +63,8 @@ namespace API.Tests
         public async Task ReturnForbidden_WhenUserTriesToDeleteAnotherUser()
         {
             // Arrange
-            var targetUsername = "otheruser";
-            var authenticatedUsername = "testuser";
+            var targetEmail = "otheruser";
+            var authenticatedEmail = "testuser";
 
             // Setup authenticated user context
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, authenticatedUsername) };
@@ -85,7 +85,7 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task ReturnBadRequest_WhenUsernameIsEmpty()
+        public async Task ReturnBadRequest_WhenEmailIsEmpty()
         {
             // Arrange
             var username = "";

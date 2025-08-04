@@ -127,7 +127,7 @@ namespace API.Tests
             // Verify email was sent
             _mockEmailService.Verify(service => service.SendRestoreUserEmailAsync(
                 It.Is<string>(email => email == request.Email),
-                It.Is<string>(username => username == deletedUser.Uname),
+                It.Is<string>(username => username == deletedUser.Email),
                 It.IsAny<string>()), Times.Once);
         }
 

@@ -135,7 +135,7 @@ namespace API.Tests
 
             // Assert
             Assert.True(result.IsSuccess);
-            Assert.Equal("deleteduser", result.Value!.Username);
+            Assert.Equal("deleteduser", result.Value!.Email);
             Assert.Contains("successfully restored", result.Value.Message);
             
             // Verify that restore was called
@@ -173,7 +173,7 @@ namespace API.Tests
 
             // Assert
             Assert.True(result.IsSuccess);
-            Assert.Equal("deleteduser", result.Value!.Username);
+            Assert.Equal("deleteduser", result.Value!.Email);
         }
 
         [Fact]

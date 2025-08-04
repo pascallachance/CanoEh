@@ -30,7 +30,7 @@ namespace API.Tests
             // Arrange
             var newUser = new CreateUserRequest
             {
-                Username = "testuser",
+                Email = "testuser",
                 Firstname = "Test",
                 Lastname = "User",
                 Email = "test@example.com",
@@ -96,7 +96,7 @@ namespace API.Tests
             // Assert
             Assert.True(result.IsSuccess);
             Assert.NotNull(createdUser);
-            Assert.Equal(inputModel.Username, createdUser.Uname);
+            Assert.Equal(inputModel.Email, createdUser.Email);
             Assert.Equal(inputModel.Firstname, createdUser.Firstname);
             Assert.Equal(inputModel.Lastname, createdUser.Lastname);
             Assert.Equal(inputModel.Email, createdUser.Email);
@@ -108,7 +108,7 @@ namespace API.Tests
         {
             var newUser = new CreateUserRequest
             {
-                Username = "",
+                Email = "",
                 Firstname = "Pascal",
                 Lastname = "Lachance",
                 Email = "plachance@gmail.com",
@@ -129,7 +129,7 @@ namespace API.Tests
         {
             var newUser = new CreateUserRequest
             {
-                Username = "plachance",
+                Email = "plachance",
                 Firstname = "",
                 Lastname = "Lachance",
                 Email = "plachance@gmail.com",
@@ -150,7 +150,7 @@ namespace API.Tests
         {
             var newUser = new CreateUserRequest
             {
-                Username = "plachance",
+                Email = "plachance",
                 Firstname = "Pascal",
                 Lastname = "",
                 Email = "plachance@gmail.com",
@@ -171,7 +171,7 @@ namespace API.Tests
         {
             var newUser = new CreateUserRequest
             {
-                Username = "plachance",
+                Email = "plachance",
                 Firstname = "Pascal",
                 Lastname = "Lachance",
                 Email = "",
@@ -195,7 +195,7 @@ namespace API.Tests
             var mockEmailService = new Mock<IEmailService>();
             var inputModel = new CreateUserRequest
             {
-                Username = "plachance",
+                Email = "plachance",
                 Firstname = "Pascal",
                 Lastname = "Lachance",
                 Email = "plachance@gmail.com",
@@ -212,7 +212,7 @@ namespace API.Tests
                     return u;
                 });
             mockRepo
-                .Setup(repo => repo.FindByUsernameAsync(It.IsAny<string>()))
+                .Setup(repo => repo.FindByEmailAsync(It.IsAny<string>()))
                 .ReturnsAsync((User?)null); // No existing user found
 
             mockEmailService
@@ -238,7 +238,7 @@ namespace API.Tests
             var mockEmailService = new Mock<IEmailService>();
             var inputModel = new CreateUserRequest
             {
-                Username = "plachance",
+                Email = "plachance",
                 Firstname = "Pascal",
                 Lastname = "Lachance",
                 Email = "plachance@gmail.com",
@@ -255,7 +255,7 @@ namespace API.Tests
                     return u;
                 });
             mockRepo
-                .Setup(repo => repo.FindByUsernameAsync(It.IsAny<string>()))
+                .Setup(repo => repo.FindByEmailAsync(It.IsAny<string>()))
                 .ReturnsAsync((User?)null); // No existing user found
 
             mockEmailService
@@ -273,7 +273,7 @@ namespace API.Tests
             Assert.False(createdUser.ValidEmail);
             mockEmailService.Verify(es => es.SendEmailValidationAsync(
                 inputModel.Email, 
-                inputModel.Username, 
+                inputModel.Email, 
                 It.IsAny<string>()), Times.Once);
         }
 
@@ -282,7 +282,7 @@ namespace API.Tests
         {
             var newUser = new CreateUserRequest
             {
-                Username = "failuser",
+                Email = "failuser",
                 Firstname = "Fail",
                 Lastname = "User",
                 Email = "fail@example.com",

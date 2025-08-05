@@ -26,14 +26,16 @@ namespace API.Tests
             // Arrange
             var createCategoryRequest = new CreateCategoryRequest
             {
-                Name = "Test Category",
+                Name_en = "Test Category",
+                Name_fr = "Catégorie de Test",
                 ParentCategoryId = null
             };
 
             var createCategoryResponse = new CreateCategoryResponse
             {
                 Id = Guid.NewGuid(),
-                Name = createCategoryRequest.Name,
+                Name_en = createCategoryRequest.Name_en,
+                Name_fr = createCategoryRequest.Name_fr,
                 ParentCategoryId = createCategoryRequest.ParentCategoryId
             };
 
@@ -55,7 +57,8 @@ namespace API.Tests
             // Arrange
             var createCategoryRequest = new CreateCategoryRequest
             {
-                Name = "", // Invalid Name
+                Name_en = "", // Invalid Name
+                Name_fr = "", // Invalid Name
                 ParentCategoryId = null
             };
 
@@ -77,7 +80,8 @@ namespace API.Tests
             // Arrange
             var createCategoryRequest = new CreateCategoryRequest
             {
-                Name = "Test Category",
+                Name_en = "Test Category",
+                Name_fr = "Catégorie de Test",
                 ParentCategoryId = null
             };
 
@@ -101,14 +105,16 @@ namespace API.Tests
                 new GetCategoryResponse
                 {
                     Id = Guid.NewGuid(),
-                    Name = "Electronics",
+                    Name_en = "Electronics",
+                    Name_fr = "Électronique",
                     ParentCategoryId = null,
                     Subcategories = new List<GetCategoryResponse>()
                 },
                 new GetCategoryResponse
                 {
                     Id = Guid.NewGuid(),
-                    Name = "Clothing",
+                    Name_en = "Clothing",
+                    Name_fr = "Vêtements",
                     ParentCategoryId = null,
                     Subcategories = new List<GetCategoryResponse>()
                 }
@@ -149,7 +155,8 @@ namespace API.Tests
             var categoryResponse = new GetCategoryResponse
             {
                 Id = categoryId,
-                Name = "Test Category",
+                Name_en = "Test Category",
+                Name_fr = "Catégorie de Test",
                 ParentCategoryId = null,
                 Subcategories = new List<GetCategoryResponse>()
             };
@@ -192,7 +199,8 @@ namespace API.Tests
                 new GetCategoryResponse
                 {
                     Id = Guid.NewGuid(),
-                    Name = "Electronics",
+                    Name_en = "Electronics",
+                    Name_fr = "Électronique",
                     ParentCategoryId = null,
                     Subcategories = new List<GetCategoryResponse>()
                 }
@@ -220,7 +228,8 @@ namespace API.Tests
                 new GetCategoryResponse
                 {
                     Id = Guid.NewGuid(),
-                    Name = "Smartphones",
+                    Name_en = "Smartphones",
+                    Name_fr = "Téléphones intelligents",
                     ParentCategoryId = parentCategoryId,
                     Subcategories = new List<GetCategoryResponse>()
                 }
@@ -262,14 +271,16 @@ namespace API.Tests
             var updateCategoryRequest = new UpdateCategoryRequest
             {
                 Id = Guid.NewGuid(),
-                Name = "Updated Category",
+                Name_en = "Updated Category",
+                Name_fr = "Catégorie Mise à Jour",
                 ParentCategoryId = null
             };
 
             var updateCategoryResponse = new UpdateCategoryResponse
             {
                 Id = updateCategoryRequest.Id,
-                Name = updateCategoryRequest.Name,
+                Name_en = updateCategoryRequest.Name_en,
+                Name_fr = updateCategoryRequest.Name_fr,
                 ParentCategoryId = updateCategoryRequest.ParentCategoryId
             };
 
@@ -292,7 +303,8 @@ namespace API.Tests
             var updateCategoryRequest = new UpdateCategoryRequest
             {
                 Id = Guid.NewGuid(),
-                Name = "Updated Category",
+                Name_en = "Updated Category",
+                Name_fr = "Catégorie Mise à Jour",
                 ParentCategoryId = null
             };
 
@@ -315,7 +327,8 @@ namespace API.Tests
             var updateCategoryRequest = new UpdateCategoryRequest
             {
                 Id = Guid.Empty, // Invalid ID
-                Name = "Updated Category",
+                Name_en = "Updated Category",
+                Name_fr = "Catégorie Mise à Jour",
                 ParentCategoryId = null
             };
 

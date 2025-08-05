@@ -15,13 +15,14 @@ namespace Infrastructure.Repositories.Implementations
             }
 
             var query = @"
-INSERT INTO dbo.Categories (Name, ParentCategoryId)
+INSERT INTO dbo.Categories (Name_en, Name_fr, ParentCategoryId)
 OUTPUT INSERTED.Id
-VALUES (@Name, @ParentCategoryId)";
+VALUES (@Name_en, @Name_fr, @ParentCategoryId)";
 
             var parameters = new
             {
-                entity.Name,
+                entity.Name_en,
+                entity.Name_fr,
                 entity.ParentCategoryId
             };
 
@@ -95,20 +96,20 @@ VALUES (@Name, @ParentCategoryId)";
             var query = @"
 WITH CategoryHierarchy AS (
     -- Base case: root categories
-    SELECT Id, Name, ParentCategoryId, 0 as Level
+    SELECT Id, Name_en, Name_fr, ParentCategoryId, 0 as Level
     FROM dbo.Categories
     WHERE ParentCategoryId IS NULL
     
     UNION ALL
     
     -- Recursive case: subcategories
-    SELECT c.Id, c.Name, c.ParentCategoryId, ch.Level + 1
+    SELECT c.Id, c.Name_en, c.Name_fr, c.ParentCategoryId, ch.Level + 1
     FROM dbo.Categories c
     INNER JOIN CategoryHierarchy ch ON c.ParentCategoryId = ch.Id
 )
-SELECT Id, Name, ParentCategoryId
+SELECT Id, Name_en, Name_fr, ParentCategoryId
 FROM CategoryHierarchy
-ORDER BY Level, Name";
+ORDER BY Level, Name_en";
 
             var categoriesData = await dbConnection.QueryAsync<CategoryDto>(query);
             
@@ -122,7 +123,8 @@ ORDER BY Level, Name";
                 var category = new Category
                 {
                     Id = dto.Id,
-                    Name = dto.Name,
+                    Name_en = dto.Name_en,
+                    Name_fr = dto.Name_fr,
                     ParentCategoryId = dto.ParentCategoryId,
                     Subcategories = new List<Category>(),
                     Items = new List<Item>()
@@ -175,14 +177,16 @@ ORDER BY Level, Name";
 
             var query = @"
 UPDATE dbo.Categories
-SET Name = @Name,
+SET Name_en = @Name_en,
+    Name_fr = @Name_fr,
     ParentCategoryId = @ParentCategoryId
 WHERE Id = @Id";
 
             var parameters = new
             {
                 entity.Id,
-                entity.Name,
+                entity.Name_en,
+                entity.Name_fr,
                 entity.ParentCategoryId
             };
 
@@ -199,7 +203,7 @@ WHERE Id = @Id";
             }
 
             var query = @"
-SELECT Id, Name, ParentCategoryId
+SELECT Id, Name_en, Name_fr, ParentCategoryId
 FROM dbo.Categories
 WHERE Id = @id";
 
@@ -211,7 +215,8 @@ WHERE Id = @id";
             return new Category
             {
                 Id = dto.Id,
-                Name = dto.Name,
+                Name_en = dto.Name_en,
+                Name_fr = dto.Name_fr,
                 ParentCategoryId = dto.ParentCategoryId,
                 Subcategories = new List<Category>(),
                 Items = new List<Item>()
@@ -226,17 +231,18 @@ WHERE Id = @id";
             }
 
             var query = @"
-SELECT Id, Name, ParentCategoryId
+SELECT Id, Name_en, Name_fr, ParentCategoryId
 FROM dbo.Categories
 WHERE ParentCategoryId IS NULL
-ORDER BY Name";
+ORDER BY Name_en";
 
             var categoriesData = await dbConnection.QueryAsync<CategoryDto>(query);
             
             return categoriesData.Select(dto => new Category
             {
                 Id = dto.Id,
-                Name = dto.Name,
+                Name_en = dto.Name_en,
+                Name_fr = dto.Name_fr,
                 ParentCategoryId = dto.ParentCategoryId,
                 Subcategories = new List<Category>(),
                 Items = new List<Item>()
@@ -251,17 +257,18 @@ ORDER BY Name";
             }
 
             var query = @"
-SELECT Id, Name, ParentCategoryId
+SELECT Id, Name_en, Name_fr, ParentCategoryId
 FROM dbo.Categories
 WHERE ParentCategoryId = @parentCategoryId
-ORDER BY Name";
+ORDER BY Name_en";
 
             var categoriesData = await dbConnection.QueryAsync<CategoryDto>(query, new { parentCategoryId });
             
             return categoriesData.Select(dto => new Category
             {
                 Id = dto.Id,
-                Name = dto.Name,
+                Name_en = dto.Name_en,
+                Name_fr = dto.Name_fr,
                 ParentCategoryId = dto.ParentCategoryId,
                 Subcategories = new List<Category>(),
                 Items = new List<Item>()
@@ -329,7 +336,8 @@ WHERE Id = @categoryId";
         private sealed class CategoryDto
         {
             public Guid Id { get; set; }
-            public string Name { get; set; } = string.Empty;
+            public string Name_en { get; set; } = string.Empty;
+            public string Name_fr { get; set; } = string.Empty;
             public Guid? ParentCategoryId { get; set; }
         }
     }

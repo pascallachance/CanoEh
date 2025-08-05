@@ -6,7 +6,8 @@ namespace Domain.Models.Requests
     public class UpdateCategoryRequest
     {
         public Guid Id { get; set; }
-        public required string Name { get; set; }
+        public required string Name_en { get; set; }
+        public required string Name_fr { get; set; }
         public Guid? ParentCategoryId { get; set; }
 
         public Result Validate()
@@ -16,14 +17,24 @@ namespace Domain.Models.Requests
                 return Result.Failure("Id is required.", StatusCodes.Status400BadRequest);
             }
 
-            if (string.IsNullOrWhiteSpace(Name))
+            if (string.IsNullOrWhiteSpace(Name_en))
             {
-                return Result.Failure("Name is required.", StatusCodes.Status400BadRequest);
+                return Result.Failure("English name is required.", StatusCodes.Status400BadRequest);
             }
 
-            if (Name.Length > 100)
+            if (string.IsNullOrWhiteSpace(Name_fr))
             {
-                return Result.Failure("Name cannot exceed 100 characters.", StatusCodes.Status400BadRequest);
+                return Result.Failure("French name is required.", StatusCodes.Status400BadRequest);
+            }
+
+            if (Name_en.Length > 100)
+            {
+                return Result.Failure("English name cannot exceed 100 characters.", StatusCodes.Status400BadRequest);
+            }
+
+            if (Name_fr.Length > 100)
+            {
+                return Result.Failure("French name cannot exceed 100 characters.", StatusCodes.Status400BadRequest);
             }
 
             if (ParentCategoryId == Id)

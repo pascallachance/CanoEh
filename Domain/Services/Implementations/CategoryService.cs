@@ -37,7 +37,8 @@ namespace Domain.Services.Implementations
                 var category = new Category
                 {
                     Id = Guid.NewGuid(),
-                    Name = createCategoryRequest.Name,
+                    Name_en = createCategoryRequest.Name_en,
+                    Name_fr = createCategoryRequest.Name_fr,
                     ParentCategoryId = createCategoryRequest.ParentCategoryId,
                     Subcategories = new List<Category>(),
                     Items = new List<Item>()
@@ -48,7 +49,8 @@ namespace Domain.Services.Implementations
                 var response = new CreateCategoryResponse
                 {
                     Id = createdCategory.Id,
-                    Name = createdCategory.Name,
+                    Name_en = createdCategory.Name_en,
+                    Name_fr = createdCategory.Name_fr,
                     ParentCategoryId = createdCategory.ParentCategoryId
                 };
 
@@ -189,7 +191,8 @@ namespace Domain.Services.Implementations
                     }
                 }
 
-                existingCategory.Name = updateCategoryRequest.Name;
+                existingCategory.Name_en = updateCategoryRequest.Name_en;
+                existingCategory.Name_fr = updateCategoryRequest.Name_fr;
                 existingCategory.ParentCategoryId = updateCategoryRequest.ParentCategoryId;
 
                 var updatedCategory = await _categoryRepository.UpdateAsync(existingCategory);
@@ -197,7 +200,8 @@ namespace Domain.Services.Implementations
                 var response = new UpdateCategoryResponse
                 {
                     Id = updatedCategory.Id,
-                    Name = updatedCategory.Name,
+                    Name_en = updatedCategory.Name_en,
+                    Name_fr = updatedCategory.Name_fr,
                     ParentCategoryId = updatedCategory.ParentCategoryId
                 };
 
@@ -266,7 +270,8 @@ namespace Domain.Services.Implementations
             return new GetCategoryResponse
             {
                 Id = category.Id,
-                Name = category.Name,
+                Name_en = category.Name_en,
+                Name_fr = category.Name_fr,
                 ParentCategoryId = category.ParentCategoryId,
                 Subcategories = category.Subcategories.Select(MapToGetCategoryResponse).ToList()
             };

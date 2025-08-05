@@ -16,14 +16,17 @@ namespace Infrastructure.Repositories.Implementations
                 dbConnection.Open();
             }
             
-            var query = @"
+            using var transaction = dbConnection.BeginTransaction();
+            try
+            {
+                // Insert Item first
+                var itemQuery = @"
 INSERT INTO dbo.Items (
     SellerID,
     Name, 
     Description, 
     Brand, 
     Category, 
-    Variants,
     ImageUrls,
     CreatedAt, 
     UpdatedAt, 
@@ -35,29 +38,82 @@ VALUES (
     @Description, 
     @Brand, 
     @Category, 
-    @Variants,
     @ImageUrls,
     @CreatedAt, 
     @UpdatedAt, 
     @Deleted)";
 
-            var parameters = new
+                var itemParameters = new
+                {
+                    entity.SellerID,
+                    entity.Name,
+                    entity.Description,
+                    entity.Brand,
+                    entity.Category,
+                    ImageUrls = JsonSerializer.Serialize(entity.ImageUrls),
+                    entity.CreatedAt,
+                    entity.UpdatedAt,
+                    entity.Deleted
+                };
+                
+                Guid newItemId = await dbConnection.ExecuteScalarAsync<Guid>(itemQuery, itemParameters, transaction);
+                entity.Id = newItemId;
+
+                // Insert variants if any
+                if (entity.Variants?.Any() == true)
+                {
+                    var variantQuery = @"
+INSERT INTO dbo.ItemVariants (
+    Id,
+    ItemId,
+    Attributes,
+    Price,
+    StockQuantity,
+    Sku,
+    ThumbnailUrls,
+    Deleted)
+VALUES (
+    @Id,
+    @ItemId,
+    @Attributes,
+    @Price,
+    @StockQuantity,
+    @Sku,
+    @ThumbnailUrls,
+    @Deleted)";
+
+                    foreach (var variant in entity.Variants)
+                    {
+                        variant.ItemId = newItemId;
+                        if (variant.Id == Guid.Empty)
+                        {
+                            variant.Id = Guid.NewGuid();
+                        }
+
+                        var variantParameters = new
+                        {
+                            variant.Id,
+                            variant.ItemId,
+                            Attributes = JsonSerializer.Serialize(variant.Attributes),
+                            variant.Price,
+                            variant.StockQuantity,
+                            variant.Sku,
+                            ThumbnailUrls = JsonSerializer.Serialize(variant.ThumbnailUrls),
+                            variant.Deleted
+                        };
+
+                        await dbConnection.ExecuteAsync(variantQuery, variantParameters, transaction);
+                    }
+                }
+
+                transaction.Commit();
+                return entity;
+            }
+            catch
             {
-                entity.SellerID,
-                entity.Name,
-                entity.Description,
-                entity.Brand,
-                entity.Category,
-                Variants = JsonSerializer.Serialize(entity.Variants),
-                ImageUrls = JsonSerializer.Serialize(entity.ImageUrls),
-                entity.CreatedAt,
-                entity.UpdatedAt,
-                entity.Deleted
-            };
-            
-            Guid newItemId = await dbConnection.ExecuteScalarAsync<Guid>(query, parameters);
-            entity.Id = newItemId;
-            return entity;
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public override async Task<int> CountAsync(Func<Item, bool> predicate)
@@ -107,10 +163,37 @@ VALUES (
                 dbConnection.Open();
             }
             
-            var query = "SELECT * FROM dbo.Items WHERE Deleted = 0";
-            var itemDtos = await dbConnection.QueryAsync<ItemDto>(query);
+            var query = @"
+SELECT i.*, v.Id as VariantId, v.ItemId as VariantItemId, v.Attributes, v.Price, v.StockQuantity, v.Sku, v.ThumbnailUrls, v.Deleted as VariantDeleted
+FROM dbo.Items i
+LEFT JOIN dbo.ItemVariants v ON i.Id = v.ItemId AND v.Deleted = 0
+WHERE i.Deleted = 0
+ORDER BY i.Id";
+
+            var itemDictionary = new Dictionary<Guid, Item>();
             
-            return itemDtos.Select(MapToItem);
+            await dbConnection.QueryAsync<ItemDto, ItemVariantDto, Item>(
+                query,
+                (itemDto, variantDto) =>
+                {
+                    if (!itemDictionary.TryGetValue(itemDto.Id, out var item))
+                    {
+                        item = MapToItem(itemDto);
+                        itemDictionary.Add(itemDto.Id, item);
+                    }
+
+                    if (variantDto != null && variantDto.VariantId != Guid.Empty)
+                    {
+                        var variant = MapToItemVariant(variantDto);
+                        item.Variants.Add(variant);
+                    }
+
+                    return item;
+                },
+                splitOn: "VariantId"
+            );
+            
+            return itemDictionary.Values;
         }
 
         public override async Task<Item> GetByIdAsync(Guid id)
@@ -121,12 +204,36 @@ VALUES (
             }
             
             var query = @"
-SELECT TOP(1) * 
-FROM dbo.Items 
-WHERE Id = @id";
+SELECT i.*, v.Id as VariantId, v.ItemId as VariantItemId, v.Attributes, v.Price, v.StockQuantity, v.Sku, v.ThumbnailUrls, v.Deleted as VariantDeleted
+FROM dbo.Items i
+LEFT JOIN dbo.ItemVariants v ON i.Id = v.ItemId AND v.Deleted = 0
+WHERE i.Id = @id
+ORDER BY i.Id";
+
+            Item? item = null;
             
-            var itemDto = await dbConnection.QueryFirstAsync<ItemDto>(query, new { id });
-            return MapToItem(itemDto);
+            await dbConnection.QueryAsync<ItemDto, ItemVariantDto, Item>(
+                query,
+                (itemDto, variantDto) =>
+                {
+                    if (item == null)
+                    {
+                        item = MapToItem(itemDto);
+                    }
+
+                    if (variantDto != null && variantDto.VariantId != Guid.Empty)
+                    {
+                        var variant = MapToItemVariant(variantDto);
+                        item.Variants.Add(variant);
+                    }
+
+                    return item;
+                },
+                new { id },
+                splitOn: "VariantId"
+            );
+            
+            return item ?? throw new InvalidOperationException($"Item with id {id} not found");
         }
 
         public override async Task<Item> UpdateAsync(Item entity)
@@ -136,7 +243,11 @@ WHERE Id = @id";
                 dbConnection.Open();
             }
             
-            var query = @"
+            using var transaction = dbConnection.BeginTransaction();
+            try
+            {
+                // Update Item
+                var itemQuery = @"
 UPDATE dbo.Items
 SET
     SellerID = @SellerID,
@@ -144,28 +255,97 @@ SET
     Description = @Description,
     Brand = @Brand,
     Category = @Category,
-    Variants = @Variants,
     ImageUrls = @ImageUrls,
     UpdatedAt = @UpdatedAt,
     Deleted = @Deleted
 WHERE Id = @Id";
 
-            var parameters = new
+                var itemParameters = new
+                {
+                    entity.Id,
+                    entity.SellerID,
+                    entity.Name,
+                    entity.Description,
+                    entity.Brand,
+                    entity.Category,
+                    ImageUrls = JsonSerializer.Serialize(entity.ImageUrls),
+                    entity.UpdatedAt,
+                    entity.Deleted
+                };
+                
+                await dbConnection.ExecuteAsync(itemQuery, itemParameters, transaction);
+
+                // Get existing variants to compare
+                var existingVariantsQuery = "SELECT Id FROM dbo.ItemVariants WHERE ItemId = @ItemId";
+                var existingVariantIds = await dbConnection.QueryAsync<Guid>(existingVariantsQuery, new { ItemId = entity.Id }, transaction);
+                var existingVariantIdSet = existingVariantIds.ToHashSet();
+
+                // Update or insert variants
+                if (entity.Variants?.Any() == true)
+                {
+                    var variantUpsertQuery = @"
+IF EXISTS (SELECT 1 FROM dbo.ItemVariants WHERE Id = @Id)
+    UPDATE dbo.ItemVariants 
+    SET Attributes = @Attributes, Price = @Price, StockQuantity = @StockQuantity, 
+        Sku = @Sku, ThumbnailUrls = @ThumbnailUrls, Deleted = @Deleted
+    WHERE Id = @Id
+ELSE
+    INSERT INTO dbo.ItemVariants (Id, ItemId, Attributes, Price, StockQuantity, Sku, ThumbnailUrls, Deleted)
+    VALUES (@Id, @ItemId, @Attributes, @Price, @StockQuantity, @Sku, @ThumbnailUrls, @Deleted)";
+
+                    var currentVariantIds = new HashSet<Guid>();
+
+                    foreach (var variant in entity.Variants)
+                    {
+                        variant.ItemId = entity.Id;
+                        if (variant.Id == Guid.Empty)
+                        {
+                            variant.Id = Guid.NewGuid();
+                        }
+                        
+                        currentVariantIds.Add(variant.Id);
+
+                        var variantParameters = new
+                        {
+                            variant.Id,
+                            variant.ItemId,
+                            Attributes = JsonSerializer.Serialize(variant.Attributes),
+                            variant.Price,
+                            variant.StockQuantity,
+                            variant.Sku,
+                            ThumbnailUrls = JsonSerializer.Serialize(variant.ThumbnailUrls),
+                            variant.Deleted
+                        };
+
+                        await dbConnection.ExecuteAsync(variantUpsertQuery, variantParameters, transaction);
+                    }
+
+                    // Mark variants as deleted if they're no longer in the entity but existed before
+                    var variantsToDelete = existingVariantIdSet.Except(currentVariantIds);
+                    if (variantsToDelete.Any())
+                    {
+                        var deleteQuery = "UPDATE dbo.ItemVariants SET Deleted = 1 WHERE Id IN @Ids";
+                        await dbConnection.ExecuteAsync(deleteQuery, new { Ids = variantsToDelete }, transaction);
+                    }
+                }
+                else
+                {
+                    // If no variants provided, mark all existing variants as deleted
+                    if (existingVariantIdSet.Any())
+                    {
+                        var deleteAllQuery = "UPDATE dbo.ItemVariants SET Deleted = 1 WHERE ItemId = @ItemId";
+                        await dbConnection.ExecuteAsync(deleteAllQuery, new { ItemId = entity.Id }, transaction);
+                    }
+                }
+
+                transaction.Commit();
+                return entity;
+            }
+            catch
             {
-                entity.Id,
-                entity.SellerID,
-                entity.Name,
-                entity.Description,
-                entity.Brand,
-                entity.Category,
-                Variants = JsonSerializer.Serialize(entity.Variants),
-                ImageUrls = JsonSerializer.Serialize(entity.ImageUrls),
-                entity.UpdatedAt,
-                entity.Deleted
-            };
-            
-            await dbConnection.ExecuteAsync(query, parameters);
-            return entity;
+                transaction.Rollback();
+                throw;
+            }
         }
 
         // IItemRepository specific methods
@@ -177,27 +357,61 @@ WHERE Id = @Id";
             }
             
             var query = @"
-SELECT TOP(1) * 
-FROM dbo.Items 
-WHERE Id = @id AND Deleted = 0";
+SELECT i.*, v.Id as VariantId, v.ItemId as VariantItemId, v.Attributes, v.Price, v.StockQuantity, v.Sku, v.ThumbnailUrls, v.Deleted as VariantDeleted
+FROM dbo.Items i
+LEFT JOIN dbo.ItemVariants v ON i.Id = v.ItemId AND v.Deleted = 0
+WHERE i.Id = @id AND i.Deleted = 0
+ORDER BY i.Id";
+
+            Item? item = null;
             
-            var itemDto = await dbConnection.QueryFirstOrDefaultAsync<ItemDto>(query, new { id });
-            return itemDto != null ? MapToItem(itemDto) : null;
+            await dbConnection.QueryAsync<ItemDto, ItemVariantDto, Item>(
+                query,
+                (itemDto, variantDto) =>
+                {
+                    if (item == null)
+                    {
+                        item = MapToItem(itemDto);
+                    }
+
+                    if (variantDto != null && variantDto.VariantId != Guid.Empty)
+                    {
+                        var variant = MapToItemVariant(variantDto);
+                        item.Variants.Add(variant);
+                    }
+
+                    return item;
+                },
+                new { id },
+                splitOn: "VariantId"
+            );
+            
+            return item;
         }
 
         public async Task<bool> DeleteItemVariantAsync(Guid itemId, Guid variantId)
         {
-            var item = await GetItemByIdAsync(itemId);
-            if (item == null) return false;
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
             
-            var variant = item.Variants.FirstOrDefault(v => v.Id == variantId);
-            if (variant == null) return false;
+            var query = @"
+UPDATE dbo.ItemVariants 
+SET Deleted = 1 
+WHERE Id = @variantId AND ItemId = @itemId AND Deleted = 0";
             
-            variant.Deleted = true;
-            item.UpdatedAt = DateTime.UtcNow;
+            var rowsAffected = await dbConnection.ExecuteAsync(query, new { variantId, itemId });
             
-            await UpdateAsync(item);
-            return true;
+            if (rowsAffected > 0)
+            {
+                // Update the item's UpdatedAt timestamp
+                var updateItemQuery = "UPDATE dbo.Items SET UpdatedAt = @UpdatedAt WHERE Id = @itemId";
+                await dbConnection.ExecuteAsync(updateItemQuery, new { UpdatedAt = DateTime.UtcNow, itemId });
+                return true;
+            }
+            
+            return false;
         }
 
         private static Item MapToItem(ItemDto dto)
@@ -210,9 +424,7 @@ WHERE Id = @id AND Deleted = 0";
                 Description = dto.Description,
                 Brand = dto.Brand,
                 Category = dto.Category,
-                Variants = string.IsNullOrEmpty(dto.Variants) 
-                    ? new List<ItemVariant>() 
-                    : JsonSerializer.Deserialize<List<ItemVariant>>(dto.Variants) ?? new List<ItemVariant>(),
+                Variants = new List<ItemVariant>(), // Variants will be added separately
                 ImageUrls = string.IsNullOrEmpty(dto.ImageUrls) 
                     ? new List<string>() 
                     : JsonSerializer.Deserialize<List<string>>(dto.ImageUrls) ?? new List<string>(),
@@ -222,7 +434,26 @@ WHERE Id = @id AND Deleted = 0";
             };
         }
 
-        private class ItemDto
+        private static ItemVariant MapToItemVariant(ItemVariantDto dto)
+        {
+            return new ItemVariant
+            {
+                Id = dto.VariantId,
+                ItemId = dto.VariantItemId,
+                Attributes = string.IsNullOrEmpty(dto.Attributes)
+                    ? new Dictionary<string, string>()
+                    : JsonSerializer.Deserialize<Dictionary<string, string>>(dto.Attributes) ?? new Dictionary<string, string>(),
+                Price = dto.Price,
+                StockQuantity = dto.StockQuantity,
+                Sku = dto.Sku,
+                ThumbnailUrls = string.IsNullOrEmpty(dto.ThumbnailUrls)
+                    ? new List<string>()
+                    : JsonSerializer.Deserialize<List<string>>(dto.ThumbnailUrls) ?? new List<string>(),
+                Deleted = dto.VariantDeleted
+            };
+        }
+
+        private sealed class ItemDto
         {
             public Guid Id { get; set; }
             public Guid SellerID { get; set; }
@@ -230,11 +461,22 @@ WHERE Id = @id AND Deleted = 0";
             public string? Description { get; set; }
             public string? Brand { get; set; }
             public string? Category { get; set; }
-            public string? Variants { get; set; }
             public string? ImageUrls { get; set; }
             public DateTime CreatedAt { get; set; }
             public DateTime? UpdatedAt { get; set; }
             public bool Deleted { get; set; }
+        }
+
+        private sealed class ItemVariantDto
+        {
+            public Guid VariantId { get; set; }
+            public Guid VariantItemId { get; set; }
+            public string? Attributes { get; set; }
+            public decimal Price { get; set; }
+            public int StockQuantity { get; set; }
+            public string? Sku { get; set; }
+            public string? ThumbnailUrls { get; set; }
+            public bool VariantDeleted { get; set; }
         }
     }
 }

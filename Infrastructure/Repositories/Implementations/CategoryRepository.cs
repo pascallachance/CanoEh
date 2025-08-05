@@ -94,61 +94,19 @@ VALUES (@Name_en, @Name_fr, @ParentCategoryId)";
             }
 
             var query = @"
-WITH CategoryHierarchy AS (
-    -- Base case: root categories
-    SELECT Id, Name_en, Name_fr, ParentCategoryId, 0 as Level
-    FROM dbo.Categories
-    WHERE ParentCategoryId IS NULL
-    
-    UNION ALL
-    
-    -- Recursive case: subcategories
-    SELECT c.Id, c.Name_en, c.Name_fr, c.ParentCategoryId, ch.Level + 1
-    FROM dbo.Categories c
-    INNER JOIN CategoryHierarchy ch ON c.ParentCategoryId = ch.Id
-)
 SELECT Id, Name_en, Name_fr, ParentCategoryId
-FROM CategoryHierarchy
-ORDER BY Level, Name_en";
+FROM dbo.Categories
+ORDER BY Name_en";
 
             var categoriesData = await dbConnection.QueryAsync<CategoryDto>(query);
             
-            // Build the hierarchy
-            var categoryDict = new Dictionary<Guid, Category>();
-            var rootCategories = new List<Category>();
-
-            // First pass: create all category objects
-            foreach (var dto in categoriesData)
+            return categoriesData.Select(dto => new Category
             {
-                var category = new Category
-                {
-                    Id = dto.Id,
-                    Name_en = dto.Name_en,
-                    Name_fr = dto.Name_fr,
-                    ParentCategoryId = dto.ParentCategoryId,
-                    Subcategories = new List<Category>(),
-                    Items = new List<Item>()
-                };
-                categoryDict[dto.Id] = category;
-            }
-
-            // Second pass: build relationships
-            foreach (var dto in categoriesData)
-            {
-                var category = categoryDict[dto.Id];
-                
-                if (dto.ParentCategoryId.HasValue && categoryDict.TryGetValue(dto.ParentCategoryId.Value, out var parent))
-                {
-                    category.ParentCategory = parent;
-                    parent.Subcategories.Add(category);
-                }
-                else
-                {
-                    rootCategories.Add(category);
-                }
-            }
-
-            return categoryDict.Values;
+                Id = dto.Id,
+                Name_en = dto.Name_en,
+                Name_fr = dto.Name_fr,
+                ParentCategoryId = dto.ParentCategoryId
+            });
         }
 
         public override async Task<Category> GetByIdAsync(Guid id)
@@ -217,9 +175,7 @@ WHERE Id = @id";
                 Id = dto.Id,
                 Name_en = dto.Name_en,
                 Name_fr = dto.Name_fr,
-                ParentCategoryId = dto.ParentCategoryId,
-                Subcategories = new List<Category>(),
-                Items = new List<Item>()
+                ParentCategoryId = dto.ParentCategoryId
             };
         }
 
@@ -243,9 +199,7 @@ ORDER BY Name_en";
                 Id = dto.Id,
                 Name_en = dto.Name_en,
                 Name_fr = dto.Name_fr,
-                ParentCategoryId = dto.ParentCategoryId,
-                Subcategories = new List<Category>(),
-                Items = new List<Item>()
+                ParentCategoryId = dto.ParentCategoryId
             });
         }
 
@@ -269,9 +223,7 @@ ORDER BY Name_en";
                 Id = dto.Id,
                 Name_en = dto.Name_en,
                 Name_fr = dto.Name_fr,
-                ParentCategoryId = dto.ParentCategoryId,
-                Subcategories = new List<Category>(),
-                Items = new List<Item>()
+                ParentCategoryId = dto.ParentCategoryId
             });
         }
 

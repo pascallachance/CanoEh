@@ -39,9 +39,7 @@ namespace Domain.Services.Implementations
                     Id = Guid.NewGuid(),
                     Name_en = createCategoryRequest.Name_en,
                     Name_fr = createCategoryRequest.Name_fr,
-                    ParentCategoryId = createCategoryRequest.ParentCategoryId,
-                    Subcategories = new List<Category>(),
-                    Items = new List<Item>()
+                    ParentCategoryId = createCategoryRequest.ParentCategoryId
                 };
 
                 var createdCategory = await _categoryRepository.AddAsync(category);
@@ -101,9 +99,8 @@ namespace Domain.Services.Implementations
 
                 // Get subcategories
                 var subcategories = await _categoryRepository.GetSubcategoriesAsync(id);
-                category.Subcategories = subcategories.ToList();
 
-                var response = MapToGetCategoryResponse(category);
+                var response = MapToGetCategoryResponse(category, subcategories);
                 return Result.Success(response);
             }
             catch (Exception ex)
@@ -273,7 +270,19 @@ namespace Domain.Services.Implementations
                 Name_en = category.Name_en,
                 Name_fr = category.Name_fr,
                 ParentCategoryId = category.ParentCategoryId,
-                Subcategories = category.Subcategories.Select(MapToGetCategoryResponse).ToList()
+                Subcategories = new List<GetCategoryResponse>()
+            };
+        }
+
+        private static GetCategoryResponse MapToGetCategoryResponse(Category category, IEnumerable<Category> subcategories)
+        {
+            return new GetCategoryResponse
+            {
+                Id = category.Id,
+                Name_en = category.Name_en,
+                Name_fr = category.Name_fr,
+                ParentCategoryId = category.ParentCategoryId,
+                Subcategories = subcategories.Select(MapToGetCategoryResponse).ToList()
             };
         }
     }

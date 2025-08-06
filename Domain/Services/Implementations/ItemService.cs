@@ -27,7 +27,7 @@ namespace Domain.Services.Implementations
                     Id = Guid.NewGuid(),
                     SellerID = createItemRequest.SellerID,
                     Name = createItemRequest.Name,
-                    DescriptionID = createItemRequest.DescriptionID,
+                    Description = createItemRequest.Description,
                     Brand = createItemRequest.Brand,
                     Category = createItemRequest.Category,
                     Variants = createItemRequest.Variants,
@@ -44,7 +44,7 @@ namespace Domain.Services.Implementations
                     Id = createdItem.Id,
                     SellerID = createdItem.SellerID,
                     Name = createdItem.Name,
-                    DescriptionID = createdItem.DescriptionID,
+                    Description = createdItem.Description,
                     Brand = createdItem.Brand,
                     Category = createdItem.Category,
                     Variants = createdItem.Variants,
@@ -72,7 +72,7 @@ namespace Domain.Services.Implementations
                     Id = item.Id,
                     SellerID = item.SellerID,
                     Name = item.Name,
-                    DescriptionID = item.DescriptionID,
+                    Description = item.Description,
                     Brand = item.Brand,
                     Category = item.Category,
                     Variants = item.Variants,
@@ -105,7 +105,7 @@ namespace Domain.Services.Implementations
                     Id = item.Id,
                     SellerID = item.SellerID,
                     Name = item.Name,
-                    DescriptionID = item.DescriptionID,
+                    Description = item.Description,
                     Brand = item.Brand,
                     Category = item.Category,
                     Variants = item.Variants,
@@ -141,7 +141,7 @@ namespace Domain.Services.Implementations
 
                 existingItem.SellerID = updateItemRequest.SellerID;
                 existingItem.Name = updateItemRequest.Name;
-                existingItem.DescriptionID = updateItemRequest.DescriptionID;
+                existingItem.Description = updateItemRequest.Description;
                 existingItem.Brand = updateItemRequest.Brand;
                 existingItem.Category = updateItemRequest.Category;
                 existingItem.Variants = updateItemRequest.Variants;
@@ -155,7 +155,7 @@ namespace Domain.Services.Implementations
                     Id = updatedItem.Id,
                     SellerID = updatedItem.SellerID,
                     Name = updatedItem.Name,
-                    DescriptionID = updatedItem.DescriptionID,
+                    Description = updatedItem.Description,
                     Brand = updatedItem.Brand,
                     Category = updatedItem.Category,
                     Variants = updatedItem.Variants,

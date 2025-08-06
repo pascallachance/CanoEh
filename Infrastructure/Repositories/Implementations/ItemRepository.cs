@@ -24,7 +24,7 @@ namespace Infrastructure.Repositories.Implementations
 INSERT INTO dbo.Items (
     SellerID,
     Name, 
-    DescriptionID, 
+    Description, 
     Brand, 
     Category, 
     ImageUrls,
@@ -35,7 +35,7 @@ OUTPUT INSERTED.Id
 VALUES (
     @SellerID,
     @Name, 
-    @DescriptionID, 
+    @Description, 
     @Brand, 
     @Category, 
     @ImageUrls,
@@ -47,7 +47,7 @@ VALUES (
                 {
                     entity.SellerID,
                     entity.Name,
-                    entity.DescriptionID,
+                    entity.Description,
                     entity.Brand,
                     entity.Category,
                     ImageUrls = JsonSerializer.Serialize(entity.ImageUrls),
@@ -252,7 +252,7 @@ UPDATE dbo.Items
 SET
     SellerID = @SellerID,
     Name = @Name,
-    DescriptionID = @DescriptionID,
+    Description = @Description,
     Brand = @Brand,
     Category = @Category,
     ImageUrls = @ImageUrls,
@@ -265,7 +265,7 @@ WHERE Id = @Id";
                     entity.Id,
                     entity.SellerID,
                     entity.Name,
-                    entity.DescriptionID,
+                    entity.Description,
                     entity.Brand,
                     entity.Category,
                     ImageUrls = JsonSerializer.Serialize(entity.ImageUrls),
@@ -421,7 +421,7 @@ WHERE Id = @variantId AND ItemId = @itemId AND Deleted = 0";
                 Id = dto.Id,
                 SellerID = dto.SellerID,
                 Name = dto.Name,
-                DescriptionID = dto.DescriptionID,
+                Description = dto.Description,
                 Brand = dto.Brand,
                 Category = dto.Category,
                 Variants = new List<ItemVariant>(), // Variants will be added separately
@@ -458,7 +458,7 @@ WHERE Id = @variantId AND ItemId = @itemId AND Deleted = 0";
             public Guid Id { get; set; }
             public Guid SellerID { get; set; }
             public string Name { get; set; } = string.Empty;
-            public Guid? DescriptionID { get; set; }
+            public string? Description { get; set; }
             public string? Brand { get; set; }
             public string? Category { get; set; }
             public string? ImageUrls { get; set; }

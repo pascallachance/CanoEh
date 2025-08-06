@@ -8,7 +8,7 @@ namespace Domain.Models.Requests
     {
         public Guid SellerID { get; set; }
         public required string Name { get; set; }
-        public Guid? DescriptionID { get; set; }
+        public string? Description { get; set; }
         public string? Brand { get; set; }
         public string? Category { get; set; }
         public List<ItemVariant> Variants { get; set; } = new();

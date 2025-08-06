@@ -29,7 +29,7 @@ namespace API.Tests
                 Id = Guid.NewGuid(),
                 SellerID = Guid.NewGuid(),
                 Name = "Test Item",
-                DescriptionID = Guid.NewGuid(),
+                Description = "Test item description",
                 Brand = "Test Brand",
                 Category = "Test Category",
                 Variants = new List<ItemVariant>(),
@@ -43,7 +43,7 @@ namespace API.Tests
             Assert.NotEqual(Guid.Empty, item.Id);
             Assert.NotEqual(Guid.Empty, item.SellerID);
             Assert.Equal("Test Item", item.Name);
-            Assert.NotNull(item.DescriptionID);
+            Assert.Equal("Test item description", item.Description);
             Assert.Equal("Test Brand", item.Brand);
             Assert.Equal("Test Category", item.Category);
             Assert.NotNull(item.Variants);

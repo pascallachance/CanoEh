@@ -26,7 +26,6 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CreateCompanyResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateCompany([FromBody] CreateCompanyRequest newCompany)
         {
@@ -50,13 +49,7 @@ namespace API.Controllers
                     return Unauthorized("Invalid user.");
                 }
 
-                // Ensure the OwnerID in the request matches the authenticated user
-                if (newCompany.OwnerID != userResult.Value.ID)
-                {
-                    return StatusCode(StatusCodes.Status403Forbidden, "You can only create companies for yourself.");
-                }
-
-                var result = await _companyService.CreateCompanyAsync(newCompany);
+                var result = await _companyService.CreateCompanyAsync(newCompany, userResult.Value.ID);
 
                 if (result.IsFailure)
                 {

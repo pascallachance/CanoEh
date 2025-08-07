@@ -27,7 +27,6 @@ namespace API.Tests
             var ownerId = Guid.NewGuid();
             var request = new CreateCompanyRequest
             {
-                OwnerID = ownerId,
                 Name = "Test Company",
                 Description = "A test company",
                 Logo = "test-logo.png"
@@ -36,7 +35,7 @@ namespace API.Tests
             var expectedCompany = new Company
             {
                 Id = Guid.NewGuid(),
-                OwnerID = request.OwnerID,
+                OwnerID = ownerId,
                 Name = request.Name,
                 Description = request.Description,
                 Logo = request.Logo,
@@ -49,13 +48,13 @@ namespace API.Tests
             _mockCompanyRepository.Setup(r => r.AddAsync(It.IsAny<Company>())).ReturnsAsync(expectedCompany);
 
             // Act
-            var result = await _companyService.CreateCompanyAsync(request);
+            var result = await _companyService.CreateCompanyAsync(request, ownerId);
 
             // Assert
             Assert.True(result.IsSuccess);
             Assert.NotNull(result.Value);
             Assert.Equal(request.Name, result.Value.Name);
-            Assert.Equal(request.OwnerID, result.Value.OwnerID);
+            Assert.Equal(ownerId, result.Value.OwnerID);
             Assert.Equal(request.Description, result.Value.Description);
             Assert.Equal(request.Logo, result.Value.Logo);
         }
@@ -67,7 +66,6 @@ namespace API.Tests
             var ownerId = Guid.NewGuid();
             var request = new CreateCompanyRequest
             {
-                OwnerID = ownerId,
                 Name = "Test Company",
                 Description = "A test company",
                 Logo = "test-logo.png"
@@ -76,7 +74,7 @@ namespace API.Tests
             _mockUserRepository.Setup(r => r.ExistsAsync(ownerId)).ReturnsAsync(false);
 
             // Act
-            var result = await _companyService.CreateCompanyAsync(request);
+            var result = await _companyService.CreateCompanyAsync(request, ownerId);
 
             // Assert
             Assert.True(result.IsFailure);
@@ -91,7 +89,6 @@ namespace API.Tests
             var ownerId = Guid.NewGuid();
             var request = new CreateCompanyRequest
             {
-                OwnerID = ownerId,
                 Name = "Test Company",
                 Description = "A test company",
                 Logo = "test-logo.png"
@@ -112,7 +109,7 @@ namespace API.Tests
             _mockCompanyRepository.Setup(r => r.FindByNameAsync(request.Name)).ReturnsAsync(existingCompany);
 
             // Act
-            var result = await _companyService.CreateCompanyAsync(request);
+            var result = await _companyService.CreateCompanyAsync(request, ownerId);
 
             // Assert
             Assert.True(result.IsFailure);
@@ -121,19 +118,18 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task CreateCompanyAsync_ReturnFailure_WhenRequestIsInvalid()
+        public async Task CreateCompanyAsync_ReturnFailure_WhenOwnerIdIsEmpty()
         {
             // Arrange
             var request = new CreateCompanyRequest
             {
-                OwnerID = Guid.Empty, // Invalid - empty GUID
                 Name = "Test Company",
                 Description = "A test company",
                 Logo = "test-logo.png"
             };
 
             // Act
-            var result = await _companyService.CreateCompanyAsync(request);
+            var result = await _companyService.CreateCompanyAsync(request, Guid.Empty);
 
             // Assert
             Assert.True(result.IsFailure);

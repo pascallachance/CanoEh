@@ -33,7 +33,6 @@ namespace API.Tests
             var userId = Guid.NewGuid();
             var newCompany = new CreateCompanyRequest
             {
-                OwnerID = userId,
                 Name = "Test Company",
                 Description = "A test company",
                 Logo = "test-logo.png"
@@ -54,7 +53,7 @@ namespace API.Tests
             var result = Result.Success(new CreateCompanyResponse
             {
                 Id = Guid.NewGuid(),
-                OwnerID = newCompany.OwnerID,
+                OwnerID = userId,
                 Name = newCompany.Name,
                 Description = newCompany.Description,
                 Logo = newCompany.Logo,
@@ -64,7 +63,7 @@ namespace API.Tests
 
             _mockUserService.Setup(s => s.GetUserEntityAsync("test@example.com"))
                            .ReturnsAsync(Result.Success<User?>(user));
-            _mockCompanyService.Setup(s => s.CreateCompanyAsync(newCompany)).ReturnsAsync(result);
+            _mockCompanyService.Setup(s => s.CreateCompanyAsync(newCompany, userId)).ReturnsAsync(result);
 
             // Set up authenticated user context
             var claims = new List<Claim>
@@ -93,7 +92,6 @@ namespace API.Tests
             // Arrange
             var newCompany = new CreateCompanyRequest
             {
-                OwnerID = Guid.NewGuid(),
                 Name = "Test Company",
                 Description = "A test company",
                 Logo = "test-logo.png"
@@ -116,34 +114,18 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task CreateCompany_ReturnForbidden_WhenOwnerIdDoesNotMatchAuthenticatedUser()
+        public async Task CreateCompany_ReturnUnauthorized_WhenUserDoesNotExist()
         {
             // Arrange
-            var authenticatedUserId = Guid.NewGuid();
-            var differentUserId = Guid.NewGuid();
-            
             var newCompany = new CreateCompanyRequest
             {
-                OwnerID = differentUserId, // Different from authenticated user
                 Name = "Test Company",
                 Description = "A test company",
                 Logo = "test-logo.png"
             };
 
-            var user = new User
-            {
-                ID = authenticatedUserId,
-                Email = "test@example.com",
-                Firstname = "Test",
-                Lastname = "User",
-                Createdat = DateTime.UtcNow,
-                Password = "hashedpassword",
-                Deleted = false,
-                ValidEmail = true
-            };
-
             _mockUserService.Setup(s => s.GetUserEntityAsync("test@example.com"))
-                           .ReturnsAsync(Result.Success<User?>(user));
+                           .ReturnsAsync(Result.Failure<User?>("User not found.", StatusCodes.Status401Unauthorized));
 
             // Set up authenticated user context
             var claims = new List<Claim>
@@ -161,8 +143,8 @@ namespace API.Tests
             var response = await _controller.CreateCompany(newCompany);
 
             // Assert
-            var forbiddenResult = Assert.IsType<ObjectResult>(response);
-            Assert.Equal(StatusCodes.Status403Forbidden, forbiddenResult.StatusCode);
+            var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(response);
+            Assert.Equal(StatusCodes.Status401Unauthorized, unauthorizedResult.StatusCode);
         }
 
         [Fact]

@@ -15,7 +15,7 @@ namespace Domain.Services.Implementations
         private readonly ICompanyRepository _companyRepository = companyRepository;
         private readonly IUserRepository _userRepository = userRepository;
 
-        public async Task<Result<CreateCompanyResponse>> CreateCompanyAsync(CreateCompanyRequest newCompany)
+        public async Task<Result<CreateCompanyResponse>> CreateCompanyAsync(CreateCompanyRequest newCompany, Guid ownerId)
         {
             try
             {
@@ -28,8 +28,13 @@ namespace Domain.Services.Implementations
                     );
                 }
 
+                if (ownerId == Guid.Empty)
+                {
+                    return Result.Failure<CreateCompanyResponse>("Owner ID is required.", StatusCodes.Status400BadRequest);
+                }
+
                 // Check if the owner exists
-                var ownerExists = await _userRepository.ExistsAsync(newCompany.OwnerID);
+                var ownerExists = await _userRepository.ExistsAsync(ownerId);
                 if (!ownerExists)
                 {
                     return Result.Failure<CreateCompanyResponse>("Owner not found.", StatusCodes.Status400BadRequest);
@@ -44,7 +49,7 @@ namespace Domain.Services.Implementations
 
                 var company = await _companyRepository.AddAsync(new Company
                 {
-                    OwnerID = newCompany.OwnerID,
+                    OwnerID = ownerId,
                     Name = newCompany.Name,
                     Description = newCompany.Description,
                     Logo = newCompany.Logo,

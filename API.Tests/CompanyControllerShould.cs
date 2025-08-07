@@ -189,6 +189,72 @@ namespace API.Tests
         }
 
         [Fact]
+        public async Task CreateCompany_UsesAuthenticatedUserIdAsOwner()
+        {
+            // Arrange
+            var authenticatedUserId = Guid.NewGuid();
+            var newCompany = new CreateCompanyRequest
+            {
+                Name = "Test Company",
+                Description = "A test company",
+                Logo = "test-logo.png"
+            };
+
+            var user = new User
+            {
+                ID = authenticatedUserId,
+                Email = "test@example.com",
+                Firstname = "Test",
+                Lastname = "User",
+                Createdat = DateTime.UtcNow,
+                Password = "hashedpassword",
+                Deleted = false,
+                ValidEmail = true
+            };
+
+            var result = Result.Success(new CreateCompanyResponse
+            {
+                Id = Guid.NewGuid(),
+                OwnerID = authenticatedUserId, // This should be the authenticated user's ID
+                Name = newCompany.Name,
+                Description = newCompany.Description,
+                Logo = newCompany.Logo,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = null
+            });
+
+            _mockUserService.Setup(s => s.GetUserEntityAsync("test@example.com"))
+                           .ReturnsAsync(Result.Success<User?>(user));
+            _mockCompanyService.Setup(s => s.CreateCompanyAsync(newCompany, authenticatedUserId))
+                              .ReturnsAsync(result);
+
+            // Set up authenticated user context
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, "test@example.com")
+            };
+            var identity = new ClaimsIdentity(claims, "TestAuth");
+            var principal = new ClaimsPrincipal(identity);
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = principal }
+            };
+
+            // Act
+            var response = await _controller.CreateCompany(newCompany);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(response);
+            var createdCompany = Assert.IsType<CreateCompanyResponse>(okResult.Value);
+            
+            // Verify that the OwnerID matches the authenticated user's ID
+            Assert.Equal(authenticatedUserId, createdCompany.OwnerID);
+            
+            // Verify that the service was called with the correct authenticated user ID
+            _mockCompanyService.Verify(s => s.CreateCompanyAsync(newCompany, authenticatedUserId), Times.Once);
+        }
+
+        [Fact]
         public async Task GetMyCompanies_ReturnOk_WhenUserAuthenticated()
         {
             // Arrange

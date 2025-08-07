@@ -7,7 +7,7 @@ namespace Domain.Services.Interfaces
 {
     public interface ICompanyService
     {
-        Task<Result<CreateCompanyResponse>> CreateCompanyAsync(CreateCompanyRequest newCompany);
+        Task<Result<CreateCompanyResponse>> CreateCompanyAsync(CreateCompanyRequest newCompany, Guid ownerId);
         Task<Result<GetCompanyResponse>> GetCompanyAsync(Guid companyId);
         Task<Result<IEnumerable<GetCompanyResponse>>> GetCompaniesByOwnerAsync(Guid ownerId);
         Task<Result<UpdateCompanyResponse>> UpdateCompanyAsync(UpdateCompanyRequest updateRequest);

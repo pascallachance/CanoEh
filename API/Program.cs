@@ -60,6 +60,7 @@ internal class Program
         builder.Services.AddScoped<IEmailService, EmailService>();
         builder.Services.AddScoped<IItemService, ItemService>();
         builder.Services.AddScoped<ICategoryService, CategoryService>();
+        builder.Services.AddScoped<ICompanyService, CompanyService>();
 
         // Register Repositories
         builder.Services.AddScoped<IUserRepository>(provider =>
@@ -88,6 +89,13 @@ internal class Program
             var config = provider.GetRequiredService<IConfiguration>();
             var connectionString = config.GetConnectionString("DefaultConnection");
             return new CategoryRepository(connectionString);
+        });
+
+        builder.Services.AddScoped<ICompanyRepository>(provider =>
+        {
+            var config = provider.GetRequiredService<IConfiguration>();
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            return new CompanyRepository(connectionString);
         });
 
         // Add services to the container.

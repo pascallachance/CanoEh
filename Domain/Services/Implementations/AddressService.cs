@@ -29,12 +29,16 @@ namespace Domain.Services.Implementations
                 {
                     Id = Guid.NewGuid(),
                     UserId = userId,
-                    Street = request.Street,
+                    FullName = request.FullName,
+                    AddressLine1 = request.AddressLine1,
+                    AddressLine2 = request.AddressLine2,
+                    AddressLine3 = request.AddressLine3,
                     City = request.City,
-                    State = request.State,
+                    ProvinceState = request.ProvinceState,
                     PostalCode = request.PostalCode,
                     Country = request.Country,
                     AddressType = request.AddressType,
+                    IsDefault = request.IsDefault,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null
                 };
@@ -45,12 +49,16 @@ namespace Domain.Services.Implementations
                 {
                     Id = createdAddress.Id,
                     UserId = createdAddress.UserId,
-                    Street = createdAddress.Street,
+                    FullName = createdAddress.FullName,
+                    AddressLine1 = createdAddress.AddressLine1,
+                    AddressLine2 = createdAddress.AddressLine2,
+                    AddressLine3 = createdAddress.AddressLine3,
                     City = createdAddress.City,
-                    State = createdAddress.State,
+                    ProvinceState = createdAddress.ProvinceState,
                     PostalCode = createdAddress.PostalCode,
                     Country = createdAddress.Country,
                     AddressType = createdAddress.AddressType,
+                    IsDefault = createdAddress.IsDefault,
                     CreatedAt = createdAddress.CreatedAt,
                     UpdatedAt = createdAddress.UpdatedAt
                 };
@@ -89,12 +97,16 @@ namespace Domain.Services.Implementations
                     return Result.Failure<UpdateAddressResponse>("Address not found.", StatusCodes.Status404NotFound);
                 }
 
-                existingAddress.Street = request.Street;
+                existingAddress.FullName = request.FullName;
+                existingAddress.AddressLine1 = request.AddressLine1;
+                existingAddress.AddressLine2 = request.AddressLine2;
+                existingAddress.AddressLine3 = request.AddressLine3;
                 existingAddress.City = request.City;
-                existingAddress.State = request.State;
+                existingAddress.ProvinceState = request.ProvinceState;
                 existingAddress.PostalCode = request.PostalCode;
                 existingAddress.Country = request.Country;
                 existingAddress.AddressType = request.AddressType;
+                existingAddress.IsDefault = request.IsDefault;
                 existingAddress.UpdatedAt = DateTime.UtcNow;
 
                 var updatedAddress = await _addressRepository.UpdateAsync(existingAddress);
@@ -103,12 +115,16 @@ namespace Domain.Services.Implementations
                 {
                     Id = updatedAddress.Id,
                     UserId = updatedAddress.UserId,
-                    Street = updatedAddress.Street,
+                    FullName = updatedAddress.FullName,
+                    AddressLine1 = updatedAddress.AddressLine1,
+                    AddressLine2 = updatedAddress.AddressLine2,
+                    AddressLine3 = updatedAddress.AddressLine3,
                     City = updatedAddress.City,
-                    State = updatedAddress.State,
+                    ProvinceState = updatedAddress.ProvinceState,
                     PostalCode = updatedAddress.PostalCode,
                     Country = updatedAddress.Country,
                     AddressType = updatedAddress.AddressType,
+                    IsDefault = updatedAddress.IsDefault,
                     CreatedAt = updatedAddress.CreatedAt,
                     UpdatedAt = updatedAddress.UpdatedAt
                 };
@@ -174,12 +190,16 @@ namespace Domain.Services.Implementations
                 {
                     Id = address.Id,
                     UserId = address.UserId,
-                    Street = address.Street,
+                    FullName = address.FullName,
+                    AddressLine1 = address.AddressLine1,
+                    AddressLine2 = address.AddressLine2,
+                    AddressLine3 = address.AddressLine3,
                     City = address.City,
-                    State = address.State,
+                    ProvinceState = address.ProvinceState,
                     PostalCode = address.PostalCode,
                     Country = address.Country,
                     AddressType = address.AddressType,
+                    IsDefault = address.IsDefault,
                     CreatedAt = address.CreatedAt,
                     UpdatedAt = address.UpdatedAt
                 };
@@ -202,12 +222,16 @@ namespace Domain.Services.Implementations
                 {
                     Id = address.Id,
                     UserId = address.UserId,
-                    Street = address.Street,
+                    FullName = address.FullName,
+                    AddressLine1 = address.AddressLine1,
+                    AddressLine2 = address.AddressLine2,
+                    AddressLine3 = address.AddressLine3,
                     City = address.City,
-                    State = address.State,
+                    ProvinceState = address.ProvinceState,
                     PostalCode = address.PostalCode,
                     Country = address.Country,
                     AddressType = address.AddressType,
+                    IsDefault = address.IsDefault,
                     CreatedAt = address.CreatedAt,
                     UpdatedAt = address.UpdatedAt
                 });
@@ -235,12 +259,16 @@ namespace Domain.Services.Implementations
                 {
                     Id = address.Id,
                     UserId = address.UserId,
-                    Street = address.Street,
+                    FullName = address.FullName,
+                    AddressLine1 = address.AddressLine1,
+                    AddressLine2 = address.AddressLine2,
+                    AddressLine3 = address.AddressLine3,
                     City = address.City,
-                    State = address.State,
+                    ProvinceState = address.ProvinceState,
                     PostalCode = address.PostalCode,
                     Country = address.Country,
                     AddressType = address.AddressType,
+                    IsDefault = address.IsDefault,
                     CreatedAt = address.CreatedAt,
                     UpdatedAt = address.UpdatedAt
                 });

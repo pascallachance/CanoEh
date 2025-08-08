@@ -17,35 +17,47 @@ namespace Infrastructure.Repositories.Implementations
             var query = @"
 INSERT INTO dbo.Address (
     UserId,
-    Street, 
+    FullName,
+    AddressLine1, 
+    AddressLine2,
+    AddressLine3,
     City, 
-    State, 
+    ProvinceState, 
     PostalCode, 
     Country, 
     AddressType,
+    IsDefault,
     CreatedAt, 
     UpdatedAt)
 OUTPUT INSERTED.Id
 VALUES (
     @UserId,
-    @Street, 
+    @FullName,
+    @AddressLine1, 
+    @AddressLine2,
+    @AddressLine3,
     @City, 
-    @State, 
+    @ProvinceState, 
     @PostalCode, 
     @Country, 
     @AddressType,
+    @IsDefault,
     @CreatedAt, 
     @UpdatedAt)";
 
             var parameters = new
             {
                 entity.UserId,
-                entity.Street,
+                entity.FullName,
+                entity.AddressLine1,
+                entity.AddressLine2,
+                entity.AddressLine3,
                 entity.City,
-                entity.State,
+                entity.ProvinceState,
                 entity.PostalCode,
                 entity.Country,
                 entity.AddressType,
+                entity.IsDefault,
                 entity.CreatedAt,
                 entity.UpdatedAt
             };
@@ -64,24 +76,32 @@ VALUES (
             var query = @"
 UPDATE dbo.Address 
 SET 
-    Street = @Street,
+    FullName = @FullName,
+    AddressLine1 = @AddressLine1,
+    AddressLine2 = @AddressLine2,
+    AddressLine3 = @AddressLine3,
     City = @City,
-    State = @State,
+    ProvinceState = @ProvinceState,
     PostalCode = @PostalCode,
     Country = @Country,
     AddressType = @AddressType,
+    IsDefault = @IsDefault,
     UpdatedAt = @UpdatedAt
 WHERE Id = @Id";
 
             var parameters = new
             {
                 entity.Id,
-                entity.Street,
+                entity.FullName,
+                entity.AddressLine1,
+                entity.AddressLine2,
+                entity.AddressLine3,
                 entity.City,
-                entity.State,
+                entity.ProvinceState,
                 entity.PostalCode,
                 entity.Country,
                 entity.AddressType,
+                entity.IsDefault,
                 entity.UpdatedAt
             };
 

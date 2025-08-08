@@ -60,9 +60,10 @@ namespace API.Tests
             // Arrange
             var request = new CreateAddressRequest
             {
-                Street = "123 Main St",
+                FullName = "John Doe",
+                AddressLine1 = "123 Main St",
                 City = "Test City",
-                State = "Test State",
+                ProvinceState = "Test State",
                 PostalCode = "12345",
                 Country = "Test Country",
                 AddressType = "Delivery"
@@ -72,12 +73,16 @@ namespace API.Tests
             {
                 Id = _testAddressId,
                 UserId = _testUserId,
-                Street = request.Street,
+                FullName = request.FullName,
+                AddressLine1 = request.AddressLine1,
+                AddressLine2 = request.AddressLine2,
+                AddressLine3 = request.AddressLine3,
                 City = request.City,
-                State = request.State,
+                ProvinceState = request.ProvinceState,
                 PostalCode = request.PostalCode,
                 Country = request.Country,
                 AddressType = request.AddressType,
+                IsDefault = request.IsDefault,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -100,14 +105,15 @@ namespace API.Tests
             // Arrange
             var request = new CreateAddressRequest
             {
-                Street = "123 Main St",
+                FullName = "John Doe",
+                AddressLine1 = "123 Main St",
                 City = "Test City",
                 PostalCode = "12345",
                 Country = "Test Country",
                 AddressType = "Delivery"
             };
 
-            _controller.ModelState.AddModelError("Street", "Street is required");
+            _controller.ModelState.AddModelError("AddressLine1", "Address line 1 is required");
 
             // Act
             var result = await _controller.CreateAddress(request);
@@ -122,7 +128,8 @@ namespace API.Tests
             // Arrange
             var request = new CreateAddressRequest
             {
-                Street = "123 Main St",
+                FullName = "John Doe",
+                AddressLine1 = "123 Main St",
                 City = "Test City",
                 PostalCode = "12345",
                 Country = "Test Country",
@@ -147,7 +154,8 @@ namespace API.Tests
             var request = new UpdateAddressRequest
             {
                 Id = _testAddressId,
-                Street = "456 Updated St",
+                FullName = "Jane Doe",
+                AddressLine1 = "456 Updated St",
                 City = "Updated City",
                 PostalCode = "54321",
                 Country = "Updated Country",
@@ -158,11 +166,16 @@ namespace API.Tests
             {
                 Id = _testAddressId,
                 UserId = _testUserId,
-                Street = request.Street,
+                FullName = request.FullName,
+                AddressLine1 = request.AddressLine1,
+                AddressLine2 = request.AddressLine2,
+                AddressLine3 = request.AddressLine3,
                 City = request.City,
+                ProvinceState = request.ProvinceState,
                 PostalCode = request.PostalCode,
                 Country = request.Country,
                 AddressType = request.AddressType,
+                IsDefault = request.IsDefault,
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
                 UpdatedAt = DateTime.UtcNow
             };
@@ -220,7 +233,8 @@ namespace API.Tests
             {
                 Id = _testAddressId,
                 UserId = _testUserId,
-                Street = "123 Main St",
+                FullName = "John Doe",
+                AddressLine1 = "123 Main St",
                 City = "Test City",
                 PostalCode = "12345",
                 Country = "Test Country",
@@ -265,7 +279,8 @@ namespace API.Tests
                 new() {
                     Id = _testAddressId,
                     UserId = _testUserId,
-                    Street = "123 Main St",
+                    FullName = "John Doe",
+                    AddressLine1 = "123 Main St",
                     City = "Test City",
                     PostalCode = "12345",
                     Country = "Test Country",
@@ -297,7 +312,8 @@ namespace API.Tests
                 new() {
                     Id = _testAddressId,
                     UserId = _testUserId,
-                    Street = "123 Main St",
+                    FullName = "John Doe",
+                    AddressLine1 = "123 Main St",
                     City = "Test City",
                     PostalCode = "12345",
                     Country = "Test Country",
@@ -335,7 +351,8 @@ namespace API.Tests
             // Arrange
             var request = new CreateAddressRequest
             {
-                Street = "123 Main St",
+                FullName = "John Doe",
+                AddressLine1 = "123 Main St",
                 City = "Test City",
                 PostalCode = "12345",
                 Country = "Test Country",

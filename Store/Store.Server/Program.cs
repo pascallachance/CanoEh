@@ -64,6 +64,7 @@ builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPaymentMethodService, PaymentMethodService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 // Register Repositories
 builder.Services.AddScoped<IUserRepository>(provider =>
@@ -85,6 +86,13 @@ builder.Services.AddScoped<IPaymentMethodRepository>(provider =>
     var config = provider.GetRequiredService<IConfiguration>();
     var connectionString = config.GetConnectionString("DefaultConnection");
     return new PaymentMethodRepository(connectionString ?? "DefaultConnectionString");
+});
+
+builder.Services.AddScoped<ICategoryRepository>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var connectionString = config.GetConnectionString("DefaultConnection");
+    return new CategoryRepository(connectionString ?? "DefaultConnectionString");
 });
 
 // Add services to the container

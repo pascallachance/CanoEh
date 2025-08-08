@@ -10,6 +10,6 @@ namespace Infrastructure.Repositories.Interfaces
         Task<bool> SetDefaultPaymentMethodAsync(Guid userId, Guid paymentMethodId);
         Task<bool> ClearDefaultPaymentMethodsAsync(Guid userId);
         Task<IEnumerable<PaymentMethod>> FindActiveByUserIdAsync(Guid userId);
-        Task<bool> DeactivatePaymentMethodAsync(Guid id);
+        Task<bool> DeactivatePaymentMethodAsync(Guid userId, Guid id);
     }
 }

@@ -324,5 +324,166 @@ namespace API.Tests
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
             Assert.Equal(StatusCodes.Status401Unauthorized, unauthorizedResult.StatusCode);
         }
+
+        [Fact]
+        public async Task GetPaymentMethod_CannotAccessOtherUsersPaymentMethod()
+        {
+            // Arrange
+            var currentUserId = Guid.NewGuid();
+            var otherUserPaymentMethodId = Guid.NewGuid();
+
+            var currentUser = new User
+            {
+                ID = currentUserId,
+                Email = "test@example.com",
+                Firstname = "Test",
+                Lastname = "User",
+                Password = "hashedpassword",
+                Createdat = DateTime.UtcNow,
+                Deleted = false,
+                ValidEmail = true
+            };
+
+            _mockUserService.Setup(x => x.GetUserEntityAsync("test@example.com"))
+                .ReturnsAsync(Result.Success(currentUser));
+            
+            // Service should return not found when trying to access another user's payment method
+            _mockPaymentMethodService.Setup(x => x.GetPaymentMethodAsync(currentUserId, otherUserPaymentMethodId))
+                .ReturnsAsync(Result.Failure<GetPaymentMethodResponse>("Payment method not found.", StatusCodes.Status404NotFound));
+
+            // Act
+            var result = await _controller.GetPaymentMethod(otherUserPaymentMethodId);
+
+            // Assert
+            var notFoundResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
+            
+            // Verify the service was called with the current user's ID
+            _mockPaymentMethodService.Verify(x => x.GetPaymentMethodAsync(currentUserId, otherUserPaymentMethodId), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdatePaymentMethod_CannotUpdateOtherUsersPaymentMethod()
+        {
+            // Arrange
+            var currentUserId = Guid.NewGuid();
+            var otherUserPaymentMethodId = Guid.NewGuid();
+
+            var updateRequest = new UpdatePaymentMethodRequest
+            {
+                ID = otherUserPaymentMethodId,
+                Type = "Credit Card",
+                CardHolderName = "Malicious User",
+                CardLast4 = "9999",
+                CardBrand = "Visa",
+                ExpirationMonth = 12,
+                ExpirationYear = 2025,
+                IsDefault = false,
+                IsActive = true
+            };
+
+            var currentUser = new User
+            {
+                ID = currentUserId,
+                Email = "test@example.com",
+                Firstname = "Test",
+                Lastname = "User",
+                Password = "hashedpassword",
+                Createdat = DateTime.UtcNow,
+                Deleted = false,
+                ValidEmail = true
+            };
+
+            _mockUserService.Setup(x => x.GetUserEntityAsync("test@example.com"))
+                .ReturnsAsync(Result.Success(currentUser));
+            
+            // Service should return not found when trying to update another user's payment method
+            _mockPaymentMethodService.Setup(x => x.UpdatePaymentMethodAsync(currentUserId, updateRequest))
+                .ReturnsAsync(Result.Failure<UpdatePaymentMethodResponse>("Payment method not found.", StatusCodes.Status404NotFound));
+
+            // Act
+            var result = await _controller.UpdatePaymentMethod(updateRequest);
+
+            // Assert
+            var notFoundResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
+            
+            // Verify the service was called with the current user's ID
+            _mockPaymentMethodService.Verify(x => x.UpdatePaymentMethodAsync(currentUserId, updateRequest), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeletePaymentMethod_CannotDeleteOtherUsersPaymentMethod()
+        {
+            // Arrange
+            var currentUserId = Guid.NewGuid();
+            var otherUserPaymentMethodId = Guid.NewGuid();
+
+            var currentUser = new User
+            {
+                ID = currentUserId,
+                Email = "test@example.com",
+                Firstname = "Test",
+                Lastname = "User",
+                Password = "hashedpassword",
+                Createdat = DateTime.UtcNow,
+                Deleted = false,
+                ValidEmail = true
+            };
+
+            _mockUserService.Setup(x => x.GetUserEntityAsync("test@example.com"))
+                .ReturnsAsync(Result.Success(currentUser));
+            
+            // Service should return not found when trying to delete another user's payment method
+            _mockPaymentMethodService.Setup(x => x.DeletePaymentMethodAsync(currentUserId, otherUserPaymentMethodId))
+                .ReturnsAsync(Result.Failure<DeletePaymentMethodResponse>("Payment method not found.", StatusCodes.Status404NotFound));
+
+            // Act
+            var result = await _controller.DeletePaymentMethod(otherUserPaymentMethodId);
+
+            // Assert
+            var notFoundResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
+            
+            // Verify the service was called with the current user's ID
+            _mockPaymentMethodService.Verify(x => x.DeletePaymentMethodAsync(currentUserId, otherUserPaymentMethodId), Times.Once);
+        }
+
+        [Fact]
+        public async Task SetDefaultPaymentMethod_CannotSetOtherUsersPaymentMethodAsDefault()
+        {
+            // Arrange
+            var currentUserId = Guid.NewGuid();
+            var otherUserPaymentMethodId = Guid.NewGuid();
+
+            var currentUser = new User
+            {
+                ID = currentUserId,
+                Email = "test@example.com",
+                Firstname = "Test",
+                Lastname = "User",
+                Password = "hashedpassword",
+                Createdat = DateTime.UtcNow,
+                Deleted = false,
+                ValidEmail = true
+            };
+
+            _mockUserService.Setup(x => x.GetUserEntityAsync("test@example.com"))
+                .ReturnsAsync(Result.Success(currentUser));
+            
+            // Service should return not found when trying to set another user's payment method as default
+            _mockPaymentMethodService.Setup(x => x.SetDefaultPaymentMethodAsync(currentUserId, otherUserPaymentMethodId))
+                .ReturnsAsync(Result.Failure<GetPaymentMethodResponse>("Payment method not found.", StatusCodes.Status404NotFound));
+
+            // Act
+            var result = await _controller.SetDefaultPaymentMethod(otherUserPaymentMethodId);
+
+            // Assert
+            var notFoundResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
+            
+            // Verify the service was called with the current user's ID
+            _mockPaymentMethodService.Verify(x => x.SetDefaultPaymentMethodAsync(currentUserId, otherUserPaymentMethodId), Times.Once);
+        }
     }
 }

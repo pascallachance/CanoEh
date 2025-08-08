@@ -247,7 +247,7 @@ WHERE UserID = @userId";
             return await dbConnection.QueryAsync<PaymentMethod>(query, new { userId });
         }
 
-        public async Task<bool> DeactivatePaymentMethodAsync(Guid id)
+        public async Task<bool> DeactivatePaymentMethodAsync(Guid userId, Guid id)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -256,10 +256,10 @@ WHERE UserID = @userId";
             var query = @"
 UPDATE dbo.PaymentMethod 
 SET IsActive = 0, UpdatedAt = @UpdatedAt 
-WHERE ID = @id";
+WHERE ID = @id AND UserID = @userId";
             
             var rowsAffected = await dbConnection.ExecuteAsync(query, 
-                new { id, UpdatedAt = DateTime.UtcNow });
+                new { id, userId, UpdatedAt = DateTime.UtcNow });
             return rowsAffected > 0;
         }
     }

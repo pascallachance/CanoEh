@@ -15,15 +15,16 @@ namespace Infrastructure.Repositories.Implementations
             }
 
             var query = @"
-INSERT INTO dbo.Categories (Name_en, Name_fr, ParentCategoryId)
+INSERT INTO dbo.Categories (Name_en, Name_fr, ParentCategoryId, CreatedAt)
 OUTPUT INSERTED.Id
-VALUES (@Name_en, @Name_fr, @ParentCategoryId)";
+VALUES (@Name_en, @Name_fr, @ParentCategoryId, @CreatedAt)";
 
             var parameters = new
             {
                 entity.Name_en,
                 entity.Name_fr,
-                entity.ParentCategoryId
+                entity.ParentCategoryId,
+                entity.CreatedAt
             };
 
             Guid newCategoryId = await dbConnection.ExecuteScalarAsync<Guid>(query, parameters);
@@ -94,7 +95,7 @@ VALUES (@Name_en, @Name_fr, @ParentCategoryId)";
             }
 
             var query = @"
-SELECT Id, Name_en, Name_fr, ParentCategoryId
+SELECT Id, Name_en, Name_fr, ParentCategoryId, CreatedAt, UpdatedAt
 FROM dbo.Categories
 ORDER BY Name_en";
 
@@ -105,7 +106,9 @@ ORDER BY Name_en";
                 Id = dto.Id,
                 Name_en = dto.Name_en,
                 Name_fr = dto.Name_fr,
-                ParentCategoryId = dto.ParentCategoryId
+                ParentCategoryId = dto.ParentCategoryId,
+                CreatedAt = dto.CreatedAt,
+                UpdatedAt = dto.UpdatedAt
             });
         }
 
@@ -137,7 +140,8 @@ ORDER BY Name_en";
 UPDATE dbo.Categories
 SET Name_en = @Name_en,
     Name_fr = @Name_fr,
-    ParentCategoryId = @ParentCategoryId
+    ParentCategoryId = @ParentCategoryId,
+    UpdatedAt = @UpdatedAt
 WHERE Id = @Id";
 
             var parameters = new
@@ -145,7 +149,8 @@ WHERE Id = @Id";
                 entity.Id,
                 entity.Name_en,
                 entity.Name_fr,
-                entity.ParentCategoryId
+                entity.ParentCategoryId,
+                entity.UpdatedAt
             };
 
             await dbConnection.ExecuteAsync(query, parameters);
@@ -161,7 +166,7 @@ WHERE Id = @Id";
             }
 
             var query = @"
-SELECT Id, Name_en, Name_fr, ParentCategoryId
+SELECT Id, Name_en, Name_fr, ParentCategoryId, CreatedAt, UpdatedAt
 FROM dbo.Categories
 WHERE Id = @id";
 
@@ -175,7 +180,9 @@ WHERE Id = @id";
                 Id = dto.Id,
                 Name_en = dto.Name_en,
                 Name_fr = dto.Name_fr,
-                ParentCategoryId = dto.ParentCategoryId
+                ParentCategoryId = dto.ParentCategoryId,
+                CreatedAt = dto.CreatedAt,
+                UpdatedAt = dto.UpdatedAt
             };
         }
 
@@ -187,7 +194,7 @@ WHERE Id = @id";
             }
 
             var query = @"
-SELECT Id, Name_en, Name_fr, ParentCategoryId
+SELECT Id, Name_en, Name_fr, ParentCategoryId, CreatedAt, UpdatedAt
 FROM dbo.Categories
 WHERE ParentCategoryId IS NULL
 ORDER BY Name_en";
@@ -199,7 +206,9 @@ ORDER BY Name_en";
                 Id = dto.Id,
                 Name_en = dto.Name_en,
                 Name_fr = dto.Name_fr,
-                ParentCategoryId = dto.ParentCategoryId
+                ParentCategoryId = dto.ParentCategoryId,
+                CreatedAt = dto.CreatedAt,
+                UpdatedAt = dto.UpdatedAt
             });
         }
 
@@ -211,7 +220,7 @@ ORDER BY Name_en";
             }
 
             var query = @"
-SELECT Id, Name_en, Name_fr, ParentCategoryId
+SELECT Id, Name_en, Name_fr, ParentCategoryId, CreatedAt, UpdatedAt
 FROM dbo.Categories
 WHERE ParentCategoryId = @parentCategoryId
 ORDER BY Name_en";
@@ -223,7 +232,9 @@ ORDER BY Name_en";
                 Id = dto.Id,
                 Name_en = dto.Name_en,
                 Name_fr = dto.Name_fr,
-                ParentCategoryId = dto.ParentCategoryId
+                ParentCategoryId = dto.ParentCategoryId,
+                CreatedAt = dto.CreatedAt,
+                UpdatedAt = dto.UpdatedAt
             });
         }
 
@@ -291,6 +302,8 @@ WHERE Id = @categoryId";
             public string Name_en { get; set; } = string.Empty;
             public string Name_fr { get; set; } = string.Empty;
             public Guid? ParentCategoryId { get; set; }
+            public DateTime CreatedAt { get; set; }
+            public DateTime? UpdatedAt { get; set; }
         }
     }
 }

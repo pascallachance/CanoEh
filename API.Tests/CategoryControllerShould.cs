@@ -451,5 +451,31 @@ namespace API.Tests
             var serverErrorResult = Assert.IsType<ObjectResult>(response);
             Assert.Equal(StatusCodes.Status500InternalServerError, serverErrorResult.StatusCode);
         }
+
+        [Fact]
+        public void CategoryEntity_ShouldHave_CreatedAtAndUpdatedAtProperties()
+        {
+            // Arrange & Act
+            var category = new Infrastructure.Data.Category
+            {
+                Id = Guid.NewGuid(),
+                Name_en = "Test Category",
+                Name_fr = "Catégorie Test",
+                ParentCategoryId = null,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = null
+            };
+
+            // Assert
+            Assert.NotEqual(default(DateTime), category.CreatedAt);
+            Assert.IsType<DateTime>(category.CreatedAt);
+            Assert.Null(category.UpdatedAt);
+            
+            // Test with UpdatedAt set
+            category.UpdatedAt = DateTime.UtcNow;
+            Assert.NotNull(category.UpdatedAt);
+            Assert.True(category.UpdatedAt.HasValue);
+            Assert.IsType<DateTime>(category.UpdatedAt.Value);
+        }
     }
 }

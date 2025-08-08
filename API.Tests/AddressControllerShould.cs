@@ -2,8 +2,10 @@ using API.Controllers;
 using Domain.Models.Requests;
 using Domain.Models.Responses;
 using Domain.Services.Interfaces;
+using Domain.Services.Implementations;
 using Helpers.Common;
 using Infrastructure.Data;
+using Infrastructure.Repositories.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -349,6 +351,32 @@ namespace API.Tests
             // Assert
             var statusResult = Assert.IsType<ObjectResult>(result);
             Assert.Equal(StatusCodes.Status401Unauthorized, statusResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task AddressService_EnforcesUserOwnership_WhenAccessingAddresses()
+        {
+            // This test verifies that users can only access their own addresses
+            // The AddressService.GetAddressAsync method checks ExistsByUserIdAsync
+            // which ensures the address belongs to the requesting user
+            
+            // Arrange
+            var mockAddressRepo = new Mock<IAddressRepository>();
+            var addressService = new AddressService(mockAddressRepo.Object);
+            var userId1 = Guid.NewGuid();
+            var userId2 = Guid.NewGuid();
+            var addressId = Guid.NewGuid();
+
+            // Setup: Address belongs to userId1, but userId2 is trying to access it
+            mockAddressRepo.Setup(x => x.ExistsByUserIdAsync(userId2, addressId))
+                .ReturnsAsync(false); // Address doesn't belong to userId2
+
+            // Act
+            var result = await addressService.GetAddressAsync(addressId, userId2);
+            
+            // Assert - Should fail because userId2 doesn't own the address
+            Assert.True(result.IsFailure);
+            Assert.Contains("not found or you don't have permission", result.Error);
         }
     }
 }

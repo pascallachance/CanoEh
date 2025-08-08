@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Domain.Models.Requests;
 using Domain.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -16,9 +17,12 @@ namespace API.Controllers
         /// </summary>
         /// <param name="createCategoryRequest">The category details to create.</param>
         /// <returns>Returns the created category or an error response.</returns>
+        [Authorize(Roles = "Admin")]
         [HttpPost("CreateCategory")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryRequest createCategoryRequest)
         {
@@ -162,9 +166,12 @@ namespace API.Controllers
         /// </summary>
         /// <param name="updateCategoryRequest">The category details to update.</param>
         /// <returns>Returns the updated category or an error response.</returns>
+        [Authorize(Roles = "Admin")]
         [HttpPut("UpdateCategory")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateCategory([FromBody] UpdateCategoryRequest updateCategoryRequest)
@@ -197,9 +204,12 @@ namespace API.Controllers
         /// </summary>
         /// <param name="id">The category ID to delete.</param>
         /// <returns>Returns the deletion result or an error response.</returns>
+        [Authorize(Roles = "Admin")]
         [HttpDelete("DeleteCategory/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteCategory(Guid id)

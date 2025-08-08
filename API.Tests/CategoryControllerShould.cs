@@ -6,6 +6,7 @@ using Helpers.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System.Security.Claims;
 
 namespace API.Tests
 {
@@ -20,10 +21,34 @@ namespace API.Tests
             _controller = new CategoryController(_mockCategoryService.Object);
         }
 
+        private void SetupAdminUser()
+        {
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, "admin@example.com"),
+                new(ClaimTypes.Role, "Admin")
+            };
+            var identity = new ClaimsIdentity(claims, "TestAuthType");
+            var user = new ClaimsPrincipal(identity);
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = user }
+            };
+        }
+
+        private void SetupUnauthenticatedUser()
+        {
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            };
+        }
+
         [Fact]
         public async Task CreateCategory_ReturnOk_WhenCategoryCreatedSuccessfully()
         {
             // Arrange
+            SetupAdminUser();
             var createCategoryRequest = new CreateCategoryRequest
             {
                 Name_en = "Test Category",
@@ -55,6 +80,7 @@ namespace API.Tests
         public async Task CreateCategory_ReturnBadRequest_WhenValidationFails()
         {
             // Arrange
+            SetupAdminUser();
             var createCategoryRequest = new CreateCategoryRequest
             {
                 Name_en = "", // Invalid Name
@@ -78,6 +104,7 @@ namespace API.Tests
         public async Task CreateCategory_ReturnInternalServerError_WhenExceptionThrown()
         {
             // Arrange
+            SetupAdminUser();
             var createCategoryRequest = new CreateCategoryRequest
             {
                 Name_en = "Test Category",
@@ -268,6 +295,7 @@ namespace API.Tests
         public async Task UpdateCategory_ReturnOk_WhenCategoryUpdatedSuccessfully()
         {
             // Arrange
+            SetupAdminUser();
             var updateCategoryRequest = new UpdateCategoryRequest
             {
                 Id = Guid.NewGuid(),
@@ -300,6 +328,7 @@ namespace API.Tests
         public async Task UpdateCategory_ReturnNotFound_WhenCategoryDoesNotExist()
         {
             // Arrange
+            SetupAdminUser();
             var updateCategoryRequest = new UpdateCategoryRequest
             {
                 Id = Guid.NewGuid(),
@@ -324,6 +353,7 @@ namespace API.Tests
         public async Task UpdateCategory_ReturnBadRequest_WhenValidationFails()
         {
             // Arrange
+            SetupAdminUser();
             var updateCategoryRequest = new UpdateCategoryRequest
             {
                 Id = Guid.Empty, // Invalid ID
@@ -348,6 +378,7 @@ namespace API.Tests
         public async Task DeleteCategory_ReturnOk_WhenCategoryDeletedSuccessfully()
         {
             // Arrange
+            SetupAdminUser();
             var categoryId = Guid.NewGuid();
             var deleteCategoryResponse = new DeleteCategoryResponse
             {
@@ -372,6 +403,7 @@ namespace API.Tests
         public async Task DeleteCategory_ReturnNotFound_WhenCategoryDoesNotExist()
         {
             // Arrange
+            SetupAdminUser();
             var categoryId = Guid.NewGuid();
             var result = Result.Failure<DeleteCategoryResponse>("Category not found.", StatusCodes.Status404NotFound);
             _mockCategoryService.Setup(x => x.DeleteCategoryAsync(categoryId))
@@ -389,6 +421,7 @@ namespace API.Tests
         public async Task DeleteCategory_ReturnBadRequest_WhenCategoryHasSubcategoriesOrItems()
         {
             // Arrange
+            SetupAdminUser();
             var categoryId = Guid.NewGuid();
             var result = Result.Failure<DeleteCategoryResponse>("Cannot delete category that has subcategories.", StatusCodes.Status400BadRequest);
             _mockCategoryService.Setup(x => x.DeleteCategoryAsync(categoryId))
@@ -406,6 +439,7 @@ namespace API.Tests
         public async Task DeleteCategory_ReturnInternalServerError_WhenExceptionThrown()
         {
             // Arrange
+            SetupAdminUser();
             var categoryId = Guid.NewGuid();
             _mockCategoryService.Setup(x => x.DeleteCategoryAsync(categoryId))
                                .ThrowsAsync(new Exception("Database error"));

@@ -142,6 +142,7 @@ app.UseStaticFiles();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseSwagger(options => { }); // Explicitly specify the overload to resolve ambiguity
     app.UseSwaggerUI();
 }
 

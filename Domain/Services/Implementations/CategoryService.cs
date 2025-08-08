@@ -39,7 +39,8 @@ namespace Domain.Services.Implementations
                     Id = Guid.NewGuid(),
                     Name_en = createCategoryRequest.Name_en,
                     Name_fr = createCategoryRequest.Name_fr,
-                    ParentCategoryId = createCategoryRequest.ParentCategoryId
+                    ParentCategoryId = createCategoryRequest.ParentCategoryId,
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 var createdCategory = await _categoryRepository.AddAsync(category);
@@ -191,6 +192,7 @@ namespace Domain.Services.Implementations
                 existingCategory.Name_en = updateCategoryRequest.Name_en;
                 existingCategory.Name_fr = updateCategoryRequest.Name_fr;
                 existingCategory.ParentCategoryId = updateCategoryRequest.ParentCategoryId;
+                existingCategory.UpdatedAt = DateTime.UtcNow;
 
                 var updatedCategory = await _categoryRepository.UpdateAsync(existingCategory);
 

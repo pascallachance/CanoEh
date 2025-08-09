@@ -9,8 +9,8 @@ namespace Domain.Models.Requests
         public Guid SellerID { get; set; }
         public required string Name_en { get; set; }
         public required string Name_fr { get; set; }
-        public string? Description_en { get; set; }
-        public string? Description_fr { get; set; }
+        public required string Description_en { get; set; }
+        public required string Description_fr { get; set; }
         public Guid CategoryID { get; set; }
         public List<ItemVariant> Variants { get; set; } = new();
         public List<ItemAttribute> ItemAttributes { get; set; } = new();
@@ -25,6 +25,16 @@ namespace Domain.Models.Requests
             if (string.IsNullOrWhiteSpace(Name_fr))
             {
                 return Result.Failure("French name is required.", StatusCodes.Status400BadRequest);
+            }
+            
+            if (string.IsNullOrWhiteSpace(Description_en))
+            {
+                return Result.Failure("English description is required.", StatusCodes.Status400BadRequest);
+            }
+            
+            if (string.IsNullOrWhiteSpace(Description_fr))
+            {
+                return Result.Failure("French description is required.", StatusCodes.Status400BadRequest);
             }
             
             if (SellerID == Guid.Empty)

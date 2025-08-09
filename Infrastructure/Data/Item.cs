@@ -5,7 +5,7 @@ namespace Infrastructure.Data
         public Guid Id { get; set; }
         public Guid SellerID { get; set; } // Seller will be the user that created the Item (Currently Seller are not implemented)
         public string Name_en { get; set; } = string.Empty;
-        public string? Name_fr { get; set; }
+        public string Name_fr { get; set; } = string.Empty;
         public string? Description_en { get; set; }
         public string? Description_fr { get; set; }
         public Guid CategoryID { get; set; }

@@ -7,7 +7,7 @@ namespace Domain.Models.Responses
         public Guid Id { get; set; }
         public Guid SellerID { get; set; }
         public string Name_en { get; set; } = string.Empty;
-        public required string Name_fr { get; set; }
+        public string Name_fr { get; set; } = string.Empty;
         public string? Description_en { get; set; }
         public string? Description_fr { get; set; }
         public Guid CategoryID { get; set; }

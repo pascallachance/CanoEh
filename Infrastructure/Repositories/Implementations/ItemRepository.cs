@@ -25,10 +25,9 @@ INSERT INTO dbo.Items (
     SellerID,
     Name_en, 
     Name_fr, 
-    Description, 
-    Brand, 
-    Category, 
-    ImageUrls,
+    Description_en, 
+    Description_fr, 
+    CategoryID, 
     CreatedAt, 
     UpdatedAt, 
     Deleted)
@@ -37,10 +36,9 @@ VALUES (
     @SellerID,
     @Name_en, 
     @Name_fr, 
-    @Description, 
-    @Brand, 
-    @Category, 
-    @ImageUrls,
+    @Description_en, 
+    @Description_fr, 
+    @CategoryID, 
     @CreatedAt, 
     @UpdatedAt, 
     @Deleted)";
@@ -50,10 +48,9 @@ VALUES (
                     entity.SellerID,
                     entity.Name_en,
                     entity.Name_fr,
-                    entity.Description,
-                    entity.Brand,
-                    entity.Category,
-                    ImageUrls = JsonSerializer.Serialize(entity.ImageUrls),
+                    entity.Description_en,
+                    entity.Description_fr,
+                    entity.CategoryID,
                     entity.CreatedAt,
                     entity.UpdatedAt,
                     entity.Deleted
@@ -69,20 +66,24 @@ VALUES (
 INSERT INTO dbo.ItemVariants (
     Id,
     ItemId,
-    Attributes,
     Price,
     StockQuantity,
     Sku,
-    ThumbnailUrls,
+    ProductIdentifierType,
+    ProductIdentifierValue,
+    ImageUrls,
+    ThumbnailUrl,
     Deleted)
 VALUES (
     @Id,
     @ItemId,
-    @Attributes,
     @Price,
     @StockQuantity,
     @Sku,
-    @ThumbnailUrls,
+    @ProductIdentifierType,
+    @ProductIdentifierValue,
+    @ImageUrls,
+    @ThumbnailUrl,
     @Deleted)";
 
                     foreach (var variant in entity.Variants)
@@ -97,11 +98,13 @@ VALUES (
                         {
                             variant.Id,
                             variant.ItemId,
-                            Attributes = JsonSerializer.Serialize(variant.Attributes),
                             variant.Price,
                             variant.StockQuantity,
                             variant.Sku,
-                            ThumbnailUrls = JsonSerializer.Serialize(variant.ThumbnailUrls),
+                            variant.ProductIdentifierType,
+                            variant.ProductIdentifierValue,
+                            variant.ImageUrls,
+                            variant.ThumbnailUrl,
                             variant.Deleted
                         };
 
@@ -167,7 +170,7 @@ VALUES (
             }
             
             var query = @"
-SELECT i.*, v.Id as VariantId, v.ItemId as VariantItemId, v.Attributes, v.Price, v.StockQuantity, v.Sku, v.ThumbnailUrls, v.Deleted as VariantDeleted
+SELECT i.*, v.Id as VariantId, v.ItemId as VariantItemId, v.Price, v.StockQuantity, v.Sku, v.ProductIdentifierType, v.ProductIdentifierValue, v.ImageUrls, v.ThumbnailUrl, v.Deleted as VariantDeleted
 FROM dbo.Items i
 LEFT JOIN dbo.ItemVariants v ON i.Id = v.ItemId AND v.Deleted = 0
 WHERE i.Deleted = 0
@@ -207,7 +210,7 @@ ORDER BY i.Id";
             }
             
             var query = @"
-SELECT i.*, v.Id as VariantId, v.ItemId as VariantItemId, v.Attributes, v.Price, v.StockQuantity, v.Sku, v.ThumbnailUrls, v.Deleted as VariantDeleted
+SELECT i.*, v.Id as VariantId, v.ItemId as VariantItemId, v.Price, v.StockQuantity, v.Sku, v.ProductIdentifierType, v.ProductIdentifierValue, v.ImageUrls, v.ThumbnailUrl, v.Deleted as VariantDeleted
 FROM dbo.Items i
 LEFT JOIN dbo.ItemVariants v ON i.Id = v.ItemId AND v.Deleted = 0
 WHERE i.Id = @id
@@ -256,10 +259,9 @@ SET
     SellerID = @SellerID,
     Name_en = @Name_en,
     Name_fr = @Name_fr,
-    Description = @Description,
-    Brand = @Brand,
-    Category = @Category,
-    ImageUrls = @ImageUrls,
+    Description_en = @Description_en,
+    Description_fr = @Description_fr,
+    CategoryID = @CategoryID,
     UpdatedAt = @UpdatedAt,
     Deleted = @Deleted
 WHERE Id = @Id";
@@ -270,10 +272,9 @@ WHERE Id = @Id";
                     entity.SellerID,
                     entity.Name_en,
                     entity.Name_fr,
-                    entity.Description,
-                    entity.Brand,
-                    entity.Category,
-                    ImageUrls = JsonSerializer.Serialize(entity.ImageUrls),
+                    entity.Description_en,
+                    entity.Description_fr,
+                    entity.CategoryID,
                     entity.UpdatedAt,
                     entity.Deleted
                 };
@@ -291,12 +292,13 @@ WHERE Id = @Id";
                     var variantUpsertQuery = @"
 IF EXISTS (SELECT 1 FROM dbo.ItemVariants WHERE Id = @Id)
     UPDATE dbo.ItemVariants 
-    SET Attributes = @Attributes, Price = @Price, StockQuantity = @StockQuantity, 
-        Sku = @Sku, ThumbnailUrls = @ThumbnailUrls, Deleted = @Deleted
+    SET Price = @Price, StockQuantity = @StockQuantity, 
+        Sku = @Sku, ProductIdentifierType = @ProductIdentifierType, ProductIdentifierValue = @ProductIdentifierValue,
+        ImageUrls = @ImageUrls, ThumbnailUrl = @ThumbnailUrl, Deleted = @Deleted
     WHERE Id = @Id
 ELSE
-    INSERT INTO dbo.ItemVariants (Id, ItemId, Attributes, Price, StockQuantity, Sku, ThumbnailUrls, Deleted)
-    VALUES (@Id, @ItemId, @Attributes, @Price, @StockQuantity, @Sku, @ThumbnailUrls, @Deleted)";
+    INSERT INTO dbo.ItemVariants (Id, ItemId, Price, StockQuantity, Sku, ProductIdentifierType, ProductIdentifierValue, ImageUrls, ThumbnailUrl, Deleted)
+    VALUES (@Id, @ItemId, @Price, @StockQuantity, @Sku, @ProductIdentifierType, @ProductIdentifierValue, @ImageUrls, @ThumbnailUrl, @Deleted)";
 
                     var currentVariantIds = new HashSet<Guid>();
 
@@ -314,11 +316,13 @@ ELSE
                         {
                             variant.Id,
                             variant.ItemId,
-                            Attributes = JsonSerializer.Serialize(variant.Attributes),
                             variant.Price,
                             variant.StockQuantity,
                             variant.Sku,
-                            ThumbnailUrls = JsonSerializer.Serialize(variant.ThumbnailUrls),
+                            variant.ProductIdentifierType,
+                            variant.ProductIdentifierValue,
+                            variant.ImageUrls,
+                            variant.ThumbnailUrl,
                             variant.Deleted
                         };
 
@@ -362,7 +366,7 @@ ELSE
             }
             
             var query = @"
-SELECT i.*, v.Id as VariantId, v.ItemId as VariantItemId, v.Attributes, v.Price, v.StockQuantity, v.Sku, v.ThumbnailUrls, v.Deleted as VariantDeleted
+SELECT i.*, v.Id as VariantId, v.ItemId as VariantItemId, v.Price, v.StockQuantity, v.Sku, v.ProductIdentifierType, v.ProductIdentifierValue, v.ImageUrls, v.ThumbnailUrl, v.Deleted as VariantDeleted
 FROM dbo.Items i
 LEFT JOIN dbo.ItemVariants v ON i.Id = v.ItemId AND v.Deleted = 0
 WHERE i.Id = @id AND i.Deleted = 0
@@ -427,13 +431,11 @@ WHERE Id = @variantId AND ItemId = @itemId AND Deleted = 0";
                 SellerID = dto.SellerID,
                 Name_en = dto.Name_en,
                 Name_fr = dto.Name_fr,
-                Description = dto.Description,
-                Brand = dto.Brand,
-                Category = dto.Category,
+                Description_en = dto.Description_en,
+                Description_fr = dto.Description_fr,
+                CategoryID = dto.CategoryID,
                 Variants = new List<ItemVariant>(), // Variants will be added separately
-                ImageUrls = string.IsNullOrEmpty(dto.ImageUrls) 
-                    ? new List<string>() 
-                    : JsonSerializer.Deserialize<List<string>>(dto.ImageUrls) ?? new List<string>(),
+                ItemAttributes = new List<ItemAttribute>(), // Will be populated separately when needed
                 CreatedAt = dto.CreatedAt,
                 UpdatedAt = dto.UpdatedAt,
                 Deleted = dto.Deleted
@@ -446,15 +448,14 @@ WHERE Id = @variantId AND ItemId = @itemId AND Deleted = 0";
             {
                 Id = dto.VariantId,
                 ItemId = dto.VariantItemId,
-                Attributes = string.IsNullOrEmpty(dto.Attributes)
-                    ? new Dictionary<string, string>()
-                    : JsonSerializer.Deserialize<Dictionary<string, string>>(dto.Attributes) ?? new Dictionary<string, string>(),
                 Price = dto.Price,
                 StockQuantity = dto.StockQuantity,
-                Sku = dto.Sku,
-                ThumbnailUrls = string.IsNullOrEmpty(dto.ThumbnailUrls)
-                    ? new List<string>()
-                    : JsonSerializer.Deserialize<List<string>>(dto.ThumbnailUrls) ?? new List<string>(),
+                Sku = dto.Sku ?? string.Empty,
+                ProductIdentifierType = dto.ProductIdentifierType,
+                ProductIdentifierValue = dto.ProductIdentifierValue,
+                ImageUrls = dto.ImageUrls,
+                ThumbnailUrl = dto.ThumbnailUrl,
+                ItemVariantAttributes = new List<ItemVariantAttribute>(), // Will be populated separately when needed
                 Deleted = dto.VariantDeleted
             };
         }
@@ -464,11 +465,10 @@ WHERE Id = @variantId AND ItemId = @itemId AND Deleted = 0";
             public Guid Id { get; set; }
             public Guid SellerID { get; set; }
             public string Name_en { get; set; } = string.Empty;
-            public string Name_fr { get; set; } = string.Empty;
-            public string? Description { get; set; }
-            public string? Brand { get; set; }
-            public string? Category { get; set; }
-            public string? ImageUrls { get; set; }
+            public string? Name_fr { get; set; }
+            public string? Description_en { get; set; }
+            public string? Description_fr { get; set; }
+            public Guid CategoryID { get; set; }
             public DateTime CreatedAt { get; set; }
             public DateTime? UpdatedAt { get; set; }
             public bool Deleted { get; set; }
@@ -478,11 +478,13 @@ WHERE Id = @variantId AND ItemId = @itemId AND Deleted = 0";
         {
             public Guid VariantId { get; set; }
             public Guid VariantItemId { get; set; }
-            public string? Attributes { get; set; }
             public decimal Price { get; set; }
             public int StockQuantity { get; set; }
             public string? Sku { get; set; }
-            public string? ThumbnailUrls { get; set; }
+            public string? ProductIdentifierType { get; set; }
+            public string? ProductIdentifierValue { get; set; }
+            public string? ImageUrls { get; set; }
+            public string? ThumbnailUrl { get; set; }
             public bool VariantDeleted { get; set; }
         }
     }

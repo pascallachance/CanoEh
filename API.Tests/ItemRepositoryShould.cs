@@ -28,7 +28,8 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 SellerID = Guid.NewGuid(),
-                Name = "Test Item",
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
                 Description = "Test item description",
                 Brand = "Test Brand",
                 Category = "Test Category",
@@ -42,7 +43,8 @@ namespace API.Tests
             // Assert
             Assert.NotEqual(Guid.Empty, item.Id);
             Assert.NotEqual(Guid.Empty, item.SellerID);
-            Assert.Equal("Test Item", item.Name);
+            Assert.Equal("Test Item", item.Name_en);
+            Assert.Equal("Article de test", item.Name_fr);
             Assert.Equal("Test item description", item.Description);
             Assert.Equal("Test Brand", item.Brand);
             Assert.Equal("Test Category", item.Category);

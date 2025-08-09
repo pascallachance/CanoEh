@@ -17,7 +17,8 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 SellerID = Guid.NewGuid(),
-                Name = "Test Item",
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
                 Description = description,
                 Brand = "Test Brand",
                 Category = "Test Category",
@@ -41,7 +42,8 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 SellerID = Guid.NewGuid(),
-                Name = "Test Item",
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
                 Description = null, // Should be allowed
                 Brand = "Test Brand",
                 Category = "Test Category",
@@ -66,7 +68,8 @@ namespace API.Tests
             var request = new CreateItemRequest
             {
                 SellerID = Guid.NewGuid(),
-                Name = "Test Item",
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
                 Description = description,
                 Brand = "Test Brand",
                 Category = "Test Category",
@@ -89,7 +92,8 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 SellerID = Guid.NewGuid(),
-                Name = "Test Item",
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
                 Description = description,
                 Brand = "Test Brand",
                 Category = "Test Category",
@@ -112,7 +116,8 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 SellerID = Guid.NewGuid(),
-                Name = "Test Item",
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
                 Description = description,
                 Brand = "Test Brand",
                 Category = "Test Category",

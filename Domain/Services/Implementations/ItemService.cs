@@ -26,7 +26,8 @@ namespace Domain.Services.Implementations
                 {
                     Id = Guid.NewGuid(),
                     SellerID = createItemRequest.SellerID,
-                    Name = createItemRequest.Name,
+                    Name_en = createItemRequest.Name_en,
+                    Name_fr = createItemRequest.Name_fr,
                     Description = createItemRequest.Description,
                     Brand = createItemRequest.Brand,
                     Category = createItemRequest.Category,
@@ -43,7 +44,8 @@ namespace Domain.Services.Implementations
                 {
                     Id = createdItem.Id,
                     SellerID = createdItem.SellerID,
-                    Name = createdItem.Name,
+                    Name_en = createdItem.Name_en,
+                    Name_fr = createdItem.Name_fr,
                     Description = createdItem.Description,
                     Brand = createdItem.Brand,
                     Category = createdItem.Category,
@@ -71,7 +73,8 @@ namespace Domain.Services.Implementations
                 {
                     Id = item.Id,
                     SellerID = item.SellerID,
-                    Name = item.Name,
+                    Name_en = item.Name_en,
+                    Name_fr = item.Name_fr,
                     Description = item.Description,
                     Brand = item.Brand,
                     Category = item.Category,
@@ -104,7 +107,8 @@ namespace Domain.Services.Implementations
                 {
                     Id = item.Id,
                     SellerID = item.SellerID,
-                    Name = item.Name,
+                    Name_en = item.Name_en,
+                    Name_fr = item.Name_fr,
                     Description = item.Description,
                     Brand = item.Brand,
                     Category = item.Category,
@@ -140,7 +144,8 @@ namespace Domain.Services.Implementations
                 }
 
                 existingItem.SellerID = updateItemRequest.SellerID;
-                existingItem.Name = updateItemRequest.Name;
+                existingItem.Name_en = updateItemRequest.Name_en;
+                existingItem.Name_fr = updateItemRequest.Name_fr;
                 existingItem.Description = updateItemRequest.Description;
                 existingItem.Brand = updateItemRequest.Brand;
                 existingItem.Category = updateItemRequest.Category;
@@ -154,7 +159,8 @@ namespace Domain.Services.Implementations
                 {
                     Id = updatedItem.Id,
                     SellerID = updatedItem.SellerID,
-                    Name = updatedItem.Name,
+                    Name_en = updatedItem.Name_en,
+                    Name_fr = updatedItem.Name_fr,
                     Description = updatedItem.Description,
                     Brand = updatedItem.Brand,
                     Category = updatedItem.Category,

@@ -25,8 +25,7 @@ namespace API.Tests
             var createItemRequest = new CreateItemRequest
             {
                 SellerID = Guid.NewGuid(),
-                Name_en = "Test Item",
-                Name_fr = "Article de test",
+                Name = "Test Item",
                 Description = "Test item description",
                 Brand = "Test Brand",
                 Category = "Test Category",
@@ -38,8 +37,7 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 SellerID = createItemRequest.SellerID,
-                Name_en = createItemRequest.Name_en,
-                Name_fr = createItemRequest.Name_fr,
+                Name = createItemRequest.Name,
                 Description = createItemRequest.Description,
                 Brand = createItemRequest.Brand,
                 Category = createItemRequest.Category,
@@ -59,8 +57,7 @@ namespace API.Tests
             // Assert
             Assert.True(result.IsSuccess);
             Assert.NotNull(result.Value);
-            Assert.Equal(createItemRequest.Name_en, result.Value.Name_en);
-            Assert.Equal(createItemRequest.Name_fr, result.Value.Name_fr);
+            Assert.Equal(createItemRequest.Name, result.Value.Name);
             Assert.Equal(createItemRequest.SellerID, result.Value.SellerID);
         }
 
@@ -71,8 +68,7 @@ namespace API.Tests
             var createItemRequest = new CreateItemRequest
             {
                 SellerID = Guid.Empty, // Invalid SellerID
-                Name_en = "", // Invalid Name_en
-                Name_fr = "", // Invalid Name_fr
+                Name = "", // Invalid Name
                 Description = "Test item description",
                 Brand = "Test Brand",
                 Category = "Test Category",

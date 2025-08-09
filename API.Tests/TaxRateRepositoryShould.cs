@@ -164,61 +164,6 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task UpdateAsync_ReturnUpdatedTaxRate_WhenCalled()
-        {
-            // Arrange
-            var mockRepo = new Mock<ITaxRateRepository>();
-            var taxRate = new TaxRate
-            {
-                ID = Guid.NewGuid(),
-                Name_en = "GST",
-                Name_fr = "TPS",
-                Country = "Canada",
-                Rate = 0.05m,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            mockRepo.Setup(repo => repo.UpdateAsync(taxRate))
-                   .ReturnsAsync(taxRate);
-
-            // Act
-            var result = await mockRepo.Object.UpdateAsync(taxRate);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(taxRate.ID, result.ID);
-            Assert.NotNull(result.UpdatedAt);
-            mockRepo.Verify(repo => repo.UpdateAsync(taxRate), Times.Once);
-        }
-
-        [Fact]
-        public void AddAsync_ThrowNotSupportedException_WhenCalled()
-        {
-            // Arrange
-            var mockRepo = new Mock<ITaxRateRepository>();
-            var taxRate = new TaxRate
-            {
-                ID = Guid.NewGuid(),
-                Name_en = "GST",
-                Name_fr = "TPS",
-                Country = "Canada",
-                Rate = 0.05m,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            mockRepo.Setup(repo => repo.AddAsync(taxRate))
-                   .ThrowsAsync(new NotSupportedException("TaxRate creation is not supported through the repository. Tax rates should be manually added to the database."));
-
-            // Act & Assert
-            var exception = Assert.ThrowsAsync<NotSupportedException>(async () => await mockRepo.Object.AddAsync(taxRate));
-            Assert.Contains("TaxRate creation is not supported", exception.Result.Message);
-            mockRepo.Verify(repo => repo.AddAsync(taxRate), Times.Once);
-        }
-
-        [Fact]
         public async Task FindByProvinceStateAsync_ReturnTaxRates_WhenLocationMatches()
         {
             // Arrange

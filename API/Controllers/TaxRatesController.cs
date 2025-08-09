@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using Domain.Models.Requests;
 using Domain.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -139,78 +138,6 @@ namespace API.Controllers
             try
             {
                 var result = await _taxRatesService.GetTaxRatesByLocationAsync(country, provinceState);
-
-                if (result.IsFailure)
-                {
-                    return StatusCode(result.ErrorCode ?? 501, result.Error);
-                }
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"An error occurred: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Updates a tax rate.
-        /// </summary>
-        /// <param name="id">The ID of the tax rate to update.</param>
-        /// <param name="updateRequest">The updated tax rate details.</param>
-        /// <returns>Returns the updated tax rate or an error response.</returns>
-        [HttpPut("{id:guid}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateTaxRate(Guid id, [FromBody] UpdateTaxRateRequest updateRequest)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
-                // Ensure the ID in the URL matches the ID in the request body
-                if (id != updateRequest.ID)
-                {
-                    return BadRequest("The ID in the URL does not match the ID in the request body.");
-                }
-
-                var result = await _taxRatesService.UpdateTaxRateAsync(updateRequest);
-
-                if (result.IsFailure)
-                {
-                    return StatusCode(result.ErrorCode ?? 501, result.Error);
-                }
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"An error occurred: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Deactivates a tax rate (soft delete).
-        /// </summary>
-        /// <param name="id">The ID of the tax rate to deactivate.</param>
-        /// <returns>Returns a success message or an error response.</returns>
-        [HttpDelete("{id:guid}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteTaxRate(Guid id)
-        {
-            try
-            {
-                var result = await _taxRatesService.DeleteTaxRateAsync(id);
 
                 if (result.IsFailure)
                 {

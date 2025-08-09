@@ -1,4 +1,3 @@
-using Domain.Models.Requests;
 using Domain.Models.Responses;
 using Helpers.Common;
 
@@ -11,7 +10,5 @@ namespace Domain.Services.Interfaces
         Task<Result<IEnumerable<GetTaxRateResponse>>> GetActiveTaxRatesAsync();
         Task<Result<IEnumerable<GetTaxRateResponse>>> GetTaxRatesByCountryAsync(string country);
         Task<Result<IEnumerable<GetTaxRateResponse>>> GetTaxRatesByLocationAsync(string country, string provinceState);
-        Task<Result<UpdateTaxRateResponse>> UpdateTaxRateAsync(UpdateTaxRateRequest updateRequest);
-        Task<Result<DeleteTaxRateResponse>> DeleteTaxRateAsync(Guid id);
     }
 }

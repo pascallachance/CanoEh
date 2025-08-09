@@ -2,65 +2,16 @@ using System.Data;
 using Dapper;
 using Infrastructure.Data;
 using Infrastructure.Repositories.Interfaces;
+using Microsoft.Data.SqlClient;
 
 namespace Infrastructure.Repositories.Implementations
 {
-    public class TaxRateRepository(string connectionString) : GenericRepository<TaxRate>(connectionString), ITaxRateRepository
+    public class TaxRateRepository(string connectionString) : ITaxRateRepository
     {
-        public override Task<TaxRate> AddAsync(TaxRate entity)
-        {
-            throw new NotSupportedException("TaxRate creation is not supported through the repository. Tax rates should be manually added to the database.");
-        }
+        protected IDbConnection dbConnection = new SqlConnection(connectionString);
 
-        public override async Task<TaxRate> UpdateAsync(TaxRate entity)
-        {
-            if (dbConnection.State != ConnectionState.Open)
-            {
-                dbConnection.Open();
-            }
-            
-            var query = @"
-UPDATE dbo.TaxRate
-SET
-    Name_en = @Name_en,
-    Name_fr = @Name_fr,
-    Country = @Country,
-    ProvinceState = @ProvinceState,
-    Rate = @Rate,
-    IsActive = @IsActive,
-    UpdatedAt = @UpdatedAt
-WHERE ID = @ID";
 
-            var parameters = new
-            {
-                entity.ID,
-                entity.Name_en,
-                entity.Name_fr,
-                entity.Country,
-                entity.ProvinceState,
-                entity.Rate,
-                entity.IsActive,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            await dbConnection.ExecuteAsync(query, parameters);
-            entity.UpdatedAt = DateTime.UtcNow;
-            return entity;
-        }
-
-        public override async Task DeleteAsync(TaxRate entity)
-        {
-            if (dbConnection.State != ConnectionState.Open)
-            {
-                dbConnection.Open();
-            }
-            
-            entity.IsActive = false;
-            entity.UpdatedAt = DateTime.UtcNow;
-            await UpdateAsync(entity);
-        }
-
-        public override async Task<TaxRate> GetByIdAsync(Guid id)
+        public async Task<TaxRate> GetByIdAsync(Guid id)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -75,7 +26,7 @@ WHERE ID = @id";
             return await dbConnection.QueryFirstAsync<TaxRate>(query, new { id });
         }
 
-        public override async Task<IEnumerable<TaxRate>> GetAllAsync()
+        public async Task<IEnumerable<TaxRate>> GetAllAsync()
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -85,7 +36,7 @@ WHERE ID = @id";
             return await dbConnection.QueryAsync<TaxRate>("SELECT * FROM dbo.TaxRate");
         }
 
-        public override async Task<IEnumerable<TaxRate>> FindAsync(Func<TaxRate, bool> predicate)
+        public async Task<IEnumerable<TaxRate>> FindAsync(Func<TaxRate, bool> predicate)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -96,7 +47,7 @@ WHERE ID = @id";
             return taxRates.Where(predicate);
         }
 
-        public override async Task<int> CountAsync(Func<TaxRate, bool> predicate)
+        public async Task<int> CountAsync(Func<TaxRate, bool> predicate)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -107,7 +58,7 @@ WHERE ID = @id";
             return taxRates.Count(predicate);
         }
 
-        public override async Task<bool> ExistsAsync(Guid id)
+        public async Task<bool> ExistsAsync(Guid id)
         {
             if (dbConnection.State != ConnectionState.Open)
             {

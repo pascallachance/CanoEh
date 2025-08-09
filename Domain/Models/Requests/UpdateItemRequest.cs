@@ -8,7 +8,8 @@ namespace Domain.Models.Requests
     {
         public Guid Id { get; set; }
         public Guid SellerID { get; set; }
-        public required string Name { get; set; }
+        public required string Name_en { get; set; }
+        public required string Name_fr { get; set; }
         public string? Description { get; set; }
         public string? Brand { get; set; }
         public string? Category { get; set; }
@@ -22,9 +23,9 @@ namespace Domain.Models.Requests
                 return Result.Failure("Id is required.", StatusCodes.Status400BadRequest);
             }
             
-            if (string.IsNullOrWhiteSpace(Name))
+            if (string.IsNullOrWhiteSpace(Name_en) && string.IsNullOrWhiteSpace(Name_fr))
             {
-                return Result.Failure("Name is required.", StatusCodes.Status400BadRequest);
+                return Result.Failure("At least one name (English or French) is required.", StatusCodes.Status400BadRequest);
             }
             
             if (SellerID == Guid.Empty)

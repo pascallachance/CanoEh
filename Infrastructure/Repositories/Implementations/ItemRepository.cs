@@ -23,7 +23,8 @@ namespace Infrastructure.Repositories.Implementations
                 var itemQuery = @"
 INSERT INTO dbo.Items (
     SellerID,
-    Name, 
+    Name_en, 
+    Name_fr, 
     Description, 
     Brand, 
     Category, 
@@ -34,7 +35,8 @@ INSERT INTO dbo.Items (
 OUTPUT INSERTED.Id
 VALUES (
     @SellerID,
-    @Name, 
+    @Name_en, 
+    @Name_fr, 
     @Description, 
     @Brand, 
     @Category, 
@@ -46,7 +48,8 @@ VALUES (
                 var itemParameters = new
                 {
                     entity.SellerID,
-                    entity.Name,
+                    entity.Name_en,
+                    entity.Name_fr,
                     entity.Description,
                     entity.Brand,
                     entity.Category,
@@ -251,7 +254,8 @@ ORDER BY i.Id";
 UPDATE dbo.Items
 SET
     SellerID = @SellerID,
-    Name = @Name,
+    Name_en = @Name_en,
+    Name_fr = @Name_fr,
     Description = @Description,
     Brand = @Brand,
     Category = @Category,
@@ -264,7 +268,8 @@ WHERE Id = @Id";
                 {
                     entity.Id,
                     entity.SellerID,
-                    entity.Name,
+                    entity.Name_en,
+                    entity.Name_fr,
                     entity.Description,
                     entity.Brand,
                     entity.Category,
@@ -420,7 +425,8 @@ WHERE Id = @variantId AND ItemId = @itemId AND Deleted = 0";
             {
                 Id = dto.Id,
                 SellerID = dto.SellerID,
-                Name = dto.Name,
+                Name_en = dto.Name_en,
+                Name_fr = dto.Name_fr,
                 Description = dto.Description,
                 Brand = dto.Brand,
                 Category = dto.Category,
@@ -457,7 +463,8 @@ WHERE Id = @variantId AND ItemId = @itemId AND Deleted = 0";
         {
             public Guid Id { get; set; }
             public Guid SellerID { get; set; }
-            public string Name { get; set; } = string.Empty;
+            public string Name_en { get; set; } = string.Empty;
+            public string Name_fr { get; set; } = string.Empty;
             public string? Description { get; set; }
             public string? Brand { get; set; }
             public string? Category { get; set; }

@@ -1,0 +1,12 @@
+namespace Infrastructure.Data
+{
+    public class ItemVariantAttribute
+    {
+        public Guid Id { get; set; }
+        public Guid ItemVariantID { get; set; }
+        public string AttributeName_en { get; set; } = string.Empty;
+        public string? AttributeName_fr { get; set; }
+        public string Attributes_en { get; set; } = string.Empty;
+        public string? Attributes_fr { get; set; }
+    }
+}

@@ -122,6 +122,20 @@ internal class Program
             return new TaxRateRepository(connectionString);
         });
 
+        builder.Services.AddScoped<IItemAttributeRepository>(provider =>
+        {
+            var config = provider.GetRequiredService<IConfiguration>();
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            return new ItemAttributeRepository(connectionString);
+        });
+
+        builder.Services.AddScoped<IItemVariantAttributeRepository>(provider =>
+        {
+            var config = provider.GetRequiredService<IConfiguration>();
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            return new ItemVariantAttributeRepository(connectionString);
+        });
+
         // Add services to the container.
         builder.Services.AddControllers();
         builder.Services.AddControllersWithViews();

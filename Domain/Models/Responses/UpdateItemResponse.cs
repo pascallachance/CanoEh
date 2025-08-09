@@ -7,12 +7,12 @@ namespace Domain.Models.Responses
         public Guid Id { get; set; }
         public Guid SellerID { get; set; }
         public string Name_en { get; set; } = string.Empty;
-        public string Name_fr { get; set; } = string.Empty;
-        public string? Description { get; set; }
-        public string? Brand { get; set; }
-        public string? Category { get; set; }
+        public string? Name_fr { get; set; }
+        public string? Description_en { get; set; }
+        public string? Description_fr { get; set; }
+        public Guid CategoryID { get; set; }
         public List<ItemVariant> Variants { get; set; } = new();
-        public List<string> ImageUrls { get; set; } = new();
+        public List<ItemAttribute> ItemAttributes { get; set; } = new();
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool Deleted { get; set; }

@@ -4,11 +4,14 @@ namespace Infrastructure.Data
     {
         public Guid Id { get; set; }
         public Guid ItemId { get; set; } // Id of related item for DB relation
-        public Dictionary<string, string> Attributes { get; set; } = new(); // e.g. { "Color": "Red", "Size": "XL" }
         public decimal Price { get; set; }
         public int StockQuantity { get; set; }
-        public string? Sku { get; set; }
-        public List<string> ThumbnailUrls { get; set; } = new(); // Thumbnails for this variant
+        public string Sku { get; set; } = string.Empty;
+        public string? ProductIdentifierType { get; set; } // e.g., 'UPC', 'GTIN', etc.
+        public string? ProductIdentifierValue { get; set; }
+        public string? ImageUrls { get; set; } // Comma-separated URLs
+        public string? ThumbnailUrl { get; set; }
+        public List<ItemVariantAttribute> ItemVariantAttributes { get; set; } = new();
         public bool Deleted { get; set; } = false;
     }
 }

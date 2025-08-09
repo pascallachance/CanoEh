@@ -63,6 +63,7 @@ internal class Program
         builder.Services.AddScoped<ICompanyService, CompanyService>();
         builder.Services.AddScoped<IAddressService, AddressService>();
         builder.Services.AddScoped<IPaymentMethodService, PaymentMethodService>();
+        builder.Services.AddScoped<ITaxRatesService, TaxRatesService>();
 
         // Register Repositories
         builder.Services.AddScoped<IUserRepository>(provider =>
@@ -112,6 +113,13 @@ internal class Program
             var config = provider.GetRequiredService<IConfiguration>();
             var connectionString = config.GetConnectionString("DefaultConnection");
             return new PaymentMethodRepository(connectionString);
+        });
+
+        builder.Services.AddScoped<ITaxRateRepository>(provider =>
+        {
+            var config = provider.GetRequiredService<IConfiguration>();
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            return new TaxRateRepository(connectionString);
         });
 
         // Add services to the container.

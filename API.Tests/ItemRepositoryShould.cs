@@ -95,7 +95,8 @@ namespace API.Tests
             Assert.Empty(item.Variants);
             Assert.NotNull(item.ImageUrls);
             Assert.Empty(item.ImageUrls);
-            Assert.Equal(string.Empty, item.Name);
+            Assert.Equal(string.Empty, item.Name_en);
+            Assert.Equal(string.Empty, item.Name_fr);
             Assert.False(item.Deleted);
         }
 

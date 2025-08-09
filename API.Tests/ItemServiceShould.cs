@@ -98,7 +98,8 @@ namespace API.Tests
                 {
                     Id = Guid.NewGuid(),
                     SellerID = Guid.NewGuid(),
-                    Name = "Test Item 1",
+                    Name_en = "Test Item 1",
+                    Name_fr = "Article de test 1",
                     Description = "Test item 1 description",
                     Brand = "Test Brand 1",
                     Category = "Test Category 1",
@@ -131,7 +132,8 @@ namespace API.Tests
             {
                 Id = itemId,
                 SellerID = Guid.NewGuid(),
-                Name = "Test Item",
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
                 Description = "Test item description",
                 Brand = "Test Brand",
                 Category = "Test Category",
@@ -179,7 +181,8 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 SellerID = Guid.NewGuid(),
-                Name = "Updated Item",
+                Name_en = "Updated Item",
+                Name_fr = "Article mis à jour",
                 Description = "Test item description",
                 Brand = "Updated Brand",
                 Category = "Updated Category",
@@ -191,7 +194,8 @@ namespace API.Tests
             {
                 Id = updateItemRequest.Id,
                 SellerID = Guid.NewGuid(),
-                Name = "Original Item",
+                Name_en = "Original Item",
+                Name_fr = "Article original",
                 Description = "Test item description",
                 Brand = "Original Brand",
                 Category = "Original Category",
@@ -206,7 +210,8 @@ namespace API.Tests
             {
                 Id = updateItemRequest.Id,
                 SellerID = updateItemRequest.SellerID,
-                Name = updateItemRequest.Name,
+                Name_en = updateItemRequest.Name_en,
+                Name_fr = updateItemRequest.Name_fr,
                 Description = updateItemRequest.Description,
                 Brand = updateItemRequest.Brand,
                 Category = updateItemRequest.Category,
@@ -228,7 +233,8 @@ namespace API.Tests
             // Assert
             Assert.True(result.IsSuccess);
             Assert.NotNull(result.Value);
-            Assert.Equal(updateItemRequest.Name, result.Value.Name);
+            Assert.Equal(updateItemRequest.Name_en, result.Value.Name_en);
+            Assert.Equal(updateItemRequest.Name_fr, result.Value.Name_fr);
         }
 
         [Fact]
@@ -239,7 +245,8 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 SellerID = Guid.NewGuid(),
-                Name = "Updated Item",
+                Name_en = "Updated Item",
+                Name_fr = "Article mis à jour",
                 Description = "Test item description",
                 Brand = "Updated Brand",
                 Category = "Updated Category",
@@ -268,7 +275,8 @@ namespace API.Tests
             {
                 Id = itemId,
                 SellerID = Guid.NewGuid(),
-                Name = "Test Item",
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
                 Description = "Test item description",
                 Brand = "Test Brand",
                 Category = "Test Category",

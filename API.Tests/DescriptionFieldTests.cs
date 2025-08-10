@@ -10,7 +10,8 @@ namespace API.Tests
         public void Item_Description_ShouldAcceptStringValue()
         {
             // Arrange
-            var description = "This is a test item description with special characters: !@#$%^&*()";
+            var description_en = "This is a test item description in English with special characters: !@#$%^&*()";
+            var description_fr = "Ceci est une description d'article de test en français avec des caractères spéciaux : !@#$%^&*()";
             
             // Act
             var item = new Item
@@ -19,19 +20,21 @@ namespace API.Tests
                 SellerID = Guid.NewGuid(),
                 Name_en = "Test Item",
                 Name_fr = "Article de test",
-                Description = description,
-                Brand = "Test Brand",
-                Category = "Test Category",
+                Description_en = description_en,
+                Description_fr = description_fr,
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>(),
+                ItemAttributes = new List<ItemAttribute>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false
             };
 
             // Assert
-            Assert.Equal(description, item.Description);
-            Assert.True(item.Description?.Length > 0);
+            Assert.Equal(description_en, item.Description_en);
+            Assert.Equal(description_fr, item.Description_fr);
+            Assert.True(item.Description_en?.Length > 0);
+            Assert.True(item.Description_fr?.Length > 0);
         }
 
         [Fact]
@@ -44,25 +47,27 @@ namespace API.Tests
                 SellerID = Guid.NewGuid(),
                 Name_en = "Test Item",
                 Name_fr = "Article de test",
-                Description = null, // Should be allowed
-                Brand = "Test Brand",
-                Category = "Test Category",
+                Description_en = null, // Should be allowed
+                Description_fr = null, // Should be allowed
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>(),
+                ItemAttributes = new List<ItemAttribute>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false
             };
 
             // Assert
-            Assert.Null(item.Description);
+            Assert.Null(item.Description_en);
+            Assert.Null(item.Description_fr);
         }
 
         [Fact]
         public void CreateItemRequest_Description_ShouldAcceptStringValue()
         {
             // Arrange
-            var description = "Test description for create request";
+            var description_en = "Test description for create request in English";
+            var description_fr = "Description de test pour la demande de création en français";
             
             // Act
             var request = new CreateItemRequest
@@ -70,24 +75,24 @@ namespace API.Tests
                 SellerID = Guid.NewGuid(),
                 Name_en = "Test Item",
                 Name_fr = "Article de test",
-                Description_en = "Test Description EN",
-                Description_fr = "Test Description FR",
-                Description = description,
-                Brand = "Test Brand",
-                Category = "Test Category",
+                Description_en = description_en,
+                Description_fr = description_fr,
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>()
+                ItemAttributes = new List<ItemAttribute>()
             };
 
             // Assert
-            Assert.Equal(description, request.Description);
+            Assert.Equal(description_en, request.Description_en);
+            Assert.Equal(description_fr, request.Description_fr);
         }
 
         [Fact]
         public void UpdateItemRequest_Description_ShouldAcceptStringValue()
         {
             // Arrange
-            var description = "Updated description for item";
+            var description_en = "Updated description for item in English";
+            var description_fr = "Description mise à jour pour l'article en français";
             
             // Act
             var request = new UpdateItemRequest
@@ -96,24 +101,24 @@ namespace API.Tests
                 SellerID = Guid.NewGuid(),
                 Name_en = "Test Item",
                 Name_fr = "Article de test",
-                Description_en = "Test Description EN",
-                Description_fr = "Test Description FR",
-                Description = description,
-                Brand = "Test Brand",
-                Category = "Test Category",
+                Description_en = description_en,
+                Description_fr = description_fr,
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>()
+                ItemAttributes = new List<ItemAttribute>()
             };
 
             // Assert
-            Assert.Equal(description, request.Description);
+            Assert.Equal(description_en, request.Description_en);
+            Assert.Equal(description_fr, request.Description_fr);
         }
 
         [Fact]
         public void GetItemResponse_Description_ShouldAcceptStringValue()
         {
             // Arrange
-            var description = "Test description for response";
+            var description_en = "Test description for response in English";
+            var description_fr = "Description de test pour la réponse en français";
             
             // Act
             var response = new GetItemResponse
@@ -122,18 +127,19 @@ namespace API.Tests
                 SellerID = Guid.NewGuid(),
                 Name_en = "Test Item",
                 Name_fr = "Article de test",
-                Description = description,
-                Brand = "Test Brand",
-                Category = "Test Category",
+                Description_en = description_en,
+                Description_fr = description_fr,
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>(),
+                ItemAttributes = new List<ItemAttribute>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false
             };
 
             // Assert
-            Assert.Equal(description, response.Description);
+            Assert.Equal(description_en, response.Description_en);
+            Assert.Equal(description_fr, response.Description_fr);
         }
     }
 }

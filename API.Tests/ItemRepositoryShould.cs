@@ -30,11 +30,11 @@ namespace API.Tests
                 SellerID = Guid.NewGuid(),
                 Name_en = "Test Item",
                 Name_fr = "Article de test",
-                Description = "Test item description",
-                Brand = "Test Brand",
-                Category = "Test Category",
+                Description_en = "Test item description EN",
+                Description_fr = "Test item description FR",
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>(),
+                ItemAttributes = new List<ItemAttribute>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false
@@ -45,11 +45,11 @@ namespace API.Tests
             Assert.NotEqual(Guid.Empty, item.SellerID);
             Assert.Equal("Test Item", item.Name_en);
             Assert.Equal("Article de test", item.Name_fr);
-            Assert.Equal("Test item description", item.Description);
-            Assert.Equal("Test Brand", item.Brand);
-            Assert.Equal("Test Category", item.Category);
+            Assert.Equal("Test item description EN", item.Description_en);
+            Assert.Equal("Test item description FR", item.Description_fr);
+            Assert.NotEqual(Guid.Empty, item.CategoryID);
             Assert.NotNull(item.Variants);
-            Assert.NotNull(item.ImageUrls);
+            Assert.NotNull(item.ItemAttributes);
             Assert.False(item.Deleted);
         }
 
@@ -61,26 +61,25 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 ItemId = Guid.NewGuid(),
-                Attributes = new Dictionary<string, string> { { "Color", "Red" }, { "Size", "XL" } },
+                ItemVariantAttributes = new List<ItemVariantAttribute>(),
                 Price = 99.99m,
                 StockQuantity = 10,
                 Sku = "TEST-SKU-001",
-                ThumbnailUrls = new List<string> { "https://example.com/thumb1.jpg" },
+                ThumbnailUrl = "https://example.com/thumb1.jpg",
+                ImageUrls = "https://example.com/img1.jpg,https://example.com/img2.jpg",
                 Deleted = false
             };
 
             // Assert
             Assert.NotEqual(Guid.Empty, variant.Id);
             Assert.NotEqual(Guid.Empty, variant.ItemId);
-            Assert.NotNull(variant.Attributes);
-            Assert.Equal(2, variant.Attributes.Count);
-            Assert.Equal("Red", variant.Attributes["Color"]);
-            Assert.Equal("XL", variant.Attributes["Size"]);
+            Assert.NotNull(variant.ItemVariantAttributes);
+            Assert.Empty(variant.ItemVariantAttributes);
             Assert.Equal(99.99m, variant.Price);
             Assert.Equal(10, variant.StockQuantity);
             Assert.Equal("TEST-SKU-001", variant.Sku);
-            Assert.NotNull(variant.ThumbnailUrls);
-            Assert.Single(variant.ThumbnailUrls);
+            Assert.NotNull(variant.ThumbnailUrl);
+            Assert.Equal("https://example.com/thumb1.jpg", variant.ThumbnailUrl);
             Assert.False(variant.Deleted);
         }
 
@@ -93,8 +92,8 @@ namespace API.Tests
             // Assert
             Assert.NotNull(item.Variants);
             Assert.Empty(item.Variants);
-            Assert.NotNull(item.ImageUrls);
-            Assert.Empty(item.ImageUrls);
+            Assert.NotNull(item.ItemAttributes);
+            Assert.Empty(item.ItemAttributes);
             Assert.Equal(string.Empty, item.Name_en);
             Assert.Equal(string.Empty, item.Name_fr);
             Assert.False(item.Deleted);
@@ -107,10 +106,8 @@ namespace API.Tests
             var variant = new ItemVariant();
 
             // Assert
-            Assert.NotNull(variant.Attributes);
-            Assert.Empty(variant.Attributes);
-            Assert.NotNull(variant.ThumbnailUrls);
-            Assert.Empty(variant.ThumbnailUrls);
+            Assert.NotNull(variant.ItemVariantAttributes);
+            Assert.Empty(variant.ItemVariantAttributes);
             Assert.Equal(0m, variant.Price);
             Assert.Equal(0, variant.StockQuantity);
             Assert.False(variant.Deleted);

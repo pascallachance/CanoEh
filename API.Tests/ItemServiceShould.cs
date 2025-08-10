@@ -29,11 +29,9 @@ namespace API.Tests
                 Name_fr = "Article de test",
                 Description_en = "Test Description EN",
                 Description_fr = "Test Description FR",
-                Description = "Test item description",
-                Brand = "Test Brand",
-                Category = "Test Category",
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>()
+                ItemAttributes = new List<ItemAttribute>()
             };
 
             var item = new Item
@@ -42,11 +40,11 @@ namespace API.Tests
                 SellerID = createItemRequest.SellerID,
                 Name_en = createItemRequest.Name_en,
                 Name_fr = createItemRequest.Name_fr,
-                Description = createItemRequest.Description,
-                Brand = createItemRequest.Brand,
-                Category = createItemRequest.Category,
+                Description_en = createItemRequest.Description_en,
+                Description_fr = createItemRequest.Description_fr,
+                CategoryID = createItemRequest.CategoryID,
                 Variants = createItemRequest.Variants,
-                ImageUrls = createItemRequest.ImageUrls,
+                ItemAttributes = createItemRequest.ItemAttributes,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false
@@ -77,11 +75,9 @@ namespace API.Tests
                 Name_fr = "", // Invalid Name_fr
                 Description_en = "Test Description EN",
                 Description_fr = "Test Description FR",
-                Description = "Test item description",
-                Brand = "Test Brand",
-                Category = "Test Category",
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>()
+                ItemAttributes = new List<ItemAttribute>()
             };
 
             // Act
@@ -104,11 +100,11 @@ namespace API.Tests
                     SellerID = Guid.NewGuid(),
                     Name_en = "Test Item 1",
                     Name_fr = "Article de test 1",
-                    Description = "Test item 1 description",
-                    Brand = "Test Brand 1",
-                    Category = "Test Category 1",
+                    Description_en = "Test item 1 description EN",
+                    Description_fr = "Test item 1 description FR",
+                    CategoryID = Guid.NewGuid(),
                     Variants = new List<ItemVariant>(),
-                    ImageUrls = new List<string>(),
+                    ItemAttributes = new List<ItemAttribute>(),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null,
                     Deleted = false
@@ -138,11 +134,11 @@ namespace API.Tests
                 SellerID = Guid.NewGuid(),
                 Name_en = "Test Item",
                 Name_fr = "Article de test",
-                Description = "Test item description",
-                Brand = "Test Brand",
-                Category = "Test Category",
+                Description_en = "Test item description EN",
+                Description_fr = "Test item description FR",
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>(),
+                ItemAttributes = new List<ItemAttribute>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false
@@ -187,15 +183,11 @@ namespace API.Tests
                 SellerID = Guid.NewGuid(),
                 Name_en = "Updated Item",
                 Name_fr = "Article mis à jour",
-                Description_en = "Test Description EN",
-                Description_fr = "Test Description FR",
-                Description_en = "Test Description EN",
-                Description_fr = "Test Description FR",
-                Description = "Test item description",
-                Brand = "Updated Brand",
-                Category = "Updated Category",
+                Description_en = "Updated Description EN",
+                Description_fr = "Updated Description FR",
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>()
+                ItemAttributes = new List<ItemAttribute>()
             };
 
             var existingItem = new Item
@@ -204,11 +196,11 @@ namespace API.Tests
                 SellerID = Guid.NewGuid(),
                 Name_en = "Original Item",
                 Name_fr = "Article original",
-                Description = "Test item description",
-                Brand = "Original Brand",
-                Category = "Original Category",
+                Description_en = "Original Description EN",
+                Description_fr = "Original Description FR",
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>(),
+                ItemAttributes = new List<ItemAttribute>(),
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
                 UpdatedAt = null,
                 Deleted = false
@@ -220,11 +212,11 @@ namespace API.Tests
                 SellerID = updateItemRequest.SellerID,
                 Name_en = updateItemRequest.Name_en,
                 Name_fr = updateItemRequest.Name_fr,
-                Description = updateItemRequest.Description,
-                Brand = updateItemRequest.Brand,
-                Category = updateItemRequest.Category,
+                Description_en = updateItemRequest.Description_en,
+                Description_fr = updateItemRequest.Description_fr,
+                CategoryID = updateItemRequest.CategoryID,
                 Variants = updateItemRequest.Variants,
-                ImageUrls = updateItemRequest.ImageUrls,
+                ItemAttributes = updateItemRequest.ItemAttributes,
                 CreatedAt = existingItem.CreatedAt,
                 UpdatedAt = DateTime.UtcNow,
                 Deleted = false
@@ -255,15 +247,11 @@ namespace API.Tests
                 SellerID = Guid.NewGuid(),
                 Name_en = "Updated Item",
                 Name_fr = "Article mis à jour",
-                Description_en = "Test Description EN",
-                Description_fr = "Test Description FR",
-                Description_en = "Test Description EN",
-                Description_fr = "Test Description FR",
-                Description = "Test item description",
-                Brand = "Updated Brand",
-                Category = "Updated Category",
+                Description_en = "Updated Description EN",
+                Description_fr = "Updated Description FR",
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>()
+                ItemAttributes = new List<ItemAttribute>()
             };
 
             _mockItemRepository.Setup(x => x.GetItemByIdAsync(updateItemRequest.Id))
@@ -289,11 +277,11 @@ namespace API.Tests
                 SellerID = Guid.NewGuid(),
                 Name_en = "Test Item",
                 Name_fr = "Article de test",
-                Description = "Test item description",
-                Brand = "Test Brand",
-                Category = "Test Category",
+                Description_en = "Test item description EN",
+                Description_fr = "Test item description FR",
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>(),
+                ItemAttributes = new List<ItemAttribute>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false

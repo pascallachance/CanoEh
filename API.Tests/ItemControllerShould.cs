@@ -194,13 +194,9 @@ namespace API.Tests
                 Name_fr = "Article mis à jour",
                 Description_en = "Test Description EN",
                 Description_fr = "Test Description FR",
-                Description_en = "Test Description EN",
-                Description_fr = "Test Description FR",
-                Description = "Test item description",
-                Brand = "Updated Brand",
-                Category = "Updated Category",
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>()
+                ItemAttributes = new List<ItemAttribute>()
             };
 
             var updateItemResponse = new UpdateItemResponse
@@ -209,11 +205,11 @@ namespace API.Tests
                 SellerID = updateItemRequest.SellerID,
                 Name_en = updateItemRequest.Name_en,
                 Name_fr = updateItemRequest.Name_fr,
-                Description = updateItemRequest.Description,
-                Brand = updateItemRequest.Brand,
-                Category = updateItemRequest.Category,
+                Description_en = updateItemRequest.Description_en,
+                Description_fr = updateItemRequest.Description_fr,
+                CategoryID = updateItemRequest.CategoryID,
                 Variants = updateItemRequest.Variants,
-                ImageUrls = updateItemRequest.ImageUrls,
+                ItemAttributes = updateItemRequest.ItemAttributes,
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
                 UpdatedAt = DateTime.UtcNow,
                 Deleted = false
@@ -243,13 +239,9 @@ namespace API.Tests
                 Name_fr = "Article mis à jour",
                 Description_en = "Test Description EN",
                 Description_fr = "Test Description FR",
-                Description_en = "Test Description EN",
-                Description_fr = "Test Description FR",
-                Description = "Test item description",
-                Brand = "Updated Brand",
-                Category = "Updated Category",
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>()
+                ItemAttributes = new List<ItemAttribute>()
             };
 
             var result = Result.Failure<UpdateItemResponse>("Item not found.", StatusCodes.Status404NotFound);

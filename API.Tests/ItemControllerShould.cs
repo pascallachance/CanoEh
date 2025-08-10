@@ -32,11 +32,9 @@ namespace API.Tests
                 Name_fr = "Article de test",
                 Description_en = "Test Description EN",
                 Description_fr = "Test Description FR",
-                Description = "Test item description",
-                Brand = "Test Brand",
-                Category = "Test Category",
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>()
+                ItemAttributes = new List<ItemAttribute>()
             };
 
             var createItemResponse = new CreateItemResponse
@@ -45,11 +43,11 @@ namespace API.Tests
                 SellerID = createItemRequest.SellerID,
                 Name_en = createItemRequest.Name_en,
                 Name_fr = createItemRequest.Name_fr,
-                Description = createItemRequest.Description,
-                Brand = createItemRequest.Brand,
-                Category = createItemRequest.Category,
+                Description_en = createItemRequest.Description_en,
+                Description_fr = createItemRequest.Description_fr,
+                CategoryID = createItemRequest.CategoryID,
                 Variants = createItemRequest.Variants,
-                ImageUrls = createItemRequest.ImageUrls,
+                ItemAttributes = createItemRequest.ItemAttributes,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false
@@ -78,11 +76,9 @@ namespace API.Tests
                 Name_fr = "", // Invalid Name_fr
                 Description_en = "Test Description EN",
                 Description_fr = "Test Description FR",
-                Description = "Test item description",
-                Brand = "Test Brand",
-                Category = "Test Category",
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>()
+                ItemAttributes = new List<ItemAttribute>()
             };
 
             var result = Result.Failure<CreateItemResponse>("Validation failed.", StatusCodes.Status400BadRequest);
@@ -109,11 +105,11 @@ namespace API.Tests
                     SellerID = Guid.NewGuid(),
                     Name_en = "Test Item 1",
                     Name_fr = "Article de test 1",
-                    Description = "Test item description",
-                    Brand = "Test Brand 1",
-                    Category = "Test Category 1",
+                    Description_en = "Test Description EN",
+                    Description_fr = "Test Description FR",
+                    CategoryID = Guid.NewGuid(),
                     Variants = new List<ItemVariant>(),
-                    ImageUrls = new List<string>(),
+                    ItemAttributes = new List<ItemAttribute>(),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null,
                     Deleted = false
@@ -143,11 +139,11 @@ namespace API.Tests
                 SellerID = Guid.NewGuid(),
                 Name_en = "Test Item",
                 Name_fr = "Article de test",
-                Description = "Test item description",
-                Brand = "Test Brand",
-                Category = "Test Category",
+                Description_en = "Test Description EN",
+                Description_fr = "Test Description FR",
+                CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ImageUrls = new List<string>(),
+                ItemAttributes = new List<ItemAttribute>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false

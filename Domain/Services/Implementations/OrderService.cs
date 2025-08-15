@@ -638,33 +638,47 @@ WHERE ID = @ID";
                     return Result.Failure<DeleteOrderResponse>("Order not found.", StatusCodes.Status404NotFound);
                 }
 
-                // Delete related entities
-                var orderItems = await _orderItemRepository.FindByOrderIdAsync(orderId);
-                foreach (var orderItem in orderItems)
+                // Execute all database operations in a single transaction
+                using var connection = new SqlConnection(_connectionString);
+                await connection.OpenAsync();
+                using var transaction = connection.BeginTransaction();
+
+                try
                 {
-                    await _orderItemRepository.DeleteAsync(orderItem);
+                    // Delete child records first to respect foreign key constraints
+                    
+                    // Delete order items
+                    var deleteOrderItemsQuery = "DELETE FROM dbo.OrderItem WHERE OrderID = @orderId";
+                    await connection.ExecuteAsync(deleteOrderItemsQuery, new { orderId }, transaction);
+
+                    // Delete order addresses
+                    var deleteOrderAddressesQuery = "DELETE FROM dbo.OrderAddress WHERE OrderID = @orderId";
+                    await connection.ExecuteAsync(deleteOrderAddressesQuery, new { orderId }, transaction);
+
+                    // Delete order payment
+                    var deleteOrderPaymentQuery = "DELETE FROM dbo.OrderPayment WHERE OrderID = @orderId";
+                    await connection.ExecuteAsync(deleteOrderPaymentQuery, new { orderId }, transaction);
+
+                    // Delete the order itself
+                    var deleteOrderQuery = "DELETE FROM dbo.[Order] WHERE ID = @orderId";
+                    await connection.ExecuteAsync(deleteOrderQuery, new { orderId }, transaction);
+
+                    // Commit transaction - all operations succeeded
+                    transaction.Commit();
+
+                    return Result.Success(new DeleteOrderResponse
+                    {
+                        ID = order.ID,
+                        OrderNumber = order.OrderNumber,
+                        Message = "Order deleted successfully."
+                    });
                 }
-
-                var addresses = await _orderAddressRepository.FindByOrderIdAsync(orderId);
-                foreach (var address in addresses)
+                catch
                 {
-                    await _orderAddressRepository.DeleteAsync(address);
+                    // Rollback transaction on any failure
+                    transaction.Rollback();
+                    throw;
                 }
-
-                var payment = await _orderPaymentRepository.FindByOrderIdAsync(orderId);
-                if (payment != null)
-                {
-                    await _orderPaymentRepository.DeleteAsync(payment);
-                }
-
-                await _orderRepository.DeleteAsync(order);
-
-                return Result.Success(new DeleteOrderResponse
-                {
-                    ID = order.ID,
-                    OrderNumber = order.OrderNumber,
-                    Message = "Order deleted successfully."
-                });
             }
             catch (Exception ex)
             {

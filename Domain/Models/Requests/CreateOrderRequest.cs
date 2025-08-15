@@ -102,7 +102,7 @@ namespace Domain.Models.Requests
         public string? AddressLine2 { get; set; }
         public string? AddressLine3 { get; set; }
         public required string City { get; set; }
-        public string? ProvinceState { get; set; }
+        public required string ProvinceState { get; set; }
         public required string PostalCode { get; set; }
         public required string Country { get; set; }
 
@@ -121,6 +121,11 @@ namespace Domain.Models.Requests
             if (string.IsNullOrWhiteSpace(City))
             {
                 return Result.Failure("City is required.", StatusCodes.Status400BadRequest);
+            }
+
+            if (string.IsNullOrWhiteSpace(ProvinceState))
+            {
+                return Result.Failure("Province/State is required.", StatusCodes.Status400BadRequest);
             }
 
             if (string.IsNullOrWhiteSpace(PostalCode))

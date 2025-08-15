@@ -63,6 +63,7 @@ internal class Program
         builder.Services.AddScoped<ICompanyService, CompanyService>();
         builder.Services.AddScoped<IAddressService, AddressService>();
         builder.Services.AddScoped<IPaymentMethodService, PaymentMethodService>();
+        builder.Services.AddScoped<IOrderService, OrderService>();
         builder.Services.AddScoped<ITaxRatesService, TaxRatesService>();
 
         // Register Repositories
@@ -134,6 +135,48 @@ internal class Program
             var config = provider.GetRequiredService<IConfiguration>();
             var connectionString = config.GetConnectionString("DefaultConnection");
             return new ItemVariantAttributeRepository(connectionString);
+        });
+
+        builder.Services.AddScoped<IOrderRepository>(provider =>
+        {
+            var config = provider.GetRequiredService<IConfiguration>();
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            return new OrderRepository(connectionString);
+        });
+
+        builder.Services.AddScoped<IOrderItemRepository>(provider =>
+        {
+            var config = provider.GetRequiredService<IConfiguration>();
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            return new OrderItemRepository(connectionString);
+        });
+
+        builder.Services.AddScoped<IOrderAddressRepository>(provider =>
+        {
+            var config = provider.GetRequiredService<IConfiguration>();
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            return new OrderAddressRepository(connectionString);
+        });
+
+        builder.Services.AddScoped<IOrderPaymentRepository>(provider =>
+        {
+            var config = provider.GetRequiredService<IConfiguration>();
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            return new OrderPaymentRepository(connectionString);
+        });
+
+        builder.Services.AddScoped<IOrderStatusRepository>(provider =>
+        {
+            var config = provider.GetRequiredService<IConfiguration>();
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            return new OrderStatusRepository(connectionString);
+        });
+
+        builder.Services.AddScoped<IOrderItemStatusRepository>(provider =>
+        {
+            var config = provider.GetRequiredService<IConfiguration>();
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            return new OrderItemStatusRepository(connectionString);
         });
 
         // Add services to the container.

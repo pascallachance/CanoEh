@@ -74,9 +74,10 @@ internal class Program
             var orderStatusRepository = provider.GetRequiredService<IOrderStatusRepository>();
             var itemRepository = provider.GetRequiredService<IItemRepository>();
             var userRepository = provider.GetRequiredService<IUserRepository>();
+            var taxRatesService = provider.GetRequiredService<ITaxRatesService>();
             return new OrderService(orderRepository, orderItemRepository, orderAddressRepository, 
                                   orderPaymentRepository, orderStatusRepository, itemRepository, 
-                                  userRepository, connectionString);
+                                  userRepository, taxRatesService, connectionString);
         });
         builder.Services.AddScoped<ITaxRatesService, TaxRatesService>();
 

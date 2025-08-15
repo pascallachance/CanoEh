@@ -21,6 +21,7 @@ namespace Domain.Services.Implementations
         private readonly IOrderStatusRepository _orderStatusRepository;
         private readonly IItemRepository _itemRepository;
         private readonly IUserRepository _userRepository;
+        private readonly ITaxRatesService _taxRatesService;
         private readonly string _connectionString;
 
         public OrderService(
@@ -31,6 +32,7 @@ namespace Domain.Services.Implementations
             IOrderStatusRepository orderStatusRepository,
             IItemRepository itemRepository,
             IUserRepository userRepository,
+            ITaxRatesService taxRatesService,
             string connectionString)
         {
             _orderRepository = orderRepository;
@@ -40,6 +42,7 @@ namespace Domain.Services.Implementations
             _orderStatusRepository = orderStatusRepository;
             _itemRepository = itemRepository;
             _userRepository = userRepository;
+            _taxRatesService = taxRatesService;
             _connectionString = connectionString;
         }
 
@@ -115,10 +118,21 @@ namespace Domain.Services.Implementations
                     subtotal += orderItem.TotalPrice;
                 }
 
-                // Calculate tax and shipping (simplified - should be configurable)
-                decimal taxRate = 0.13m; // Example tax rate
+                // Calculate tax and shipping using tax rates from TaxRate table
+                decimal taxTotal = 0;
+                var taxRatesResult = await _taxRatesService.GetTaxRatesByLocationAsync(
+                    createRequest.BillingAddress.Country,
+                    createRequest.BillingAddress.ProvinceState);
+                
+                if (taxRatesResult.IsSuccess && taxRatesResult.Value != null)
+                {
+                    var activeTaxRates = taxRatesResult.Value.Where(tr => tr.IsActive);
+                    var totalTaxRate = activeTaxRates.Sum(tr => tr.Rate);
+                    taxTotal = subtotal * totalTaxRate;
+                }
+                // If no tax rates found, taxTotal remains 0 (no tax)
+
                 decimal shippingRate = 10.00m; // Example shipping rate
-                decimal taxTotal = subtotal * taxRate;
                 decimal shippingTotal = subtotal > 50 ? 0 : shippingRate; // Free shipping over $50
                 decimal grandTotal = subtotal + taxTotal + shippingTotal;
 
@@ -570,7 +584,27 @@ WHERE ID = @ID";
                         var orderItemsQuery = "SELECT * FROM dbo.OrderItem WHERE OrderID = @orderId";
                         var allOrderItems = await connection.QueryAsync<OrderItem>(orderItemsQuery, new { orderId = order.ID }, transaction);
                         order.Subtotal = allOrderItems.Sum(oi => oi.TotalPrice);
-                        order.TaxTotal = order.Subtotal * 0.13m; // Simplified tax calculation
+                        
+                        // Get billing address to calculate tax
+                        var billingAddressQuery = "SELECT * FROM dbo.OrderAddress WHERE OrderID = @orderId AND Type = 'Billing'";
+                        var billingAddress = await connection.QueryFirstOrDefaultAsync<OrderAddress>(billingAddressQuery, new { orderId = order.ID }, transaction);
+                        
+                        decimal taxTotal = 0;
+                        if (billingAddress != null)
+                        {
+                            var taxRatesResult = await _taxRatesService.GetTaxRatesByLocationAsync(
+                                billingAddress.Country,
+                                billingAddress.ProvinceState);
+                            
+                            if (taxRatesResult.IsSuccess && taxRatesResult.Value != null)
+                            {
+                                var activeTaxRates = taxRatesResult.Value.Where(tr => tr.IsActive);
+                                var totalTaxRate = activeTaxRates.Sum(tr => tr.Rate);
+                                taxTotal = order.Subtotal * totalTaxRate;
+                            }
+                        }
+                        
+                        order.TaxTotal = taxTotal;
                         order.GrandTotal = order.Subtotal + order.TaxTotal + order.ShippingTotal;
                     }
 

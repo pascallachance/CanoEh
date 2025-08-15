@@ -1,6 +1,8 @@
 using Domain.Models.Requests;
+using Domain.Models.Responses;
 using Domain.Services.Implementations;
 using Domain.Services.Interfaces;
+using Helpers.Common;
 using Infrastructure.Data;
 using Infrastructure.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
@@ -18,6 +20,7 @@ namespace API.Tests
         private readonly Mock<IOrderStatusRepository> _mockOrderStatusRepository;
         private readonly Mock<IItemRepository> _mockItemRepository;
         private readonly Mock<IUserRepository> _mockUserRepository;
+        private readonly Mock<ITaxRatesService> _mockTaxRatesService;
         private readonly string _connectionString;
 
         public OrderServiceTransactionShould()
@@ -29,6 +32,7 @@ namespace API.Tests
             _mockOrderStatusRepository = new Mock<IOrderStatusRepository>();
             _mockItemRepository = new Mock<IItemRepository>();
             _mockUserRepository = new Mock<IUserRepository>();
+            _mockTaxRatesService = new Mock<ITaxRatesService>();
             _connectionString = "Server=(localdb)\\MSSQLLocalDB;Database=CanoEhTest;Trusted_Connection=true;TrustServerCertificate=true;";
         }
 
@@ -108,6 +112,10 @@ namespace API.Tests
             _mockUserRepository.Setup(x => x.ExistsAsync(userId)).ReturnsAsync(true);
             _mockOrderStatusRepository.Setup(x => x.FindByStatusCodeAsync("Pending")).ReturnsAsync(orderStatus);
             _mockItemRepository.Setup(x => x.GetByIdAsync(itemId)).ReturnsAsync(item);
+            
+            // Setup tax rates service to return empty list (no tax)
+            _mockTaxRatesService.Setup(x => x.GetTaxRatesByLocationAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(Result.Success(Enumerable.Empty<GetTaxRateResponse>()));
 
             var orderService = new OrderService(
                 _mockOrderRepository.Object,
@@ -117,6 +125,7 @@ namespace API.Tests
                 _mockOrderStatusRepository.Object,
                 _mockItemRepository.Object,
                 _mockUserRepository.Object,
+                _mockTaxRatesService.Object,
                 _connectionString);
 
             // Act & Assert
@@ -169,6 +178,7 @@ namespace API.Tests
                 _mockOrderStatusRepository.Object,
                 _mockItemRepository.Object,
                 _mockUserRepository.Object,
+                _mockTaxRatesService.Object,
                 _connectionString);
 
             // Act
@@ -259,6 +269,7 @@ namespace API.Tests
                 _mockOrderStatusRepository.Object,
                 _mockItemRepository.Object,
                 _mockUserRepository.Object,
+                _mockTaxRatesService.Object,
                 _connectionString);
 
             // Act
@@ -295,6 +306,7 @@ namespace API.Tests
                 _mockOrderStatusRepository.Object,
                 _mockItemRepository.Object,
                 _mockUserRepository.Object,
+                _mockTaxRatesService.Object,
                 _connectionString);
 
             // Act
@@ -343,6 +355,7 @@ namespace API.Tests
                 _mockOrderStatusRepository.Object,
                 _mockItemRepository.Object,
                 _mockUserRepository.Object,
+                _mockTaxRatesService.Object,
                 _connectionString);
 
             // Act
@@ -376,6 +389,7 @@ namespace API.Tests
                 _mockOrderStatusRepository.Object,
                 _mockItemRepository.Object,
                 _mockUserRepository.Object,
+                _mockTaxRatesService.Object,
                 _connectionString);
 
             // Act
@@ -410,6 +424,7 @@ namespace API.Tests
                 _mockOrderStatusRepository.Object,
                 _mockItemRepository.Object,
                 _mockUserRepository.Object,
+                _mockTaxRatesService.Object,
                 _connectionString);
 
             // Act

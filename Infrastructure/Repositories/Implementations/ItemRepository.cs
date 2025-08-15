@@ -73,6 +73,8 @@ INSERT INTO dbo.ItemVariants (
     ProductIdentifierValue,
     ImageUrls,
     ThumbnailUrl,
+    ItemVariantName_en,
+    ItemVariantName_fr,
     Deleted)
 VALUES (
     @Id,
@@ -84,6 +86,8 @@ VALUES (
     @ProductIdentifierValue,
     @ImageUrls,
     @ThumbnailUrl,
+    @ItemVariantName_en,
+    @ItemVariantName_fr,
     @Deleted)";
 
                     foreach (var variant in entity.Variants)
@@ -105,6 +109,8 @@ VALUES (
                             variant.ProductIdentifierValue,
                             variant.ImageUrls,
                             variant.ThumbnailUrl,
+                            variant.ItemVariantName_en,
+                            variant.ItemVariantName_fr,
                             variant.Deleted
                         };
 
@@ -170,7 +176,7 @@ VALUES (
             }
             
             var query = @"
-SELECT i.*, v.Id as VariantId, v.ItemId as VariantItemId, v.Price, v.StockQuantity, v.Sku, v.ProductIdentifierType, v.ProductIdentifierValue, v.ImageUrls, v.ThumbnailUrl, v.Deleted as VariantDeleted
+SELECT i.*, v.Id as VariantId, v.ItemId as VariantItemId, v.Price, v.StockQuantity, v.Sku, v.ProductIdentifierType, v.ProductIdentifierValue, v.ImageUrls, v.ThumbnailUrl, v.ItemVariantName_en, v.ItemVariantName_fr, v.Deleted as VariantDeleted
 FROM dbo.Items i
 LEFT JOIN dbo.ItemVariants v ON i.Id = v.ItemId AND v.Deleted = 0
 WHERE i.Deleted = 0
@@ -210,7 +216,7 @@ ORDER BY i.Id";
             }
             
             var query = @"
-SELECT i.*, v.Id as VariantId, v.ItemId as VariantItemId, v.Price, v.StockQuantity, v.Sku, v.ProductIdentifierType, v.ProductIdentifierValue, v.ImageUrls, v.ThumbnailUrl, v.Deleted as VariantDeleted
+SELECT i.*, v.Id as VariantId, v.ItemId as VariantItemId, v.Price, v.StockQuantity, v.Sku, v.ProductIdentifierType, v.ProductIdentifierValue, v.ImageUrls, v.ThumbnailUrl, v.ItemVariantName_en, v.ItemVariantName_fr, v.Deleted as VariantDeleted
 FROM dbo.Items i
 LEFT JOIN dbo.ItemVariants v ON i.Id = v.ItemId AND v.Deleted = 0
 WHERE i.Id = @id
@@ -294,11 +300,11 @@ IF EXISTS (SELECT 1 FROM dbo.ItemVariants WHERE Id = @Id)
     UPDATE dbo.ItemVariants 
     SET Price = @Price, StockQuantity = @StockQuantity, 
         Sku = @Sku, ProductIdentifierType = @ProductIdentifierType, ProductIdentifierValue = @ProductIdentifierValue,
-        ImageUrls = @ImageUrls, ThumbnailUrl = @ThumbnailUrl, Deleted = @Deleted
+        ImageUrls = @ImageUrls, ThumbnailUrl = @ThumbnailUrl, ItemVariantName_en = @ItemVariantName_en, ItemVariantName_fr = @ItemVariantName_fr, Deleted = @Deleted
     WHERE Id = @Id
 ELSE
-    INSERT INTO dbo.ItemVariants (Id, ItemId, Price, StockQuantity, Sku, ProductIdentifierType, ProductIdentifierValue, ImageUrls, ThumbnailUrl, Deleted)
-    VALUES (@Id, @ItemId, @Price, @StockQuantity, @Sku, @ProductIdentifierType, @ProductIdentifierValue, @ImageUrls, @ThumbnailUrl, @Deleted)";
+    INSERT INTO dbo.ItemVariants (Id, ItemId, Price, StockQuantity, Sku, ProductIdentifierType, ProductIdentifierValue, ImageUrls, ThumbnailUrl, ItemVariantName_en, ItemVariantName_fr, Deleted)
+    VALUES (@Id, @ItemId, @Price, @StockQuantity, @Sku, @ProductIdentifierType, @ProductIdentifierValue, @ImageUrls, @ThumbnailUrl, @ItemVariantName_en, @ItemVariantName_fr, @Deleted)";
 
                     var currentVariantIds = new HashSet<Guid>();
 
@@ -323,6 +329,8 @@ ELSE
                             variant.ProductIdentifierValue,
                             variant.ImageUrls,
                             variant.ThumbnailUrl,
+                            variant.ItemVariantName_en,
+                            variant.ItemVariantName_fr,
                             variant.Deleted
                         };
 
@@ -366,7 +374,7 @@ ELSE
             }
             
             var query = @"
-SELECT i.*, v.Id as VariantId, v.ItemId as VariantItemId, v.Price, v.StockQuantity, v.Sku, v.ProductIdentifierType, v.ProductIdentifierValue, v.ImageUrls, v.ThumbnailUrl, v.Deleted as VariantDeleted
+SELECT i.*, v.Id as VariantId, v.ItemId as VariantItemId, v.Price, v.StockQuantity, v.Sku, v.ProductIdentifierType, v.ProductIdentifierValue, v.ImageUrls, v.ThumbnailUrl, v.ItemVariantName_en, v.ItemVariantName_fr, v.Deleted as VariantDeleted
 FROM dbo.Items i
 LEFT JOIN dbo.ItemVariants v ON i.Id = v.ItemId AND v.Deleted = 0
 WHERE i.Id = @id AND i.Deleted = 0
@@ -455,6 +463,8 @@ WHERE Id = @variantId AND ItemId = @itemId AND Deleted = 0";
                 ProductIdentifierValue = dto.ProductIdentifierValue,
                 ImageUrls = dto.ImageUrls,
                 ThumbnailUrl = dto.ThumbnailUrl,
+                ItemVariantName_en = dto.ItemVariantName_en,
+                ItemVariantName_fr = dto.ItemVariantName_fr,
                 ItemVariantAttributes = new List<ItemVariantAttribute>(), // Will be populated separately when needed
                 Deleted = dto.VariantDeleted
             };
@@ -485,6 +495,8 @@ WHERE Id = @variantId AND ItemId = @itemId AND Deleted = 0";
             public string? ProductIdentifierValue { get; set; }
             public string? ImageUrls { get; set; }
             public string? ThumbnailUrl { get; set; }
+            public string? ItemVariantName_en { get; set; }
+            public string? ItemVariantName_fr { get; set; }
             public bool VariantDeleted { get; set; }
         }
     }

@@ -1,4 +1,6 @@
+using System.Data;
 using System.Diagnostics;
+using Dapper;
 using Domain.Models.Requests;
 using Domain.Models.Responses;
 using Domain.Services.Interfaces;
@@ -6,6 +8,7 @@ using Helpers.Common;
 using Infrastructure.Data;
 using Infrastructure.Repositories.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Data.SqlClient;
 
 namespace Domain.Services.Implementations
 {
@@ -18,6 +21,7 @@ namespace Domain.Services.Implementations
         private readonly IOrderStatusRepository _orderStatusRepository;
         private readonly IItemRepository _itemRepository;
         private readonly IUserRepository _userRepository;
+        private readonly string _connectionString;
 
         public OrderService(
             IOrderRepository orderRepository,
@@ -26,7 +30,8 @@ namespace Domain.Services.Implementations
             IOrderPaymentRepository orderPaymentRepository,
             IOrderStatusRepository orderStatusRepository,
             IItemRepository itemRepository,
-            IUserRepository userRepository)
+            IUserRepository userRepository,
+            string connectionString)
         {
             _orderRepository = orderRepository;
             _orderItemRepository = orderItemRepository;
@@ -35,6 +40,7 @@ namespace Domain.Services.Implementations
             _orderStatusRepository = orderStatusRepository;
             _itemRepository = itemRepository;
             _userRepository = userRepository;
+            _connectionString = connectionString;
         }
 
         public async Task<Result<CreateOrderResponse>> CreateOrderAsync(Guid userId, CreateOrderRequest createRequest)
@@ -131,16 +137,7 @@ namespace Domain.Services.Implementations
                     CreatedAt = DateTime.UtcNow
                 };
 
-                // Save order
-                var createdOrder = await _orderRepository.AddAsync(order);
-
-                // Save order items
-                foreach (var orderItem in orderItems)
-                {
-                    await _orderItemRepository.AddAsync(orderItem);
-                }
-
-                // Save addresses
+                // Create addresses
                 var shippingAddress = new OrderAddress
                 {
                     ID = Guid.NewGuid(),
@@ -171,10 +168,7 @@ namespace Domain.Services.Implementations
                     Country = createRequest.BillingAddress.Country
                 };
 
-                await _orderAddressRepository.AddAsync(shippingAddress);
-                await _orderAddressRepository.AddAsync(billingAddress);
-
-                // Save payment
+                // Create payment record
                 var payment = new OrderPayment
                 {
                     ID = Guid.NewGuid(),
@@ -184,60 +178,199 @@ namespace Domain.Services.Implementations
                     Provider = createRequest.Payment.Provider
                 };
 
-                await _orderPaymentRepository.AddAsync(payment);
+                // Execute all database operations in a single transaction
+                using var connection = new SqlConnection(_connectionString);
+                await connection.OpenAsync();
+                using var transaction = connection.BeginTransaction();
 
-                // TODO: Decrease stock quantities - this should be done in a transaction
-                // For now, this is simplified and should be enhanced with proper transaction handling
-
-                return Result.Success(new CreateOrderResponse
+                try
                 {
-                    ID = createdOrder.ID,
-                    UserID = createdOrder.UserID,
-                    OrderNumber = createdOrder.OrderNumber,
-                    OrderDate = createdOrder.OrderDate,
-                    StatusCode = pendingStatus.StatusCode,
-                    StatusName_en = pendingStatus.Name_en,
-                    StatusName_fr = pendingStatus.Name_fr,
-                    Subtotal = createdOrder.Subtotal,
-                    TaxTotal = createdOrder.TaxTotal,
-                    ShippingTotal = createdOrder.ShippingTotal,
-                    GrandTotal = createdOrder.GrandTotal,
-                    Notes = createdOrder.Notes,
-                    CreatedAt = createdOrder.CreatedAt,
-                    UpdatedAt = createdOrder.UpdatedAt,
-                    OrderItems = orderItems.Select(oi => new OrderItemResponse
+                    // Insert order
+                    var orderQuery = @"
+INSERT INTO dbo.[Order] (
+    ID,
+    UserID,
+    OrderDate,
+    StatusID,
+    Subtotal,
+    TaxTotal,
+    ShippingTotal,
+    GrandTotal,
+    Notes,
+    CreatedAt,
+    UpdatedAt)
+OUTPUT INSERTED.OrderNumber
+VALUES (
+    @ID,
+    @UserID,
+    @OrderDate,
+    @StatusID,
+    @Subtotal,
+    @TaxTotal,
+    @ShippingTotal,
+    @GrandTotal,
+    @Notes,
+    @CreatedAt,
+    @UpdatedAt)";
+
+                    var orderNumber = await connection.QuerySingleAsync<int>(orderQuery, order, transaction);
+                    order.OrderNumber = orderNumber;
+
+                    // Insert order items
+                    var orderItemQuery = @"
+INSERT INTO dbo.OrderItem (
+    ID,
+    OrderID,
+    ItemID,
+    ItemVariantID,
+    Name_en,
+    Name_fr,
+    VariantName_en,
+    VariantName_fr,
+    Quantity,
+    UnitPrice,
+    TotalPrice,
+    Status)
+VALUES (
+    @ID,
+    @OrderID,
+    @ItemID,
+    @ItemVariantID,
+    @Name_en,
+    @Name_fr,
+    @VariantName_en,
+    @VariantName_fr,
+    @Quantity,
+    @UnitPrice,
+    @TotalPrice,
+    @Status)";
+
+                    foreach (var orderItem in orderItems)
                     {
-                        ID = oi.ID,
-                        OrderID = oi.OrderID,
-                        ItemID = oi.ItemID,
-                        ItemVariantID = oi.ItemVariantID,
-                        Name_en = oi.Name_en,
-                        Name_fr = oi.Name_fr,
-                        VariantName_en = oi.VariantName_en,
-                        VariantName_fr = oi.VariantName_fr,
-                        Quantity = oi.Quantity,
-                        UnitPrice = oi.UnitPrice,
-                        TotalPrice = oi.TotalPrice,
-                        Status = oi.Status,
-                        DeliveredAt = oi.DeliveredAt,
-                        OnHoldReason = oi.OnHoldReason
-                    }).ToList(),
-                    Addresses = new List<OrderAddressResponse>
-                    {
-                        MapToOrderAddressResponse(shippingAddress),
-                        MapToOrderAddressResponse(billingAddress)
-                    },
-                    Payment = new OrderPaymentResponse
-                    {
-                        ID = payment.ID,
-                        OrderID = payment.OrderID,
-                        PaymentMethodID = payment.PaymentMethodID,
-                        Amount = payment.Amount,
-                        Provider = payment.Provider,
-                        ProviderReference = payment.ProviderReference,
-                        PaidAt = payment.PaidAt
+                        await connection.ExecuteAsync(orderItemQuery, orderItem, transaction);
                     }
-                });
+
+                    // Insert addresses
+                    var addressQuery = @"
+INSERT INTO dbo.OrderAddress (
+    ID,
+    OrderID,
+    Type,
+    FullName,
+    AddressLine1,
+    AddressLine2,
+    AddressLine3,
+    City,
+    ProvinceState,
+    PostalCode,
+    Country)
+VALUES (
+    @ID,
+    @OrderID,
+    @Type,
+    @FullName,
+    @AddressLine1,
+    @AddressLine2,
+    @AddressLine3,
+    @City,
+    @ProvinceState,
+    @PostalCode,
+    @Country)";
+
+                    await connection.ExecuteAsync(addressQuery, shippingAddress, transaction);
+                    await connection.ExecuteAsync(addressQuery, billingAddress, transaction);
+
+                    // Insert payment
+                    var paymentQuery = @"
+INSERT INTO dbo.OrderPayment (
+    ID,
+    OrderID,
+    PaymentMethodID,
+    Amount,
+    Provider,
+    ProviderReference,
+    PaidAt)
+VALUES (
+    @ID,
+    @OrderID,
+    @PaymentMethodID,
+    @Amount,
+    @Provider,
+    @ProviderReference,
+    @PaidAt)";
+
+                    await connection.ExecuteAsync(paymentQuery, payment, transaction);
+
+                    // Decrease stock quantities
+                    var stockUpdateQuery = @"
+UPDATE dbo.ItemVariants 
+SET StockQuantity = StockQuantity - @Quantity 
+WHERE Id = @ItemVariantID";
+
+                    foreach (var orderItem in orderItems)
+                    {
+                        await connection.ExecuteAsync(stockUpdateQuery, new { orderItem.Quantity, orderItem.ItemVariantID }, transaction);
+                    }
+
+                    // Commit transaction - all operations succeeded
+                    transaction.Commit();
+
+                    return Result.Success(new CreateOrderResponse
+                    {
+                        ID = order.ID,
+                        UserID = order.UserID,
+                        OrderNumber = order.OrderNumber,
+                        OrderDate = order.OrderDate,
+                        StatusCode = pendingStatus.StatusCode,
+                        StatusName_en = pendingStatus.Name_en,
+                        StatusName_fr = pendingStatus.Name_fr,
+                        Subtotal = order.Subtotal,
+                        TaxTotal = order.TaxTotal,
+                        ShippingTotal = order.ShippingTotal,
+                        GrandTotal = order.GrandTotal,
+                        Notes = order.Notes,
+                        CreatedAt = order.CreatedAt,
+                        UpdatedAt = order.UpdatedAt,
+                        OrderItems = orderItems.Select(oi => new OrderItemResponse
+                        {
+                            ID = oi.ID,
+                            OrderID = oi.OrderID,
+                            ItemID = oi.ItemID,
+                            ItemVariantID = oi.ItemVariantID,
+                            Name_en = oi.Name_en,
+                            Name_fr = oi.Name_fr,
+                            VariantName_en = oi.VariantName_en,
+                            VariantName_fr = oi.VariantName_fr,
+                            Quantity = oi.Quantity,
+                            UnitPrice = oi.UnitPrice,
+                            TotalPrice = oi.TotalPrice,
+                            Status = oi.Status,
+                            DeliveredAt = oi.DeliveredAt,
+                            OnHoldReason = oi.OnHoldReason
+                        }).ToList(),
+                        Addresses = new List<OrderAddressResponse>
+                        {
+                            MapToOrderAddressResponse(shippingAddress),
+                            MapToOrderAddressResponse(billingAddress)
+                        },
+                        Payment = new OrderPaymentResponse
+                        {
+                            ID = payment.ID,
+                            OrderID = payment.OrderID,
+                            PaymentMethodID = payment.PaymentMethodID,
+                            Amount = payment.Amount,
+                            Provider = payment.Provider,
+                            ProviderReference = payment.ProviderReference,
+                            PaidAt = payment.PaidAt
+                        }
+                    });
+                }
+                catch
+                {
+                    // Rollback transaction on any failure
+                    transaction.Rollback();
+                    throw;
+                }
             }
             catch (Exception ex)
             {

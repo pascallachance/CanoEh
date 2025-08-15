@@ -63,7 +63,21 @@ internal class Program
         builder.Services.AddScoped<ICompanyService, CompanyService>();
         builder.Services.AddScoped<IAddressService, AddressService>();
         builder.Services.AddScoped<IPaymentMethodService, PaymentMethodService>();
-        builder.Services.AddScoped<IOrderService, OrderService>();
+        builder.Services.AddScoped<IOrderService>(provider =>
+        {
+            var config = provider.GetRequiredService<IConfiguration>();
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            var orderRepository = provider.GetRequiredService<IOrderRepository>();
+            var orderItemRepository = provider.GetRequiredService<IOrderItemRepository>();
+            var orderAddressRepository = provider.GetRequiredService<IOrderAddressRepository>();
+            var orderPaymentRepository = provider.GetRequiredService<IOrderPaymentRepository>();
+            var orderStatusRepository = provider.GetRequiredService<IOrderStatusRepository>();
+            var itemRepository = provider.GetRequiredService<IItemRepository>();
+            var userRepository = provider.GetRequiredService<IUserRepository>();
+            return new OrderService(orderRepository, orderItemRepository, orderAddressRepository, 
+                                  orderPaymentRepository, orderStatusRepository, itemRepository, 
+                                  userRepository, connectionString);
+        });
         builder.Services.AddScoped<ITaxRatesService, TaxRatesService>();
 
         // Register Repositories

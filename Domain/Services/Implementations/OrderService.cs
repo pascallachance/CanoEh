@@ -493,26 +493,19 @@ WHERE Id = @ItemVariantID";
                     return Result.Failure<UpdateOrderResponse>("Order not found.", StatusCodes.Status404NotFound);
                 }
 
-                // Update status if provided
+                // Validate status if provided
+                OrderStatus? newStatus = null;
                 if (!string.IsNullOrWhiteSpace(updateRequest.StatusCode))
                 {
-                    var status = await _orderStatusRepository.FindByStatusCodeAsync(updateRequest.StatusCode);
-                    if (status == null)
+                    newStatus = await _orderStatusRepository.FindByStatusCodeAsync(updateRequest.StatusCode);
+                    if (newStatus == null)
                     {
                         return Result.Failure<UpdateOrderResponse>($"Order status '{updateRequest.StatusCode}' not found.", StatusCodes.Status400BadRequest);
                     }
-                    order.StatusID = status.ID;
                 }
 
-                // Update notes if provided
-                if (updateRequest.Notes != null)
-                {
-                    order.Notes = updateRequest.Notes;
-                }
-
-                order.UpdatedAt = DateTime.UtcNow;
-
-                // Update order items if provided
+                // Validate order items if provided
+                var orderItemsToUpdate = new List<(OrderItem orderItem, UpdateOrderItemRequest updateRequest)>();
                 if (updateRequest.OrderItems != null)
                 {
                     foreach (var orderItemUpdate in updateRequest.OrderItems)
@@ -522,41 +515,104 @@ WHERE Id = @ItemVariantID";
                         {
                             return Result.Failure<UpdateOrderResponse>($"Order item with ID {orderItemUpdate.ID} not found in this order.", StatusCodes.Status404NotFound);
                         }
-
-                        if (orderItemUpdate.Quantity.HasValue)
-                        {
-                            // Recalculate total price
-                            orderItem.Quantity = orderItemUpdate.Quantity.Value;
-                            orderItem.TotalPrice = orderItem.UnitPrice * orderItem.Quantity;
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(orderItemUpdate.Status))
-                        {
-                            orderItem.Status = orderItemUpdate.Status;
-                            if (orderItemUpdate.Status == "Delivered")
-                            {
-                                orderItem.DeliveredAt = DateTime.UtcNow;
-                            }
-                        }
-
-                        if (orderItemUpdate.OnHoldReason != null)
-                        {
-                            orderItem.OnHoldReason = orderItemUpdate.OnHoldReason;
-                        }
-
-                        await _orderItemRepository.UpdateAsync(orderItem);
+                        orderItemsToUpdate.Add((orderItem, orderItemUpdate));
                     }
-
-                    // Recalculate order totals if quantities changed
-                    var allOrderItems = await _orderItemRepository.FindByOrderIdAsync(order.ID);
-                    order.Subtotal = allOrderItems.Sum(oi => oi.TotalPrice);
-                    order.TaxTotal = order.Subtotal * 0.13m; // Simplified tax calculation
-                    order.GrandTotal = order.Subtotal + order.TaxTotal + order.ShippingTotal;
                 }
 
-                await _orderRepository.UpdateAsync(order);
+                // Execute all database operations in a single transaction
+                using var connection = new SqlConnection(_connectionString);
+                await connection.OpenAsync();
+                using var transaction = connection.BeginTransaction();
 
-                return await BuildUpdateOrderResponse(order);
+                try
+                {
+                    // Update order items if provided
+                    if (updateRequest.OrderItems != null)
+                    {
+                        foreach (var (orderItem, orderItemUpdate) in orderItemsToUpdate)
+                        {
+                            if (orderItemUpdate.Quantity.HasValue)
+                            {
+                                // Recalculate total price
+                                orderItem.Quantity = orderItemUpdate.Quantity.Value;
+                                orderItem.TotalPrice = orderItem.UnitPrice * orderItem.Quantity;
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(orderItemUpdate.Status))
+                            {
+                                orderItem.Status = orderItemUpdate.Status;
+                                if (orderItemUpdate.Status == "Delivered")
+                                {
+                                    orderItem.DeliveredAt = DateTime.UtcNow;
+                                }
+                            }
+
+                            if (orderItemUpdate.OnHoldReason != null)
+                            {
+                                orderItem.OnHoldReason = orderItemUpdate.OnHoldReason;
+                            }
+
+                            // Update order item in transaction
+                            var orderItemQuery = @"
+UPDATE dbo.OrderItem SET
+    Quantity = @Quantity,
+    UnitPrice = @UnitPrice,
+    TotalPrice = @TotalPrice,
+    Status = @Status,
+    DeliveredAt = @DeliveredAt,
+    OnHoldReason = @OnHoldReason
+WHERE ID = @ID";
+
+                            await connection.ExecuteAsync(orderItemQuery, orderItem, transaction);
+                        }
+
+                        // Recalculate order totals if quantities changed
+                        var orderItemsQuery = "SELECT * FROM dbo.OrderItem WHERE OrderID = @orderId";
+                        var allOrderItems = await connection.QueryAsync<OrderItem>(orderItemsQuery, new { orderId = order.ID }, transaction);
+                        order.Subtotal = allOrderItems.Sum(oi => oi.TotalPrice);
+                        order.TaxTotal = order.Subtotal * 0.13m; // Simplified tax calculation
+                        order.GrandTotal = order.Subtotal + order.TaxTotal + order.ShippingTotal;
+                    }
+
+                    // Update status if provided
+                    if (newStatus != null)
+                    {
+                        order.StatusID = newStatus.ID;
+                    }
+
+                    // Update notes if provided
+                    if (updateRequest.Notes != null)
+                    {
+                        order.Notes = updateRequest.Notes;
+                    }
+
+                    order.UpdatedAt = DateTime.UtcNow;
+
+                    // Update order in transaction
+                    var orderQuery = @"
+UPDATE dbo.[Order] SET
+    StatusID = @StatusID,
+    Subtotal = @Subtotal,
+    TaxTotal = @TaxTotal,
+    ShippingTotal = @ShippingTotal,
+    GrandTotal = @GrandTotal,
+    Notes = @Notes,
+    UpdatedAt = @UpdatedAt
+WHERE ID = @ID";
+
+                    await connection.ExecuteAsync(orderQuery, order, transaction);
+
+                    // Commit transaction - all operations succeeded
+                    transaction.Commit();
+
+                    return await BuildUpdateOrderResponse(order);
+                }
+                catch
+                {
+                    // Rollback transaction on any failure
+                    transaction.Rollback();
+                    throw;
+                }
             }
             catch (Exception ex)
             {

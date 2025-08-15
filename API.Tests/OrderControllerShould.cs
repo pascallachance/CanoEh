@@ -55,6 +55,7 @@ namespace API.Tests
                     FullName = "John Doe",
                     AddressLine1 = "123 Main St",
                     City = "Anytown",
+                    ProvinceState = "New York",
                     PostalCode = "12345",
                     Country = "USA"
                 },
@@ -63,6 +64,7 @@ namespace API.Tests
                     FullName = "John Doe",
                     AddressLine1 = "123 Main St",
                     City = "Anytown",
+                    ProvinceState = "New York",
                     PostalCode = "12345",
                     Country = "USA"
                 },
@@ -136,6 +138,7 @@ namespace API.Tests
                     FullName = "John Doe",
                     AddressLine1 = "123 Main St",
                     City = "Anytown",
+                    ProvinceState = "New York",
                     PostalCode = "12345",
                     Country = "USA"
                 },
@@ -144,6 +147,7 @@ namespace API.Tests
                     FullName = "John Doe",
                     AddressLine1 = "123 Main St",
                     City = "Anytown",
+                    ProvinceState = "New York",
                     PostalCode = "12345",
                     Country = "USA"
                 },

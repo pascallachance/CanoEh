@@ -97,8 +97,8 @@ namespace Domain.Services.Implementations
                         ItemVariantID = orderItemRequest.ItemVariantID,
                         Name_en = item.Name_en,
                         Name_fr = item.Name_fr,
-                        VariantName_en = GetVariantName(variant, "en"),
-                        VariantName_fr = GetVariantName(variant, "fr"),
+                        VariantName_en = variant.ItemVariantName_en,
+                        VariantName_fr = variant.ItemVariantName_fr,
                         Quantity = orderItemRequest.Quantity,
                         UnitPrice = variant.Price,
                         TotalPrice = variant.Price * orderItemRequest.Quantity,
@@ -545,12 +545,6 @@ namespace Domain.Services.Implementations
         }
 
         // Helper methods
-        private static string GetVariantName(ItemVariant variant, string language)
-        {
-            // This is simplified - in a real scenario, you'd build variant names from attributes
-            return variant.Sku; // Placeholder
-        }
-
         private static OrderAddressResponse MapToOrderAddressResponse(OrderAddress address)
         {
             return new OrderAddressResponse

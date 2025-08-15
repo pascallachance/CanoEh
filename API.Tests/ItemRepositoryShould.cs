@@ -67,6 +67,8 @@ namespace API.Tests
                 Sku = "TEST-SKU-001",
                 ThumbnailUrl = "https://example.com/thumb1.jpg",
                 ImageUrls = "https://example.com/img1.jpg,https://example.com/img2.jpg",
+                ItemVariantName_en = "Test Variant English",
+                ItemVariantName_fr = "Test Variant French",
                 Deleted = false
             };
 
@@ -80,6 +82,8 @@ namespace API.Tests
             Assert.Equal("TEST-SKU-001", variant.Sku);
             Assert.NotNull(variant.ThumbnailUrl);
             Assert.Equal("https://example.com/thumb1.jpg", variant.ThumbnailUrl);
+            Assert.Equal("Test Variant English", variant.ItemVariantName_en);
+            Assert.Equal("Test Variant French", variant.ItemVariantName_fr);
             Assert.False(variant.Deleted);
         }
 
@@ -110,6 +114,8 @@ namespace API.Tests
             Assert.Empty(variant.ItemVariantAttributes);
             Assert.Equal(0m, variant.Price);
             Assert.Equal(0, variant.StockQuantity);
+            Assert.Null(variant.ItemVariantName_en);
+            Assert.Null(variant.ItemVariantName_fr);
             Assert.False(variant.Deleted);
         }
     }

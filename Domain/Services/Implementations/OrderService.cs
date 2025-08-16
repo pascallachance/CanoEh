@@ -121,8 +121,8 @@ namespace Domain.Services.Implementations
                 // Calculate tax and shipping using tax rates from TaxRate table
                 decimal taxTotal = 0;
                 var taxRatesResult = await _taxRatesService.GetTaxRatesByLocationAsync(
-                    createRequest.BillingAddress.Country,
-                    createRequest.BillingAddress.ProvinceState);
+                    createRequest.ShippingAddress.Country,
+                    createRequest.ShippingAddress.ProvinceState);
                 
                 if (taxRatesResult.IsSuccess && taxRatesResult.Value != null)
                 {
@@ -585,16 +585,16 @@ WHERE ID = @ID";
                         var allOrderItems = await connection.QueryAsync<OrderItem>(orderItemsQuery, new { orderId = order.ID }, transaction);
                         order.Subtotal = allOrderItems.Sum(oi => oi.TotalPrice);
                         
-                        // Get billing address to calculate tax
-                        var billingAddressQuery = "SELECT * FROM dbo.OrderAddress WHERE OrderID = @orderId AND Type = 'Billing'";
-                        var billingAddress = await connection.QueryFirstOrDefaultAsync<OrderAddress>(billingAddressQuery, new { orderId = order.ID }, transaction);
+                        // Get shipping address to calculate tax
+                        var shippingAddressQuery = "SELECT * FROM dbo.OrderAddress WHERE OrderID = @orderId AND Type = 'Shipping'";
+                        var shippingAddress = await connection.QueryFirstOrDefaultAsync<OrderAddress>(shippingAddressQuery, new { orderId = order.ID }, transaction);
                         
                         decimal taxTotal = 0;
-                        if (billingAddress != null)
+                        if (shippingAddress != null)
                         {
                             var taxRatesResult = await _taxRatesService.GetTaxRatesByLocationAsync(
-                                billingAddress.Country,
-                                billingAddress.ProvinceState);
+                                shippingAddress.Country,
+                                shippingAddress.ProvinceState);
                             
                             if (taxRatesResult.IsSuccess && taxRatesResult.Value != null)
                             {

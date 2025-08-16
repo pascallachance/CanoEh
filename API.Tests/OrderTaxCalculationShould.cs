@@ -35,7 +35,7 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task CreateOrderAsync_ShouldUseCorrectTaxRates_WhenTaxRatesFoundForBillingAddress()
+        public async Task CreateOrderAsync_ShouldUseCorrectTaxRates_WhenTaxRatesFoundForShippingAddress()
         {
             // Arrange
             var userId = Guid.NewGuid();
@@ -159,7 +159,7 @@ namespace API.Tests
             Assert.Equal(13.00m, result.Value.TaxTotal);
             Assert.Equal(123.00m, result.Value.GrandTotal); // $100 + $13 + $10 shipping - $10 (free shipping over $50) = $113
             
-            // Verify the tax service was called with the correct billing address
+            // Verify the tax service was called with the correct shipping address
             _mockTaxRatesService.Verify(x => x.GetTaxRatesByLocationAsync("Canada", "ON"), Times.Once);
         }
 
@@ -263,8 +263,148 @@ namespace API.Tests
             Assert.Equal(0.00m, result.Value.TaxTotal);
             Assert.Equal(100.00m, result.Value.GrandTotal); // $100 + $0 tax + $0 shipping (free over $50)
             
-            // Verify the tax service was called with the correct billing address
+            // Verify the tax service was called with the correct shipping address
             _mockTaxRatesService.Verify(x => x.GetTaxRatesByLocationAsync("Unknown Country", "Unknown State"), Times.Once);
+        }
+
+        [Fact]
+        public async Task CreateOrderAsync_ShouldUseShippingAddressNotBillingAddress_ForTaxCalculation()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var itemId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+
+            var orderStatus = new OrderStatus
+            {
+                ID = 1,
+                StatusCode = "Pending",
+                Name_en = "Pending",
+                Name_fr = "En attente"
+            };
+
+            var item = new Item
+            {
+                Id = itemId,
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Variants = new List<ItemVariant>
+                {
+                    new ItemVariant
+                    {
+                        Id = variantId,
+                        ItemVariantName_en = "Test Variant",
+                        ItemVariantName_fr = "Variante de test",
+                        Price = 100.00m,
+                        StockQuantity = 5
+                    }
+                }
+            };
+
+            var createRequest = new CreateOrderRequest
+            {
+                OrderItems = new List<CreateOrderItemRequest>
+                {
+                    new CreateOrderItemRequest
+                    {
+                        ItemID = itemId,
+                        ItemVariantID = variantId,
+                        Quantity = 1
+                    }
+                },
+                ShippingAddress = new CreateOrderAddressRequest
+                {
+                    FullName = "John Doe",
+                    AddressLine1 = "123 Main St",
+                    City = "Toronto",
+                    ProvinceState = "ON",
+                    PostalCode = "M5V 3A8",
+                    Country = "Canada"
+                },
+                BillingAddress = new CreateOrderAddressRequest
+                {
+                    FullName = "John Doe",
+                    AddressLine1 = "456 Different St",
+                    City = "Vancouver",
+                    ProvinceState = "BC",
+                    PostalCode = "V5K 1A1",
+                    Country = "Canada"
+                },
+                Payment = new CreateOrderPaymentRequest
+                {
+                    PaymentMethodID = Guid.NewGuid(),
+                    Provider = "Credit Card"
+                }
+            };
+
+            // Setup mock tax rates for ON (shipping address) - different from BC (billing address)
+            var ontarioTaxRates = new List<GetTaxRateResponse>
+            {
+                new GetTaxRateResponse
+                {
+                    ID = Guid.NewGuid(),
+                    Name_en = "HST",
+                    Name_fr = "TVH",
+                    Country = "Canada",
+                    ProvinceState = "ON",
+                    Rate = 0.13m,
+                    IsActive = true
+                }
+            };
+
+            var bcTaxRates = new List<GetTaxRateResponse>
+            {
+                new GetTaxRateResponse
+                {
+                    ID = Guid.NewGuid(),
+                    Name_en = "PST + GST",
+                    Name_fr = "TVP + TPS",
+                    Country = "Canada",
+                    ProvinceState = "BC",
+                    Rate = 0.12m,
+                    IsActive = true
+                }
+            };
+
+            // Setup mocks
+            _mockUserRepository.Setup(x => x.ExistsAsync(userId)).ReturnsAsync(true);
+            _mockOrderStatusRepository.Setup(x => x.FindByStatusCodeAsync("Pending")).ReturnsAsync(orderStatus);
+            _mockItemRepository.Setup(x => x.GetByIdAsync(itemId)).ReturnsAsync(item);
+            
+            // Setup tax rates for shipping address (ON) - this should be called
+            _mockTaxRatesService.Setup(x => x.GetTaxRatesByLocationAsync("Canada", "ON"))
+                .ReturnsAsync(Result.Success(ontarioTaxRates.AsEnumerable()));
+            
+            // Setup tax rates for billing address (BC) - this should NOT be called
+            _mockTaxRatesService.Setup(x => x.GetTaxRatesByLocationAsync("Canada", "BC"))
+                .ReturnsAsync(Result.Success(bcTaxRates.AsEnumerable()));
+
+            var orderService = new OrderService(
+                _mockOrderRepository.Object,
+                _mockOrderItemRepository.Object,
+                _mockOrderAddressRepository.Object,
+                _mockOrderPaymentRepository.Object,
+                _mockOrderStatusRepository.Object,
+                _mockItemRepository.Object,
+                _mockUserRepository.Object,
+                _mockTaxRatesService.Object,
+                _connectionString);
+
+            // Act
+            var result = await orderService.CreateOrderAsync(userId, createRequest);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            
+            // Verify tax calculation uses ON rate (13%) not BC rate (12%)
+            Assert.Equal(100.00m, result.Value.Subtotal);
+            Assert.Equal(13.00m, result.Value.TaxTotal); // $100 * 13% = $13 (ON tax, not BC tax)
+            Assert.Equal(113.00m, result.Value.GrandTotal); // $100 + $13 + $0 shipping (free over $50)
+            
+            // Verify the tax service was called with the shipping address (ON), not billing address (BC)
+            _mockTaxRatesService.Verify(x => x.GetTaxRatesByLocationAsync("Canada", "ON"), Times.Once);
+            _mockTaxRatesService.Verify(x => x.GetTaxRatesByLocationAsync("Canada", "BC"), Times.Never);
         }
     }
 }

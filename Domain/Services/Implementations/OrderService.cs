@@ -586,15 +586,28 @@ WHERE Id = @ItemVariantID";
                                 orderItem.Quantity = newQuantity;
                                 orderItem.TotalPrice = orderItem.UnitPrice * orderItem.Quantity;
 
-                                // Adjust stock quantity: decrease stock if quantity increased, increase stock if quantity decreased
-                                if (quantityDifference != 0)
+                                // Adjust stock quantity based on quantity change
+                                if (newQuantity > oldQuantity)
                                 {
+                                    // Quantity increased - subtract additional quantity from stock
+                                    var additionalQuantity = newQuantity - oldQuantity;
                                     var stockUpdateQuery = @"
 UPDATE dbo.ItemVariants 
-SET StockQuantity = StockQuantity - @QuantityDifference 
+SET StockQuantity = StockQuantity - @AdditionalQuantity 
 WHERE Id = @ItemVariantID";
 
-                                    await connection.ExecuteAsync(stockUpdateQuery, new { QuantityDifference = quantityDifference, orderItem.ItemVariantID }, transaction);
+                                    await connection.ExecuteAsync(stockUpdateQuery, new { AdditionalQuantity = additionalQuantity, orderItem.ItemVariantID }, transaction);
+                                }
+                                else if (newQuantity < oldQuantity)
+                                {
+                                    // Quantity decreased - add the returned quantity back to stock
+                                    var returnedQuantity = oldQuantity - newQuantity;
+                                    var stockUpdateQuery = @"
+UPDATE dbo.ItemVariants 
+SET StockQuantity = StockQuantity + @ReturnedQuantity 
+WHERE Id = @ItemVariantID";
+
+                                    await connection.ExecuteAsync(stockUpdateQuery, new { ReturnedQuantity = returnedQuantity, orderItem.ItemVariantID }, transaction);
                                 }
                             }
 

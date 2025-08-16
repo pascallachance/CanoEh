@@ -543,13 +543,59 @@ WHERE Id = @ItemVariantID";
                     // Update order items if provided
                     if (updateRequest.OrderItems != null)
                     {
+                        // First pass: validate stock quantities for all items before making any changes
                         foreach (var (orderItem, orderItemUpdate) in orderItemsToUpdate)
                         {
                             if (orderItemUpdate.Quantity.HasValue)
                             {
-                                // Recalculate total price
-                                orderItem.Quantity = orderItemUpdate.Quantity.Value;
+                                var oldQuantity = orderItem.Quantity;
+                                var newQuantity = orderItemUpdate.Quantity.Value;
+                                var quantityDifference = newQuantity - oldQuantity;
+
+                                // If increasing quantity, check if there's enough stock
+                                if (quantityDifference > 0)
+                                {
+                                    // Get current stock quantity for this variant
+                                    var stockQuery = "SELECT StockQuantity FROM dbo.ItemVariants WHERE Id = @ItemVariantID";
+                                    var currentStock = await connection.QueryFirstOrDefaultAsync<int>(stockQuery, new { orderItem.ItemVariantID }, transaction);
+                                    
+                                    if (currentStock < quantityDifference)
+                                    {
+                                        // Get item details for better error message
+                                        var itemQuery = "SELECT Name_en FROM dbo.Items WHERE Id = @ItemID";
+                                        var itemName = await connection.QueryFirstOrDefaultAsync<string>(itemQuery, new { orderItem.ItemID }, transaction);
+                                        
+                                        return Result.Failure<UpdateOrderResponse>(
+                                            $"Insufficient stock for item '{itemName ?? "Unknown"}'. Available: {currentStock}, Additional requested: {quantityDifference}",
+                                            StatusCodes.Status400BadRequest);
+                                    }
+                                }
+                            }
+                        }
+
+                        // Second pass: update quantities and adjust stock
+                        foreach (var (orderItem, orderItemUpdate) in orderItemsToUpdate)
+                        {
+                            if (orderItemUpdate.Quantity.HasValue)
+                            {
+                                var oldQuantity = orderItem.Quantity;
+                                var newQuantity = orderItemUpdate.Quantity.Value;
+                                var quantityDifference = newQuantity - oldQuantity;
+
+                                // Update order item quantity and recalculate total price
+                                orderItem.Quantity = newQuantity;
                                 orderItem.TotalPrice = orderItem.UnitPrice * orderItem.Quantity;
+
+                                // Adjust stock quantity: decrease stock if quantity increased, increase stock if quantity decreased
+                                if (quantityDifference != 0)
+                                {
+                                    var stockUpdateQuery = @"
+UPDATE dbo.ItemVariants 
+SET StockQuantity = StockQuantity - @QuantityDifference 
+WHERE Id = @ItemVariantID";
+
+                                    await connection.ExecuteAsync(stockUpdateQuery, new { QuantityDifference = quantityDifference, orderItem.ItemVariantID }, transaction);
+                                }
                             }
 
                             if (!string.IsNullOrWhiteSpace(orderItemUpdate.Status))

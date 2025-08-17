@@ -12,39 +12,26 @@ using Microsoft.Data.SqlClient;
 
 namespace Domain.Services.Implementations
 {
-    public class OrderService : IOrderService
+    public class OrderService(
+        IOrderRepository orderRepository,
+        IOrderItemRepository orderItemRepository,
+        IOrderAddressRepository orderAddressRepository,
+        IOrderPaymentRepository orderPaymentRepository,
+        IOrderStatusRepository orderStatusRepository,
+        IItemRepository itemRepository,
+        IUserRepository userRepository,
+        ITaxRatesService taxRatesService,
+        string connectionString) : IOrderService
     {
-        private readonly IOrderRepository _orderRepository;
-        private readonly IOrderItemRepository _orderItemRepository;
-        private readonly IOrderAddressRepository _orderAddressRepository;
-        private readonly IOrderPaymentRepository _orderPaymentRepository;
-        private readonly IOrderStatusRepository _orderStatusRepository;
-        private readonly IItemRepository _itemRepository;
-        private readonly IUserRepository _userRepository;
-        private readonly ITaxRatesService _taxRatesService;
-        private readonly string _connectionString;
-
-        public OrderService(
-            IOrderRepository orderRepository,
-            IOrderItemRepository orderItemRepository,
-            IOrderAddressRepository orderAddressRepository,
-            IOrderPaymentRepository orderPaymentRepository,
-            IOrderStatusRepository orderStatusRepository,
-            IItemRepository itemRepository,
-            IUserRepository userRepository,
-            ITaxRatesService taxRatesService,
-            string connectionString)
-        {
-            _orderRepository = orderRepository;
-            _orderItemRepository = orderItemRepository;
-            _orderAddressRepository = orderAddressRepository;
-            _orderPaymentRepository = orderPaymentRepository;
-            _orderStatusRepository = orderStatusRepository;
-            _itemRepository = itemRepository;
-            _userRepository = userRepository;
-            _taxRatesService = taxRatesService;
-            _connectionString = connectionString;
-        }
+        private readonly IOrderRepository _orderRepository = orderRepository;
+        private readonly IOrderItemRepository _orderItemRepository = orderItemRepository;
+        private readonly IOrderAddressRepository _orderAddressRepository = orderAddressRepository;
+        private readonly IOrderPaymentRepository _orderPaymentRepository = orderPaymentRepository;
+        private readonly IOrderStatusRepository _orderStatusRepository = orderStatusRepository;
+        private readonly IItemRepository _itemRepository = itemRepository;
+        private readonly IUserRepository _userRepository = userRepository;
+        private readonly ITaxRatesService _taxRatesService = taxRatesService;
+        private readonly string _connectionString = connectionString;
 
         public async Task<Result<CreateOrderResponse>> CreateOrderAsync(Guid userId, CreateOrderRequest createRequest)
         {
@@ -345,7 +332,7 @@ WHERE Id = @ItemVariantID";
                         Notes = order.Notes,
                         CreatedAt = order.CreatedAt,
                         UpdatedAt = order.UpdatedAt,
-                        OrderItems = orderItems.Select(oi => new OrderItemResponse
+                        OrderItems = [.. orderItems.Select(oi => new OrderItemResponse
                         {
                             ID = oi.ID,
                             OrderID = oi.OrderID,
@@ -361,12 +348,12 @@ WHERE Id = @ItemVariantID";
                             Status = oi.Status,
                             DeliveredAt = oi.DeliveredAt,
                             OnHoldReason = oi.OnHoldReason
-                        }).ToList(),
-                        Addresses = new List<OrderAddressResponse>
-                        {
+                        })],
+                        Addresses =
+                        [
                             MapToOrderAddressResponse(shippingAddress),
                             MapToOrderAddressResponse(billingAddress)
-                        },
+                        ],
                         Payment = new OrderPaymentResponse
                         {
                             ID = payment.ID,
@@ -884,7 +871,7 @@ WHERE ID = @ID";
                     Notes = order.Notes,
                     CreatedAt = order.CreatedAt,
                     UpdatedAt = order.UpdatedAt,
-                    OrderItems = orderItems.Select(oi => new OrderItemResponse
+                    OrderItems = [.. orderItems.Select(oi => new OrderItemResponse
                     {
                         ID = oi.ID,
                         OrderID = oi.OrderID,
@@ -900,8 +887,8 @@ WHERE ID = @ID";
                         Status = oi.Status,
                         DeliveredAt = oi.DeliveredAt,
                         OnHoldReason = oi.OnHoldReason
-                    }).ToList(),
-                    Addresses = addresses.Select(MapToOrderAddressResponse).ToList(),
+                    })],
+                    Addresses = [.. addresses.Select(MapToOrderAddressResponse)],
                     Payment = payment != null ? new OrderPaymentResponse
                     {
                         ID = payment.ID,

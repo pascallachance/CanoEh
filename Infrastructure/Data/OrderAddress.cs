@@ -10,7 +10,7 @@ namespace Infrastructure.Data
         public string? AddressLine2 { get; set; }
         public string? AddressLine3 { get; set; }
         public required string City { get; set; } = string.Empty;
-        public required string ProvinceState { get; set; }
+        public string? ProvinceState { get; set; }
         public required string PostalCode { get; set; } = string.Empty;
         public required string Country { get; set; } = string.Empty;
     }

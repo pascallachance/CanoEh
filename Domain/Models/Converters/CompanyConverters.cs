@@ -15,7 +15,24 @@ namespace Domain.Models.Converters
                 Description = company.Description,
                 Logo = company.Logo,
                 CreatedAt = company.CreatedAt,
-                UpdatedAt = company.UpdatedAt
+                UpdatedAt = company.UpdatedAt,
+                CountryOfCitizenship = company.CountryOfCitizenship,
+                FullBirthName = company.FullBirthName,
+                CountryOfBirth = company.CountryOfBirth,
+                BirthDate = company.BirthDate,
+                IdentityDocumentType = company.IdentityDocumentType,
+                IdentityDocument = company.IdentityDocument,
+                BankDocument = company.BankDocument,
+                FacturationDocument = company.FacturationDocument,
+                CompanyPhone = company.CompanyPhone,
+                CompanyType = company.CompanyType,
+                Address1 = company.Address1,
+                Address2 = company.Address2,
+                Address3 = company.Address3,
+                City = company.City,
+                ProvinceState = company.ProvinceState,
+                Country = company.Country,
+                PostalCode = company.PostalCode
             };
         }
 
@@ -29,7 +46,24 @@ namespace Domain.Models.Converters
                 Description = company.Description,
                 Logo = company.Logo,
                 CreatedAt = company.CreatedAt,
-                UpdatedAt = company.UpdatedAt
+                UpdatedAt = company.UpdatedAt,
+                CountryOfCitizenship = company.CountryOfCitizenship,
+                FullBirthName = company.FullBirthName,
+                CountryOfBirth = company.CountryOfBirth,
+                BirthDate = company.BirthDate,
+                IdentityDocumentType = company.IdentityDocumentType,
+                IdentityDocument = company.IdentityDocument,
+                BankDocument = company.BankDocument,
+                FacturationDocument = company.FacturationDocument,
+                CompanyPhone = company.CompanyPhone,
+                CompanyType = company.CompanyType,
+                Address1 = company.Address1,
+                Address2 = company.Address2,
+                Address3 = company.Address3,
+                City = company.City,
+                ProvinceState = company.ProvinceState,
+                Country = company.Country,
+                PostalCode = company.PostalCode
             };
         }
 
@@ -43,7 +77,24 @@ namespace Domain.Models.Converters
                 Description = company.Description,
                 Logo = company.Logo,
                 CreatedAt = company.CreatedAt,
-                UpdatedAt = company.UpdatedAt
+                UpdatedAt = company.UpdatedAt,
+                CountryOfCitizenship = company.CountryOfCitizenship,
+                FullBirthName = company.FullBirthName,
+                CountryOfBirth = company.CountryOfBirth,
+                BirthDate = company.BirthDate,
+                IdentityDocumentType = company.IdentityDocumentType,
+                IdentityDocument = company.IdentityDocument,
+                BankDocument = company.BankDocument,
+                FacturationDocument = company.FacturationDocument,
+                CompanyPhone = company.CompanyPhone,
+                CompanyType = company.CompanyType,
+                Address1 = company.Address1,
+                Address2 = company.Address2,
+                Address3 = company.Address3,
+                City = company.City,
+                ProvinceState = company.ProvinceState,
+                Country = company.Country,
+                PostalCode = company.PostalCode
             };
         }
 

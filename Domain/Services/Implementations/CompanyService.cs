@@ -54,7 +54,24 @@ namespace Domain.Services.Implementations
                     Description = newCompany.Description,
                     Logo = newCompany.Logo,
                     CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = null
+                    UpdatedAt = null,
+                    CountryOfCitizenship = newCompany.CountryOfCitizenship,
+                    FullBirthName = newCompany.FullBirthName,
+                    CountryOfBirth = newCompany.CountryOfBirth,
+                    BirthDate = newCompany.BirthDate,
+                    IdentityDocumentType = newCompany.IdentityDocumentType,
+                    IdentityDocument = newCompany.IdentityDocument,
+                    BankDocument = newCompany.BankDocument,
+                    FacturationDocument = newCompany.FacturationDocument,
+                    CompanyPhone = newCompany.CompanyPhone,
+                    CompanyType = newCompany.CompanyType,
+                    Address1 = newCompany.Address1,
+                    Address2 = newCompany.Address2,
+                    Address3 = newCompany.Address3,
+                    City = newCompany.City,
+                    ProvinceState = newCompany.ProvinceState,
+                    Country = newCompany.Country,
+                    PostalCode = newCompany.PostalCode
                 });
 
                 CreateCompanyResponse createdCompany = company.ConvertToCreateCompanyResponse();
@@ -156,6 +173,23 @@ namespace Domain.Services.Implementations
                 companyToUpdate.Description = updateRequest.Description;
                 companyToUpdate.Logo = updateRequest.Logo;
                 companyToUpdate.UpdatedAt = DateTime.UtcNow;
+                companyToUpdate.CountryOfCitizenship = updateRequest.CountryOfCitizenship;
+                companyToUpdate.FullBirthName = updateRequest.FullBirthName;
+                companyToUpdate.CountryOfBirth = updateRequest.CountryOfBirth;
+                companyToUpdate.BirthDate = updateRequest.BirthDate;
+                companyToUpdate.IdentityDocumentType = updateRequest.IdentityDocumentType;
+                companyToUpdate.IdentityDocument = updateRequest.IdentityDocument;
+                companyToUpdate.BankDocument = updateRequest.BankDocument;
+                companyToUpdate.FacturationDocument = updateRequest.FacturationDocument;
+                companyToUpdate.CompanyPhone = updateRequest.CompanyPhone;
+                companyToUpdate.CompanyType = updateRequest.CompanyType;
+                companyToUpdate.Address1 = updateRequest.Address1;
+                companyToUpdate.Address2 = updateRequest.Address2;
+                companyToUpdate.Address3 = updateRequest.Address3;
+                companyToUpdate.City = updateRequest.City;
+                companyToUpdate.ProvinceState = updateRequest.ProvinceState;
+                companyToUpdate.Country = updateRequest.Country;
+                companyToUpdate.PostalCode = updateRequest.PostalCode;
 
                 var updatedCompany = await _companyRepository.UpdateAsync(companyToUpdate);
 

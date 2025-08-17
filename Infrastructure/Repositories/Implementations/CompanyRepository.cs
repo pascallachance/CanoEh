@@ -20,7 +20,24 @@ INSERT INTO dbo.Company (
     Description, 
     Logo, 
     CreatedAt, 
-    UpdatedAt)
+    UpdatedAt,
+    CountryOfCitizenship,
+    FullBirthName,
+    CountryOfBirth,
+    BirthDate,
+    IdentityDocumentType,
+    IdentityDocument,
+    BankDocument,
+    FacturationDocument,
+    CompanyPhone,
+    CompanyType,
+    Address1,
+    Address2,
+    Address3,
+    City,
+    ProvinceState,
+    Country,
+    PostalCode)
 OUTPUT INSERTED.Id
 VALUES (
     @OwnerID,
@@ -28,7 +45,24 @@ VALUES (
     @Description, 
     @Logo, 
     @CreatedAt, 
-    @UpdatedAt)";
+    @UpdatedAt,
+    @CountryOfCitizenship,
+    @FullBirthName,
+    @CountryOfBirth,
+    @BirthDate,
+    @IdentityDocumentType,
+    @IdentityDocument,
+    @BankDocument,
+    @FacturationDocument,
+    @CompanyPhone,
+    @CompanyType,
+    @Address1,
+    @Address2,
+    @Address3,
+    @City,
+    @ProvinceState,
+    @Country,
+    @PostalCode)";
 
             var parameters = new
             {
@@ -37,7 +71,24 @@ VALUES (
                 entity.Description,
                 entity.Logo,
                 entity.CreatedAt,
-                entity.UpdatedAt
+                entity.UpdatedAt,
+                entity.CountryOfCitizenship,
+                entity.FullBirthName,
+                entity.CountryOfBirth,
+                entity.BirthDate,
+                entity.IdentityDocumentType,
+                entity.IdentityDocument,
+                entity.BankDocument,
+                entity.FacturationDocument,
+                entity.CompanyPhone,
+                entity.CompanyType,
+                entity.Address1,
+                entity.Address2,
+                entity.Address3,
+                entity.City,
+                entity.ProvinceState,
+                entity.Country,
+                entity.PostalCode
             };
             Guid newCompanyId = await dbConnection.ExecuteScalarAsync<Guid>(query, parameters);
             entity.Id = newCompanyId; 
@@ -119,7 +170,24 @@ SET
     Description = @Description,
     Logo = @Logo,
     CreatedAt = @CreatedAt,
-    UpdatedAt = @UpdatedAt
+    UpdatedAt = @UpdatedAt,
+    CountryOfCitizenship = @CountryOfCitizenship,
+    FullBirthName = @FullBirthName,
+    CountryOfBirth = @CountryOfBirth,
+    BirthDate = @BirthDate,
+    IdentityDocumentType = @IdentityDocumentType,
+    IdentityDocument = @IdentityDocument,
+    BankDocument = @BankDocument,
+    FacturationDocument = @FacturationDocument,
+    CompanyPhone = @CompanyPhone,
+    CompanyType = @CompanyType,
+    Address1 = @Address1,
+    Address2 = @Address2,
+    Address3 = @Address3,
+    City = @City,
+    ProvinceState = @ProvinceState,
+    Country = @Country,
+    PostalCode = @PostalCode
 WHERE Id = @Id";
 
             var parameters = new
@@ -130,7 +198,24 @@ WHERE Id = @Id";
                 entity.Description,
                 entity.Logo,
                 entity.CreatedAt,
-                entity.UpdatedAt
+                entity.UpdatedAt,
+                entity.CountryOfCitizenship,
+                entity.FullBirthName,
+                entity.CountryOfBirth,
+                entity.BirthDate,
+                entity.IdentityDocumentType,
+                entity.IdentityDocument,
+                entity.BankDocument,
+                entity.FacturationDocument,
+                entity.CompanyPhone,
+                entity.CompanyType,
+                entity.Address1,
+                entity.Address2,
+                entity.Address3,
+                entity.City,
+                entity.ProvinceState,
+                entity.Country,
+                entity.PostalCode
             };
             await dbConnection.ExecuteAsync(query, parameters);
             return entity;

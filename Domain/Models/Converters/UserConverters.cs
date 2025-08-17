@@ -72,5 +72,14 @@ namespace Domain.Models.Converters
                 ValidEmail = user.ValidEmail,
             };
         }
+
+        public static RestoreUserResponse ConvertToRestoreUserResponse(this User user)
+        {
+            return new RestoreUserResponse
+            {
+                Email = user.Email.Split('@')[0], // Extract username part of email
+                Message = "Your account has been successfully restored."
+            };
+        }
     }
 }

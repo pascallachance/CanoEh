@@ -548,10 +548,7 @@ namespace Domain.Services.Implementations
                     return Result.Failure<RestoreUserResponse>("Failed to restore user account.", 500);
                 }
 
-                var response = new RestoreUserResponse
-                {
-                    Email = user.Email
-                };
+                var response = user.ConvertToRestoreUserResponse();
 
                 Debug.WriteLine($"User {user.Email} has been successfully restored");
                 return Result.Success(response);

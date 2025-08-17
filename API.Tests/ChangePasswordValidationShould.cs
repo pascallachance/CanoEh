@@ -39,7 +39,7 @@ namespace API.Tests
             // Arrange
             var request = new ChangePasswordRequest
             {
-                Email = "testuser123",
+                Email = "testuser123@example.com",
                 CurrentPassword = "",
                 NewPassword = "newpassword456",
                 ConfirmNewPassword = "newpassword456"
@@ -60,7 +60,7 @@ namespace API.Tests
             // Arrange
             var request = new ChangePasswordRequest
             {
-                Email = "testuser123",
+                Email = "testuser123@example.com",
                 CurrentPassword = "oldpassword123",
                 NewPassword = "short",
                 ConfirmNewPassword = "short"
@@ -81,7 +81,7 @@ namespace API.Tests
             // Arrange
             var request = new ChangePasswordRequest
             {
-                Email = "testuser123",
+                Email = "testuser123@example.com",
                 CurrentPassword = "oldpassword123",
                 NewPassword = "newpassword456",
                 ConfirmNewPassword = "differentpassword"
@@ -102,7 +102,7 @@ namespace API.Tests
             // Arrange
             var request = new ChangePasswordRequest
             {
-                Email = "testuser123",
+                Email = "testuser123@example.com",
                 CurrentPassword = "samepassword123",
                 NewPassword = "samepassword123",
                 ConfirmNewPassword = "samepassword123"
@@ -123,7 +123,7 @@ namespace API.Tests
             // Arrange
             var request = new ChangePasswordRequest
             {
-                Email = "testuser123",
+                Email = "testuser123@example.com",
                 CurrentPassword = "oldpassword123",
                 NewPassword = "newpassword456",
                 ConfirmNewPassword = "newpassword456"

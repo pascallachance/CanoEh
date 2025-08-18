@@ -177,7 +177,14 @@ app.MapControllers();
 app.MapGet("/seller", (HttpContext context) =>
 {
     // Replace with appropriate logic or return value
-    return Results.Ok(null);
+    // Return a placeholder seller object until real data is available
+    var placeholderSeller = new
+    {
+        Id = 0,
+        Name = "Placeholder Seller",
+        Email = "placeholder@seller.com"
+    };
+    return Results.Ok(placeholderSeller);
 })
 .WithName("seller")
 .WithOpenApi();

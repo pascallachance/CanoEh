@@ -8,7 +8,6 @@ function App() {
 
     }, []);
 
-
     return (
         <div>
             <h1 id="tableLabel">CanoEh! Seller</h1>

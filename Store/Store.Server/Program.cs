@@ -174,39 +174,16 @@ app.UseAuthorization();
 // Map controllers (includes LoginController)
 app.MapControllers();
 
-var summaries = new[]
+app.MapGet("/seller", (HttpContext context) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new Store.Server.Models.WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    // Replace with appropriate logic or return value
+    return Results.Ok(null);
 })
-.WithName("GetWeatherForecast")
+.WithName("seller")
 .WithOpenApi();
+
 
 app.MapFallbackToFile("/index.html");
 
 app.Run();
 
-namespace Store.Server.Models
-{
-    internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-    {
-        public int TemperatureF => (int)(TemperatureC * 9 / 5) + 32;
-    }
-}
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => (int)(TemperatureC * 9 / 5) + 32;
-}

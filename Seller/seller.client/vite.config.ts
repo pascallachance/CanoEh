@@ -12,7 +12,7 @@ const baseFolder =
         ? `${env.APPDATA}/ASP.NET/https`
         : `${env.HOME}/.aspnet/https`;
 
-const certificateName = "store.client";
+const certificateName = "seller.client";
 const certFilePath = path.join(baseFolder, `${certificateName}.pem`);
 const keyFilePath = path.join(baseFolder, `${certificateName}.key`);
 
@@ -35,7 +35,7 @@ if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
 }
 
 const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}` :
-    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'https://localhost:7039';
+    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'https://localhost:7122';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -50,14 +50,9 @@ export default defineConfig({
             '^/seller': {
                 target,
                 secure: false
-            },
-            '^/api': {
-                target: 'http://localhost:5199',
-                secure: false,
-                changeOrigin: true
             }
         },
-        port: parseInt(env.DEV_SERVER_PORT || '64941'),
+        port: parseInt(env.DEV_SERVER_PORT || '62209'),
         https: {
             key: fs.readFileSync(keyFilePath),
             cert: fs.readFileSync(certFilePath),

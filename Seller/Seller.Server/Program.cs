@@ -21,7 +21,7 @@ app.UseHttpsRedirection();
 
 app.MapGet("/seller", (HttpContext context) =>
 {
-    return Results.Ok(null);
+    return Results.Ok(new {});
 })
 .WithName("seller")
 .WithOpenApi();

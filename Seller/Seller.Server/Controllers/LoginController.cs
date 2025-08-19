@@ -87,7 +87,12 @@ namespace Store.Server.Controllers
         private string GenerateJwtToken(string email)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
-            var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Secret"] ?? "YourSecretKeyHereForDevelopment123456789012345678901234567890");
+            var secret = jwtSettings["Secret"];
+            if (string.IsNullOrEmpty(secret))
+            {
+                throw new InvalidOperationException("JWT secret key is not configured. Please set JwtSettings:Secret in your configuration.");
+            }
+            var secretKey = Encoding.UTF8.GetBytes(secret);
 
             var claims = new[]
             {

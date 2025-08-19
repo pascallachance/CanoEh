@@ -43,22 +43,13 @@ internal class Program
                 };
             });
 
-        // Add CORS policy for Store app
-        builder.Services.AddCors(options =>
-        {
-            options.AddDefaultPolicy(policy =>
-                policy.WithOrigins("https://localhost:64941") // Frontend dev server
-                      .AllowAnyHeader()
-                      .AllowAnyMethod()
-                      .AllowCredentials());
-        });
 
-        // Add CORS policy for Seller app
+        // Replace the AllowFrontend policy with both origins
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowFrontend", policy =>
             {
-                policy.WithOrigins("https://localhost:62209") // Frontend dev server
+                policy.WithOrigins("https://localhost:64941", "https://localhost:62209")
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .AllowCredentials();

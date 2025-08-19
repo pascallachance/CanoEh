@@ -13,7 +13,8 @@ app.UseStaticFiles();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
+    // Specify the overload explicitly to resolve ambiguity
+    app.UseSwagger(options => { }); // Use the overload with SwaggerOptions
     app.UseSwaggerUI();
 }
 
@@ -21,7 +22,7 @@ app.UseHttpsRedirection();
 
 app.MapGet("/seller", (HttpContext context) =>
 {
-    return Results.Ok(new {});
+    return Results.Ok(new { });
 })
 .WithName("seller")
 .WithOpenApi();

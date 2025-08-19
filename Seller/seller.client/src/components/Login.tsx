@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './Login.css';
 
 interface LoginRequest {
@@ -46,7 +47,7 @@ function Login({ onLoginSuccess }: LoginProps) {
                 email,
                 password
             };
-            const response = await fetch('https://localhost:7182/api/Login/login', {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/Login/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -137,10 +138,12 @@ function Login({ onLoginSuccess }: LoginProps) {
                     </button>
                     <div className="separator"></div>
                     <div className="other-options">
-                        <a href="/CreateUser" className="other-options">
+                        <Link to="/CreateUser" className="other-options">
                             Create account?
-                        </a>
-                        <a href="/RestorePassword">Forgot Password?</a>
+                        </Link>
+                        <Link to="/RestorePassword">
+                            Forgot Password?
+                        </Link>
                     </div>
                 </form>
             </div>

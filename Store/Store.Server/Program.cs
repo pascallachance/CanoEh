@@ -2,7 +2,6 @@ using System.Security.Claims;
 using System.Text;
 using Domain.Services.Implementations;
 using Domain.Services.Interfaces;
-using Helpers.Common;
 using Infrastructure.Configuration;
 using Infrastructure.Repositories.Implementations;
 using Infrastructure.Repositories.Interfaces;

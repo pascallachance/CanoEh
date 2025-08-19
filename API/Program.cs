@@ -2,7 +2,6 @@ using System.Security.Claims;
 using System.Text;
 using Domain.Services.Implementations;
 using Domain.Services.Interfaces;
-using Helpers.Common;
 using Infrastructure.Configuration;
 using Infrastructure.Repositories.Implementations;
 using Infrastructure.Repositories.Interfaces;
@@ -44,13 +43,26 @@ internal class Program
                 };
             });
 
+        // Add CORS policy for Store app
         builder.Services.AddCors(options =>
         {
             options.AddDefaultPolicy(policy =>
-                policy.WithOrigins("https://localhost:64941") // <-- Add your React app's URL here
+                policy.WithOrigins("https://localhost:64941") // Frontend dev server
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .AllowCredentials());
+        });
+
+        // Add CORS policy for Seller app
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowFrontend", policy =>
+            {
+                policy.WithOrigins("https://localhost:62209") // Frontend dev server
+                      .AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials();
+            });
         });
 
         // Register services
@@ -241,7 +253,7 @@ internal class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.UseCors();
+        app.UseCors("AllowFrontend");
 
         app.MapControllers();
         app.MapDefaultControllerRoute();

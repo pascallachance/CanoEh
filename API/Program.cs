@@ -44,7 +44,7 @@ internal class Program
             });
 
 
-        // Replace the AllowFrontend policy with both origins
+        // Add CORS policy for both Store and Seller frontend apps
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowFrontend", policy =>

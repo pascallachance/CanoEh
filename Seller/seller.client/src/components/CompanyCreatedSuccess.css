@@ -1,0 +1,193 @@
+.company-success-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+}
+
+.company-success-content {
+    background: white;
+    border-radius: 12px;
+    padding: 3rem;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 2rem auto;
+    animation: successPulse 2s infinite;
+}
+
+.success-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+@keyframes successPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.company-success-content h1 {
+    color: #27ae60;
+    margin-bottom: 1.5rem;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.success-message {
+    color: #333;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.success-message strong {
+    color: #27ae60;
+}
+
+.company-info {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.company-info h3 {
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.company-info p {
+    color: #666;
+    margin-bottom: 0;
+    line-height: 1.5;
+}
+
+.next-steps {
+    text-align: left;
+    margin-bottom: 2.5rem;
+}
+
+.next-steps h3 {
+    color: #333;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.next-steps ul {
+    list-style: none;
+    padding: 0;
+}
+
+.next-steps li {
+    color: #666;
+    margin-bottom: 0.75rem;
+    padding-left: 1.5rem;
+    position: relative;
+    line-height: 1.5;
+}
+
+.next-steps li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #27ae60;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.success-actions {
+    margin-bottom: 1.5rem;
+}
+
+.continue-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 1rem 3rem;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 250px;
+}
+
+.continue-btn:hover {
+    background: #2980b9;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+.company-id {
+    color: #999;
+    font-size: 0.9rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .company-success-content {
+        padding: 2rem;
+        margin: 1rem;
+    }
+    
+    .company-success-content h1 {
+        font-size: 2rem;
+    }
+    
+    .success-message {
+        font-size: 1.1rem;
+    }
+    
+    .success-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .continue-btn {
+        width: 100%;
+        max-width: 300px;
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .company-success-container {
+        padding: 1rem;
+    }
+    
+    .company-success-content {
+        padding: 1.5rem;
+    }
+    
+    .company-success-content h1 {
+        font-size: 1.8rem;
+    }
+    
+    .success-message {
+        font-size: 1rem;
+    }
+    
+    .continue-btn {
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+    }
+}

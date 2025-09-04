@@ -1,6 +1,0 @@
-@Seller.Server_HostAddress = http://localhost:5247
-
-GET {{Seller.Server_HostAddress}}/seller/
-Accept: application/json
-
-###

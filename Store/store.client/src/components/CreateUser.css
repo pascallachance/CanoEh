@@ -4,7 +4,7 @@
     align-items: center;
     min-height: 100vh;
     min-width: 50vh;
-    background-color: #f000;
+    background: linear-gradient(135deg, #f000 0%, #f000 100%);
     padding: 20px;
 }
 
@@ -63,7 +63,7 @@
 .complete-button {
     width: 100%;
     padding: 8px 16px 8px 16px;
-    background-color: #f00;
+    background: linear-gradient(135deg, #f00 0%, #f00 100%);
     color: white;
     border: none;
     border-radius: 25px;

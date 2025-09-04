@@ -3,18 +3,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 2rem;
+    background: linear-gradient(135deg, #f000 0%, #f000 100%);
+    padding: 20px;
 }
 
 .no-company-content {
     background: white;
-    border-radius: 8px;
-    padding: 3rem;
-    max-width: 600px;
+    border-radius: 10px;
+    padding: 20px 26px 20px 26px;
+    max-width: 400px;
     width: 100%;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
     text-align: center;
+    border: 1px solid #e0dede;
 }
 
 .no-company-content h1 {
@@ -58,61 +59,55 @@
 }
 
 .create-company-btn {
-    background: #27ae60;
+    background: linear-gradient(135deg, #f00 0%, #f00 100%);
     color: white;
     border: none;
-    padding: 1rem 2rem;
-    border-radius: 6px;
-    font-size: 1.1rem;
+    padding: 8px 16px 8px 16px;
+    border-radius: 25px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 180px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-top: 10px;
+    width: 100%;
+    max-width: 180px;
 }
 
 .create-company-btn:hover {
-    background: #2ecc71;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
 }
 
 .back-to-login-btn {
-    background: #6c757d;
+    background: linear-gradient(135deg, #f00 0%, #f00 100%);
     color: white;
     border: none;
-    padding: 1rem 2rem;
-    border-radius: 6px;
-    font-size: 1.1rem;
+    padding: 8px 16px 8px 16px;
+    border-radius: 25px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 180px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-top: 10px;
+    width: 100%;
+    max-width: 180px;
 }
 
 .back-to-login-btn:hover {
-    background: #5a6268;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 480px) {
+    .no-company-container {
+        padding: 15px;
+    }
+    
     .no-company-content {
-        padding: 2rem;
-        margin: 1rem;
+        padding: 30px 20px;
     }
     
     .no-company-content h1 {
-        font-size: 2rem;
-    }
-    
-    .no-company-actions {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .create-company-btn,
-    .back-to-login-btn {
-        width: 100%;
-        max-width: 250px;
+        font-size: 24px;
     }
 }

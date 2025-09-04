@@ -3,18 +3,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 2rem;
+    background: linear-gradient(135deg, #f000 0%, #f000 100%);
+    padding: 20px;
 }
 
 .company-success-content {
     background: white;
-    border-radius: 12px;
-    padding: 3rem;
-    max-width: 600px;
+    border-radius: 10px;
+    padding: 20px 26px 20px 26px;
+    max-width: 400px;
     width: 100%;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
     text-align: center;
+    border: 1px solid #e0dede;
 }
 
 .success-icon {
@@ -117,22 +118,23 @@
 }
 
 .continue-btn {
-    background: #3498db;
+    background: linear-gradient(135deg, #f00 0%, #f00 100%);
     color: white;
     border: none;
-    padding: 1rem 3rem;
-    border-radius: 8px;
-    font-size: 1.2rem;
+    padding: 8px 16px 8px 16px;
+    border-radius: 25px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 250px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-top: 10px;
+    width: 100%;
+    max-width: 250px;
 }
 
 .continue-btn:hover {
-    background: #2980b9;
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
 }
 
 .company-id {
@@ -142,52 +144,17 @@
     border-top: 1px solid #eee;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .company-success-content {
-        padding: 2rem;
-        margin: 1rem;
-    }
-    
-    .company-success-content h1 {
-        font-size: 2rem;
-    }
-    
-    .success-message {
-        font-size: 1.1rem;
-    }
-    
-    .success-icon {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .continue-btn {
-        width: 100%;
-        max-width: 300px;
-        font-size: 1.1rem;
-    }
-}
-
+/* Responsive design */
 @media (max-width: 480px) {
     .company-success-container {
-        padding: 1rem;
+        padding: 15px;
     }
     
     .company-success-content {
-        padding: 1.5rem;
+        padding: 30px 20px;
     }
     
     .company-success-content h1 {
-        font-size: 1.8rem;
-    }
-    
-    .success-message {
-        font-size: 1rem;
-    }
-    
-    .continue-btn {
-        padding: 0.75rem 2rem;
-        font-size: 1rem;
+        font-size: 24px;
     }
 }

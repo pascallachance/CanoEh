@@ -48,6 +48,13 @@ namespace API.Controllers
             }
 
             var token = GenerateJwtToken(request.Email);
+            Response.Cookies.Append("AuthToken", token, new CookieOptions {
+                HttpOnly = true,
+                Secure = false, // true in production, false for local dev
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTime.UtcNow.AddMinutes(60),
+                IsEssential = true
+            });
             return Ok(new { 
                 token, 
                 sessionId = loginResult.Value?.SessionId 

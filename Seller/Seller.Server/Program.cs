@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add JWT Settings to configuration
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Secret"] ?? "SellerSecretKeyForDevelopment123456789012345678901234567890");
+var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Secret"] ?? "1797a33234536e8073fd941e62adef8324c409ed982b3155228401c3b5078750");
 
 // Configure JWT Authentication with Cookie Support
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
@@ -120,7 +120,7 @@ builder.Services.AddSwaggerGen(options =>
 
 // Add CORS policy with configurable origins
 var corsSettings = builder.Configuration.GetSection("CorsSettings");
-var allowedOrigins = corsSettings.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "https://localhost:62209" };
+var allowedOrigins = corsSettings.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "https://localhost:64941", "https://localhost:62209" };
 
 builder.Services.AddCors(options =>
 {
@@ -147,12 +147,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Add CORS
-app.UseCors("AllowClient");
-
 // Add authentication and authorization
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Add CORS
+app.UseCors("AllowClient");
 
 // Map controllers
 app.MapControllers();

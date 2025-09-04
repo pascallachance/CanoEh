@@ -46,7 +46,7 @@ function Login({ onLoginSuccess }: LoginProps) {
                 email,
                 password
             };
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/Login/login`, {
+            const response = await fetch(`${import.meta.env.VITE_API_STORE_BASE_URL}/api/Login/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

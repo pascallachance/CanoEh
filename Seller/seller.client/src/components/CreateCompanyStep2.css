@@ -1,7 +1,7 @@
 .create-company-step2-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 2rem 1rem;
+    background: linear-gradient(135deg, #f000 0%, #f000 100%);
+    padding: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -9,11 +9,12 @@
 
 .create-company-step2-content {
     background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    max-width: 900px;
+    border-radius: 10px;
+    padding: 20px 26px 20px 26px;
+    max-width: 400px;
     width: 100%;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e0dede;
 }
 
 .step-header {
@@ -108,11 +109,13 @@
 .form-group input,
 .form-group select,
 .form-group textarea {
-    padding: 0.75rem;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    font-size: 1rem;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e1e1e1;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
     background: white;
     resize: vertical;
 }
@@ -121,130 +124,75 @@
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .form-group input.error,
 .form-group select.error,
 .form-group textarea.error {
-    border-color: #e74c3c;
-    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+    border-color: #c33;
+    box-shadow: 0 0 0 3px rgba(204, 51, 51, 0.1);
 }
 
 .error-message {
-    color: #e74c3c;
-    font-size: 0.85rem;
-    margin-top: 0.25rem;
-    font-weight: 500;
+    background: #fee;
+    color: #c33;
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border: 1px solid #fcc;
+    font-size: 14px;
 }
 
 .form-actions {
     display: flex;
     gap: 1rem;
     justify-content: center;
-    padding-top: 1rem;
-    border-top: 1px solid #eee;
+    padding-top: 20px;
+    border-top: 1px solid #e1e1e1;
+    margin-top: 25px;
 }
 
 .back-btn,
 .create-btn {
-    padding: 0.75rem 2rem;
+    width: 100%;
+    padding: 8px 16px 8px 16px;
+    background: linear-gradient(135deg, #f00 0%, #f00 100%);
+    color: white;
     border: none;
-    border-radius: 6px;
-    font-size: 1rem;
+    border-radius: 25px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 140px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-top: 10px;
 }
 
-.back-btn {
-    background: #6c757d;
-    color: white;
-}
-
-.back-btn:hover:not(:disabled) {
-    background: #5a6268;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
-}
-
-.create-btn {
-    background: #27ae60;
-    color: white;
-}
-
+.back-btn:hover:not(:disabled),
 .create-btn:hover:not(:disabled) {
-    background: #2ecc71;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
 }
 
 .back-btn:disabled,
 .create-btn:disabled {
-    background: #bbb;
+    opacity: 0.7;
     cursor: not-allowed;
     transform: none;
-    box-shadow: none;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .create-company-step2-content {
-        padding: 1.5rem;
-        margin: 1rem;
-    }
-    
-    .step-header h1 {
-        font-size: 2rem;
-    }
-    
-    .form-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    .step-indicator {
-        gap: 0.5rem;
-    }
-    
-    .step {
-        width: 35px;
-        height: 35px;
-        font-size: 0.9rem;
-    }
-    
-    .step-divider {
-        width: 30px;
-    }
-    
-    .form-actions {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .back-btn,
-    .create-btn {
-        width: 100%;
-        max-width: 200px;
-    }
-}
-
+/* Responsive design */
 @media (max-width: 480px) {
     .create-company-step2-container {
-        padding: 1rem 0.5rem;
+        padding: 15px;
     }
     
     .create-company-step2-content {
-        padding: 1rem;
+        padding: 30px 20px;
     }
     
     .step-header h1 {
-        font-size: 1.8rem;
-    }
-    
-    .form-grid {
-        gap: 0.75rem;
+        font-size: 24px;
     }
 }

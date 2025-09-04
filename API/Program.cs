@@ -41,6 +41,26 @@ internal class Program
                     IssuerSigningKey = new SymmetricSecurityKey(secretKey),
                     NameClaimType = ClaimTypes.NameIdentifier,
                 };
+                
+                // Configure JWT Bearer to read tokens from cookies
+                jwtOptions.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        // First try to get token from Authorization header (standard approach)
+                        var token = context.Request.Headers.Authorization
+                            .FirstOrDefault()?.Split(" ").Last();
+                        
+                        // If no token in header, try to get it from cookie
+                        if (string.IsNullOrEmpty(token))
+                        {
+                            token = context.Request.Cookies["AuthToken"];
+                        }
+                        
+                        context.Token = token;
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
 

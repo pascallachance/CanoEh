@@ -47,7 +47,7 @@ internal class Program
         // Add CORS policy for both Store and Seller frontend apps
         builder.Services.AddCors(options =>
         {
-            options.AddPolicy("AllowFrontend", policy =>
+            options.AddPolicy("AllowClient", policy =>
             {
                 policy.WithOrigins("https://localhost:64941", "https://localhost:62209")
                       .AllowAnyHeader()
@@ -244,7 +244,7 @@ internal class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.UseCors("AllowFrontend");
+        app.UseCors("AllowClient");
 
         app.MapControllers();
         app.MapDefaultControllerRoute();

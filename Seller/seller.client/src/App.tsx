@@ -37,9 +37,30 @@ function App() {
     const [createdCompany, setCreatedCompany] = useState<Company | null>(null);
     const [error, setError] = useState<string>('');
 
-    const handleLoginSuccess = () => {
-        setAppState('checking-company');
-        setError('');
+    const handleLoginSuccess = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/GetMyCompanies`, {
+                method: 'GET',
+                credentials: 'include',
+            });
+
+            if (response.ok) {
+                const companies = await response.json();
+                if (Array.isArray(companies) && companies.length > 0) {
+                    setCompanies(companies);
+                    setAppState('has-company');
+                } else {
+                    setAppState('no-company');
+                }
+                setError('');
+            } else {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Failed to fetch companies');
+            }
+        } catch (err) {
+            console.error('Company fetch error:', err);
+            setError(err instanceof Error ? err.message : 'Failed to fetch companies');
+        }
     };
 
     const handleBackToLogin = () => {
@@ -120,7 +141,7 @@ function App() {
                 postalCode: step2.postalCode
             };
 
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/seller/company/create`, {
+            const response = await fetch(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/seller/company/create`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -47,7 +47,8 @@ function Login({ onLoginSuccess }: LoginProps) {
                 email,
                 password
             };
-            const response = await fetch(`${import.meta.env.VITE_STORE_API_URL}/api/store/login/login`, {
+            console.log('Login.tsx login begin'); 
+            const response = await fetch(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Login/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

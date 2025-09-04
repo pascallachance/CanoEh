@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Store.Server.Controllers
+namespace Seller.Server.Controllers
 {
     [Route("api/store/[controller]")]
     public class LoginController(

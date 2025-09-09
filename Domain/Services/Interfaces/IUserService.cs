@@ -34,5 +34,11 @@ namespace Domain.Services.Interfaces
         Task<Result<SendRestoreUserEmailResponse>> SendRestoreUserEmailAsync(SendRestoreUserEmailRequest sendRestoreUserEmailRequest);
 
         Task<Result<RestoreUserResponse>> RestoreUserAsync(RestoreUserRequest restoreUserRequest);
+
+        Task<Result<User?>> FindByRefreshTokenAsync(string refreshToken);
+
+        Task<Result<bool>> UpdateRefreshTokenAsync(string email, string refreshToken, DateTime expiry);
+
+        Task<Result<bool>> ClearRefreshTokenAsync(string email);
     }
 }

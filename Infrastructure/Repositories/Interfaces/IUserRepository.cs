@@ -15,5 +15,8 @@ namespace Infrastructure.Repositories.Interfaces
         Task<User?> FindByRestoreUserTokenAsync(string token);
         Task<bool> UpdateRestoreUserTokenAsync(string email, string token, DateTime expiry);
         Task<bool> RestoreUserByTokenAsync(string token);
+        Task<User?> FindByRefreshTokenAsync(string refreshToken);
+        Task<bool> UpdateRefreshTokenAsync(string email, string refreshToken, DateTime expiry);
+        Task<bool> ClearRefreshTokenAsync(string email);
     }
 }

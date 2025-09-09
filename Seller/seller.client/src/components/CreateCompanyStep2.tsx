@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './CreateCompanyStep2.css';
 import type { CreateCompanyStep1Data } from './CreateCompanyStep1';
 
@@ -42,6 +42,9 @@ function CreateCompanyStep2({ onSubmit, onBack, step1Data, initialData }: Create
 
     const [errors, setErrors] = useState<Partial<CreateCompanyStep2Data>>({});
     const [loading, setLoading] = useState(false);
+    const [logoInputMode, setLogoInputMode] = useState<'url' | 'file'>('url');
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string>('');
 
     const companyTypes = [
         'public company',
@@ -50,6 +53,15 @@ function CreateCompanyStep2({ onSubmit, onBack, step1Data, initialData }: Create
         'charity organization',
         'particular'
     ];
+
+    // Cleanup preview URL when component unmounts or file changes
+    useEffect(() => {
+        return () => {
+            if (previewUrl && previewUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(previewUrl);
+            }
+        };
+    }, [previewUrl]);
 
     const validateForm = (): boolean => {
         const newErrors: Partial<CreateCompanyStep2Data> = {};
@@ -93,6 +105,60 @@ function CreateCompanyStep2({ onSubmit, onBack, step1Data, initialData }: Create
         // Clear error when user starts typing
         if (errors[field]) {
             setErrors(prev => ({ ...prev, [field]: undefined }));
+        }
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                setErrors(prev => ({ ...prev, logo: 'Please select an image file' }));
+                return;
+            }
+            
+            // Validate file size (limit to 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                setErrors(prev => ({ ...prev, logo: 'File size must be less than 5MB' }));
+                return;
+            }
+
+            setSelectedFile(file);
+            
+            // Create preview URL
+            const objectUrl = URL.createObjectURL(file);
+            setPreviewUrl(objectUrl);
+            
+            // For now, we'll store the file name in the logo field
+            // In a real app, you'd upload the file and get a URL back
+            setFormData(prev => ({ ...prev, logo: file.name }));
+            
+            // Clear any errors
+            setErrors(prev => ({ ...prev, logo: undefined }));
+        }
+    };
+
+    const handleLogoModeChange = (mode: 'url' | 'file') => {
+        setLogoInputMode(mode);
+        // Clear previous values when switching modes
+        if (mode === 'url') {
+            setSelectedFile(null);
+            setPreviewUrl('');
+            setFormData(prev => ({ ...prev, logo: '' }));
+        } else {
+            setFormData(prev => ({ ...prev, logo: '' }));
+        }
+        // Clear any errors
+        setErrors(prev => ({ ...prev, logo: undefined }));
+    };
+
+    const handleUrlChange = (value: string) => {
+        handleInputChange('logo', value);
+        // Set preview URL for URL input
+        if (value && (value.startsWith('http') || value.startsWith('https'))) {
+            setPreviewUrl(value);
+        } else {
+            setPreviewUrl('');
         }
     };
 
@@ -183,14 +249,59 @@ function CreateCompanyStep2({ onSubmit, onBack, step1Data, initialData }: Create
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="logo">Company Logo URL</label>
-                            <input
-                                type="url"
-                                id="logo"
-                                value={formData.logo}
-                                onChange={(e) => handleInputChange('logo', e.target.value)}
-                                placeholder="https://example.com/logo.png"
-                            />
+                            <label>Company Logo</label>
+                            <div className="logo-input-container">
+                                <div className="logo-mode-toggle">
+                                    <button
+                                        type="button"
+                                        className={`mode-btn ${logoInputMode === 'url' ? 'active' : ''}`}
+                                        onClick={() => handleLogoModeChange('url')}
+                                    >
+                                        Enter URL
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`mode-btn ${logoInputMode === 'file' ? 'active' : ''}`}
+                                        onClick={() => handleLogoModeChange('file')}
+                                    >
+                                        Upload File
+                                    </button>
+                                </div>
+                                
+                                {logoInputMode === 'url' ? (
+                                    <input
+                                        type="url"
+                                        id="logo-url"
+                                        value={formData.logo}
+                                        onChange={(e) => handleUrlChange(e.target.value)}
+                                        placeholder="https://example.com/logo.png"
+                                        className={errors.logo ? 'error' : ''}
+                                    />
+                                ) : (
+                                    <div className="file-upload-container">
+                                        <input
+                                            type="file"
+                                            id="logo-file"
+                                            accept="image/*"
+                                            onChange={handleFileChange}
+                                            className={`file-input ${errors.logo ? 'error' : ''}`}
+                                        />
+                                        <label htmlFor="logo-file" className="file-input-label">
+                                            {selectedFile ? selectedFile.name : 'Choose image file'}
+                                        </label>
+                                    </div>
+                                )}
+                                
+                                {previewUrl && (
+                                    <div className="logo-preview">
+                                        <img src={previewUrl} alt="Logo preview" className="preview-image" />
+                                    </div>
+                                )}
+                                
+                                {errors.logo && (
+                                    <span className="error-message">{errors.logo}</span>
+                                )}
+                            </div>
                         </div>
 
                         <div className="form-group full-width">

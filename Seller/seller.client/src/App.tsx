@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 import Login from './components/Login';
-import CompanyStatusCheck from './components/CompanyStatusCheck';
 import NoCompanyPage from './components/NoCompanyPage';
 import CreateCompanyStep1 from './components/CreateCompanyStep1';
 import CreateCompanyStep2 from './components/CreateCompanyStep2';
@@ -10,16 +9,6 @@ import CompanyCreatedSuccess from './components/CompanyCreatedSuccess';
 import { ApiClient } from './utils/apiClient';
 import type { CreateCompanyStep1Data } from './components/CreateCompanyStep1';
 import type { CreateCompanyStep2Data } from './components/CreateCompanyStep2';
-
-type AppState = 
-    | 'login'
-    | 'checking-company'
-    | 'no-company'
-    | 'has-company'
-    | 'create-step1'
-    | 'create-step2'
-    | 'company-created'
-    | 'items-management';
 
 interface Company {
     id: string;
@@ -31,13 +20,16 @@ interface Company {
     updatedAt?: string;
 }
 
-function App() {
-    const [appState, setAppState] = useState<AppState>('login');
+// Route wrapper component to handle authentication and routing logic
+function AppContent() {
     const [companies, setCompanies] = useState<Company[]>([]);
     const [step1Data, setStep1Data] = useState<CreateCompanyStep1Data | null>(null);
     const [createdCompany, setCreatedCompany] = useState<Company | null>(null);
     const [error, setError] = useState<string>('');
     const [isCheckingSession, setIsCheckingSession] = useState(true);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const navigate = useNavigate();
+    const location = useLocation();
 
     // Check for existing session on app load
     useEffect(() => {
@@ -51,16 +43,26 @@ function App() {
 
             if (response.ok) {
                 const companies = await response.json();
+                setIsAuthenticated(true);
                 if (Array.isArray(companies) && companies.length > 0) {
                     setCompanies(companies);
-                    setAppState('has-company');
+                    // Navigate to dashboard if on login page and user has companies
+                    if (location.pathname === '/login' || location.pathname === '/') {
+                        navigate('/dashboard', { replace: true });
+                    }
                 } else {
-                    setAppState('no-company');
+                    // Navigate to no-company page if on login page and no companies
+                    if (location.pathname === '/login' || location.pathname === '/') {
+                        navigate('/dashboard', { replace: true }); // Will show no company UI
+                    }
                 }
                 setError('');
             } else if (response.status === 401) {
-                // No valid session, show login
-                setAppState('login');
+                // No valid session, redirect to login
+                setIsAuthenticated(false);
+                if (location.pathname !== '/login') {
+                    navigate('/login', { replace: true });
+                }
             } else {
                 const errorText = await response.text();
                 throw new Error(errorText || 'Failed to fetch companies');
@@ -68,57 +70,45 @@ function App() {
         } catch (err) {
             console.error('Session check error:', err);
             // If there's an error checking session, go to login
-            setAppState('login');
+            setIsAuthenticated(false);
+            if (location.pathname !== '/login') {
+                navigate('/login', { replace: true });
+            }
         } finally {
             setIsCheckingSession(false);
         }
     };
 
     const handleLoginSuccess = async () => {
-        // After successful login, check companies using the new API client
+        // After successful login, check companies and navigate appropriately
+        setIsAuthenticated(true);
         await checkExistingSession();
     };
 
     const handleBackToLogin = () => {
-        setAppState('login');
+        setIsAuthenticated(false);
         setCompanies([]);
         setStep1Data(null);
         setCreatedCompany(null);
         setError('');
-    };
-
-    const handleHasCompany = (userCompanies: Company[]) => {
-        setCompanies(userCompanies);
-        setAppState('has-company');
-    };
-
-    const handleNoCompany = () => {
-        setAppState('no-company');
-    };
-
-    const handleCompanyCheckError = (errorMessage: string) => {
-        setError(errorMessage);
-        // If authentication error, go back to login
-        if (errorMessage.includes('Authentication') || errorMessage.includes('log in')) {
-            handleBackToLogin();
-        }
+        navigate('/login', { replace: true });
     };
 
     const handleCreateCompany = () => {
-        setAppState('create-step1');
+        navigate('/create-company');
     };
 
     const handleStep1Next = (data: CreateCompanyStep1Data) => {
         setStep1Data(data);
-        setAppState('create-step2');
+        navigate('/create-company/step2');
     };
 
     const handleStep1Back = () => {
-        setAppState('no-company');
+        navigate('/dashboard');
     };
 
     const handleStep2Back = () => {
-        setAppState('create-step1');
+        navigate('/create-company');
     };
 
     const getCsrfToken = (): string => {
@@ -178,7 +168,7 @@ function App() {
                     createdAt: result.createdAt,
                     updatedAt: result.updatedAt
                 });
-                setAppState('company-created');
+                navigate('/company-created');
             } else {
                 const errorText = await response.text();
                 throw new Error(errorText || 'Failed to create company');
@@ -190,96 +180,116 @@ function App() {
     };
 
     const handleContinueToItems = () => {
-        setAppState('items-management');
+        // Update companies list and navigate to dashboard with items view
+        checkExistingSession().then(() => {
+            navigate('/items');
+        });
     };
 
-    // Show loading screen while checking existing session
-    if (isCheckingSession) {
-        return (
-            <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                height: '100vh',
-                flexDirection: 'column'
-            }}>
-                <h2>CanoEh! Seller</h2>
-                <p>Checking your session...</p>
+    // Protected route component
+    const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+        if (isCheckingSession) {
+            return (
                 <div style={{ 
-                    border: '3px solid #f3f3f3',
-                    borderTop: '3px solid #007bff',
-                    borderRadius: '50%',
-                    width: '30px',
-                    height: '30px',
-                    animation: 'spin 1s linear infinite'
-                }}></div>
-            </div>
-        );
-    }
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    alignItems: 'center', 
+                    height: '100vh',
+                    flexDirection: 'column'
+                }}>
+                    <h2>CanoEh! Seller</h2>
+                    <p>Checking your session...</p>
+                    <div style={{ 
+                        border: '3px solid #f3f3f3',
+                        borderTop: '3px solid #007bff',
+                        borderRadius: '50%',
+                        width: '30px',
+                        height: '30px',
+                        animation: 'spin 1s linear infinite'
+                    }}></div>
+                </div>
+            );
+        }
 
-    // Render based on current state
-    if (appState === 'login') {
-        return (
-            <Router>
-                <Routes>
-                    <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
-                    <Route path="*" element={<Navigate to="/login" replace />} />
-                </Routes>
-            </Router>
-        );
-    }
+        if (!isAuthenticated) {
+            return <Navigate to="/login" replace />;
+        }
 
-    if (appState === 'checking-company') {
-        return (
-            <CompanyStatusCheck
-                onHasCompany={handleHasCompany}
-                onNoCompany={handleNoCompany}
-                onError={handleCompanyCheckError}
-            />
-        );
-    }
+        return <>{children}</>;
+    };
 
-    if (appState === 'no-company') {
-        return (
-            <NoCompanyPage
-                onCreateCompany={handleCreateCompany}
-                onBackToLogin={handleBackToLogin}
-            />
-        );
-    }
+    // Dashboard route - shows company status
+    const DashboardRoute = () => (
+        <ProtectedRoute>
+            {companies.length > 0 ? (
+                <div>
+                    <header style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        padding: '1rem',
+                        borderBottom: '1px solid #eee'
+                    }}>
+                        <h1 id="tableLabel">CanoEh! Seller</h1>
+                        <div>
+                            <button 
+                                onClick={handleBackToLogin}
+                                style={{ 
+                                    padding: '0.5rem 1rem',
+                                    background: '#dc3545',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    </header>
+                    <main style={{ padding: '1rem' }}>
+                        <h2>Welcome back!</h2>
+                        <p>You have {companies.length} company(ies) registered.</p>
+                        {companies.map(company => (
+                            <div key={company.id} style={{ 
+                                border: '1px solid #ddd', 
+                                padding: '1rem', 
+                                marginBottom: '1rem',
+                                borderRadius: '4px'
+                            }}>
+                                <h3>{company.name}</h3>
+                                {company.description && <p>{company.description}</p>}
+                                <small>Created: {new Date(company.createdAt).toLocaleDateString()}</small>
+                            </div>
+                        ))}
+                        <button 
+                            onClick={() => navigate('/items')}
+                            style={{
+                                padding: '0.75rem 1.5rem',
+                                background: '#007bff',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '1rem'
+                            }}
+                        >
+                            Manage Items
+                        </button>
+                    </main>
+                </div>
+            ) : (
+                <NoCompanyPage
+                    onCreateCompany={handleCreateCompany}
+                    onBackToLogin={handleBackToLogin}
+                />
+            )}
+        </ProtectedRoute>
+    );
 
-    if (appState === 'create-step1') {
-        return (
-            <CreateCompanyStep1
-                onNext={handleStep1Next}
-                onBack={handleStep1Back}
-                initialData={step1Data || undefined}
-            />
-        );
-    }
-
-    if (appState === 'create-step2' && step1Data) {
-        return (
-            <CreateCompanyStep2
-                onSubmit={handleStep2Submit}
-                onBack={handleStep2Back}
-                step1Data={step1Data}
-            />
-        );
-    }
-
-    if (appState === 'company-created' && createdCompany) {
-        return (
-            <CompanyCreatedSuccess
-                company={createdCompany}
-                onContinueToItems={handleContinueToItems}
-            />
-        );
-    }
-
-    if (appState === 'has-company' || appState === 'items-management') {
-        // Show existing company or items management interface
-        return (
+    // Items management route
+    const ItemsRoute = () => (
+        <ProtectedRoute>
             <div>
                 <header style={{ 
                     display: 'flex', 
@@ -306,64 +316,28 @@ function App() {
                     </div>
                 </header>
                 <main style={{ padding: '1rem' }}>
-                    {appState === 'has-company' && (
-                        <>
-                            <h2>Welcome back!</h2>
-                            <p>You have {companies.length} company(ies) registered.</p>
-                            {companies.map(company => (
-                                <div key={company.id} style={{ 
-                                    border: '1px solid #ddd', 
-                                    padding: '1rem', 
-                                    marginBottom: '1rem',
-                                    borderRadius: '4px'
-                                }}>
-                                    <h3>{company.name}</h3>
-                                    {company.description && <p>{company.description}</p>}
-                                    <small>Created: {new Date(company.createdAt).toLocaleDateString()}</small>
-                                </div>
-                            ))}
-                            <button 
-                                onClick={() => setAppState('items-management')}
-                                style={{
-                                    padding: '0.75rem 1.5rem',
-                                    background: '#007bff',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontSize: '1rem'
-                                }}
-                            >
-                                Manage Items
-                            </button>
-                        </>
-                    )}
-                    {appState === 'items-management' && (
-                        <>
-                            <h2>Items Management</h2>
-                            <p>This is where you would manage your items. This feature will be implemented in a future update.</p>
-                            <button 
-                                onClick={() => setAppState('has-company')}
-                                style={{
-                                    padding: '0.75rem 1.5rem',
-                                    background: '#6c757d',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontSize: '1rem'
-                                }}
-                            >
-                                Back to Companies
-                            </button>
-                        </>
-                    )}
+                    <h2>Items Management</h2>
+                    <p>This is where you would manage your items. This feature will be implemented in a future update.</p>
+                    <button 
+                        onClick={() => navigate('/dashboard')}
+                        style={{
+                            padding: '0.75rem 1.5rem',
+                            background: '#6c757d',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '1rem'
+                        }}
+                    >
+                        Back to Companies
+                    </button>
                 </main>
             </div>
-        );
-    }
+        </ProtectedRoute>
+    );
 
-    // Error state
+    // Error state display
     if (error) {
         return (
             <div style={{ padding: '2rem', textAlign: 'center' }}>
@@ -383,8 +357,57 @@ function App() {
         );
     }
 
-    // Fallback
-    return <Navigate to="/login" replace />;
+    return (
+        <Routes>
+            <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
+            <Route path="/dashboard" element={<DashboardRoute />} />
+            <Route path="/create-company" element={
+                <ProtectedRoute>
+                    <CreateCompanyStep1
+                        onNext={handleStep1Next}
+                        onBack={handleStep1Back}
+                        initialData={step1Data || undefined}
+                    />
+                </ProtectedRoute>
+            } />
+            <Route path="/create-company/step2" element={
+                <ProtectedRoute>
+                    {step1Data ? (
+                        <CreateCompanyStep2
+                            onSubmit={handleStep2Submit}
+                            onBack={handleStep2Back}
+                            step1Data={step1Data}
+                        />
+                    ) : (
+                        <Navigate to="/create-company" replace />
+                    )}
+                </ProtectedRoute>
+            } />
+            <Route path="/company-created" element={
+                <ProtectedRoute>
+                    {createdCompany ? (
+                        <CompanyCreatedSuccess
+                            company={createdCompany}
+                            onContinueToItems={handleContinueToItems}
+                        />
+                    ) : (
+                        <Navigate to="/dashboard" replace />
+                    )}
+                </ProtectedRoute>
+            } />
+            <Route path="/items" element={<ItemsRoute />} />
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+    );
+}
+
+function App() {
+    return (
+        <Router>
+            <AppContent />
+        </Router>
+    );
 }
 
 export default App;

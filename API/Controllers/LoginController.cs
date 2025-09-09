@@ -48,16 +48,42 @@ namespace API.Controllers
             }
 
             var token = GenerateJwtToken(request.Email);
+            var refreshToken = GenerateRefreshToken();
+            
+            // Store refresh token in database
+            var jwtSettings = _configuration.GetSection("JwtSettings");
+            var refreshExpiryDays = Convert.ToDouble(jwtSettings["RefreshTokenExpiryDays"] ?? "30");
+            var refreshExpiry = DateTime.UtcNow.AddDays(refreshExpiryDays);
+            
+            var refreshTokenResult = await _userService.UpdateRefreshTokenAsync(request.Email, refreshToken, refreshExpiry);
+            if (refreshTokenResult.IsFailure)
+            {
+                // Log but don't fail login - refresh token is optional
+                System.Diagnostics.Debug.WriteLine($"Failed to store refresh token: {refreshTokenResult.Error}");
+            }
+            
+            // Set access token cookie (short-lived)
             Response.Cookies.Append("AuthToken", token, new CookieOptions {
                 HttpOnly = true,
                 Secure = false, // true in production, false for local dev
                 SameSite = SameSiteMode.Lax,
-                Expires = DateTime.UtcNow.AddMinutes(60),
+                Expires = DateTime.UtcNow.AddMinutes(Convert.ToDouble(jwtSettings["ExpiryMinutes"] ?? "15")),
                 IsEssential = true
             });
+            
+            // Set refresh token cookie (long-lived)
+            Response.Cookies.Append("RefreshToken", refreshToken, new CookieOptions {
+                HttpOnly = true,
+                Secure = false, // true in production, false for local dev
+                SameSite = SameSiteMode.Lax,
+                Expires = refreshExpiry,
+                IsEssential = true
+            });
+            
             return Ok(new { 
                 token, 
-                sessionId = loginResult.Value?.SessionId 
+                sessionId = loginResult.Value?.SessionId,
+                refreshToken = refreshToken // For debugging/testing only
             });
         }
 
@@ -87,6 +113,70 @@ namespace API.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        private string GenerateRefreshToken()
+        {
+            return Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(64));
+        }
+
+        [HttpPost("refresh")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> RefreshToken()
+        {
+            var refreshToken = Request.Cookies["RefreshToken"];
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                return Unauthorized("Refresh token not found.");
+            }
+
+            var user = await _userService.FindByRefreshTokenAsync(refreshToken);
+            if (user.IsFailure || user.Value == null)
+            {
+                return Unauthorized("Invalid or expired refresh token.");
+            }
+
+            // Generate new access token
+            var newAccessToken = GenerateJwtToken(user.Value.Email);
+            
+            // Generate new refresh token
+            var newRefreshToken = GenerateRefreshToken();
+            var jwtSettings = _configuration.GetSection("JwtSettings");
+            var refreshExpiryDays = Convert.ToDouble(jwtSettings["RefreshTokenExpiryDays"] ?? "30");
+            var refreshExpiry = DateTime.UtcNow.AddDays(refreshExpiryDays);
+            
+            // Update refresh token in database
+            var refreshTokenResult = await _userService.UpdateRefreshTokenAsync(user.Value.Email, newRefreshToken, refreshExpiry);
+            if (refreshTokenResult.IsFailure)
+            {
+                return StatusCode(500, "Failed to update refresh token.");
+            }
+
+            // Set new access token cookie
+            Response.Cookies.Append("AuthToken", newAccessToken, new CookieOptions {
+                HttpOnly = true,
+                Secure = false, // true in production, false for local dev
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTime.UtcNow.AddMinutes(Convert.ToDouble(jwtSettings["ExpiryMinutes"] ?? "15")),
+                IsEssential = true
+            });
+            
+            // Set new refresh token cookie
+            Response.Cookies.Append("RefreshToken", newRefreshToken, new CookieOptions {
+                HttpOnly = true,
+                Secure = false, // true in production, false for local dev
+                SameSite = SameSiteMode.Lax,
+                Expires = refreshExpiry,
+                IsEssential = true
+            });
+
+            return Ok(new { 
+                token = newAccessToken,
+                message = "Tokens refreshed successfully"
+            });
+        }
+
         [Authorize]
         [HttpPost("logout")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -107,6 +197,18 @@ namespace API.Controllers
             {
                 return StatusCode(result.ErrorCode ?? 500, result.Error);
             }
+
+            // Clear refresh token from database
+            var clearRefreshResult = await _userService.ClearRefreshTokenAsync(email);
+            if (clearRefreshResult.IsFailure)
+            {
+                // Log but don't fail logout
+                Debug.WriteLine($"Failed to clear refresh token for {email}: {clearRefreshResult.Error}");
+            }
+
+            // Clear cookies
+            Response.Cookies.Delete("AuthToken");
+            Response.Cookies.Delete("RefreshToken");
 
             // Handle session logout if sessionId is provided
             var targetSessionId = sessionId ?? headerSessionId;

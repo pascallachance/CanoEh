@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import Login from './components/Login';
@@ -7,6 +7,7 @@ import NoCompanyPage from './components/NoCompanyPage';
 import CreateCompanyStep1 from './components/CreateCompanyStep1';
 import CreateCompanyStep2 from './components/CreateCompanyStep2';
 import CompanyCreatedSuccess from './components/CompanyCreatedSuccess';
+import { ApiClient } from './utils/apiClient';
 import type { CreateCompanyStep1Data } from './components/CreateCompanyStep1';
 import type { CreateCompanyStep2Data } from './components/CreateCompanyStep2';
 
@@ -36,13 +37,17 @@ function App() {
     const [step1Data, setStep1Data] = useState<CreateCompanyStep1Data | null>(null);
     const [createdCompany, setCreatedCompany] = useState<Company | null>(null);
     const [error, setError] = useState<string>('');
+    const [isCheckingSession, setIsCheckingSession] = useState(true);
 
-    const handleLoginSuccess = async () => {
+    // Check for existing session on app load
+    useEffect(() => {
+        checkExistingSession();
+    }, []);
+
+    const checkExistingSession = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/GetMyCompanies`, {
-                method: 'GET',
-                credentials: 'include',
-            });
+            setIsCheckingSession(true);
+            const response = await ApiClient.get(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/GetMyCompanies`);
 
             if (response.ok) {
                 const companies = await response.json();
@@ -53,14 +58,25 @@ function App() {
                     setAppState('no-company');
                 }
                 setError('');
+            } else if (response.status === 401) {
+                // No valid session, show login
+                setAppState('login');
             } else {
                 const errorText = await response.text();
                 throw new Error(errorText || 'Failed to fetch companies');
             }
         } catch (err) {
-            console.error('Company fetch error:', err);
-            setError(err instanceof Error ? err.message : 'Failed to fetch companies');
+            console.error('Session check error:', err);
+            // If there's an error checking session, go to login
+            setAppState('login');
+        } finally {
+            setIsCheckingSession(false);
         }
+    };
+
+    const handleLoginSuccess = async () => {
+        // After successful login, check companies using the new API client
+        await checkExistingSession();
     };
 
     const handleBackToLogin = () => {
@@ -141,15 +157,15 @@ function App() {
                 postalCode: step2.postalCode
             };
 
-            const response = await fetch(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/CreateCompany`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': getCsrfToken(),
-                },
-                credentials: 'include',
-                body: JSON.stringify(companyData),
-            });
+            const response = await ApiClient.post(
+                `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/CreateCompany`,
+                companyData,
+                {
+                    headers: {
+                        'X-CSRF-Token': getCsrfToken(),
+                    }
+                }
+            );
 
             if (response.ok) {
                 const result = await response.json();
@@ -176,6 +192,30 @@ function App() {
     const handleContinueToItems = () => {
         setAppState('items-management');
     };
+
+    // Show loading screen while checking existing session
+    if (isCheckingSession) {
+        return (
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '100vh',
+                flexDirection: 'column'
+            }}>
+                <h2>CanoEh! Seller</h2>
+                <p>Checking your session...</p>
+                <div style={{ 
+                    border: '3px solid #f3f3f3',
+                    borderTop: '3px solid #007bff',
+                    borderRadius: '50%',
+                    width: '30px',
+                    height: '30px',
+                    animation: 'spin 1s linear infinite'
+                }}></div>
+            </div>
+        );
+    }
 
     // Render based on current state
     if (appState === 'login') {

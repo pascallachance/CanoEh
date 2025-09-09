@@ -310,5 +310,46 @@ WHERE restoreUserToken = @token AND deleted = 1 AND restoreUserTokenExpiry > @no
             var rowsAffected = await dbConnection.ExecuteAsync(query, new { token, now = DateTime.UtcNow });
             return rowsAffected > 0;
         }
+
+        public async Task<User?> FindByRefreshTokenAsync(string refreshToken)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            var query = @"
+SELECT TOP(1) * 
+FROM dbo.Users 
+WHERE refreshToken = @refreshToken AND deleted = 0 AND refreshTokenExpiry > @now";
+            return await dbConnection.QueryFirstOrDefaultAsync<User>(query, new { refreshToken, now = DateTime.UtcNow });
+        }
+
+        public async Task<bool> UpdateRefreshTokenAsync(string email, string refreshToken, DateTime expiry)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            var query = @"
+UPDATE dbo.Users 
+SET refreshToken = @refreshToken, refreshTokenExpiry = @expiry, lastupdatedat = @now
+WHERE email = @email AND deleted = 0";
+            var rowsAffected = await dbConnection.ExecuteAsync(query, new { email, refreshToken, expiry, now = DateTime.UtcNow });
+            return rowsAffected > 0;
+        }
+
+        public async Task<bool> ClearRefreshTokenAsync(string email)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            var query = @"
+UPDATE dbo.Users 
+SET refreshToken = NULL, refreshTokenExpiry = NULL, lastupdatedat = @now
+WHERE email = @email AND deleted = 0";
+            var rowsAffected = await dbConnection.ExecuteAsync(query, new { email, now = DateTime.UtcNow });
+            return rowsAffected > 0;
+        }
     }
 }

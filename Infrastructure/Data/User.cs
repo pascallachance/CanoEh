@@ -19,5 +19,7 @@
         public DateTime? PasswordResetTokenExpiry { get; set; }
         public string? RestoreUserToken { get; set; }
         public DateTime? RestoreUserTokenExpiry { get; set; }
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiry { get; set; }
     }
 }

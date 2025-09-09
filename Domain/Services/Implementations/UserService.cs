@@ -560,6 +560,48 @@ namespace Domain.Services.Implementations
             }
         }
 
+        public async Task<Result<User?>> FindByRefreshTokenAsync(string refreshToken)
+        {
+            try
+            {
+                var user = await _userRepository.FindByRefreshTokenAsync(refreshToken);
+                return Result.Success(user);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in FindByRefreshTokenAsync: {ex.Message}");
+                return Result.Failure<User?>("An error occurred while finding user by refresh token.", 500);
+            }
+        }
+
+        public async Task<Result<bool>> UpdateRefreshTokenAsync(string email, string refreshToken, DateTime expiry)
+        {
+            try
+            {
+                var result = await _userRepository.UpdateRefreshTokenAsync(email, refreshToken, expiry);
+                return Result.Success(result);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in UpdateRefreshTokenAsync: {ex.Message}");
+                return Result.Failure<bool>("An error occurred while updating refresh token.", 500);
+            }
+        }
+
+        public async Task<Result<bool>> ClearRefreshTokenAsync(string email)
+        {
+            try
+            {
+                var result = await _userRepository.ClearRefreshTokenAsync(email);
+                return Result.Success(result);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in ClearRefreshTokenAsync: {ex.Message}");
+                return Result.Failure<bool>("An error occurred while clearing refresh token.", 500);
+            }
+        }
+
         private static string GenerateSecureToken()
         {
             // Generate a cryptographically secure random token

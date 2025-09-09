@@ -16,10 +16,10 @@ namespace Infrastructure.Repositories.Implementations
             var query = @"
 INSERT INTO dbo.Company (
     OwnerID,
-    Name, 
-    Description, 
-    Logo, 
-    CreatedAt, 
+    Name,
+    Description,
+    Logo,
+    CreatedAt,
     UpdatedAt,
     CountryOfCitizenship,
     FullBirthName,
@@ -41,10 +41,10 @@ INSERT INTO dbo.Company (
 OUTPUT INSERTED.Id
 VALUES (
     @OwnerID,
-    @Name, 
-    @Description, 
-    @Logo, 
-    @CreatedAt, 
+    @Name,
+    @Description,
+    @Logo,
+    @CreatedAt,
     @UpdatedAt,
     @CountryOfCitizenship,
     @FullBirthName,

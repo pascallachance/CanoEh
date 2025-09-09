@@ -141,7 +141,7 @@ function App() {
                 postalCode: step2.postalCode
             };
 
-            const response = await fetch(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/seller/company/create`, {
+            const response = await fetch(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/CreateCompany`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

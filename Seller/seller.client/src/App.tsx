@@ -6,6 +6,7 @@ import NoCompanyPage from './components/NoCompanyPage';
 import CreateCompanyStep1 from './components/CreateCompanyStep1';
 import CreateCompanyStep2 from './components/CreateCompanyStep2';
 import CompanyCreatedSuccess from './components/CompanyCreatedSuccess';
+import Dashboard from './components/Dashboard/Dashboard';
 import { ApiClient } from './utils/apiClient';
 import type { CreateCompanyStep1Data } from './components/CreateCompanyStep1';
 import type { CreateCompanyStep2Data } from './components/CreateCompanyStep2';
@@ -180,9 +181,9 @@ function AppContent() {
     };
 
     const handleContinueToItems = () => {
-        // Update companies list and navigate to dashboard with items view
+        // Update companies list and navigate to dashboard 
         checkExistingSession().then(() => {
-            navigate('/items');
+            navigate('/dashboard');
         });
     };
 
@@ -222,118 +223,13 @@ function AppContent() {
     const DashboardRoute = () => (
         <ProtectedRoute>
             {companies.length > 0 ? (
-                <div>
-                    <header style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center', 
-                        padding: '1rem',
-                        borderBottom: '1px solid #eee'
-                    }}>
-                        <h1 id="tableLabel">CanoEh! Seller</h1>
-                        <div>
-                            <button 
-                                onClick={handleBackToLogin}
-                                style={{ 
-                                    padding: '0.5rem 1rem',
-                                    background: '#dc3545',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                Logout
-                            </button>
-                        </div>
-                    </header>
-                    <main style={{ padding: '1rem' }}>
-                        <h2>Welcome back!</h2>
-                        <p>You have {companies.length} company(ies) registered.</p>
-                        {companies.map(company => (
-                            <div key={company.id} style={{ 
-                                border: '1px solid #ddd', 
-                                padding: '1rem', 
-                                marginBottom: '1rem',
-                                borderRadius: '4px'
-                            }}>
-                                <h3>{company.name}</h3>
-                                {company.description && <p>{company.description}</p>}
-                                <small>Created: {new Date(company.createdAt).toLocaleDateString()}</small>
-                            </div>
-                        ))}
-                        <button 
-                            onClick={() => navigate('/items')}
-                            style={{
-                                padding: '0.75rem 1.5rem',
-                                background: '#007bff',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                fontSize: '1rem'
-                            }}
-                        >
-                            Manage Items
-                        </button>
-                    </main>
-                </div>
+                <Dashboard companies={companies} onLogout={handleBackToLogin} />
             ) : (
                 <NoCompanyPage
                     onCreateCompany={handleCreateCompany}
                     onBackToLogin={handleBackToLogin}
                 />
             )}
-        </ProtectedRoute>
-    );
-
-    // Items management route
-    const ItemsRoute = () => (
-        <ProtectedRoute>
-            <div>
-                <header style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center', 
-                    padding: '1rem',
-                    borderBottom: '1px solid #eee'
-                }}>
-                    <h1 id="tableLabel">CanoEh! Seller</h1>
-                    <div>
-                        <button 
-                            onClick={handleBackToLogin}
-                            style={{ 
-                                padding: '0.5rem 1rem',
-                                background: '#dc3545',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            Logout
-                        </button>
-                    </div>
-                </header>
-                <main style={{ padding: '1rem' }}>
-                    <h2>Items Management</h2>
-                    <p>This is where you would manage your items. This feature will be implemented in a future update.</p>
-                    <button 
-                        onClick={() => navigate('/dashboard')}
-                        style={{
-                            padding: '0.75rem 1.5rem',
-                            background: '#6c757d',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '1rem'
-                        }}
-                    >
-                        Back to Companies
-                    </button>
-                </main>
-            </div>
         </ProtectedRoute>
     );
 
@@ -395,7 +291,6 @@ function AppContent() {
                     )}
                 </ProtectedRoute>
             } />
-            <Route path="/items" element={<ItemsRoute />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

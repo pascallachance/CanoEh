@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './OrdersSection.css';
 
 interface Company {
@@ -103,6 +103,11 @@ function OrdersSection(_props: OrdersSectionProps) {
     const [selectedStatus, setSelectedStatus] = useState<OrderStatus | 'all'>('all');
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [showRefundModal, setShowRefundModal] = useState(false);
+    
+    // Refs for accessibility
+    const modalRef = useRef<HTMLDivElement>(null);
+    const refundButtonRef = useRef<HTMLButtonElement>(null);
+    const previousActiveElement = useRef<HTMLElement | null>(null);
 
     const getStatusColor = (status: OrderStatus): string => {
         switch (status) {
@@ -126,6 +131,78 @@ function OrdersSection(_props: OrdersSectionProps) {
 
     const processRefund = (orderId: string) => {
         updateOrderStatus(orderId, 'refunded');
+        setShowRefundModal(false);
+        setSelectedOrder(null);
+    };
+
+    // Accessibility: Focus management and keyboard handling
+    useEffect(() => {
+        if (showRefundModal) {
+            // Store the currently focused element
+            previousActiveElement.current = document.activeElement as HTMLElement;
+            
+            // Focus the modal content
+            const timer = setTimeout(() => {
+                modalRef.current?.focus();
+            }, 100);
+
+            // Prevent body scroll when modal is open
+            document.body.style.overflow = 'hidden';
+
+            return () => {
+                clearTimeout(timer);
+                document.body.style.overflow = '';
+            };
+        } else if (previousActiveElement.current) {
+            // Return focus to the element that opened the modal
+            previousActiveElement.current.focus();
+            previousActiveElement.current = null;
+        }
+    }, [showRefundModal]);
+
+    // Handle escape key
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && showRefundModal) {
+                setShowRefundModal(false);
+                setSelectedOrder(null);
+            }
+        };
+
+        if (showRefundModal) {
+            document.addEventListener('keydown', handleEscape);
+            return () => document.removeEventListener('keydown', handleEscape);
+        }
+    }, [showRefundModal]);
+
+    // Focus trapping within modal
+    const handleKeyDown = (event: React.KeyboardEvent) => {
+        if (!showRefundModal || !modalRef.current) return;
+
+        if (event.key === 'Tab') {
+            const focusableElements = modalRef.current.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            const firstElement = focusableElements[0] as HTMLElement;
+            const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+            if (event.shiftKey) {
+                // Shift + Tab
+                if (document.activeElement === firstElement) {
+                    event.preventDefault();
+                    lastElement?.focus();
+                }
+            } else {
+                // Tab
+                if (document.activeElement === lastElement) {
+                    event.preventDefault();
+                    firstElement?.focus();
+                }
+            }
+        }
+    };
+
+    const closeModal = () => {
         setShowRefundModal(false);
         setSelectedOrder(null);
     };
@@ -226,11 +303,13 @@ function OrdersSection(_props: OrdersSectionProps) {
                                                 </select>
                                                 {order.status !== 'refunded' && order.status !== 'cancelled' && (
                                                     <button
+                                                        ref={refundButtonRef}
                                                         onClick={() => {
                                                             setSelectedOrder(order);
                                                             setShowRefundModal(true);
                                                         }}
                                                         className="orders-refund-button"
+                                                        aria-label={`Process refund for order ${order.orderNumber}`}
                                                     >
                                                         Refund
                                                     </button>
@@ -247,10 +326,27 @@ function OrdersSection(_props: OrdersSectionProps) {
 
             {/* Refund Modal */}
             {showRefundModal && selectedOrder && (
-                <div className="orders-modal-overlay">
-                    <div className="orders-modal-content">
-                        <h3>Process Refund</h3>
-                        <div className="orders-modal-info">
+                <div 
+                    className="orders-modal-overlay"
+                    onClick={(e) => {
+                        // Close modal when clicking on overlay, but not on modal content
+                        if (e.target === e.currentTarget) {
+                            closeModal();
+                        }
+                    }}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="modal-title"
+                    aria-describedby="modal-description"
+                >
+                    <div 
+                        className="orders-modal-content"
+                        ref={modalRef}
+                        tabIndex={-1}
+                        onKeyDown={handleKeyDown}
+                    >
+                        <h3 id="modal-title">Process Refund</h3>
+                        <div className="orders-modal-info" id="modal-description">
                             <p><strong>Order:</strong> {selectedOrder.orderNumber}</p>
                             <p><strong>Customer:</strong> {selectedOrder.customerName}</p>
                             <p><strong>Total Amount:</strong> ${selectedOrder.totalAmount.toFixed(2)}</p>
@@ -279,17 +375,16 @@ function OrdersSection(_props: OrdersSectionProps) {
 
                         <div className="orders-modal-actions">
                             <button
-                                onClick={() => {
-                                    setShowRefundModal(false);
-                                    setSelectedOrder(null);
-                                }}
+                                onClick={closeModal}
                                 className="orders-modal-button orders-modal-button--cancel"
+                                aria-label="Cancel refund process"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={() => processRefund(selectedOrder.id)}
                                 className="orders-modal-button orders-modal-button--refund"
+                                aria-label={`Confirm refund for order ${selectedOrder.orderNumber}`}
                             >
                                 Process Refund
                             </button>

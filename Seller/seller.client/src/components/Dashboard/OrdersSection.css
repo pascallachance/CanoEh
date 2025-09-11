@@ -135,6 +135,11 @@
     width: 90%;
     max-height: 80vh;
     overflow: auto;
+    outline: none;
+}
+
+.orders-modal-content:focus {
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
 }
 
 .orders-modal-content h3 {

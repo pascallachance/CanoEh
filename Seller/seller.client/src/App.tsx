@@ -201,14 +201,7 @@ function AppContent() {
                 }}>
                     <h2>CanoEh! Seller</h2>
                     <p>Checking your session...</p>
-                    <div style={{ 
-                        border: '3px solid #f3f3f3',
-                        borderTop: '3px solid #007bff',
-                        borderRadius: '50%',
-                        width: '30px',
-                        height: '30px',
-                        animation: 'spin 1s linear infinite'
-                    }}></div>
+                    <div className="spinner"></div>
                 </div>
             );
         }

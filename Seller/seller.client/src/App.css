@@ -10,6 +10,30 @@
   100% { transform: rotate(360deg); }
 }
 
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #007bff;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+}
+
+.toast-slide-in {
+  animation: slideInRight 0.3s ease-out;
+}
+
 th, td {
     padding-left: 1rem;
     padding-right: 1rem;

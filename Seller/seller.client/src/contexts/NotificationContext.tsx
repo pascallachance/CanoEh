@@ -74,20 +74,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
                     pointerEvents: 'none'
                 }}
             >
-                <style>
-                    {`
-                        @keyframes slideInRight {
-                            from {
-                                transform: translateX(100%);
-                                opacity: 0;
-                            }
-                            to {
-                                transform: translateX(0);
-                                opacity: 1;
-                            }
-                        }
-                    `}
-                </style>
                 {notifications.map(notification => (
                     <div key={notification.id} style={{ pointerEvents: 'auto' }}>
                         <Toast

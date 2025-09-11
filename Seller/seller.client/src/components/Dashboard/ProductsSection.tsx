@@ -348,7 +348,7 @@ function ProductsSection(_props: ProductsSectionProps) {
                         <button
                             onClick={handleSaveItem}
                             disabled={!newItem.name || !newItem.description}
-                            className={`products-action-button products-action-button--save ${!newItem.name || !newItem.description ? '' : ''}`}
+                            className={`products-action-button products-action-button--save${!newItem.name || !newItem.description ? ' products-action-button--disabled' : ''}`}
                         >
                             Save Item
                         </button>

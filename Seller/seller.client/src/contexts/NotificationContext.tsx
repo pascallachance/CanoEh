@@ -20,7 +20,7 @@ interface NotificationProviderProps {
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
     const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
-    const generateId = () => `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const generateId = () => `notification-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 
     const removeNotification = (id: string) => {
         setNotifications(prev => prev.filter(notification => notification.id !== id));

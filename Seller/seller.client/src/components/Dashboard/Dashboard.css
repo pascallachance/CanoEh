@@ -3,11 +3,12 @@
     flex-direction: column;
     min-height: 100vh;
     width: 100vw;
-    position: absolute;
-    top: 0;
-    left: 0;
+    /* Removed position: absolute; */
+    /* Removed top: 0; */
+    /* Removed left: 0; */
     margin: 0;
     padding: 0;
+    /* Optionally, add position: relative; if stacking context is needed */
 }
 
 .dashboard-nav {

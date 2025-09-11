@@ -1,0 +1,153 @@
+/* Company Section Styles */
+
+.company-selector {
+    margin-bottom: 2rem;
+}
+
+.company-selector-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.company-selector-select {
+    padding: 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1rem;
+    min-width: 250px;
+}
+
+.company-details-container {
+    background: white;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.company-details-header {
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e5e9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.company-details-info h3 {
+    margin: 0;
+}
+
+.company-details-created {
+    margin: 0.25rem 0 0 0;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.company-edit-button {
+    padding: 0.75rem 1.5rem;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.company-edit-button--edit {
+    background: #007bff;
+}
+
+.company-edit-button--cancel {
+    background: #6c757d;
+}
+
+.company-details-content {
+    padding: 2rem;
+}
+
+.company-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.company-form-section h4 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.company-form-group {
+    margin-bottom: 1rem;
+}
+
+.company-form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.company-form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.company-form-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1rem;
+    min-height: 100px;
+    resize: vertical;
+}
+
+.company-form-display {
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+}
+
+.company-form-display--description {
+    min-height: 60px;
+}
+
+.company-address-section {
+    grid-column: span 2;
+}
+
+.company-address-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.company-form-actions {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e1e5e9;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.company-action-button {
+    padding: 0.75rem 1.5rem;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.company-action-button--cancel {
+    background: #6c757d;
+}
+
+.company-action-button--save {
+    background: #28a745;
+}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import './ProductsSection.css';
 
 interface Company {
     id: string;
@@ -163,123 +164,76 @@ function ProductsSection(_props: ProductsSectionProps) {
                 update existing products, and remove discontinued items.
             </p>
 
-            <div style={{ marginBottom: '2rem' }}>
+            <div className="products-add-button-container">
                 <button 
                     onClick={() => setShowAddForm(!showAddForm)}
-                    style={{
-                        padding: '0.75rem 1.5rem',
-                        background: '#007bff',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '1rem'
-                    }}
+                    className="products-add-button"
                 >
                     {showAddForm ? 'Cancel' : 'Add New Item'}
                 </button>
             </div>
 
             {showAddForm && (
-                <div style={{ 
-                    background: '#f8f9fa', 
-                    padding: '2rem', 
-                    borderRadius: '8px', 
-                    marginBottom: '2rem',
-                    border: '1px solid #e1e5e9'
-                }}>
+                <div className="products-add-form">
                     <h3>Add New Item</h3>
                     
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                    <div className="products-form-group">
+                        <label className="products-form-label">
                             Item Name *
                         </label>
                         <input
                             type="text"
                             value={newItem.name}
                             onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
-                            style={{
-                                width: '100%',
-                                padding: '0.75rem',
-                                border: '1px solid #ced4da',
-                                borderRadius: '4px',
-                                fontSize: '1rem'
-                            }}
+                            className="products-form-input"
                             placeholder="Enter item name"
                         />
                     </div>
 
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                    <div className="products-form-group">
+                        <label className="products-form-label">
                             Description *
                         </label>
                         <textarea
                             value={newItem.description}
                             onChange={(e) => setNewItem(prev => ({ ...prev, description: e.target.value }))}
-                            style={{
-                                width: '100%',
-                                padding: '0.75rem',
-                                border: '1px solid #ced4da',
-                                borderRadius: '4px',
-                                fontSize: '1rem',
-                                minHeight: '100px',
-                                resize: 'vertical'
-                            }}
+                            className="products-form-textarea"
                             placeholder="Enter item description"
                         />
                     </div>
 
-                    <div style={{ marginBottom: '1rem' }}>
+                    <div className="products-attributes-section">
                         <h4>Item Attributes</h4>
-                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'end' }}>
-                            <div style={{ flex: 1 }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                        <div className="products-attribute-input">
+                            <div className="products-attribute-name">
+                                <label className="products-form-label">
                                     Attribute Name (e.g., Color, Size)
                                 </label>
                                 <input
                                     type="text"
                                     value={newAttribute.name}
                                     onChange={(e) => setNewAttribute(prev => ({ ...prev, name: e.target.value }))}
-                                    style={{
-                                        width: '100%',
-                                        padding: '0.75rem',
-                                        border: '1px solid #ced4da',
-                                        borderRadius: '4px',
-                                        fontSize: '1rem'
-                                    }}
+                                    className="products-form-input"
                                     placeholder="e.g., Color"
                                 />
                             </div>
-                            <div style={{ flex: 2 }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                            <div className="products-attribute-values">
+                                <label className="products-form-label">
                                     Possible Values
                                 </label>
                                 {newAttribute.values.map((value, index) => (
-                                    <div key={index} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                    <div key={index} className="products-attribute-value-row">
                                         <input
                                             type="text"
                                             value={value}
                                             onChange={(e) => updateAttributeValue(index, e.target.value)}
-                                            style={{
-                                                flex: 1,
-                                                padding: '0.5rem',
-                                                border: '1px solid #ced4da',
-                                                borderRadius: '4px',
-                                                fontSize: '0.9rem'
-                                            }}
+                                            className="products-attribute-value-input"
                                             placeholder="e.g., Red"
                                         />
                                         {newAttribute.values.length > 1 && (
                                             <button
                                                 onClick={() => removeAttributeValue(index)}
-                                                style={{
-                                                    padding: '0.5rem',
-                                                    background: '#dc3545',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    borderRadius: '4px',
-                                                    cursor: 'pointer'
-                                                }}
+                                                className="products-remove-value-button"
                                             >
                                                 Remove
                                             </button>
@@ -288,62 +242,30 @@ function ProductsSection(_props: ProductsSectionProps) {
                                 ))}
                                 <button
                                     onClick={addAttributeValue}
-                                    style={{
-                                        padding: '0.5rem 1rem',
-                                        background: '#28a745',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                        fontSize: '0.9rem'
-                                    }}
+                                    className="products-add-value-button"
                                 >
                                     Add Value
                                 </button>
                             </div>
                             <button
                                 onClick={addAttribute}
-                                style={{
-                                    padding: '0.75rem 1rem',
-                                    background: '#007bff',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer'
-                                }}
+                                className="products-add-attribute-button"
                             >
                                 Add Attribute
                             </button>
                         </div>
 
                         {newItem.attributes.length > 0 && (
-                            <div style={{ marginBottom: '1rem' }}>
+                            <div className="products-added-attributes">
                                 <h5>Added Attributes:</h5>
                                 {newItem.attributes.map((attr, index) => (
-                                    <div key={index} style={{ 
-                                        display: 'flex', 
-                                        justifyContent: 'space-between', 
-                                        alignItems: 'center',
-                                        padding: '0.5rem',
-                                        background: 'white',
-                                        border: '1px solid #e1e5e9',
-                                        borderRadius: '4px',
-                                        marginBottom: '0.5rem'
-                                    }}>
+                                    <div key={index} className="products-attribute-item">
                                         <span>
                                             <strong>{attr.name}:</strong> {attr.values.join(', ')}
                                         </span>
                                         <button
                                             onClick={() => removeAttribute(index)}
-                                            style={{
-                                                padding: '0.25rem 0.5rem',
-                                                background: '#dc3545',
-                                                color: 'white',
-                                                border: 'none',
-                                                borderRadius: '4px',
-                                                cursor: 'pointer',
-                                                fontSize: '0.8rem'
-                                            }}
+                                            className="products-remove-attribute-button"
                                         >
                                             Remove
                                         </button>
@@ -351,15 +273,7 @@ function ProductsSection(_props: ProductsSectionProps) {
                                 ))}
                                 <button
                                     onClick={handleGenerateVariants}
-                                    style={{
-                                        padding: '0.75rem 1rem',
-                                        background: '#17a2b8',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                        marginTop: '0.5rem'
-                                    }}
+                                    className="products-generate-variants-button"
                                 >
                                     Generate Variants
                                 </button>
@@ -368,74 +282,56 @@ function ProductsSection(_props: ProductsSectionProps) {
                     </div>
 
                     {variants.length > 0 && (
-                        <div style={{ marginBottom: '1rem' }}>
+                        <div className="products-variants-section">
                             <h4>Item Variants</h4>
-                            <div style={{ overflowX: 'auto' }}>
-                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <div className="products-variants-table-container">
+                                <table className="products-variants-table">
                                     <thead>
-                                        <tr style={{ background: '#e9ecef' }}>
+                                        <tr>
                                             {newItem.attributes.map(attr => (
-                                                <th key={attr.name} style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>
+                                                <th key={attr.name}>
                                                     {attr.name}
                                                 </th>
                                             ))}
-                                            <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>SKU</th>
-                                            <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>Price</th>
-                                            <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>Stock</th>
+                                            <th>SKU</th>
+                                            <th>Price</th>
+                                            <th>Stock</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {variants.map(variant => (
                                             <tr key={variant.id}>
                                                 {newItem.attributes.map(attr => (
-                                                    <td key={attr.name} style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>
+                                                    <td key={attr.name}>
                                                         {variant.attributes[attr.name] || '-'}
                                                     </td>
                                                 ))}
-                                                <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>
+                                                <td>
                                                     <input
                                                         type="text"
                                                         value={variant.sku}
                                                         onChange={(e) => updateVariant(variant.id, 'sku', e.target.value)}
-                                                        style={{
-                                                            width: '100px',
-                                                            padding: '0.5rem',
-                                                            border: '1px solid #ced4da',
-                                                            borderRadius: '4px',
-                                                            fontSize: '0.9rem'
-                                                        }}
+                                                        className="products-variant-input products-variant-input--sku"
                                                         placeholder="SKU"
                                                     />
                                                 </td>
-                                                <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>
+                                                <td>
                                                     <input
                                                         type="number"
                                                         value={variant.price}
                                                         onChange={(e) => updateVariant(variant.id, 'price', parseFloat(e.target.value) || 0)}
-                                                        style={{
-                                                            width: '100px',
-                                                            padding: '0.5rem',
-                                                            border: '1px solid #ced4da',
-                                                            borderRadius: '4px',
-                                                            fontSize: '0.9rem'
-                                                        }}
+                                                        className="products-variant-input"
                                                         step="0.01"
                                                         min="0"
                                                         placeholder="0.00"
                                                     />
                                                 </td>
-                                                <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>
+                                                <td>
                                                     <input
                                                         type="number"
                                                         value={variant.stock}
                                                         onChange={(e) => updateVariant(variant.id, 'stock', parseInt(e.target.value) || 0)}
-                                                        style={{
-                                                            width: '80px',
-                                                            padding: '0.5rem',
-                                                            border: '1px solid #ced4da',
-                                                            borderRadius: '4px',
-                                                            fontSize: '0.9rem'
-                                                        }}
+                                                        className="products-variant-input products-variant-input--stock"
                                                         min="0"
                                                         placeholder="0"
                                                     />
@@ -448,33 +344,17 @@ function ProductsSection(_props: ProductsSectionProps) {
                         </div>
                     )}
 
-                    <div style={{ display: 'flex', gap: '1rem' }}>
+                    <div className="products-form-actions">
                         <button
                             onClick={handleSaveItem}
                             disabled={!newItem.name || !newItem.description}
-                            style={{
-                                padding: '0.75rem 1.5rem',
-                                background: newItem.name && newItem.description ? '#28a745' : '#6c757d',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: newItem.name && newItem.description ? 'pointer' : 'not-allowed',
-                                fontSize: '1rem'
-                            }}
+                            className={`products-action-button products-action-button--save ${!newItem.name || !newItem.description ? '' : ''}`}
                         >
                             Save Item
                         </button>
                         <button
                             onClick={() => setShowAddForm(false)}
-                            style={{
-                                padding: '0.75rem 1.5rem',
-                                background: '#6c757d',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                fontSize: '1rem'
-                            }}
+                            className="products-action-button products-action-button--cancel"
                         >
                             Cancel
                         </button>
@@ -482,54 +362,34 @@ function ProductsSection(_props: ProductsSectionProps) {
                 </div>
             )}
 
-            <div>
+            <div className="products-current-section">
                 <h3>Current Items ({items.length})</h3>
                 {items.length === 0 ? (
-                    <p style={{ color: '#6c757d', fontStyle: 'italic' }}>
+                    <p className="products-empty">
                         No items added yet. Click "Add New Item" to create your first product.
                     </p>
                 ) : (
-                    <div style={{ display: 'grid', gap: '1rem' }}>
+                    <div className="products-items-grid">
                         {items.map(item => (
-                            <div key={item.id} style={{
-                                border: '1px solid #e1e5e9',
-                                borderRadius: '8px',
-                                padding: '1.5rem',
-                                background: 'white'
-                            }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
-                                    <div>
-                                        <h4 style={{ margin: '0 0 0.5rem 0' }}>{item.name}</h4>
-                                        <p style={{ margin: '0 0 1rem 0', color: '#6c757d' }}>{item.description}</p>
+                            <div key={item.id} className="products-item-card">
+                                <div className="products-item-header">
+                                    <div className="products-item-info">
+                                        <h4>{item.name}</h4>
+                                        <p className="products-item-description">{item.description}</p>
                                     </div>
                                     <button
                                         onClick={() => deleteItem(item.id)}
-                                        style={{
-                                            padding: '0.5rem 1rem',
-                                            background: '#dc3545',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '4px',
-                                            cursor: 'pointer',
-                                            fontSize: '0.9rem'
-                                        }}
+                                        className="products-delete-button"
                                     >
                                         Delete
                                     </button>
                                 </div>
                                 
                                 {item.attributes.length > 0 && (
-                                    <div style={{ marginBottom: '1rem' }}>
+                                    <div className="products-item-attributes">
                                         <h5>Attributes:</h5>
                                         {item.attributes.map((attr, index) => (
-                                            <span key={index} style={{
-                                                display: 'inline-block',
-                                                background: '#e9ecef',
-                                                padding: '0.25rem 0.5rem',
-                                                borderRadius: '4px',
-                                                margin: '0.25rem 0.5rem 0.25rem 0',
-                                                fontSize: '0.9rem'
-                                            }}>
+                                            <span key={index} className="products-attribute-badge">
                                                 <strong>{attr.name}:</strong> {attr.values.join(', ')}
                                             </span>
                                         ))}
@@ -538,35 +398,35 @@ function ProductsSection(_props: ProductsSectionProps) {
 
                                 <div>
                                     <h5>Variants ({item.variants.length}):</h5>
-                                    <div style={{ overflowX: 'auto' }}>
-                                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                                    <div className="products-variants-table-container">
+                                        <table className="products-item-variants-table">
                                             <thead>
-                                                <tr style={{ background: '#f8f9fa' }}>
+                                                <tr>
                                                     {item.attributes.map(attr => (
-                                                        <th key={attr.name} style={{ padding: '0.5rem', border: '1px solid #dee2e6', textAlign: 'left' }}>
+                                                        <th key={attr.name}>
                                                             {attr.name}
                                                         </th>
                                                     ))}
-                                                    <th style={{ padding: '0.5rem', border: '1px solid #dee2e6', textAlign: 'left' }}>SKU</th>
-                                                    <th style={{ padding: '0.5rem', border: '1px solid #dee2e6', textAlign: 'left' }}>Price</th>
-                                                    <th style={{ padding: '0.5rem', border: '1px solid #dee2e6', textAlign: 'left' }}>Stock</th>
+                                                    <th>SKU</th>
+                                                    <th>Price</th>
+                                                    <th>Stock</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {item.variants.map(variant => (
                                                     <tr key={variant.id}>
                                                         {item.attributes.map(attr => (
-                                                            <td key={attr.name} style={{ padding: '0.5rem', border: '1px solid #dee2e6' }}>
+                                                            <td key={attr.name}>
                                                                 {variant.attributes[attr.name] || '-'}
                                                             </td>
                                                         ))}
-                                                        <td style={{ padding: '0.5rem', border: '1px solid #dee2e6' }}>
+                                                        <td>
                                                             {variant.sku || '-'}
                                                         </td>
-                                                        <td style={{ padding: '0.5rem', border: '1px solid #dee2e6' }}>
+                                                        <td>
                                                             ${variant.price.toFixed(2)}
                                                         </td>
-                                                        <td style={{ padding: '0.5rem', border: '1px solid #dee2e6' }}>
+                                                        <td>
                                                             {variant.stock}
                                                         </td>
                                                     </tr>

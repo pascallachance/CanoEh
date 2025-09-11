@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNotifications } from '../../contexts/useNotifications';
+import './CompanySection.css';
 
 interface Company {
     id: string;
@@ -121,8 +122,8 @@ function CompanySection({ companies }: CompanySectionProps) {
             </p>
 
             {companies.length > 1 && (
-                <div style={{ marginBottom: '2rem' }}>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                <div className="company-selector">
+                    <label className="company-selector-label">
                         Select Company:
                     </label>
                     <select
@@ -131,13 +132,7 @@ function CompanySection({ companies }: CompanySectionProps) {
                             const company = companies.find(c => c.id === e.target.value);
                             if (company) handleCompanySelect(company);
                         }}
-                        style={{
-                            padding: '0.75rem',
-                            border: '1px solid #ced4da',
-                            borderRadius: '4px',
-                            fontSize: '1rem',
-                            minWidth: '250px'
-                        }}
+                        className="company-selector-select"
                     >
                         {companies.map(company => (
                             <option key={company.id} value={company.id}>
@@ -148,50 +143,30 @@ function CompanySection({ companies }: CompanySectionProps) {
                 </div>
             )}
 
-            <div style={{
-                background: 'white',
-                border: '1px solid #e1e5e9',
-                borderRadius: '8px',
-                overflow: 'hidden'
-            }}>
-                <div style={{
-                    padding: '1.5rem',
-                    background: '#f8f9fa',
-                    borderBottom: '1px solid #e1e5e9',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                }}>
-                    <div>
-                        <h3 style={{ margin: 0 }}>{selectedCompany.name}</h3>
-                        <p style={{ margin: '0.25rem 0 0 0', color: '#6c757d', fontSize: '0.9rem' }}>
+            <div className="company-details-container">
+                <div className="company-details-header">
+                    <div className="company-details-info">
+                        <h3>{selectedCompany.name}</h3>
+                        <p className="company-details-created">
                             Created: {new Date(selectedCompany.createdAt).toLocaleDateString()}
                         </p>
                     </div>
                     <button
                         onClick={() => setIsEditing(!isEditing)}
-                        style={{
-                            padding: '0.75rem 1.5rem',
-                            background: isEditing ? '#6c757d' : '#007bff',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '1rem'
-                        }}
+                        className={`company-edit-button ${isEditing ? 'company-edit-button--cancel' : 'company-edit-button--edit'}`}
                     >
                         {isEditing ? 'Cancel' : 'Edit Details'}
                     </button>
                 </div>
 
-                <div style={{ padding: '2rem' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+                <div className="company-details-content">
+                    <div className="company-form-grid">
                         {/* Basic Information */}
-                        <div>
-                            <h4 style={{ marginTop: 0, marginBottom: '1.5rem', color: '#333' }}>Basic Information</h4>
+                        <div className="company-form-section">
+                            <h4>Basic Information</h4>
                             
-                            <div style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                            <div className="company-form-group">
+                                <label className="company-form-label">
                                     Company Name *
                                 </label>
                                 {isEditing ? (
@@ -199,60 +174,35 @@ function CompanySection({ companies }: CompanySectionProps) {
                                         type="text"
                                         value={formData.name}
                                         onChange={(e) => handleInputChange('name', e.target.value)}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #ced4da',
-                                            borderRadius: '4px',
-                                            fontSize: '1rem'
-                                        }}
+                                        className="company-form-input"
                                     />
                                 ) : (
-                                    <div style={{ 
-                                        padding: '0.75rem',
-                                        background: '#f8f9fa',
-                                        border: '1px solid #e9ecef',
-                                        borderRadius: '4px'
-                                    }}>
+                                    <div className="company-form-display">
                                         {formData.name}
                                     </div>
                                 )}
                             </div>
 
-                            <div style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                            <div className="company-form-group">
+                                <label className="company-form-label">
                                     Description
                                 </label>
                                 {isEditing ? (
                                     <textarea
                                         value={formData.description}
                                         onChange={(e) => handleInputChange('description', e.target.value)}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #ced4da',
-                                            borderRadius: '4px',
-                                            fontSize: '1rem',
-                                            minHeight: '100px',
-                                            resize: 'vertical'
-                                        }}
+                                        className="company-form-textarea"
                                         placeholder="Brief description of your company"
                                     />
                                 ) : (
-                                    <div style={{ 
-                                        padding: '0.75rem',
-                                        background: '#f8f9fa',
-                                        border: '1px solid #e9ecef',
-                                        borderRadius: '4px',
-                                        minHeight: '60px'
-                                    }}>
+                                    <div className="company-form-display company-form-display--description">
                                         {formData.description || 'No description provided'}
                                     </div>
                                 )}
                             </div>
 
-                            <div style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                            <div className="company-form-group">
+                                <label className="company-form-label">
                                     Logo URL
                                 </label>
                                 {isEditing ? (
@@ -260,22 +210,11 @@ function CompanySection({ companies }: CompanySectionProps) {
                                         type="url"
                                         value={formData.logo}
                                         onChange={(e) => handleInputChange('logo', e.target.value)}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #ced4da',
-                                            borderRadius: '4px',
-                                            fontSize: '1rem'
-                                        }}
+                                        className="company-form-input"
                                         placeholder="https://example.com/logo.png"
                                     />
                                 ) : (
-                                    <div style={{ 
-                                        padding: '0.75rem',
-                                        background: '#f8f9fa',
-                                        border: '1px solid #e9ecef',
-                                        borderRadius: '4px'
-                                    }}>
+                                    <div className="company-form-display">
                                         {formData.logo || 'No logo URL provided'}
                                     </div>
                                 )}
@@ -283,11 +222,11 @@ function CompanySection({ companies }: CompanySectionProps) {
                         </div>
 
                         {/* Contact Information */}
-                        <div>
-                            <h4 style={{ marginTop: 0, marginBottom: '1.5rem', color: '#333' }}>Contact Information</h4>
+                        <div className="company-form-section">
+                            <h4>Contact Information</h4>
                             
-                            <div style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                            <div className="company-form-group">
+                                <label className="company-form-label">
                                     Phone Number
                                 </label>
                                 {isEditing ? (
@@ -295,29 +234,18 @@ function CompanySection({ companies }: CompanySectionProps) {
                                         type="tel"
                                         value={formData.phone}
                                         onChange={(e) => handleInputChange('phone', e.target.value)}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #ced4da',
-                                            borderRadius: '4px',
-                                            fontSize: '1rem'
-                                        }}
+                                        className="company-form-input"
                                         placeholder="+1 (555) 123-4567"
                                     />
                                 ) : (
-                                    <div style={{ 
-                                        padding: '0.75rem',
-                                        background: '#f8f9fa',
-                                        border: '1px solid #e9ecef',
-                                        borderRadius: '4px'
-                                    }}>
+                                    <div className="company-form-display">
                                         {formData.phone || 'No phone number provided'}
                                     </div>
                                 )}
                             </div>
 
-                            <div style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                            <div className="company-form-group">
+                                <label className="company-form-label">
                                     Email Address
                                 </label>
                                 {isEditing ? (
@@ -325,29 +253,18 @@ function CompanySection({ companies }: CompanySectionProps) {
                                         type="email"
                                         value={formData.email}
                                         onChange={(e) => handleInputChange('email', e.target.value)}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #ced4da',
-                                            borderRadius: '4px',
-                                            fontSize: '1rem'
-                                        }}
+                                        className="company-form-input"
                                         placeholder="contact@company.com"
                                     />
                                 ) : (
-                                    <div style={{ 
-                                        padding: '0.75rem',
-                                        background: '#f8f9fa',
-                                        border: '1px solid #e9ecef',
-                                        borderRadius: '4px'
-                                    }}>
+                                    <div className="company-form-display">
                                         {formData.email || 'No email address provided'}
                                     </div>
                                 )}
                             </div>
 
-                            <div style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                            <div className="company-form-group">
+                                <label className="company-form-label">
                                     Website
                                 </label>
                                 {isEditing ? (
@@ -355,22 +272,11 @@ function CompanySection({ companies }: CompanySectionProps) {
                                         type="url"
                                         value={formData.website}
                                         onChange={(e) => handleInputChange('website', e.target.value)}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #ced4da',
-                                            borderRadius: '4px',
-                                            fontSize: '1rem'
-                                        }}
+                                        className="company-form-input"
                                         placeholder="https://www.company.com"
                                     />
                                 ) : (
-                                    <div style={{ 
-                                        padding: '0.75rem',
-                                        background: '#f8f9fa',
-                                        border: '1px solid #e9ecef',
-                                        borderRadius: '4px'
-                                    }}>
+                                    <div className="company-form-display">
                                         {formData.website || 'No website provided'}
                                     </div>
                                 )}
@@ -378,12 +284,12 @@ function CompanySection({ companies }: CompanySectionProps) {
                         </div>
 
                         {/* Address Information */}
-                        <div style={{ gridColumn: 'span 2' }}>
-                            <h4 style={{ marginTop: 0, marginBottom: '1.5rem', color: '#333' }}>Business Address</h4>
+                        <div className="company-address-section">
+                            <h4>Business Address</h4>
                             
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                            <div className="company-address-grid">
+                                <div className="company-form-group">
+                                    <label className="company-form-label">
                                         Address Line 1
                                     </label>
                                     {isEditing ? (
@@ -391,29 +297,18 @@ function CompanySection({ companies }: CompanySectionProps) {
                                             type="text"
                                             value={formData.address1}
                                             onChange={(e) => handleInputChange('address1', e.target.value)}
-                                            style={{
-                                                width: '100%',
-                                                padding: '0.75rem',
-                                                border: '1px solid #ced4da',
-                                                borderRadius: '4px',
-                                                fontSize: '1rem'
-                                            }}
+                                            className="company-form-input"
                                             placeholder="123 Main Street"
                                         />
                                     ) : (
-                                        <div style={{ 
-                                            padding: '0.75rem',
-                                            background: '#f8f9fa',
-                                            border: '1px solid #e9ecef',
-                                            borderRadius: '4px'
-                                        }}>
+                                        <div className="company-form-display">
                                             {formData.address1 || 'No address provided'}
                                         </div>
                                     )}
                                 </div>
 
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                                <div className="company-form-group">
+                                    <label className="company-form-label">
                                         Address Line 2
                                     </label>
                                     {isEditing ? (
@@ -421,29 +316,18 @@ function CompanySection({ companies }: CompanySectionProps) {
                                             type="text"
                                             value={formData.address2}
                                             onChange={(e) => handleInputChange('address2', e.target.value)}
-                                            style={{
-                                                width: '100%',
-                                                padding: '0.75rem',
-                                                border: '1px solid #ced4da',
-                                                borderRadius: '4px',
-                                                fontSize: '1rem'
-                                            }}
+                                            className="company-form-input"
                                             placeholder="Suite 100 (optional)"
                                         />
                                     ) : (
-                                        <div style={{ 
-                                            padding: '0.75rem',
-                                            background: '#f8f9fa',
-                                            border: '1px solid #e9ecef',
-                                            borderRadius: '4px'
-                                        }}>
+                                        <div className="company-form-display">
                                             {formData.address2 || 'Not provided'}
                                         </div>
                                     )}
                                 </div>
 
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                                <div className="company-form-group">
+                                    <label className="company-form-label">
                                         City
                                     </label>
                                     {isEditing ? (
@@ -451,29 +335,18 @@ function CompanySection({ companies }: CompanySectionProps) {
                                             type="text"
                                             value={formData.city}
                                             onChange={(e) => handleInputChange('city', e.target.value)}
-                                            style={{
-                                                width: '100%',
-                                                padding: '0.75rem',
-                                                border: '1px solid #ced4da',
-                                                borderRadius: '4px',
-                                                fontSize: '1rem'
-                                            }}
+                                            className="company-form-input"
                                             placeholder="Toronto"
                                         />
                                     ) : (
-                                        <div style={{ 
-                                            padding: '0.75rem',
-                                            background: '#f8f9fa',
-                                            border: '1px solid #e9ecef',
-                                            borderRadius: '4px'
-                                        }}>
+                                        <div className="company-form-display">
                                             {formData.city || 'No city provided'}
                                         </div>
                                     )}
                                 </div>
 
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                                <div className="company-form-group">
+                                    <label className="company-form-label">
                                         Province/State
                                     </label>
                                     {isEditing ? (
@@ -481,29 +354,18 @@ function CompanySection({ companies }: CompanySectionProps) {
                                             type="text"
                                             value={formData.provinceState}
                                             onChange={(e) => handleInputChange('provinceState', e.target.value)}
-                                            style={{
-                                                width: '100%',
-                                                padding: '0.75rem',
-                                                border: '1px solid #ced4da',
-                                                borderRadius: '4px',
-                                                fontSize: '1rem'
-                                            }}
+                                            className="company-form-input"
                                             placeholder="Ontario"
                                         />
                                     ) : (
-                                        <div style={{ 
-                                            padding: '0.75rem',
-                                            background: '#f8f9fa',
-                                            border: '1px solid #e9ecef',
-                                            borderRadius: '4px'
-                                        }}>
+                                        <div className="company-form-display">
                                             {formData.provinceState || 'No province/state provided'}
                                         </div>
                                     )}
                                 </div>
 
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                                <div className="company-form-group">
+                                    <label className="company-form-label">
                                         Country
                                     </label>
                                     {isEditing ? (
@@ -511,29 +373,18 @@ function CompanySection({ companies }: CompanySectionProps) {
                                             type="text"
                                             value={formData.country}
                                             onChange={(e) => handleInputChange('country', e.target.value)}
-                                            style={{
-                                                width: '100%',
-                                                padding: '0.75rem',
-                                                border: '1px solid #ced4da',
-                                                borderRadius: '4px',
-                                                fontSize: '1rem'
-                                            }}
+                                            className="company-form-input"
                                             placeholder="Canada"
                                         />
                                     ) : (
-                                        <div style={{ 
-                                            padding: '0.75rem',
-                                            background: '#f8f9fa',
-                                            border: '1px solid #e9ecef',
-                                            borderRadius: '4px'
-                                        }}>
+                                        <div className="company-form-display">
                                             {formData.country || 'No country provided'}
                                         </div>
                                     )}
                                 </div>
 
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                                <div className="company-form-group">
+                                    <label className="company-form-label">
                                         Postal Code
                                     </label>
                                     {isEditing ? (
@@ -541,22 +392,11 @@ function CompanySection({ companies }: CompanySectionProps) {
                                             type="text"
                                             value={formData.postalCode}
                                             onChange={(e) => handleInputChange('postalCode', e.target.value)}
-                                            style={{
-                                                width: '100%',
-                                                padding: '0.75rem',
-                                                border: '1px solid #ced4da',
-                                                borderRadius: '4px',
-                                                fontSize: '1rem'
-                                            }}
+                                            className="company-form-input"
                                             placeholder="M5V 3A8"
                                         />
                                     ) : (
-                                        <div style={{ 
-                                            padding: '0.75rem',
-                                            background: '#f8f9fa',
-                                            border: '1px solid #e9ecef',
-                                            borderRadius: '4px'
-                                        }}>
+                                        <div className="company-form-display">
                                             {formData.postalCode || 'No postal code provided'}
                                         </div>
                                     )}
@@ -566,39 +406,16 @@ function CompanySection({ companies }: CompanySectionProps) {
                     </div>
 
                     {isEditing && (
-                        <div style={{ 
-                            marginTop: '2rem', 
-                            paddingTop: '2rem', 
-                            borderTop: '1px solid #e1e5e9',
-                            display: 'flex',
-                            gap: '1rem',
-                            justifyContent: 'flex-end'
-                        }}>
+                        <div className="company-form-actions">
                             <button
                                 onClick={handleCancel}
-                                style={{
-                                    padding: '0.75rem 1.5rem',
-                                    background: '#6c757d',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontSize: '1rem'
-                                }}
+                                className="company-action-button company-action-button--cancel"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSave}
-                                style={{
-                                    padding: '0.75rem 1.5rem',
-                                    background: '#28a745',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontSize: '1rem'
-                                }}
+                                className="company-action-button company-action-button--save"
                             >
                                 Save Changes
                             </button>

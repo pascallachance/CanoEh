@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import './OrdersSection.css';
 
 interface Company {
     id: string;
@@ -140,17 +141,12 @@ function OrdersSection(_props: OrdersSectionProps) {
                 View and manage all orders for your company. Update order statuses, track fulfillment, and process refunds.
             </p>
 
-            <div style={{ marginBottom: '2rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                <label style={{ fontWeight: '600' }}>Filter by Status:</label>
+            <div className="orders-filter-container">
+                <label className="orders-filter-label">Filter by Status:</label>
                 <select 
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value as OrderStatus | 'all')}
-                    style={{
-                        padding: '0.5rem',
-                        border: '1px solid #ced4da',
-                        borderRadius: '4px',
-                        fontSize: '1rem'
-                    }}
+                    className="orders-filter-select"
                 >
                     <option value="all">All Orders</option>
                     <option value="pending">Pending</option>
@@ -162,75 +158,65 @@ function OrdersSection(_props: OrdersSectionProps) {
                 </select>
             </div>
 
-            <div style={{ marginBottom: '2rem' }}>
+            <div className="orders-section">
                 <h3>Orders ({filteredOrders.length})</h3>
                 {filteredOrders.length === 0 ? (
-                    <p style={{ color: '#6c757d', fontStyle: 'italic' }}>
+                    <p className="orders-empty">
                         No orders found for the selected status.
                     </p>
                 ) : (
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <div className="orders-table-container">
+                        <table className="orders-table">
                             <thead>
-                                <tr style={{ background: '#f8f9fa' }}>
-                                    <th style={{ padding: '1rem', border: '1px solid #dee2e6', textAlign: 'left' }}>Order #</th>
-                                    <th style={{ padding: '1rem', border: '1px solid #dee2e6', textAlign: 'left' }}>Customer</th>
-                                    <th style={{ padding: '1rem', border: '1px solid #dee2e6', textAlign: 'left' }}>Items</th>
-                                    <th style={{ padding: '1rem', border: '1px solid #dee2e6', textAlign: 'left' }}>Total</th>
-                                    <th style={{ padding: '1rem', border: '1px solid #dee2e6', textAlign: 'left' }}>Status</th>
-                                    <th style={{ padding: '1rem', border: '1px solid #dee2e6', textAlign: 'left' }}>Date</th>
-                                    <th style={{ padding: '1rem', border: '1px solid #dee2e6', textAlign: 'left' }}>Actions</th>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Customer</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredOrders.map(order => (
-                                    <tr key={order.id} style={{ borderBottom: '1px solid #dee2e6' }}>
-                                        <td style={{ padding: '1rem', border: '1px solid #dee2e6' }}>
+                                    <tr key={order.id}>
+                                        <td>
                                             <strong>{order.orderNumber}</strong>
                                         </td>
-                                        <td style={{ padding: '1rem', border: '1px solid #dee2e6' }}>
-                                            <div>
-                                                <div style={{ fontWeight: '600' }}>{order.customerName}</div>
-                                                <div style={{ fontSize: '0.9rem', color: '#6c757d' }}>{order.customerEmail}</div>
+                                        <td>
+                                            <div className="orders-customer-info">
+                                                <div className="orders-customer-name">{order.customerName}</div>
+                                                <div className="orders-customer-email">{order.customerEmail}</div>
                                             </div>
                                         </td>
-                                        <td style={{ padding: '1rem', border: '1px solid #dee2e6' }}>
+                                        <td>
                                             {order.items.map(item => (
-                                                <div key={item.id} style={{ marginBottom: '0.25rem' }}>
+                                                <div key={item.id} className="orders-item">
                                                     <strong>{item.productName}</strong> ({item.variant}) × {item.quantity}
                                                 </div>
                                             ))}
                                         </td>
-                                        <td style={{ padding: '1rem', border: '1px solid #dee2e6' }}>
-                                            <strong>${order.totalAmount.toFixed(2)}</strong>
+                                        <td>
+                                            <strong className="orders-total">${order.totalAmount.toFixed(2)}</strong>
                                         </td>
-                                        <td style={{ padding: '1rem', border: '1px solid #dee2e6' }}>
-                                            <span style={{
-                                                padding: '0.25rem 0.75rem',
-                                                borderRadius: '12px',
-                                                fontSize: '0.85rem',
-                                                fontWeight: '600',
-                                                color: 'white',
-                                                background: getStatusColor(order.status),
-                                                textTransform: 'capitalize'
-                                            }}>
+                                        <td>
+                                            <span 
+                                                className="orders-status-badge"
+                                                style={{ background: getStatusColor(order.status) }}
+                                            >
                                                 {order.status}
                                             </span>
                                         </td>
-                                        <td style={{ padding: '1rem', border: '1px solid #dee2e6' }}>
+                                        <td>
                                             {new Date(order.createdAt).toLocaleDateString()}
                                         </td>
-                                        <td style={{ padding: '1rem', border: '1px solid #dee2e6' }}>
-                                            <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
+                                        <td>
+                                            <div className="orders-actions">
                                                 <select
                                                     value={order.status}
                                                     onChange={(e) => updateOrderStatus(order.id, e.target.value as OrderStatus)}
-                                                    style={{
-                                                        padding: '0.25rem 0.5rem',
-                                                        border: '1px solid #ced4da',
-                                                        borderRadius: '4px',
-                                                        fontSize: '0.85rem'
-                                                    }}
+                                                    className="orders-status-select"
                                                 >
                                                     <option value="pending">Pending</option>
                                                     <option value="processing">Processing</option>
@@ -244,15 +230,7 @@ function OrdersSection(_props: OrdersSectionProps) {
                                                             setSelectedOrder(order);
                                                             setShowRefundModal(true);
                                                         }}
-                                                        style={{
-                                                            padding: '0.25rem 0.5rem',
-                                                            background: '#dc3545',
-                                                            color: 'white',
-                                                            border: 'none',
-                                                            borderRadius: '4px',
-                                                            cursor: 'pointer',
-                                                            fontSize: '0.8rem'
-                                                        }}
+                                                        className="orders-refund-button"
                                                     >
                                                         Refund
                                                     </button>
@@ -269,93 +247,49 @@ function OrdersSection(_props: OrdersSectionProps) {
 
             {/* Refund Modal */}
             {showRefundModal && selectedOrder && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'rgba(0, 0, 0, 0.5)',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    zIndex: 1000
-                }}>
-                    <div style={{
-                        background: 'white',
-                        padding: '2rem',
-                        borderRadius: '8px',
-                        maxWidth: '500px',
-                        width: '90%',
-                        maxHeight: '80vh',
-                        overflow: 'auto'
-                    }}>
+                <div className="orders-modal-overlay">
+                    <div className="orders-modal-content">
                         <h3>Process Refund</h3>
-                        <div style={{ marginBottom: '1.5rem' }}>
+                        <div className="orders-modal-info">
                             <p><strong>Order:</strong> {selectedOrder.orderNumber}</p>
                             <p><strong>Customer:</strong> {selectedOrder.customerName}</p>
                             <p><strong>Total Amount:</strong> ${selectedOrder.totalAmount.toFixed(2)}</p>
                         </div>
 
-                        <div style={{ marginBottom: '1.5rem' }}>
+                        <div className="orders-modal-items">
                             <h4>Items to Refund:</h4>
                             {selectedOrder.items.map(item => (
-                                <div key={item.id} style={{
-                                    padding: '0.75rem',
-                                    border: '1px solid #e1e5e9',
-                                    borderRadius: '4px',
-                                    marginBottom: '0.5rem'
-                                }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <div key={item.id} className="orders-modal-item">
+                                    <div className="orders-modal-item-header">
                                         <span>{item.productName} ({item.variant})</span>
                                         <span>${item.totalPrice.toFixed(2)}</span>
                                     </div>
-                                    <div style={{ fontSize: '0.9rem', color: '#6c757d' }}>
+                                    <div className="orders-modal-item-details">
                                         Quantity: {item.quantity} × ${item.unitPrice.toFixed(2)}
                                     </div>
                                 </div>
                             ))}
                         </div>
 
-                        <div style={{ 
-                            padding: '1rem', 
-                            background: '#f8f9fa', 
-                            borderRadius: '4px', 
-                            marginBottom: '1.5rem',
-                            border: '1px solid #e1e5e9'
-                        }}>
-                            <p style={{ margin: 0, color: '#495057' }}>
+                        <div className="orders-modal-warning">
+                            <p>
                                 <strong>Warning:</strong> This action will process a full refund for this order and change its status to "Refunded". This action cannot be undone.
                             </p>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                        <div className="orders-modal-actions">
                             <button
                                 onClick={() => {
                                     setShowRefundModal(false);
                                     setSelectedOrder(null);
                                 }}
-                                style={{
-                                    padding: '0.75rem 1.5rem',
-                                    background: '#6c757d',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer'
-                                }}
+                                className="orders-modal-button orders-modal-button--cancel"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={() => processRefund(selectedOrder.id)}
-                                style={{
-                                    padding: '0.75rem 1.5rem',
-                                    background: '#dc3545',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer'
-                                }}
+                                className="orders-modal-button orders-modal-button--refund"
                             >
                                 Process Refund
                             </button>
@@ -365,12 +299,7 @@ function OrdersSection(_props: OrdersSectionProps) {
             )}
 
             {/* Order Summary Stats */}
-            <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                gap: '1rem',
-                marginTop: '2rem'
-            }}>
+            <div className="orders-stats-grid">
                 {(['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'] as OrderStatus[]).map(status => {
                     const count = orders.filter(order => order.status === status).length;
                     const total = orders
@@ -378,29 +307,17 @@ function OrdersSection(_props: OrdersSectionProps) {
                         .reduce((sum, order) => sum + order.totalAmount, 0);
                     
                     return (
-                        <div key={status} style={{
-                            padding: '1rem',
-                            background: 'white',
-                            border: '1px solid #e1e5e9',
-                            borderRadius: '8px',
-                            textAlign: 'center'
-                        }}>
-                            <div style={{ 
-                                fontSize: '2rem', 
-                                fontWeight: 'bold',
-                                color: getStatusColor(status),
-                                marginBottom: '0.5rem'
-                            }}>
+                        <div key={status} className="orders-stat-card">
+                            <div 
+                                className="orders-stat-count"
+                                style={{ color: getStatusColor(status) }}
+                            >
                                 {count}
                             </div>
-                            <div style={{ 
-                                textTransform: 'capitalize', 
-                                fontWeight: '600',
-                                marginBottom: '0.25rem'
-                            }}>
+                            <div className="orders-stat-label">
                                 {status} Orders
                             </div>
-                            <div style={{ fontSize: '0.9rem', color: '#6c757d' }}>
+                            <div className="orders-stat-total">
                                 ${total.toFixed(2)} total
                             </div>
                         </div>

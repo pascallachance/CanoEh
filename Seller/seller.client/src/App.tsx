@@ -8,6 +8,7 @@ import CreateCompanyStep2 from './components/CreateCompanyStep2';
 import CompanyCreatedSuccess from './components/CompanyCreatedSuccess';
 import Dashboard from './components/Dashboard/Dashboard';
 import { ApiClient } from './utils/apiClient';
+import { NotificationProvider } from './contexts/NotificationContext';
 import type { CreateCompanyStep1Data } from './components/CreateCompanyStep1';
 import type { CreateCompanyStep2Data } from './components/CreateCompanyStep2';
 
@@ -300,7 +301,9 @@ function AppContent() {
 function App() {
     return (
         <Router>
-            <AppContent />
+            <NotificationProvider>
+                <AppContent />
+            </NotificationProvider>
         </Router>
     );
 }

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNotifications } from '../../contexts/useNotifications';
 
 interface Company {
     id: string;
@@ -30,6 +31,7 @@ interface CompanyFormData {
 }
 
 function CompanySection({ companies }: CompanySectionProps) {
+    const { showSuccess } = useNotifications();
     const [selectedCompany, setSelectedCompany] = useState<Company | null>(
         companies.length > 0 ? companies[0] : null
     );
@@ -76,8 +78,8 @@ function CompanySection({ companies }: CompanySectionProps) {
         // Here you would typically make an API call to update the company
         console.log('Saving company data:', formData);
         setIsEditing(false);
-        // Show success message
-        alert('Company information updated successfully!');
+        // Show success message with toast notification
+        showSuccess('Company information updated successfully!');
     };
 
     const handleCancel = () => {

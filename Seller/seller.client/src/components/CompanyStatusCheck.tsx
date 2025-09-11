@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import './CompanyStatusCheck.css';
 
 interface Company {
     id: string;
@@ -68,14 +69,7 @@ function CompanyStatusCheck({ onHasCompany, onNoCompany, onError }: CompanyStatu
 
     if (loading) {
         return (
-            <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '200px',
-                padding: '2rem'
-            }}>
+            <div className="company-status-loading">
                 <h2>Checking your company status...</h2>
                 <p>Please wait while we verify your company information.</p>
             </div>

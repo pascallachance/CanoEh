@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import './AnalyticsSection.css';
 
 interface Company {
     id: string;
@@ -91,17 +92,12 @@ function AnalyticsSection(_props: AnalyticsSectionProps) {
                 Track your sales performance, analyze customer behavior, and gain insights into your business growth.
             </p>
 
-            <div style={{ marginBottom: '2rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                <label style={{ fontWeight: '600' }}>Time Period:</label>
+            <div className="analytics-period-selector">
+                <label className="analytics-period-label">Time Period:</label>
                 <select 
                     value={selectedPeriod}
                     onChange={(e) => setSelectedPeriod(e.target.value as typeof selectedPeriod)}
-                    style={{
-                        padding: '0.5rem',
-                        border: '1px solid #ced4da',
-                        borderRadius: '4px',
-                        fontSize: '1rem'
-                    }}
+                    className="analytics-period-select"
                 >
                     <option value="7d">Last 7 Days</option>
                     <option value="30d">Last 30 Days</option>
@@ -111,119 +107,67 @@ function AnalyticsSection(_props: AnalyticsSectionProps) {
             </div>
 
             {/* Key Metrics */}
-            <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-                gap: '1.5rem',
-                marginBottom: '3rem'
-            }}>
-                <div style={{
-                    padding: '1.5rem',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    color: 'white',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-                }}>
-                    <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '0.5rem' }}>Total Revenue</div>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+            <div className="analytics-metrics-grid">
+                <div className="analytics-metric-card analytics-metric-card--revenue">
+                    <div className="analytics-metric-label">Total Revenue</div>
+                    <div className="analytics-metric-value">
                         {formatCurrency(analytics.totalRevenue)}
                     </div>
-                    <div style={{ 
-                        fontSize: '0.9rem', 
-                        color: analytics.revenueGrowth >= 0 ? '#d4edda' : '#f8d7da'
-                    }}>
+                    <div className={`analytics-metric-change ${analytics.revenueGrowth >= 0 ? 'analytics-metric-change--positive' : 'analytics-metric-change--negative'}`}>
                         {formatPercentage(analytics.revenueGrowth)} from last period
                     </div>
                 </div>
 
-                <div style={{
-                    padding: '1.5rem',
-                    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                    color: 'white',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-                }}>
-                    <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '0.5rem' }}>Total Orders</div>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                <div className="analytics-metric-card analytics-metric-card--orders">
+                    <div className="analytics-metric-label">Total Orders</div>
+                    <div className="analytics-metric-value">
                         {analytics.totalOrders.toLocaleString()}
                     </div>
-                    <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+                    <div className="analytics-metric-subtitle">
                         Across {analytics.totalCustomers} customers
                     </div>
                 </div>
 
-                <div style={{
-                    padding: '1.5rem',
-                    background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                    color: 'white',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-                }}>
-                    <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '0.5rem' }}>Average Order Value</div>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                <div className="analytics-metric-card analytics-metric-card--avg-order">
+                    <div className="analytics-metric-label">Average Order Value</div>
+                    <div className="analytics-metric-value">
                         {formatCurrency(analytics.averageOrderValue)}
                     </div>
-                    <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+                    <div className="analytics-metric-subtitle">
                         Per transaction
                     </div>
                 </div>
 
-                <div style={{
-                    padding: '1.5rem',
-                    background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-                    color: 'white',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-                }}>
-                    <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '0.5rem' }}>Unique Customers</div>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                <div className="analytics-metric-card analytics-metric-card--customers">
+                    <div className="analytics-metric-label">Unique Customers</div>
+                    <div className="analytics-metric-value">
                         {analytics.totalCustomers.toLocaleString()}
                     </div>
-                    <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+                    <div className="analytics-metric-subtitle">
                         Active buyers
                     </div>
                 </div>
             </div>
 
             {/* Sales Chart */}
-            <div style={{ marginBottom: '3rem' }}>
-                <h3 style={{ marginBottom: '1.5rem' }}>Daily Sales Overview</h3>
-                <div style={{
-                    background: 'white',
-                    border: '1px solid #e1e5e9',
-                    borderRadius: '8px',
-                    padding: '1.5rem'
-                }}>
-                    <div style={{ overflowX: 'auto' }}>
-                        <div style={{ display: 'flex', alignItems: 'end', gap: '1rem', minWidth: '600px', height: '300px' }}>
+            <div className="analytics-chart-section">
+                <h3 className="analytics-chart-title">Daily Sales Overview</h3>
+                <div className="analytics-chart-container">
+                    <div className="analytics-chart-scroll">
+                        <div className="analytics-chart-bars">
                             {salesData.map((day) => {
                                 const maxRevenue = Math.max(...salesData.map(d => d.revenue));
                                 const height = (day.revenue / maxRevenue) * 250;
                                 
                                 return (
-                                    <div key={day.date} style={{ 
-                                        display: 'flex', 
-                                        flexDirection: 'column', 
-                                        alignItems: 'center',
-                                        flex: 1
-                                    }}>
-                                        <div style={{
-                                            background: 'linear-gradient(to top, #667eea, #764ba2)',
-                                            width: '40px',
-                                            height: `${height}px`,
-                                            borderRadius: '4px 4px 0 0',
-                                            marginBottom: '0.5rem',
-                                            position: 'relative',
-                                            cursor: 'pointer'
-                                        }} title={`${formatCurrency(day.revenue)} - ${day.orders} orders`}>
+                                    <div key={day.date} className="analytics-chart-bar-container">
+                                        <div 
+                                            className="analytics-chart-bar"
+                                            style={{ height: `${height}px` }}
+                                            title={`${formatCurrency(day.revenue)} - ${day.orders} orders`}
+                                        >
                                         </div>
-                                        <div style={{ 
-                                            fontSize: '0.8rem', 
-                                            color: '#6c757d',
-                                            textAlign: 'center',
-                                            transform: 'rotate(-45deg)',
-                                            whiteSpace: 'nowrap'
-                                        }}>
+                                        <div className="analytics-chart-date">
                                             {new Date(day.date).toLocaleDateString('en-US', { 
                                                 month: 'short', 
                                                 day: 'numeric' 
@@ -234,27 +178,14 @@ function AnalyticsSection(_props: AnalyticsSectionProps) {
                             })}
                         </div>
                     </div>
-                    <div style={{ 
-                        marginTop: '1rem', 
-                        padding: '1rem', 
-                        background: '#f8f9fa', 
-                        borderRadius: '4px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                    }}>
-                        <div style={{ fontSize: '0.9rem', color: '#6c757d' }}>
+                    <div className="analytics-chart-legend">
+                        <div className="analytics-chart-help">
                             Hover over bars to see details
                         </div>
-                        <div style={{ display: 'flex', gap: '2rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <div style={{ 
-                                    width: '12px', 
-                                    height: '12px', 
-                                    background: 'linear-gradient(45deg, #667eea, #764ba2)',
-                                    borderRadius: '2px'
-                                }}></div>
-                                <span style={{ fontSize: '0.9rem' }}>Daily Revenue</span>
+                        <div className="analytics-chart-legend-items">
+                            <div className="analytics-chart-legend-item">
+                                <div className="analytics-chart-legend-color"></div>
+                                <span className="analytics-chart-legend-text">Daily Revenue</span>
                             </div>
                         </div>
                     </div>
@@ -262,52 +193,35 @@ function AnalyticsSection(_props: AnalyticsSectionProps) {
             </div>
 
             {/* Product Performance */}
-            <div style={{ marginBottom: '3rem' }}>
-                <h3 style={{ marginBottom: '1.5rem' }}>Product Performance</h3>
-                <div style={{
-                    background: 'white',
-                    border: '1px solid #e1e5e9',
-                    borderRadius: '8px',
-                    overflow: 'hidden'
-                }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div className="analytics-products-section">
+                <h3 className="analytics-products-title">Product Performance</h3>
+                <div className="analytics-products-container">
+                    <table className="analytics-products-table">
                         <thead>
-                            <tr style={{ background: '#f8f9fa' }}>
-                                <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid #dee2e6' }}>
-                                    Product
-                                </th>
-                                <th style={{ padding: '1rem', textAlign: 'right', borderBottom: '1px solid #dee2e6' }}>
-                                    Units Sold
-                                </th>
-                                <th style={{ padding: '1rem', textAlign: 'right', borderBottom: '1px solid #dee2e6' }}>
-                                    Revenue
-                                </th>
-                                <th style={{ padding: '1rem', textAlign: 'right', borderBottom: '1px solid #dee2e6' }}>
-                                    Orders
-                                </th>
-                                <th style={{ padding: '1rem', textAlign: 'right', borderBottom: '1px solid #dee2e6' }}>
-                                    Avg. Order Value
-                                </th>
+                            <tr>
+                                <th>Product</th>
+                                <th>Units Sold</th>
+                                <th>Revenue</th>
+                                <th>Orders</th>
+                                <th>Avg. Order Value</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {productPerformance.map((product, index) => (
-                                <tr key={product.productName} style={{ 
-                                    borderBottom: index < productPerformance.length - 1 ? '1px solid #dee2e6' : 'none'
-                                }}>
-                                    <td style={{ padding: '1rem' }}>
-                                        <div style={{ fontWeight: '600' }}>{product.productName}</div>
+                            {productPerformance.map((product) => (
+                                <tr key={product.productName}>
+                                    <td>
+                                        <div className="analytics-product-name">{product.productName}</div>
                                     </td>
-                                    <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                    <td>
                                         {product.sales.toLocaleString()}
                                     </td>
-                                    <td style={{ padding: '1rem', textAlign: 'right', fontWeight: '600' }}>
+                                    <td className="analytics-product-revenue">
                                         {formatCurrency(product.revenue)}
                                     </td>
-                                    <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                    <td>
                                         {product.orders.toLocaleString()}
                                     </td>
-                                    <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                    <td>
                                         {formatCurrency(product.revenue / product.orders)}
                                     </td>
                                 </tr>
@@ -318,55 +232,36 @@ function AnalyticsSection(_props: AnalyticsSectionProps) {
             </div>
 
             {/* Additional Insights */}
-            <div>
-                <h3 style={{ marginBottom: '1.5rem' }}>Business Insights</h3>
-                <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-                    gap: '1.5rem'
-                }}>
-                    <div style={{
-                        padding: '1.5rem',
-                        background: 'white',
-                        border: '1px solid #e1e5e9',
-                        borderRadius: '8px'
-                    }}>
-                        <h4 style={{ marginTop: 0, color: '#28a745' }}>📈 Top Performing Product</h4>
-                        <div style={{ marginBottom: '1rem' }}>
+            <div className="analytics-insights-section">
+                <h3 className="analytics-insights-title">Business Insights</h3>
+                <div className="analytics-insights-grid">
+                    <div className="analytics-insight-card">
+                        <h4 className="analytics-insight-title analytics-insight-title--green">📈 Top Performing Product</h4>
+                        <div className="analytics-insight-value">
                             <strong>{productPerformance[0]?.productName}</strong>
                         </div>
-                        <div style={{ color: '#6c757d', fontSize: '0.9rem' }}>
+                        <div className="analytics-insight-description">
                             Generated {formatCurrency(productPerformance[0]?.revenue || 0)} in revenue 
                             with {productPerformance[0]?.sales || 0} units sold.
                         </div>
                     </div>
 
-                    <div style={{
-                        padding: '1.5rem',
-                        background: 'white',
-                        border: '1px solid #e1e5e9',
-                        borderRadius: '8px'
-                    }}>
-                        <h4 style={{ marginTop: 0, color: '#17a2b8' }}>🎯 Conversion Rate</h4>
-                        <div style={{ marginBottom: '1rem' }}>
+                    <div className="analytics-insight-card">
+                        <h4 className="analytics-insight-title analytics-insight-title--blue">🎯 Conversion Rate</h4>
+                        <div className="analytics-insight-value">
                             <strong>85.2%</strong>
                         </div>
-                        <div style={{ color: '#6c757d', fontSize: '0.9rem' }}>
+                        <div className="analytics-insight-description">
                             Percentage of visitors who made a purchase. Above industry average!
                         </div>
                     </div>
 
-                    <div style={{
-                        padding: '1.5rem',
-                        background: 'white',
-                        border: '1px solid #e1e5e9',
-                        borderRadius: '8px'
-                    }}>
-                        <h4 style={{ marginTop: 0, color: '#ffc107' }}>⏱️ Avg. Processing Time</h4>
-                        <div style={{ marginBottom: '1rem' }}>
+                    <div className="analytics-insight-card">
+                        <h4 className="analytics-insight-title analytics-insight-title--yellow">⏱️ Avg. Processing Time</h4>
+                        <div className="analytics-insight-value">
                             <strong>2.3 days</strong>
                         </div>
-                        <div style={{ color: '#6c757d', fontSize: '0.9rem' }}>
+                        <div className="analytics-insight-description">
                             Average time from order placement to shipment. Consider optimizing further.
                         </div>
                     </div>

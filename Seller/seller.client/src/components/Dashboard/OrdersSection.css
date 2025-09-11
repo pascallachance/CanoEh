@@ -1,0 +1,239 @@
+/* Orders Section Styles */
+
+.orders-filter-container {
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.orders-filter-label {
+    font-weight: 600;
+}
+
+.orders-filter-select {
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.orders-section {
+    margin-bottom: 2rem;
+}
+
+.orders-section h3 {
+    margin: 0 0 1rem 0;
+}
+
+.orders-empty {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.orders-table-container {
+    overflow-x: auto;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.orders-table thead {
+    background: #f8f9fa;
+}
+
+.orders-table th,
+.orders-table td {
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    text-align: left;
+}
+
+.orders-table tbody tr {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.orders-customer-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.orders-customer-name {
+    font-weight: 600;
+}
+
+.orders-customer-email {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.orders-item {
+    margin-bottom: 0.25rem;
+}
+
+.orders-item strong {
+    font-weight: 600;
+}
+
+.orders-total {
+    font-weight: 600;
+}
+
+.orders-status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+    text-transform: capitalize;
+}
+
+.orders-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-direction: column;
+}
+
+.orders-status-select {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.orders-refund-button {
+    padding: 0.25rem 0.5rem;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+/* Refund Modal */
+.orders-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.orders-modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: auto;
+}
+
+.orders-modal-content h3 {
+    margin: 0 0 1.5rem 0;
+}
+
+.orders-modal-info {
+    margin-bottom: 1.5rem;
+}
+
+.orders-modal-info p {
+    margin: 0.25rem 0;
+}
+
+.orders-modal-items h4 {
+    margin: 0 0 0.5rem 0;
+}
+
+.orders-modal-item {
+    padding: 0.75rem;
+    border: 1px solid #e1e5e9;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.orders-modal-item-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.orders-modal-item-details {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.orders-modal-warning {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e1e5e9;
+}
+
+.orders-modal-warning p {
+    margin: 0;
+    color: #495057;
+}
+
+.orders-modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.orders-modal-button {
+    padding: 0.75rem 1.5rem;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.orders-modal-button--cancel {
+    background: #6c757d;
+}
+
+.orders-modal-button--refund {
+    background: #dc3545;
+}
+
+/* Order Stats */
+.orders-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.orders-stat-card {
+    padding: 1rem;
+    background: white;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.orders-stat-count {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.orders-stat-label {
+    text-transform: capitalize;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.orders-stat-total {
+    font-size: 0.9rem;
+    color: #6c757d;
+}

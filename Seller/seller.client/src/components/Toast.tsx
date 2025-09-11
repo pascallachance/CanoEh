@@ -32,7 +32,6 @@ const Toast = ({ id, type, message, duration = 4000, onClose }: ToastProps) => {
             fontWeight: '500',
             minWidth: '300px',
             maxWidth: '500px',
-            animation: 'slideInRight 0.3s ease-out',
             cursor: 'pointer'
         };
 
@@ -64,6 +63,7 @@ const Toast = ({ id, type, message, duration = 4000, onClose }: ToastProps) => {
 
     return (
         <div
+            className="toast-slide-in"
             style={getToastStyles()}
             onClick={() => onClose(id)}
             role="alert"

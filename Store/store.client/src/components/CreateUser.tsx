@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './CreateUser.css';
 
@@ -25,6 +25,19 @@ function CreateUser({ onCreateSuccess }: CreateUserProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+
+    // Add escape key handling for better accessibility
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && !loading) {
+                // Could navigate away or clear form, for now just clear errors
+                setError('');
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [loading]);
 
     const getCsrfToken = (): string => {
         // Get CSRF token from cookie for API calls

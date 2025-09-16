@@ -95,67 +95,71 @@ function Login({ onLoginSuccess }: LoginProps) {
 
     if (success) {
         return (
-            <div className="login-container">
-                <div className="login-form">
-                    <h2>Login Successful!</h2>
-                    <p>You have been successfully authenticated.</p>
-                    <p>Your session is now secured with HTTP-only cookies.</p>
-                    <p>Redirecting...</p>
+            <div className="centered-container">
+                <div className="login-container">
+                    <div className="login-form">
+                        <h2>Login Successful!</h2>
+                        <p>You have been successfully authenticated.</p>
+                        <p>Your session is now secured with HTTP-only cookies.</p>
+                        <p>Redirecting...</p>
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="login-container">
-            <div style={{ width: "100%" }}>
-                <h1 className="login-title">CanoEh!</h1>
-                <form className="login-form" onSubmit={handleSubmit}>
-                    <h2>Sign in or create account</h2>
-                    <div className="form-group">
-                        <label htmlFor="email">Email:</label>
-                        <input
-                            type="email"
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            placeholder="Enter your email"
-                            autoComplete="email"
-                        />
-                    </div>
+        <div className="centered-container">
+            <div className="login-container">
+                <div style={{ width: "100%" }}>
+                    <h1 className="login-title">CanoEh!</h1>
+                    <form className="login-form" onSubmit={handleSubmit}>
+                        <h2>Sign in or create account</h2>
+                        <div className="form-group">
+                            <label htmlFor="email">Email:</label>
+                            <input
+                                type="email"
+                                id="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                placeholder="Enter your email"
+                                autoComplete="email"
+                            />
+                        </div>
 
-                    <div className="form-group">
-                        <label htmlFor="password">Password:</label>
-                        <input
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            minLength={8}
-                            placeholder="Enter your password (min 8 characters)"
-                            autoComplete="current-password"
-                        />
-                    </div>
+                        <div className="form-group">
+                            <label htmlFor="password">Password:</label>
+                            <input
+                                type="password"
+                                id="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                minLength={8}
+                                placeholder="Enter your password (min 8 characters)"
+                                autoComplete="current-password"
+                            />
+                        </div>
 
-                    {error && <div className="error-message">{error}</div>}
+                        {error && <div className="error-message">{error}</div>}
 
-                    <button
-                        type="submit"
-                        className="connect-button"
-                        disabled={loading}
-                    >
-                        {loading ? 'Connecting...' : 'Connect'}
-                    </button>
-                    <div className="separator"></div>
-                    <div className="other-options">
-                        <a href="/CreateUser" className="other-options">
-                            Create account?
-                        </a>
-                        <a href="/RestorePassword">Forgot Password?</a>
-                    </div>
-                </form>
+                        <button
+                            type="submit"
+                            className="connect-button"
+                            disabled={loading}
+                        >
+                            {loading ? 'Connecting...' : 'Connect'}
+                        </button>
+                        <div className="separator"></div>
+                        <div className="other-options">
+                            <a href="/CreateUser" className="other-options">
+                                Create account?
+                            </a>
+                            <a href="/RestorePassword">Forgot Password?</a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     );

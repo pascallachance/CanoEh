@@ -8,6 +8,14 @@
     padding: 20px;
 }
 
+.centered-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
 .login-form {
     background: white;
     padding: 20px 26px 20px 26px;

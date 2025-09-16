@@ -96,7 +96,8 @@ function Login({ onLoginSuccess }: LoginProps) {
     }
 
     return (
-        <div className="login-container">
+        <div className="centered-container">
+            <div className="login-container">
             <div style={{ width: "100%" }}>
                 <h1 className="login-title">CanoEh! Seller</h1>
                 <form className="login-form" onSubmit={handleSubmit}>
@@ -147,6 +148,7 @@ function Login({ onLoginSuccess }: LoginProps) {
                         </Link>
                     </div>
                 </form>
+            </div>
             </div>
         </div>
     );

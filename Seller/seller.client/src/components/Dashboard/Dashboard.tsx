@@ -43,11 +43,8 @@ function Dashboard({ companies, onLogout }: DashboardProps) {
     return (
         <div className="dashboard-container">
             <nav className="dashboard-nav">
-                <div className="nav-header">
+                <div className="nav-logo">
                     <h1 className="nav-brand">CanoEh! Seller</h1>
-                    <div className="nav-actions">
-                        <button onClick={onLogout}>Logout</button>
-                    </div>
                 </div>
                 <div className="nav-tabs">
                     <button
@@ -74,6 +71,9 @@ function Dashboard({ companies, onLogout }: DashboardProps) {
                     >
                         Company
                     </button>
+                </div>
+                <div className="nav-buttons">
+                    <button onClick={onLogout}>Logout</button>
                 </div>
             </nav>
 

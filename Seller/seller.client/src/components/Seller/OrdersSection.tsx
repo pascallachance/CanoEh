@@ -213,11 +213,6 @@ function OrdersSection(_props: OrdersSectionProps) {
 
     return (
         <div className="section-container">
-            <h2 className="section-title">Orders Management</h2>
-            <p className="section-description">
-                View and manage all orders for your company. Update order statuses, track fulfillment, and process refunds.
-            </p>
-
             <div className="orders-filter-container">
                 <label className="orders-filter-label">Filter by Status:</label>
                 <select 

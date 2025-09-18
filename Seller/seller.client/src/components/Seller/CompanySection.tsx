@@ -106,21 +106,13 @@ function CompanySection({ companies }: CompanySectionProps) {
     if (!selectedCompany) {
         return (
             <div className="section-container">
-                <h2 className="section-title">Company Management</h2>
-                <p className="section-description">
-                    No companies found. Please create a company first to access this section.
-                </p>
+                <p className="no-data-message">No companies found. Please create a company first to access this section.</p>
             </div>
         );
     }
 
     return (
         <div className="section-container">
-            <h2 className="section-title">Company Management</h2>
-            <p className="section-description">
-                Manage your company information, contact details, and business settings.
-            </p>
-
             {companies.length > 1 && (
                 <div className="company-selector">
                     <label className="company-selector-label">

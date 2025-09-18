@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './Seller.css';
 import ProductsSection from './ProductsSection';
 import OrdersSection from './OrdersSection';
@@ -28,6 +28,11 @@ function Seller({ companies, onLogout }: SellerProps) {
     const [activeSection, setActiveSection] = useState<SellerSection>('analytics');
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
     const [productsViewMode, setProductsViewMode] = useState<'list' | 'add'>('list');
+
+    // Reset products view mode to 'list' whenever the active section changes
+    useEffect(() => {
+        setProductsViewMode('list');
+    }, [activeSection]);
 
     const renderContent = () => {
         switch (activeSection) {
@@ -88,37 +93,25 @@ function Seller({ companies, onLogout }: SellerProps) {
                 <div className="nav-tabs">
                     <button
                         className={`nav-tab ${activeSection === 'analytics' ? 'active' : ''}`}
-                        onClick={() => {
-                            setActiveSection('analytics');
-                            setProductsViewMode('list');
-                        }}
+                        onClick={() => setActiveSection('analytics')}
                     >
                         Dashboard
                     </button>
                     <button
                         className={`nav-tab ${activeSection === 'products' ? 'active' : ''}`}
-                        onClick={() => {
-                            setActiveSection('products');
-                            setProductsViewMode('list');
-                        }}
+                        onClick={() => setActiveSection('products')}
                     >
                         Products
                     </button>
                     <button
                         className={`nav-tab ${activeSection === 'orders' ? 'active' : ''}`}
-                        onClick={() => {
-                            setActiveSection('orders');
-                            setProductsViewMode('list');
-                        }}
+                        onClick={() => setActiveSection('orders')}
                     >
                         Orders
                     </button>
                     <button
                         className={`nav-tab ${activeSection === 'company' ? 'active' : ''}`}
-                        onClick={() => {
-                            setActiveSection('company');
-                            setProductsViewMode('list');
-                        }}
+                        onClick={() => setActiveSection('company')}
                     >
                         Company
                     </button>

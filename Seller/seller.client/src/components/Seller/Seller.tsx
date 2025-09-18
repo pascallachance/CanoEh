@@ -84,6 +84,8 @@ function Seller({ companies, onLogout }: SellerProps) {
         }
     };
 
+    const actions = renderActions();
+
     return (
         <div className="seller-container">
             <nav className="seller-nav">
@@ -121,9 +123,9 @@ function Seller({ companies, onLogout }: SellerProps) {
                 </div>
             </nav>
 
-            {renderActions() && (
+            {actions && (
                 <div className="seller-content-actions">
-                    {renderActions()}
+                    {actions}
                 </div>
             )}
 

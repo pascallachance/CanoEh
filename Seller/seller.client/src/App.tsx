@@ -6,7 +6,7 @@ import NoCompanyPage from './components/NoCompanyPage';
 import CreateCompanyStep1 from './components/CreateCompanyStep1';
 import CreateCompanyStep2 from './components/CreateCompanyStep2';
 import CompanyCreatedSuccess from './components/CompanyCreatedSuccess';
-import Dashboard from './components/Dashboard/Dashboard';
+import Seller from './components/Seller/Seller';
 import { ApiClient } from './utils/apiClient';
 import { NotificationProvider } from './contexts/NotificationContext';
 import type { CreateCompanyStep1Data } from './components/CreateCompanyStep1';
@@ -48,14 +48,14 @@ function AppContent() {
                 setIsAuthenticated(true);
                 if (Array.isArray(companies) && companies.length > 0) {
                     setCompanies(companies);
-                    // Navigate to dashboard if on login page and user has companies
+                    // Navigate to seller if on login page and user has companies
                     if (location.pathname === '/login' || location.pathname === '/') {
-                        navigate('/dashboard', { replace: true });
+                        navigate('/seller', { replace: true });
                     }
                 } else {
                     // Navigate to no-company page if on login page and no companies
                     if (location.pathname === '/login' || location.pathname === '/') {
-                        navigate('/dashboard', { replace: true }); // Will show no company UI
+                        navigate('/seller', { replace: true }); // Will show no company UI
                     }
                 }
                 setError('');
@@ -106,7 +106,7 @@ function AppContent() {
     };
 
     const handleStep1Back = () => {
-        navigate('/dashboard');
+        navigate('/seller');
     };
 
     const handleStep2Back = () => {
@@ -182,9 +182,9 @@ function AppContent() {
     };
 
     const handleContinueToItems = () => {
-        // Update companies list and navigate to dashboard 
+        // Update companies list and navigate to seller 
         checkExistingSession().then(() => {
-            navigate('/dashboard');
+            navigate('/seller');
         });
     };
 
@@ -213,11 +213,11 @@ function AppContent() {
         return <>{children}</>;
     };
 
-    // Dashboard route - shows company status
-    const DashboardRoute = () => (
+    // Seller route - shows company status
+    const SellerRoute = () => (
         <ProtectedRoute>
             {companies.length > 0 ? (
-                <Dashboard companies={companies} onLogout={handleBackToLogin} />
+                <Seller companies={companies} onLogout={handleBackToLogin} />
             ) : (
                 <NoCompanyPage
                     onCreateCompany={handleCreateCompany}
@@ -250,7 +250,7 @@ function AppContent() {
     return (
         <Routes>
             <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
-            <Route path="/dashboard" element={<DashboardRoute />} />
+            <Route path="/seller" element={<SellerRoute />} />
             <Route path="/create-company" element={
                 <ProtectedRoute>
                     <CreateCompanyStep1
@@ -281,7 +281,7 @@ function AppContent() {
                             onContinueToItems={handleContinueToItems}
                         />
                     ) : (
-                        <Navigate to="/dashboard" replace />
+                        <Navigate to="/seller" replace />
                     )}
                 </ProtectedRoute>
             } />

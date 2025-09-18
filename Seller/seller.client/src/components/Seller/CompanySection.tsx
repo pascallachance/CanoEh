@@ -106,7 +106,7 @@ function CompanySection({ companies }: CompanySectionProps) {
     if (!selectedCompany) {
         return (
             <div className="section-container">
-                <p>No companies found. Please create a company first to access this section.</p>
+                <p className="no-data-message">No companies found. Please create a company first to access this section.</p>
             </div>
         );
     }

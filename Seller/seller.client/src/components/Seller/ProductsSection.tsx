@@ -163,12 +163,6 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
 
     return (
         <div className="section-container">
-            <h2 className="section-title">Products Management</h2>
-            <p className="section-description">
-                Manage your product catalog. Add new items with their attributes and variants, 
-                update existing products, and remove discontinued items.
-            </p>
-
             {showAddForm && (
                 <div className="products-add-form">
                     <h3>Add New Item</h3>

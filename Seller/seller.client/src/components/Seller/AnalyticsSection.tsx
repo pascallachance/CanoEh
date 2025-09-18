@@ -86,11 +86,6 @@ function AnalyticsSection(_props: AnalyticsSectionProps) {
 
     return (
         <div className="section-container">
-            <h2 className="section-title">Analytics & Reporting</h2>
-            <p className="section-description">
-                Track your sales performance, analyze customer behavior, and gain insights into your business growth.
-            </p>
-
             {/* Key Metrics */}
             <div className="analytics-metrics-grid">
                 <div className="analytics-metric-card analytics-metric-card--revenue">

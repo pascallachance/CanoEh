@@ -1,4 +1,4 @@
-.dashboard-container {
+.seller-container {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -7,7 +7,7 @@
     padding: 0;
 }
 
-.dashboard-nav {
+.seller-nav {
     background: #f8f9fa;
     border-bottom: 1px solid #e1e5e9;
     padding: 0;
@@ -74,13 +74,13 @@
     background: white;
 }
 
-.dashboard-content {
+.seller-content {
     flex: 1;
-    padding: 2rem;
+    padding: 2rem 0;
     background: #f8f9fa;
 }
 
-.dashboard-footer {
+.seller-footer {
     background: #343a40;
     color: white;
     text-align: center;

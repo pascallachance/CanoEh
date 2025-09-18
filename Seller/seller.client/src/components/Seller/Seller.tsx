@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import './Dashboard.css';
+import './Seller.css';
 import ProductsSection from './ProductsSection';
 import OrdersSection from './OrdersSection';
 import AnalyticsSection from './AnalyticsSection';
 import CompanySection from './CompanySection';
 
-type DashboardSection = 'products' | 'orders' | 'analytics' | 'company';
+type SellerSection = 'analytics' | 'products' | 'orders' | 'company';
 
-interface DashboardProps {
+interface SellerProps {
     companies: Company[];
     onLogout: () => void;
 }
@@ -22,31 +22,37 @@ interface Company {
     updatedAt?: string;
 }
 
-function Dashboard({ companies, onLogout }: DashboardProps) {
-    const [activeSection, setActiveSection] = useState<DashboardSection>('products');
+function Seller({ companies, onLogout }: SellerProps) {
+    const [activeSection, setActiveSection] = useState<SellerSection>('analytics');
 
     const renderContent = () => {
         switch (activeSection) {
+            case 'analytics':
+                return <AnalyticsSection companies={companies} />;
             case 'products':
                 return <ProductsSection companies={companies} />;
             case 'orders':
                 return <OrdersSection companies={companies} />;
-            case 'analytics':
-                return <AnalyticsSection companies={companies} />;
             case 'company':
                 return <CompanySection companies={companies} />;
             default:
-                return <ProductsSection companies={companies} />;
+                return <AnalyticsSection companies={companies} />;
         }
     };
 
     return (
-        <div className="dashboard-container">
-            <nav className="dashboard-nav">
+        <div className="seller-container">
+            <nav className="seller-nav">
                 <div className="nav-logo">
                     <h1 className="nav-brand">CanoEh! Seller</h1>
                 </div>
                 <div className="nav-tabs">
+                    <button
+                        className={`nav-tab ${activeSection === 'analytics' ? 'active' : ''}`}
+                        onClick={() => setActiveSection('analytics')}
+                    >
+                        Dashboard
+                    </button>
                     <button
                         className={`nav-tab ${activeSection === 'products' ? 'active' : ''}`}
                         onClick={() => setActiveSection('products')}
@@ -60,12 +66,6 @@ function Dashboard({ companies, onLogout }: DashboardProps) {
                         Orders
                     </button>
                     <button
-                        className={`nav-tab ${activeSection === 'analytics' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('analytics')}
-                    >
-                        Analytics
-                    </button>
-                    <button
                         className={`nav-tab ${activeSection === 'company' ? 'active' : ''}`}
                         onClick={() => setActiveSection('company')}
                     >
@@ -77,15 +77,15 @@ function Dashboard({ companies, onLogout }: DashboardProps) {
                 </div>
             </nav>
 
-            <main className="dashboard-content">
+            <main className="seller-content">
                 {renderContent()}
             </main>
 
-            <footer className="dashboard-footer">
+            <footer className="seller-footer">
                 <p>&copy; 2024 CanoEh! Seller Platform. All rights reserved.</p>
             </footer>
         </div>
     );
 }
 
-export default Dashboard;
+export default Seller;

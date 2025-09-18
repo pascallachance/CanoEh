@@ -13,6 +13,8 @@ interface Company {
 
 interface ProductsSectionProps {
     companies: Company[];
+    viewMode?: 'list' | 'add';
+    onViewModeChange?: (mode: 'list' | 'add') => void;
 }
 
 interface ItemAttribute {
@@ -36,9 +38,9 @@ interface Item {
     variants: ItemVariant[];
 }
 
-function ProductsSection(_props: ProductsSectionProps) {
+function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectionProps) {
     const [items, setItems] = useState<Item[]>([]);
-    const [showAddForm, setShowAddForm] = useState(false);
+    const showAddForm = viewMode === 'add';
     const [newItem, setNewItem] = useState({
         name: '',
         description: '',
@@ -148,7 +150,10 @@ function ProductsSection(_props: ProductsSectionProps) {
             setItems(prev => [...prev, item]);
             setNewItem({ name: '', description: '', attributes: [] });
             setVariants([]);
-            setShowAddForm(false);
+            // Switch back to list view after saving
+            if (onViewModeChange) {
+                onViewModeChange('list');
+            }
         }
     };
 
@@ -163,15 +168,6 @@ function ProductsSection(_props: ProductsSectionProps) {
                 Manage your product catalog. Add new items with their attributes and variants, 
                 update existing products, and remove discontinued items.
             </p>
-
-            <div className="products-add-button-container">
-                <button 
-                    onClick={() => setShowAddForm(!showAddForm)}
-                    className="products-add-button"
-                >
-                    {showAddForm ? 'Cancel' : 'Add New Item'}
-                </button>
-            </div>
 
             {showAddForm && (
                 <div className="products-add-form">
@@ -353,7 +349,7 @@ function ProductsSection(_props: ProductsSectionProps) {
                             Save Item
                         </button>
                         <button
-                            onClick={() => setShowAddForm(false)}
+                            onClick={() => onViewModeChange && onViewModeChange('list')}
                             className="products-action-button products-action-button--cancel"
                         >
                             Cancel

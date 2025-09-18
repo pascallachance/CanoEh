@@ -49,7 +49,6 @@ const mockProductPerformance: ProductPerformance[] = [
 ];
 
 function AnalyticsSection(_props: AnalyticsSectionProps) {
-    const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d' | '1y'>('7d');
     const [salesData] = useState<SalesData[]>(mockSalesData);
     const [productPerformance] = useState<ProductPerformance[]>(mockProductPerformance);
 
@@ -91,20 +90,6 @@ function AnalyticsSection(_props: AnalyticsSectionProps) {
             <p className="section-description">
                 Track your sales performance, analyze customer behavior, and gain insights into your business growth.
             </p>
-
-            <div className="analytics-period-selector">
-                <label className="analytics-period-label">Time Period:</label>
-                <select 
-                    value={selectedPeriod}
-                    onChange={(e) => setSelectedPeriod(e.target.value as typeof selectedPeriod)}
-                    className="analytics-period-select"
-                >
-                    <option value="7d">Last 7 Days</option>
-                    <option value="30d">Last 30 Days</option>
-                    <option value="90d">Last 90 Days</option>
-                    <option value="1y">Last Year</option>
-                </select>
-            </div>
 
             {/* Key Metrics */}
             <div className="analytics-metrics-grid">

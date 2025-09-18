@@ -4,6 +4,8 @@ import ProductsSection from './ProductsSection';
 import OrdersSection from './OrdersSection';
 import AnalyticsSection from './AnalyticsSection';
 import CompanySection from './CompanySection';
+import AnalyticsPeriodSelector from './AnalyticsPeriodSelector';
+import type { PeriodType } from './AnalyticsPeriodSelector';
 
 type SellerSection = 'analytics' | 'products' | 'orders' | 'company';
 
@@ -24,19 +26,56 @@ interface Company {
 
 function Seller({ companies, onLogout }: SellerProps) {
     const [activeSection, setActiveSection] = useState<SellerSection>('analytics');
+    const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
+    const [productsViewMode, setProductsViewMode] = useState<'list' | 'add'>('list');
 
     const renderContent = () => {
         switch (activeSection) {
             case 'analytics':
                 return <AnalyticsSection companies={companies} />;
             case 'products':
-                return <ProductsSection companies={companies} />;
+                return <ProductsSection 
+                    companies={companies} 
+                    viewMode={productsViewMode}
+                    onViewModeChange={setProductsViewMode}
+                />;
             case 'orders':
                 return <OrdersSection companies={companies} />;
             case 'company':
                 return <CompanySection companies={companies} />;
             default:
                 return <AnalyticsSection companies={companies} />;
+        }
+    };
+
+    const renderActions = () => {
+        switch (activeSection) {
+            case 'analytics':
+                return (
+                    <AnalyticsPeriodSelector 
+                        selectedPeriod={analyticsPeriod}
+                        onPeriodChange={setAnalyticsPeriod}
+                    />
+                );
+            case 'products':
+                return (
+                    <div className="action-buttons">
+                        <button 
+                            className={`action-button ${productsViewMode === 'list' ? '' : 'secondary'}`}
+                            onClick={() => setProductsViewMode('list')}
+                        >
+                            List Products
+                        </button>
+                        <button 
+                            className={`action-button ${productsViewMode === 'add' ? '' : 'secondary'}`}
+                            onClick={() => setProductsViewMode('add')}
+                        >
+                            Add Product
+                        </button>
+                    </div>
+                );
+            default:
+                return null;
         }
     };
 
@@ -49,25 +88,37 @@ function Seller({ companies, onLogout }: SellerProps) {
                 <div className="nav-tabs">
                     <button
                         className={`nav-tab ${activeSection === 'analytics' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('analytics')}
+                        onClick={() => {
+                            setActiveSection('analytics');
+                            setProductsViewMode('list');
+                        }}
                     >
                         Dashboard
                     </button>
                     <button
                         className={`nav-tab ${activeSection === 'products' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('products')}
+                        onClick={() => {
+                            setActiveSection('products');
+                            setProductsViewMode('list');
+                        }}
                     >
                         Products
                     </button>
                     <button
                         className={`nav-tab ${activeSection === 'orders' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('orders')}
+                        onClick={() => {
+                            setActiveSection('orders');
+                            setProductsViewMode('list');
+                        }}
                     >
                         Orders
                     </button>
                     <button
                         className={`nav-tab ${activeSection === 'company' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('company')}
+                        onClick={() => {
+                            setActiveSection('company');
+                            setProductsViewMode('list');
+                        }}
                     >
                         Company
                     </button>
@@ -76,6 +127,12 @@ function Seller({ companies, onLogout }: SellerProps) {
                     <button onClick={onLogout}>Logout</button>
                 </div>
             </nav>
+
+            {renderActions() && (
+                <div className="seller-content-actions">
+                    {renderActions()}
+                </div>
+            )}
 
             <main className="seller-content">
                 {renderContent()}

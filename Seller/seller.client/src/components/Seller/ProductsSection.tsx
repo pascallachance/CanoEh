@@ -47,6 +47,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         attributes: [] as ItemAttribute[]
     });
     const [newAttribute, setNewAttribute] = useState({ name: '', values: [''] });
+    const [attributeError, setAttributeError] = useState('');
 
     const addAttributeValue = () => {
         setNewAttribute(prev => ({
@@ -70,16 +71,31 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
     };
 
     const addAttribute = () => {
-        if (newAttribute.name && newAttribute.values.filter(v => v.trim()).length > 0) {
-            setNewItem(prev => ({
-                ...prev,
-                attributes: [...prev.attributes, {
-                    name: newAttribute.name,
-                    values: newAttribute.values.filter(v => v.trim())
-                }]
-            }));
-            setNewAttribute({ name: '', values: [''] });
+        // Clear any previous error
+        setAttributeError('');
+        
+        if (!newAttribute.name || newAttribute.values.filter(v => v.trim()).length === 0) {
+            return;
         }
+
+        // Check for duplicate attribute names (case-insensitive)
+        const isDuplicate = newItem.attributes.some(attr => 
+            attr.name.toLowerCase() === newAttribute.name.toLowerCase()
+        );
+
+        if (isDuplicate) {
+            setAttributeError(`Attribute "${newAttribute.name}" already exists. Please use a different name.`);
+            return;
+        }
+
+        setNewItem(prev => ({
+            ...prev,
+            attributes: [...prev.attributes, {
+                name: newAttribute.name,
+                values: newAttribute.values.filter(v => v.trim())
+            }]
+        }));
+        setNewAttribute({ name: '', values: [''] });
     };
 
     const removeAttribute = (index: number) => {
@@ -202,10 +218,28 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                 <input
                                     type="text"
                                     value={newAttribute.name}
-                                    onChange={(e) => setNewAttribute(prev => ({ ...prev, name: e.target.value }))}
+                                    onChange={(e) => {
+                                        setNewAttribute(prev => ({ ...prev, name: e.target.value }));
+                                        // Clear error when user starts typing
+                                        if (attributeError) {
+                                            setAttributeError('');
+                                        }
+                                    }}
                                     className="products-form-input"
                                     placeholder="e.g., Color"
+                                    aria-invalid={!!attributeError}
+                                    aria-describedby={attributeError ? "attribute-name-error" : undefined}
                                 />
+                                {attributeError && (
+                                    <div
+                                        id="attribute-name-error"
+                                        className="products-error-message"
+                                        style={{ color: 'red', fontSize: '14px', marginTop: '4px' }}
+                                        role="alert"
+                                    >
+                                        {attributeError}
+                                    </div>
+                                )}
                             </div>
                             <div className="products-attribute-values">
                                 <label className="products-form-label">

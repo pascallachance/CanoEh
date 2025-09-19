@@ -106,7 +106,7 @@ namespace API.Tests
             };
 
             _mockUserRepository.Setup(r => r.ExistsAsync(ownerId)).ReturnsAsync(true);
-            _mockCompanyRepository.Setup(r => r.FindByNameAsync(request.Name)).ReturnsAsync(existingCompany);
+            _mockCompanyRepository.Setup(r => r.FindByNameAsync(request.Name.Trim())).ReturnsAsync(existingCompany);
 
             // Act
             var result = await _companyService.CreateCompanyAsync(request, ownerId);
@@ -115,6 +115,78 @@ namespace API.Tests
             Assert.True(result.IsFailure);
             Assert.Equal("Company name already exists.", result.Error);
             Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public async Task CreateCompanyAsync_ReturnFailure_WhenCompanyNameWithWhitespaceAlreadyExists()
+        {
+            // Arrange
+            var ownerId = Guid.NewGuid();
+            var request = new CreateCompanyRequest
+            {
+                Name = "  Test Company  ", // Name with leading and trailing whitespace
+                Description = "A test company",
+                Logo = "test-logo.png"
+            };
+
+            var existingCompany = new Company
+            {
+                Id = Guid.NewGuid(),
+                OwnerID = Guid.NewGuid(),
+                Name = "Test Company", // Existing company with trimmed name
+                Description = "Different description",
+                Logo = "different-logo.png",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = null
+            };
+
+            _mockUserRepository.Setup(r => r.ExistsAsync(ownerId)).ReturnsAsync(true);
+            _mockCompanyRepository.Setup(r => r.FindByNameAsync(request.Name.Trim())).ReturnsAsync(existingCompany);
+
+            // Act
+            var result = await _companyService.CreateCompanyAsync(request, ownerId);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal("Company name already exists.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public async Task CreateCompanyAsync_TrimWhitespaceFromCompanyName_WhenCreating()
+        {
+            // Arrange
+            var ownerId = Guid.NewGuid();
+            var request = new CreateCompanyRequest
+            {
+                Name = "  Test Company  ", // Name with leading and trailing whitespace
+                Description = "A test company",
+                Logo = "test-logo.png"
+            };
+
+            var expectedCompany = new Company
+            {
+                Id = Guid.NewGuid(),
+                OwnerID = ownerId,
+                Name = "Test Company", // Expected trimmed name
+                Description = request.Description,
+                Logo = request.Logo,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = null
+            };
+
+            _mockUserRepository.Setup(r => r.ExistsAsync(ownerId)).ReturnsAsync(true);
+            _mockCompanyRepository.Setup(r => r.FindByNameAsync("Test Company")).ReturnsAsync((Company?)null);
+            _mockCompanyRepository.Setup(r => r.AddAsync(It.Is<Company>(c => c.Name == "Test Company"))).ReturnsAsync(expectedCompany);
+
+            // Act
+            var result = await _companyService.CreateCompanyAsync(request, ownerId);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Equal("Test Company", result.Value.Name); // Should be trimmed
+            _mockCompanyRepository.Verify(r => r.AddAsync(It.Is<Company>(c => c.Name == "Test Company")), Times.Once);
         }
 
         [Fact]
@@ -207,7 +279,7 @@ namespace API.Tests
             };
 
             _mockCompanyRepository.Setup(r => r.GetByIdAsync(companyId)).ReturnsAsync(existingCompany);
-            _mockCompanyRepository.Setup(r => r.FindByNameAsync(request.Name)).ReturnsAsync((Company?)null);
+            _mockCompanyRepository.Setup(r => r.FindByNameAsync(request.Name.Trim())).ReturnsAsync((Company?)null);
             _mockCompanyRepository.Setup(r => r.UpdateAsync(It.IsAny<Company>())).ReturnsAsync((Company c) => c);
 
             // Act
@@ -219,6 +291,97 @@ namespace API.Tests
             Assert.Equal(request.Name, result.Value.Name);
             Assert.Equal(request.Description, result.Value.Description);
             Assert.Equal(request.Logo, result.Value.Logo);
+        }
+
+        [Fact]
+        public async Task UpdateCompanyAsync_ReturnFailure_WhenNewNameWithWhitespaceAlreadyExists()
+        {
+            // Arrange
+            var companyId = Guid.NewGuid();
+            var ownerId = Guid.NewGuid();
+            var otherCompanyId = Guid.NewGuid();
+            
+            var request = new UpdateCompanyRequest
+            {
+                Id = companyId,
+                OwnerID = ownerId,
+                Name = "  Existing Company  ", // Name with whitespace that matches another company after trim
+                Description = "Updated description",
+                Logo = "updated-logo.png"
+            };
+
+            var existingCompany = new Company
+            {
+                Id = companyId,
+                OwnerID = ownerId,
+                Name = "Original Company Name",
+                Description = "Original description",
+                Logo = "original-logo.png",
+                CreatedAt = DateTime.UtcNow.AddDays(-1),
+                UpdatedAt = null
+            };
+
+            var otherCompany = new Company
+            {
+                Id = otherCompanyId,
+                OwnerID = Guid.NewGuid(),
+                Name = "Existing Company", // This company already has the trimmed name
+                Description = "Other description",
+                Logo = "other-logo.png",
+                CreatedAt = DateTime.UtcNow.AddDays(-2),
+                UpdatedAt = null
+            };
+
+            _mockCompanyRepository.Setup(r => r.GetByIdAsync(companyId)).ReturnsAsync(existingCompany);
+            _mockCompanyRepository.Setup(r => r.FindByNameAsync("Existing Company")).ReturnsAsync(otherCompany);
+
+            // Act
+            var result = await _companyService.UpdateCompanyAsync(request);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal("Company name already exists.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public async Task UpdateCompanyAsync_TrimWhitespaceFromCompanyName_WhenUpdating()
+        {
+            // Arrange
+            var companyId = Guid.NewGuid();
+            var ownerId = Guid.NewGuid();
+            var request = new UpdateCompanyRequest
+            {
+                Id = companyId,
+                OwnerID = ownerId,
+                Name = "  Updated Company Name  ", // Name with leading and trailing whitespace
+                Description = "Updated description",
+                Logo = "updated-logo.png"
+            };
+
+            var existingCompany = new Company
+            {
+                Id = companyId,
+                OwnerID = ownerId,
+                Name = "Original Company Name",
+                Description = "Original description",
+                Logo = "original-logo.png",
+                CreatedAt = DateTime.UtcNow.AddDays(-1),
+                UpdatedAt = null
+            };
+
+            _mockCompanyRepository.Setup(r => r.GetByIdAsync(companyId)).ReturnsAsync(existingCompany);
+            _mockCompanyRepository.Setup(r => r.FindByNameAsync("Updated Company Name")).ReturnsAsync((Company?)null);
+            _mockCompanyRepository.Setup(r => r.UpdateAsync(It.Is<Company>(c => c.Name == "Updated Company Name"))).ReturnsAsync((Company c) => c);
+
+            // Act
+            var result = await _companyService.UpdateCompanyAsync(request);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Equal("Updated Company Name", result.Value.Name); // Should be trimmed
+            _mockCompanyRepository.Verify(r => r.UpdateAsync(It.Is<Company>(c => c.Name == "Updated Company Name")), Times.Once);
         }
 
         [Fact]

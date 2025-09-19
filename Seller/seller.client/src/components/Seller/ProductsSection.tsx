@@ -388,7 +388,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                 </div>
             )}
 
-            <div className="products-current-section">
+            <div className="products-list-section">
                 <h3>Current Items ({items.length})</h3>
                 {items.length === 0 ? (
                     <p className="products-empty">

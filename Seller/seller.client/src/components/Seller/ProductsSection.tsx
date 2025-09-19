@@ -227,9 +227,16 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                     }}
                                     className="products-form-input"
                                     placeholder="e.g., Color"
+                                    aria-invalid={!!attributeError}
+                                    aria-describedby={attributeError ? "attribute-name-error" : undefined}
                                 />
                                 {attributeError && (
-                                    <div className="products-error-message" style={{ color: 'red', fontSize: '14px', marginTop: '4px' }}>
+                                    <div
+                                        id="attribute-name-error"
+                                        className="products-error-message"
+                                        style={{ color: 'red', fontSize: '14px', marginTop: '4px' }}
+                                        role="alert"
+                                    >
                                         {attributeError}
                                     </div>
                                 )}

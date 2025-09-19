@@ -197,7 +197,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                         <div className="products-attribute-input">
                             <div className="products-attribute-name">
                                 <label className="products-form-label">
-                                    Attribute Name (e.g., Color, Size)
+                                    Attribute Name
                                 </label>
                                 <input
                                     type="text"
@@ -237,12 +237,14 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                     Add Value
                                 </button>
                             </div>
-                            <button
-                                onClick={addAttribute}
-                                className="products-add-attribute-button"
-                            >
-                                Add Attribute
-                            </button>
+                            <div className="products-attribute-actions">
+                                <button
+                                    onClick={addAttribute}
+                                    className="products-add-attribute-button"
+                                >
+                                    Add Attribute
+                                </button>
+                            </div>
                         </div>
 
                         {newItem.attributes.length > 0 && (

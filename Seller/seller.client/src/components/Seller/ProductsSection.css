@@ -43,6 +43,8 @@
     border: 1px solid #ced4da;
     border-radius: 4px;
     font-size: 1rem;
+    box-sizing: border-box;
+    height: 3.25rem; /* Consistent height for all inputs */
 }
 
 .products-form-textarea {
@@ -68,7 +70,7 @@
     display: flex;
     gap: 1rem;
     margin-bottom: 1rem;
-    align-items: end;
+    align-items: flex-start;
 }
 
 .products-attribute-name {
@@ -79,6 +81,12 @@
     flex: 2;
 }
 
+.products-attribute-actions {
+    display: flex;
+    align-items: flex-start;
+    padding-top: 1.875rem; /* Match the label height and margin */
+}
+
 .products-attribute-value-row {
     display: flex;
     gap: 0.5rem;
@@ -87,29 +95,34 @@
 
 .products-attribute-value-input {
     flex: 1;
-    padding: 0.5rem;
+    padding: 0.75rem;
     border: 1px solid #ced4da;
     border-radius: 4px;
-    font-size: 0.9rem;
+    font-size: 1rem;
+    box-sizing: border-box;
+    height: 3.25rem; /* Match main form input height */
 }
 
 .products-remove-value-button {
-    padding: 0.5rem;
+    padding: 0.75rem;
     background: #dc3545;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    height: 3.25rem; /* Match input height */
+    font-size: 1rem;
 }
 
 .products-add-value-button {
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
     background: #28a745;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 1rem;
+    height: 3.25rem; /* Match input height */
 }
 
 .products-add-attribute-button {
@@ -119,6 +132,8 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    height: 3.25rem; /* Match input height */
+    font-size: 1rem;
 }
 
 .products-added-attributes {

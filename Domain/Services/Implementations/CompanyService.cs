@@ -40,8 +40,11 @@ namespace Domain.Services.Implementations
                     return Result.Failure<CreateCompanyResponse>("Owner not found.", StatusCodes.Status400BadRequest);
                 }
 
+                // Trim the company name to avoid duplicates with leading/trailing spaces
+                var trimmedName = newCompany.Name.Trim();
+                
                 // Check if company name already exists
-                var existingCompany = await _companyRepository.FindByNameAsync(newCompany.Name);
+                var existingCompany = await _companyRepository.FindByNameAsync(trimmedName);
                 if (existingCompany != null)
                 {
                     return Result.Failure<CreateCompanyResponse>("Company name already exists.", StatusCodes.Status400BadRequest);
@@ -50,7 +53,7 @@ namespace Domain.Services.Implementations
                 var company = await _companyRepository.AddAsync(new Company
                 {
                     OwnerID = ownerId,
-                    Name = newCompany.Name,
+                    Name = trimmedName,
                     Description = newCompany.Description,
                     Logo = newCompany.Logo,
                     CreatedAt = DateTime.UtcNow,
@@ -158,10 +161,13 @@ namespace Domain.Services.Implementations
                     return Result.Failure<UpdateCompanyResponse>("You are not authorized to update this company.", StatusCodes.Status403Forbidden);
                 }
 
+                // Trim the company name to avoid duplicates with leading/trailing spaces
+                var trimmedName = updateRequest.Name.Trim();
+                
                 // Check if new name already exists (excluding current company)
-                if (companyToUpdate.Name != updateRequest.Name)
+                if (companyToUpdate.Name != trimmedName)
                 {
-                    var existingCompany = await _companyRepository.FindByNameAsync(updateRequest.Name);
+                    var existingCompany = await _companyRepository.FindByNameAsync(trimmedName);
                     if (existingCompany != null && existingCompany.Id != updateRequest.Id)
                     {
                         return Result.Failure<UpdateCompanyResponse>("Company name already exists.", StatusCodes.Status400BadRequest);
@@ -169,7 +175,7 @@ namespace Domain.Services.Implementations
                 }
 
                 // Update the company
-                companyToUpdate.Name = updateRequest.Name;
+                companyToUpdate.Name = trimmedName;
                 companyToUpdate.Description = updateRequest.Description;
                 companyToUpdate.Logo = updateRequest.Logo;
                 companyToUpdate.UpdatedAt = DateTime.UtcNow;

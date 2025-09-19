@@ -244,7 +244,7 @@ WHERE OwnerID = @ownerId";
             var query = @"
 SELECT TOP(1) * 
 FROM dbo.Company 
-WHERE Name = @name";
+WHERE LTRIM(RTRIM(Name)) = LTRIM(RTRIM(@name))";
             return await dbConnection.QueryFirstOrDefaultAsync<Company>(query, new { name });
         }
 
@@ -254,7 +254,7 @@ WHERE Name = @name";
             {
                 dbConnection.Open();
             }
-            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.Company WHERE Name = @name", new { name });
+            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.Company WHERE LTRIM(RTRIM(Name)) = LTRIM(RTRIM(@name))", new { name });
         }
 
         public async Task<bool> IsOwnerAsync(Guid companyId, Guid ownerId)

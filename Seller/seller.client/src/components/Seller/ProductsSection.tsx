@@ -41,6 +41,7 @@ interface Item {
 function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectionProps) {
     const [items, setItems] = useState<Item[]>([]);
     const showAddForm = viewMode === 'add';
+    const showListSection = viewMode === 'list';
     const [newItem, setNewItem] = useState({
         name: '',
         description: '',
@@ -388,84 +389,86 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                 </div>
             )}
 
-            <div className="products-list-section">
-                <h3>Current Items ({items.length})</h3>
-                {items.length === 0 ? (
-                    <p className="products-empty">
-                        No items added yet. Click "Add New Item" to create your first product.
-                    </p>
-                ) : (
-                    <div className="products-items-grid">
-                        {items.map(item => (
-                            <div key={item.id} className="products-item-card">
-                                <div className="products-item-header">
-                                    <div className="products-item-info">
-                                        <h4>{item.name}</h4>
-                                        <p className="products-item-description">{item.description}</p>
+            {showListSection && (
+                <div className="products-list-section">
+                    <h3>Current Items ({items.length})</h3>
+                    {items.length === 0 ? (
+                        <p className="products-empty">
+                            No items added yet. Click "Add New Item" to create your first product.
+                        </p>
+                    ) : (
+                        <div className="products-items-grid">
+                            {items.map(item => (
+                                <div key={item.id} className="products-item-card">
+                                    <div className="products-item-header">
+                                        <div className="products-item-info">
+                                            <h4>{item.name}</h4>
+                                            <p className="products-item-description">{item.description}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => deleteItem(item.id)}
+                                            className="products-delete-button"
+                                        >
+                                            Delete
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={() => deleteItem(item.id)}
-                                        className="products-delete-button"
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-                                
-                                {item.attributes.length > 0 && (
-                                    <div className="products-item-attributes">
-                                        <h5>Attributes:</h5>
-                                        {item.attributes.map((attr, index) => (
-                                            <span key={index} className="products-attribute-badge">
-                                                <strong>{attr.name}:</strong> {attr.values.join(', ')}
-                                            </span>
-                                        ))}
-                                    </div>
-                                )}
+                                    
+                                    {item.attributes.length > 0 && (
+                                        <div className="products-item-attributes">
+                                            <h5>Attributes:</h5>
+                                            {item.attributes.map((attr, index) => (
+                                                <span key={index} className="products-attribute-badge">
+                                                    <strong>{attr.name}:</strong> {attr.values.join(', ')}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
 
-                                <div>
-                                    <h5>Variants ({item.variants.length}):</h5>
-                                    <div className="products-variants-table-container">
-                                        <table className="products-item-variants-table">
-                                            <thead>
-                                                <tr>
-                                                    {item.attributes.map(attr => (
-                                                        <th key={attr.name}>
-                                                            {attr.name}
-                                                        </th>
-                                                    ))}
-                                                    <th>SKU</th>
-                                                    <th>Price</th>
-                                                    <th>Stock</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {item.variants.map(variant => (
-                                                    <tr key={variant.id}>
+                                    <div>
+                                        <h5>Variants ({item.variants.length}):</h5>
+                                        <div className="products-variants-table-container">
+                                            <table className="products-item-variants-table">
+                                                <thead>
+                                                    <tr>
                                                         {item.attributes.map(attr => (
-                                                            <td key={attr.name}>
-                                                                {variant.attributes[attr.name] || '-'}
-                                                            </td>
+                                                            <th key={attr.name}>
+                                                                {attr.name}
+                                                            </th>
                                                         ))}
-                                                        <td>
-                                                            {variant.sku || '-'}
-                                                        </td>
-                                                        <td>
-                                                            ${variant.price.toFixed(2)}
-                                                        </td>
-                                                        <td>
-                                                            {variant.stock}
-                                                        </td>
+                                                        <th>SKU</th>
+                                                        <th>Price</th>
+                                                        <th>Stock</th>
                                                     </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody>
+                                                    {item.variants.map(variant => (
+                                                        <tr key={variant.id}>
+                                                            {item.attributes.map(attr => (
+                                                                <td key={attr.name}>
+                                                                    {variant.attributes[attr.name] || '-'}
+                                                                </td>
+                                                            ))}
+                                                            <td>
+                                                                {variant.sku || '-'}
+                                                            </td>
+                                                            <td>
+                                                                ${variant.price.toFixed(2)}
+                                                            </td>
+                                                            <td>
+                                                                {variant.stock}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

@@ -185,7 +185,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                     
                     <div className="products-form-group">
                         <label className="products-form-label">
-                            Item Name *
+                            Item Name
                         </label>
                         <input
                             type="text"
@@ -198,7 +198,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
 
                     <div className="products-form-group">
                         <label className="products-form-label">
-                            Description *
+                            Description
                         </label>
                         <textarea
                             value={newItem.description}

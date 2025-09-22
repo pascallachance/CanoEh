@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import './ProductsSection.css';
 
 interface Company {
@@ -68,6 +68,17 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
 
     // Validation logic for save button
     const isFormInvalid = !newItem.name || !newItem.name_fr || !newItem.description || !newItem.description_fr || !newItem.categoryId;
+
+    // Memoized helper function to get category display for an item
+    const getCategoryDisplay = useMemo(() => {
+        return (categoryId: string) => {
+            const category = categories.find(c => c.id === categoryId);
+            return {
+                name_en: category?.name_en || 'Unknown',
+                name_fr: category?.name_fr || 'Unknown'
+            };
+        };
+    }, [categories]);
 
     // Fetch categories on component mount
     const fetchCategories = async () => {
@@ -524,14 +535,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                                 <strong>FR:</strong> {item.description_fr}
                                             </p>
                                             <p className="products-item-category">
-                                                {(() => {
-                                                    const category = categories.find(c => c.id === item.categoryId);
-                                                    return (
-                                                        <>
-                                                            <strong>Category:</strong> {category?.name_en || 'Unknown'} / {category?.name_fr || 'Unknown'}
-                                                        </>
-                                                    );
-                                                })()}
+                                                <strong>Category:</strong> {getCategoryDisplay(item.categoryId).name_en} / {getCategoryDisplay(item.categoryId).name_fr}
                                             </p>
                                         </div>
                                         <button

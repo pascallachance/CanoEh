@@ -525,19 +525,21 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                         </p>
                     ) : (
                         <div className="products-items-grid">
-                            {items.map(item => (
-                                <div key={item.id} className="products-item-card">
-                                    <div className="products-item-header">
-                                        <div className="products-item-info">
-                                            <h4>{item.name} / {item.name_fr}</h4>
-                                            <p className="products-item-description">
-                                                <strong>EN:</strong> {item.description}<br/>
-                                                <strong>FR:</strong> {item.description_fr}
-                                            </p>
-                                            <p className="products-item-category">
-                                                <strong>Category:</strong> {getCategoryDisplay(item.categoryId).name_en} / {getCategoryDisplay(item.categoryId).name_fr}
-                                            </p>
-                                        </div>
+                            {items.map(item => {
+                                const categoryDisplay = getCategoryDisplay(item.categoryId);
+                                return (
+                                    <div key={item.id} className="products-item-card">
+                                        <div className="products-item-header">
+                                            <div className="products-item-info">
+                                                <h4>{item.name} / {item.name_fr}</h4>
+                                                <p className="products-item-description">
+                                                    <strong>EN:</strong> {item.description}<br/>
+                                                    <strong>FR:</strong> {item.description_fr}
+                                                </p>
+                                                <p className="products-item-category">
+                                                    <strong>Category:</strong> {categoryDisplay.name_en} / {categoryDisplay.name_fr}
+                                                </p>
+                                            </div>
                                         <button
                                             onClick={() => deleteItem(item.id)}
                                             className="products-delete-button"
@@ -597,7 +599,8 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                         </div>
                                     </div>
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>

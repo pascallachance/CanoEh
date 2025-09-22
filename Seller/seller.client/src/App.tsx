@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 import Login from './components/Login';
@@ -33,12 +33,7 @@ function AppContent() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Check for existing session on app load
-    useEffect(() => {
-        checkExistingSession();
-    }, []);
-
-    const checkExistingSession = async () => {
+    const checkExistingSession = useCallback(async () => {
         try {
             setIsCheckingSession(true);
             const response = await ApiClient.get(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/GetMyCompanies`);
@@ -79,7 +74,12 @@ function AppContent() {
         } finally {
             setIsCheckingSession(false);
         }
-    };
+    }, [location.pathname, navigate]);
+
+    // Check for existing session on app load
+    useEffect(() => {
+        checkExistingSession();
+    }, [checkExistingSession]);
 
     const handleLoginSuccess = async () => {
         // After successful login, check companies and navigate appropriately

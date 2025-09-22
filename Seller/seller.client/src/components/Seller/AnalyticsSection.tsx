@@ -48,7 +48,9 @@ const mockProductPerformance: ProductPerformance[] = [
     { productName: 'Hat', sales: 18, revenue: 359.82, orders: 15 },
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function AnalyticsSection(_props: AnalyticsSectionProps) {
+    // TODO: Use props.companies for real data instead of mock data
     const [salesData] = useState<SalesData[]>(mockSalesData);
     const [productPerformance] = useState<ProductPerformance[]>(mockProductPerformance);
 

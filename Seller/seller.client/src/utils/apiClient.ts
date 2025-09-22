@@ -92,7 +92,7 @@ export class ApiClient {
         return this.request(url, { ...options, method: 'GET' });
     }
 
-    public static async post(url: string, body?: any, options: RequestInit = {}): Promise<Response> {
+    public static async post(url: string, body?: unknown, options: RequestInit = {}): Promise<Response> {
         return this.request(url, {
             ...options,
             method: 'POST',
@@ -100,7 +100,7 @@ export class ApiClient {
         });
     }
 
-    public static async put(url: string, body?: any, options: RequestInit = {}): Promise<Response> {
+    public static async put(url: string, body?: unknown, options: RequestInit = {}): Promise<Response> {
         return this.request(url, {
             ...options,
             method: 'PUT',

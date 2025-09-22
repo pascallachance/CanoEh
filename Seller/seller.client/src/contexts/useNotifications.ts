@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import type { ToastType } from '../components/Toast';
-import { NotificationContext } from './NotificationContext';
+import { NotificationContext } from './notificationContext';
 
 export interface NotificationContextType {
     showNotification: (type: ToastType, message: string, duration?: number) => void;

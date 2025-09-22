@@ -98,7 +98,9 @@ const mockOrders: Order[] = [
     }
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function OrdersSection(_props: OrdersSectionProps) {
+    // TODO: Use props.companies for real data instead of mock data
     const [orders, setOrders] = useState<Order[]>(mockOrders);
     const [selectedStatus, setSelectedStatus] = useState<OrderStatus | 'all'>('all');
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);

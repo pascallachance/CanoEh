@@ -1,8 +1,9 @@
-import React, { createContext, useState } from 'react';
+import React, { useState } from 'react';
 import type { ReactNode } from 'react';
 import Toast from '../components/Toast';
 import type { ToastType } from '../components/Toast';
 import type { NotificationContextType } from './useNotifications';
+import { NotificationContext } from './notificationContext';
 
 interface NotificationItem {
     id: string;
@@ -11,7 +12,6 @@ interface NotificationItem {
     duration?: number;
 }
 
-export const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 interface NotificationProviderProps {
     children: ReactNode;

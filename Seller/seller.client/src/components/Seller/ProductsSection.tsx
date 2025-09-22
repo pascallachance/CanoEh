@@ -521,7 +521,14 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                                 <strong>FR:</strong> {item.description_fr}
                                             </p>
                                             <p className="products-item-category">
-                                                <strong>Category:</strong> {categories.find(c => c.id === item.categoryId)?.name_en || 'Unknown'} / {categories.find(c => c.id === item.categoryId)?.name_fr || 'Unknown'}
+                                                {(() => {
+                                                    const category = categories.find(c => c.id === item.categoryId);
+                                                    return (
+                                                        <>
+                                                            <strong>Category:</strong> {category?.name_en || 'Unknown'} / {category?.name_fr || 'Unknown'}
+                                                        </>
+                                                    );
+                                                })()}
                                             </p>
                                         </div>
                                         <button

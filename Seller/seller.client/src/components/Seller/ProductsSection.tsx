@@ -66,6 +66,9 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
     const [newAttribute, setNewAttribute] = useState({ name: '', values: [''] });
     const [attributeError, setAttributeError] = useState('');
 
+    // Validation logic for save button
+    const isFormInvalid = !newItem.name || !newItem.name_fr || !newItem.description || !newItem.description_fr || !newItem.categoryId;
+
     // Fetch categories on component mount
     const fetchCategories = async () => {
         try {
@@ -487,8 +490,8 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                     <div className="products-form-actions">
                         <button
                             onClick={handleSaveItem}
-                            disabled={!newItem.name || !newItem.name_fr || !newItem.description || !newItem.description_fr || !newItem.categoryId}
-                            className={`products-action-button products-action-button--save${!newItem.name || !newItem.name_fr || !newItem.description || !newItem.description_fr || !newItem.categoryId ? ' products-action-button--disabled' : ''}`}
+                            disabled={isFormInvalid}
+                            className={`products-action-button products-action-button--save${isFormInvalid ? ' products-action-button--disabled' : ''}`}
                         >
                             Save Item
                         </button>

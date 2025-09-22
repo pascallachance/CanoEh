@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './ProductsSection.css';
 
 interface Company {
@@ -30,25 +30,92 @@ interface ItemVariant {
     stock: number;
 }
 
+interface Category {
+    id: string;
+    name_en: string;
+    name_fr: string;
+    parentCategoryId?: string;
+    createdAt: string;
+    updatedAt?: string;
+}
+
 interface Item {
     id: string;
     name: string;
+    name_fr: string;
     description: string;
+    description_fr: string;
+    categoryId: string;
     attributes: ItemAttribute[];
     variants: ItemVariant[];
 }
 
 function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectionProps) {
     const [items, setItems] = useState<Item[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const showAddForm = viewMode === 'add';
     const showListSection = viewMode === 'list';
     const [newItem, setNewItem] = useState({
         name: '',
+        name_fr: '',
         description: '',
+        description_fr: '',
+        categoryId: '',
         attributes: [] as ItemAttribute[]
     });
     const [newAttribute, setNewAttribute] = useState({ name: '', values: [''] });
     const [attributeError, setAttributeError] = useState('');
+
+    // Fetch categories on component mount
+    const fetchCategories = async () => {
+        try {
+            // For demo purposes, using mock categories when API is not available
+            // Replace with your actual API endpoint when database is configured
+            const response = await fetch('/api/Category/GetAllCategories');
+            if (response.ok) {
+                const result = await response.json();
+                if (result.value) {
+                    setCategories(result.value);
+                    return;
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch categories:', error);
+        }
+        
+        // Mock categories for demo purposes
+        setCategories([
+            {
+                id: '1',
+                name_en: 'Electronics',
+                name_fr: 'Électronique',
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: '2',
+                name_en: 'Clothing',
+                name_fr: 'Vêtements',
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: '3',
+                name_en: 'Books',
+                name_fr: 'Livres',
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: '4',
+                name_en: 'Home & Garden',
+                name_fr: 'Maison et Jardin',
+                createdAt: new Date().toISOString()
+            }
+        ]);
+    };
+
+    // Load categories when component mounts
+    useEffect(() => {
+        fetchCategories();
+    }, []);
 
     const addAttributeValue = () => {
         setNewAttribute(prev => ({
@@ -156,16 +223,19 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
     };
 
     const handleSaveItem = () => {
-        if (newItem.name && newItem.description) {
+        if (newItem.name && newItem.name_fr && newItem.description && newItem.description_fr && newItem.categoryId) {
             const item: Item = {
                 id: `item-${Date.now()}`,
                 name: newItem.name,
+                name_fr: newItem.name_fr,
                 description: newItem.description,
+                description_fr: newItem.description_fr,
+                categoryId: newItem.categoryId,
                 attributes: newItem.attributes,
                 variants: variants
             };
             setItems(prev => [...prev, item]);
-            setNewItem({ name: '', description: '', attributes: [] });
+            setNewItem({ name: '', name_fr: '', description: '', description_fr: '', categoryId: '', attributes: [] });
             setVariants([]);
             // Switch back to list view after saving
             if (onViewModeChange) {
@@ -186,27 +256,70 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                     
                     <div className="products-form-group">
                         <label className="products-form-label">
-                            Item Name
+                            Item Name (English)
                         </label>
                         <input
                             type="text"
                             value={newItem.name}
                             onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
                             className="products-form-input"
-                            placeholder="Enter item name"
+                            placeholder="Enter item name in English"
                         />
                     </div>
 
                     <div className="products-form-group">
                         <label className="products-form-label">
-                            Description
+                            Item Name (French)
+                        </label>
+                        <input
+                            type="text"
+                            value={newItem.name_fr}
+                            onChange={(e) => setNewItem(prev => ({ ...prev, name_fr: e.target.value }))}
+                            className="products-form-input"
+                            placeholder="Enter item name in French"
+                        />
+                    </div>
+
+                    <div className="products-form-group">
+                        <label className="products-form-label">
+                            Description (English)
                         </label>
                         <textarea
                             value={newItem.description}
                             onChange={(e) => setNewItem(prev => ({ ...prev, description: e.target.value }))}
                             className="products-form-textarea"
-                            placeholder="Enter item description"
+                            placeholder="Enter item description in English"
                         />
+                    </div>
+
+                    <div className="products-form-group">
+                        <label className="products-form-label">
+                            Description (French)
+                        </label>
+                        <textarea
+                            value={newItem.description_fr}
+                            onChange={(e) => setNewItem(prev => ({ ...prev, description_fr: e.target.value }))}
+                            className="products-form-textarea"
+                            placeholder="Enter item description in French"
+                        />
+                    </div>
+
+                    <div className="products-form-group">
+                        <label className="products-form-label">
+                            Category
+                        </label>
+                        <select
+                            value={newItem.categoryId}
+                            onChange={(e) => setNewItem(prev => ({ ...prev, categoryId: e.target.value }))}
+                            className="products-form-input"
+                        >
+                            <option value="">Select a category</option>
+                            {categories.map(category => (
+                                <option key={category.id} value={category.id}>
+                                    {category.name_en} / {category.name_fr}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     <div className="products-attributes-section">
@@ -374,8 +487,8 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                     <div className="products-form-actions">
                         <button
                             onClick={handleSaveItem}
-                            disabled={!newItem.name || !newItem.description}
-                            className={`products-action-button products-action-button--save${!newItem.name || !newItem.description ? ' products-action-button--disabled' : ''}`}
+                            disabled={!newItem.name || !newItem.name_fr || !newItem.description || !newItem.description_fr || !newItem.categoryId}
+                            className={`products-action-button products-action-button--save${!newItem.name || !newItem.name_fr || !newItem.description || !newItem.description_fr || !newItem.categoryId ? ' products-action-button--disabled' : ''}`}
                         >
                             Save Item
                         </button>
@@ -402,8 +515,14 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                 <div key={item.id} className="products-item-card">
                                     <div className="products-item-header">
                                         <div className="products-item-info">
-                                            <h4>{item.name}</h4>
-                                            <p className="products-item-description">{item.description}</p>
+                                            <h4>{item.name} / {item.name_fr}</h4>
+                                            <p className="products-item-description">
+                                                <strong>EN:</strong> {item.description}<br/>
+                                                <strong>FR:</strong> {item.description_fr}
+                                            </p>
+                                            <p className="products-item-category">
+                                                <strong>Category:</strong> {categories.find(c => c.id === item.categoryId)?.name_en || 'Unknown'} / {categories.find(c => c.id === item.categoryId)?.name_fr || 'Unknown'}
+                                            </p>
                                         </div>
                                         <button
                                             onClick={() => deleteItem(item.id)}

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import './ProductsSection.css';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface Company {
     id: string;
@@ -53,6 +54,7 @@ interface Item {
 function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectionProps) {
     const [items, setItems] = useState<Item[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
+    const { language, t } = useLanguage();
     const showAddForm = viewMode === 'add';
     const showListSection = viewMode === 'list';
     const [newItem, setNewItem] = useState({
@@ -73,12 +75,16 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
     const getCategoryDisplay = useMemo(() => {
         return (categoryId: string) => {
             const category = categories.find(c => c.id === categoryId);
+            const displayName = language === 'fr' 
+                ? category?.name_fr || 'Inconnu'
+                : category?.name_en || 'Unknown';
             return {
                 name_en: category?.name_en || 'Unknown',
-                name_fr: category?.name_fr || 'Unknown'
+                name_fr: category?.name_fr || 'Inconnu',
+                displayName
             };
         };
-    }, [categories]);
+    }, [categories, language]);
 
     // Fetch categories on component mount
     const fetchCategories = async () => {
@@ -266,82 +272,82 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         <div className="section-container">
             {showAddForm && (
                 <div className="products-add-form">
-                    <h3>Add New Item</h3>
+                    <h3>{t('products.addProduct')}</h3>
                     
                     <div className="products-form-group">
                         <label className="products-form-label">
-                            Item Name (English)
+                            {t('products.itemName')}
                         </label>
                         <input
                             type="text"
                             value={newItem.name}
                             onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
                             className="products-form-input"
-                            placeholder="Enter item name in English"
+                            placeholder={t('placeholder.itemName')}
                         />
                     </div>
 
                     <div className="products-form-group">
                         <label className="products-form-label">
-                            Item Name (French)
+                            {t('products.itemNameFr')}
                         </label>
                         <input
                             type="text"
                             value={newItem.name_fr}
                             onChange={(e) => setNewItem(prev => ({ ...prev, name_fr: e.target.value }))}
                             className="products-form-input"
-                            placeholder="Enter item name in French"
+                            placeholder={t('placeholder.itemNameFr')}
                         />
                     </div>
 
                     <div className="products-form-group">
                         <label className="products-form-label">
-                            Description (English)
+                            {t('products.description')}
                         </label>
                         <textarea
                             value={newItem.description}
                             onChange={(e) => setNewItem(prev => ({ ...prev, description: e.target.value }))}
                             className="products-form-textarea"
-                            placeholder="Enter item description in English"
+                            placeholder={t('placeholder.description')}
                         />
                     </div>
 
                     <div className="products-form-group">
                         <label className="products-form-label">
-                            Description (French)
+                            {t('products.descriptionFr')}
                         </label>
                         <textarea
                             value={newItem.description_fr}
                             onChange={(e) => setNewItem(prev => ({ ...prev, description_fr: e.target.value }))}
                             className="products-form-textarea"
-                            placeholder="Enter item description in French"
+                            placeholder={t('placeholder.descriptionFr')}
                         />
                     </div>
 
                     <div className="products-form-group">
                         <label className="products-form-label">
-                            Category
+                            {t('products.category')}
                         </label>
                         <select
                             value={newItem.categoryId}
                             onChange={(e) => setNewItem(prev => ({ ...prev, categoryId: e.target.value }))}
                             className="products-form-input"
                         >
-                            <option value="">Select a category</option>
+                            <option value="">{t('products.selectCategory')}</option>
                             {categories.map(category => (
                                 <option key={category.id} value={category.id}>
-                                    {category.name_en} / {category.name_fr}
+                                    {language === 'fr' ? category.name_fr : category.name_en}
                                 </option>
                             ))}
                         </select>
                     </div>
 
                     <div className="products-attributes-section">
-                        <h4>Item Attributes</h4>
+                        <h4>{t('products.itemAttributes')}</h4>
                         <div className="products-attribute-input">
                             <div className="products-attribute-name">
                                 <label className="products-form-label">
-                                    Attribute Name
+                                    {t('products.attributeName')}
                                 </label>
                                 <input
                                     type="text"
@@ -354,7 +360,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                         }
                                     }}
                                     className="products-form-input"
-                                    placeholder="e.g., Color"
+                                    placeholder={t('placeholder.attributeName')}
                                     aria-invalid={!!attributeError}
                                     aria-describedby={attributeError ? "attribute-name-error" : undefined}
                                 />
@@ -371,7 +377,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                             </div>
                             <div className="products-attribute-values">
                                 <label className="products-form-label">
-                                    Possible Values
+                                    {t('products.attributeValues')}
                                 </label>
                                 {newAttribute.values.map((value, index) => (
                                     <div key={index} className="products-attribute-value-row">
@@ -380,14 +386,14 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                             value={value}
                                             onChange={(e) => updateAttributeValue(index, e.target.value)}
                                             className="products-attribute-value-input"
-                                            placeholder="e.g., Red"
+                                            placeholder={t('placeholder.attributeValue')}
                                         />
                                         {newAttribute.values.length > 1 && (
                                             <button
                                                 onClick={() => removeAttributeValue(index)}
                                                 className="products-remove-value-button"
                                             >
-                                                Remove
+                                                {t('products.deleteItem')}
                                             </button>
                                         )}
                                     </div>
@@ -396,7 +402,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                     onClick={addAttributeValue}
                                     className="products-add-value-button"
                                 >
-                                    Add Value
+                                    {t('products.addValue')}
                                 </button>
                             </div>
                             <div className="products-attribute-actions">
@@ -404,14 +410,14 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                     onClick={addAttribute}
                                     className="products-add-attribute-button"
                                 >
-                                    Add Attribute
+                                    {t('products.addAttribute')}
                                 </button>
                             </div>
                         </div>
 
                         {newItem.attributes.length > 0 && (
                             <div className="products-added-attributes">
-                                <h5>Added Attributes:</h5>
+                                <h5>{t('products.attributes')}</h5>
                                 {newItem.attributes.map((attr, index) => (
                                     <div key={index} className="products-attribute-item">
                                         <span>
@@ -421,7 +427,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                             onClick={() => removeAttribute(index)}
                                             className="products-remove-attribute-button"
                                         >
-                                            Remove
+                                            {t('products.deleteItem')}
                                         </button>
                                     </div>
                                 ))}
@@ -504,7 +510,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                             disabled={isFormInvalid}
                             className={`products-action-button products-action-button--save${isFormInvalid ? ' products-action-button--disabled' : ''}`}
                         >
-                            Save Item
+                            {t('products.addItem')}
                         </button>
                         <button
                             onClick={() => onViewModeChange && onViewModeChange('list')}
@@ -537,20 +543,20 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                                     <strong>FR:</strong> {item.description_fr}
                                                 </p>
                                                 <p className="products-item-category">
-                                                    <strong>Category:</strong> {categoryDisplay.name_en} / {categoryDisplay.name_fr}
+                                                    <strong>{t('products.category')}:</strong> {categoryDisplay.displayName}
                                                 </p>
                                             </div>
                                         <button
                                             onClick={() => deleteItem(item.id)}
                                             className="products-delete-button"
                                         >
-                                            Delete
+                                            {t('products.deleteItem')}
                                         </button>
                                     </div>
                                     
                                     {item.attributes.length > 0 && (
                                         <div className="products-item-attributes">
-                                            <h5>Attributes:</h5>
+                                            <h5>{t('products.attributes')}</h5>
                                             {item.attributes.map((attr, index) => (
                                                 <span key={index} className="products-attribute-badge">
                                                     <strong>{attr.name}:</strong> {attr.values.join(', ')}

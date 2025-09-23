@@ -5,6 +5,7 @@ import OrdersSection from './OrdersSection';
 import AnalyticsSection from './AnalyticsSection';
 import CompanySection from './CompanySection';
 import AnalyticsPeriodSelector from './AnalyticsPeriodSelector';
+import { useLanguage } from '../../contexts/LanguageContext';
 import type { PeriodType } from './AnalyticsPeriodSelector';
 
 type SellerSection = 'analytics' | 'products' | 'orders' | 'company';
@@ -28,6 +29,7 @@ function Seller({ companies, onLogout }: SellerProps) {
     const [activeSection, setActiveSection] = useState<SellerSection>('analytics');
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
     const [productsViewMode, setProductsViewMode] = useState<'list' | 'add'>('list');
+    const { language, setLanguage, t } = useLanguage();
 
     // Reset products view mode to 'list' whenever the active section changes
     useEffect(() => {
@@ -69,13 +71,13 @@ function Seller({ companies, onLogout }: SellerProps) {
                             className={`action-button ${productsViewMode === 'list' ? '' : 'secondary'}`}
                             onClick={() => setProductsViewMode('list')}
                         >
-                            List Products
+                            {t('products.listProducts')}
                         </button>
                         <button 
                             className={`action-button ${productsViewMode === 'add' ? '' : 'secondary'}`}
                             onClick={() => setProductsViewMode('add')}
                         >
-                            Add Product
+                            {t('products.addProduct')}
                         </button>
                     </div>
                 );
@@ -90,36 +92,45 @@ function Seller({ companies, onLogout }: SellerProps) {
         <div className="seller-container">
             <nav className="seller-nav">
                 <div className="nav-logo">
-                    <h1 className="nav-brand">CanoEh! Seller</h1>
+                    <h1 className="nav-brand">{t('nav.brand')}</h1>
                 </div>
                 <div className="nav-tabs">
                     <button
                         className={`nav-tab ${activeSection === 'analytics' ? 'active' : ''}`}
                         onClick={() => setActiveSection('analytics')}
                     >
-                        Dashboard
+                        {t('nav.dashboard')}
                     </button>
                     <button
                         className={`nav-tab ${activeSection === 'products' ? 'active' : ''}`}
                         onClick={() => setActiveSection('products')}
                     >
-                        Products
+                        {t('nav.products')}
                     </button>
                     <button
                         className={`nav-tab ${activeSection === 'orders' ? 'active' : ''}`}
                         onClick={() => setActiveSection('orders')}
                     >
-                        Orders
+                        {t('nav.orders')}
                     </button>
                     <button
                         className={`nav-tab ${activeSection === 'company' ? 'active' : ''}`}
                         onClick={() => setActiveSection('company')}
                     >
-                        Company
+                        {t('nav.company')}
                     </button>
                 </div>
                 <div className="nav-buttons">
-                    <button onClick={onLogout}>Logout</button>
+                    <select 
+                        className="drop-down-language"
+                        value={language}
+                        onChange={(e) => setLanguage(e.target.value as 'en' | 'fr')}
+                        title={t('nav.language')}
+                    >
+                        <option value="en">English</option>
+                        <option value="fr">Français</option>
+                    </select>
+                    <button onClick={onLogout}>{t('nav.logout')}</button>
                 </div>
             </nav>
 
@@ -134,7 +145,7 @@ function Seller({ companies, onLogout }: SellerProps) {
             </main>
 
             <footer className="seller-footer">
-                <p>&copy; 2024 CanoEh! Seller Platform. All rights reserved.</p>
+                <p>{t('footer.copyright')}</p>
             </footer>
         </div>
     );

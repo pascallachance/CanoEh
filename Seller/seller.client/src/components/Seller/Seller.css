@@ -30,6 +30,12 @@
     margin: 0;
 }
 
+.nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .nav-buttons button {
     padding: 0.5rem 1rem;
     background: #dc3545;
@@ -42,6 +48,26 @@
 
 .nav-buttons button:hover {
     background: #c82333;
+}
+
+.drop-down-language {
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background: white;
+    color: #495057;
+    font-size: 0.9rem;
+    cursor: pointer;
+    outline: none;
+}
+
+.drop-down-language:hover {
+    border-color: #007bff;
+}
+
+.drop-down-language:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
 .nav-tabs {

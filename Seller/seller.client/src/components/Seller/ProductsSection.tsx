@@ -76,15 +76,15 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         return (categoryId: string) => {
             const category = categories.find(c => c.id === categoryId);
             const displayName = language === 'fr' 
-                ? category?.name_fr || 'Inconnu'
-                : category?.name_en || 'Unknown';
+                ? category?.name_fr || t('common.unknown')
+                : category?.name_en || t('common.unknown');
             return {
-                name_en: category?.name_en || 'Unknown',
-                name_fr: category?.name_fr || 'Inconnu',
+                name_en: category?.name_en || t('common.unknown'),
+                name_fr: category?.name_fr || t('common.unknown'),
                 displayName
             };
         };
-    }, [categories, language]);
+    }, [categories, language, t]);
 
     // Fetch categories on component mount
     const fetchCategories = async () => {

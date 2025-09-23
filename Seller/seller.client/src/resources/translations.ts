@@ -131,6 +131,12 @@ export const translations: TranslationResources = {
     fr: 'Entrer la valeur'
   },
 
+  // Common
+  'common.unknown': {
+    en: 'Unknown',
+    fr: 'Inconnu'
+  },
+
   // Footer
   'footer.copyright': {
     en: '© 2024 CanoEh! Seller Platform. All rights reserved.',

@@ -105,6 +105,36 @@ export const translations: TranslationResources = {
     fr: 'Attributs :'
   },
 
+  // Item Attributes Section
+  'products.itemAttributesTitle': {
+    en: 'Item Attributes',
+    fr: 'Attributs de l\'article'
+  },
+  'products.attributeNameEn': {
+    en: 'Attribute Name (English)',
+    fr: 'Nom d\'attribut (anglais)'
+  },
+  'products.attributeNameFr': {
+    en: 'Attribute Name (French)',
+    fr: 'Nom d\'attribut (français)'
+  },
+  'products.attributeValueEn': {
+    en: 'Attribute Value (English)',
+    fr: 'Valeur d\'attribut (anglais)'
+  },
+  'products.attributeValueFr': {
+    en: 'Attribute Value (French)',
+    fr: 'Valeur d\'attribut (français)'
+  },
+  'products.addNewAttribute': {
+    en: 'Add Another Attribute',
+    fr: 'Ajouter un autre attribut'
+  },
+  'products.removeAttribute': {
+    en: 'Remove',
+    fr: 'Supprimer'
+  },
+
   // Form Placeholders
   'placeholder.itemName': {
     en: 'Enter item name in English',
@@ -129,6 +159,22 @@ export const translations: TranslationResources = {
   'placeholder.attributeValue': {
     en: 'Enter value',
     fr: 'Entrer la valeur'
+  },
+  'placeholder.attributeNameEn': {
+    en: 'e.g., Brand',
+    fr: 'ex: Marque'
+  },
+  'placeholder.attributeNameFr': {
+    en: 'e.g., Marque',
+    fr: 'ex: Brand'
+  },
+  'placeholder.attributeValueEn': {
+    en: 'e.g., Brand Name',
+    fr: 'ex: Nom de la marque'
+  },
+  'placeholder.attributeValueFr': {
+    en: 'e.g., Nom de la marque',
+    fr: 'ex: Brand Name'
   },
 
   // Common

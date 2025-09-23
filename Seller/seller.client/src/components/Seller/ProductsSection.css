@@ -59,30 +59,30 @@
 }
 
 /* Attributes Section */
-.products-attributes-section {
+.products-variants-section {
     margin-bottom: 1rem;
 }
 
-.products-attributes-section h4 {
+.products-variants-section h4 {
     margin: 0 0 1rem 0;
 }
 
-.products-attribute-input {
+.products-variant-input {
     display: flex;
     gap: 1rem;
     margin-bottom: 1rem;
     align-items: flex-start;
 }
 
-.products-attribute-name {
+.products-variant-name {
     flex: 1;
 }
 
-.products-attribute-values {
+.products-variant-values {
     flex: 2;
 }
 
-.products-attribute-actions {
+.products-variant-actions {
     display: flex;
     align-items: flex-start;
     padding-top: 1.875rem; /* Match the label height and margin */

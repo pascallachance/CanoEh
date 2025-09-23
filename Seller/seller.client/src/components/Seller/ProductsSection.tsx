@@ -342,10 +342,10 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                         </select>
                     </div>
 
-                    <div className="products-attributes-section">
+                    <div className="products-variants-section">
                         <h4>{t('products.itemAttributes')}</h4>
-                        <div className="products-attribute-input">
-                            <div className="products-attribute-name">
+                        <div className="products-variant-input">
+                            <div className="products-variant-name">
                                 <label className="products-form-label">
                                     {t('products.attributeName')}
                                 </label>
@@ -375,7 +375,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                     </div>
                                 )}
                             </div>
-                            <div className="products-attribute-values">
+                            <div className="products-variant-values">
                                 <label className="products-form-label">
                                     {t('products.attributeValues')}
                                 </label>
@@ -405,7 +405,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                     {t('products.addValue')}
                                 </button>
                             </div>
-                            <div className="products-attribute-actions">
+                            <div className="products-variant-actions">
                                 <button
                                     onClick={addAttribute}
                                     className="products-add-attribute-button"

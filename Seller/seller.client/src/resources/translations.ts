@@ -73,16 +73,16 @@ export const translations: TranslationResources = {
     fr: 'Sélectionner une catégorie'
   },
   'products.itemAttributes': {
-    en: 'Item Attributes',
-    fr: 'Attributs de l\'article'
+    en: 'Item Variants',
+    fr: 'Variantes de l\'article'
   },
   'products.attributeName': {
-    en: 'Attribute Name',
-    fr: 'Nom de l\'attribut'
+    en: 'Variant Attribute Name',
+    fr: 'Nom de l\'attribut de variante'
   },
   'products.attributeValues': {
-    en: 'Attribute Values',
-    fr: 'Valeurs d\'attribut'
+    en: 'Variant Attribute Value',
+    fr: 'Valeur d\'attribut de variante'
   },
   'products.addValue': {
     en: 'Add Value',
@@ -123,8 +123,8 @@ export const translations: TranslationResources = {
     fr: 'Entrer la description de l\'article en français'
   },
   'placeholder.attributeName': {
-    en: 'Enter attribute name',
-    fr: 'Entrer le nom de l\'attribut'
+    en: 'Enter variant attribute name',
+    fr: 'Entrer le nom de l\'attribut de variante'
   },
   'placeholder.attributeValue': {
     en: 'Enter value',

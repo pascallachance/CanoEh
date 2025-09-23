@@ -49,7 +49,7 @@ export const translations: TranslationResources = {
 
   // Product Form Labels
   'products.itemName': {
-    en: 'Item Name',
+    en: 'Item Name (English)',
     fr: 'Nom de l’article'
   },
   'products.itemNameFr': {
@@ -57,7 +57,7 @@ export const translations: TranslationResources = {
     fr: 'Nom de l’article (français)'
   },
   'products.description': {
-    en: 'Description',
+    en: 'Description (English)',
     fr: 'Description'
   },
   'products.descriptionFr': {
@@ -107,7 +107,7 @@ export const translations: TranslationResources = {
 
   // Form Placeholders
   'placeholder.itemName': {
-    en: 'Enter item name',
+    en: 'Enter item name in English',
     fr: 'Entrer le nom de l\'article'
   },
   'placeholder.itemNameFr': {
@@ -115,7 +115,7 @@ export const translations: TranslationResources = {
     fr: 'Entrer le nom de l\'article en français'
   },
   'placeholder.description': {
-    en: 'Enter item description',
+    en: 'Enter item description in English',
     fr: 'Entrer la description de l\'article'
   },
   'placeholder.descriptionFr': {

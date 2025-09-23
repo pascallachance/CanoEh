@@ -23,6 +23,13 @@ interface ItemAttribute {
     values: string[];
 }
 
+interface BilingualItemAttribute {
+    name_en: string;
+    name_fr: string;
+    value_en: string;
+    value_fr: string;
+}
+
 interface ItemVariant {
     id: string;
     attributes: Record<string, string>;
@@ -48,6 +55,7 @@ interface Item {
     description_fr: string;
     categoryId: string;
     attributes: ItemAttribute[];
+    itemAttributes: BilingualItemAttribute[];
     variants: ItemVariant[];
 }
 
@@ -63,10 +71,19 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         description: '',
         description_fr: '',
         categoryId: '',
-        attributes: [] as ItemAttribute[]
+        attributes: [] as ItemAttribute[],
+        itemAttributes: [] as BilingualItemAttribute[]
     });
     const [newAttribute, setNewAttribute] = useState({ name: '', values: [''] });
     const [attributeError, setAttributeError] = useState('');
+    
+    // State for the new bilingual item attributes
+    const [newItemAttribute, setNewItemAttribute] = useState({
+        name_en: '',
+        name_fr: '',
+        value_en: '',
+        value_fr: ''
+    });
 
     // Validation logic for save button
     const isFormInvalid = !newItem.name || !newItem.name_fr || !newItem.description || !newItem.description_fr || !newItem.categoryId;
@@ -155,6 +172,31 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         setNewAttribute(prev => ({
             ...prev,
             values: prev.values.map((v, i) => i === index ? value : v)
+        }));
+    };
+
+    const addItemAttribute = () => {
+        if (!newItemAttribute.name_en || !newItemAttribute.name_fr || 
+            !newItemAttribute.value_en || !newItemAttribute.value_fr) {
+            return; // Don't add if any field is empty
+        }
+
+        setNewItem(prev => ({
+            ...prev,
+            itemAttributes: [...prev.itemAttributes, { ...newItemAttribute }]
+        }));
+        setNewItemAttribute({
+            name_en: '',
+            name_fr: '',
+            value_en: '',
+            value_fr: ''
+        });
+    };
+
+    const removeItemAttribute = (index: number) => {
+        setNewItem(prev => ({
+            ...prev,
+            itemAttributes: prev.itemAttributes.filter((_, i) => i !== index)
         }));
     };
 
@@ -252,10 +294,19 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                 description_fr: newItem.description_fr,
                 categoryId: newItem.categoryId,
                 attributes: newItem.attributes,
+                itemAttributes: newItem.itemAttributes,
                 variants: variants
             };
             setItems(prev => [...prev, item]);
-            setNewItem({ name: '', name_fr: '', description: '', description_fr: '', categoryId: '', attributes: [] });
+            setNewItem({ 
+                name: '', 
+                name_fr: '', 
+                description: '', 
+                description_fr: '', 
+                categoryId: '', 
+                attributes: [],
+                itemAttributes: []
+            });
             setVariants([]);
             // Switch back to list view after saving
             if (onViewModeChange) {
@@ -340,6 +391,100 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                 </option>
                             ))}
                         </select>
+                    </div>
+
+                    <div className="item-attributes-section">
+                        <h4>{t('products.itemAttributesTitle')}</h4>
+                        <div className="products-form-group">
+                            <div className="attribute-input-row">
+                                <div className="attribute-input-group">
+                                    <label className="products-form-label">
+                                        {t('products.attributeNameEn')}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={newItemAttribute.name_en}
+                                        onChange={(e) => setNewItemAttribute(prev => ({ ...prev, name_en: e.target.value }))}
+                                        className="products-form-input"
+                                        placeholder={t('placeholder.attributeNameEn')}
+                                    />
+                                </div>
+                                <div className="attribute-input-group">
+                                    <label className="products-form-label">
+                                        {t('products.attributeValueEn')}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={newItemAttribute.value_en}
+                                        onChange={(e) => setNewItemAttribute(prev => ({ ...prev, value_en: e.target.value }))}
+                                        className="products-form-input"
+                                        placeholder={t('placeholder.attributeValueEn')}
+                                    />
+                                </div>
+                            </div>
+                            <div className="attribute-input-row">
+                                <div className="attribute-input-group">
+                                    <label className="products-form-label">
+                                        {t('products.attributeNameFr')}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={newItemAttribute.name_fr}
+                                        onChange={(e) => setNewItemAttribute(prev => ({ ...prev, name_fr: e.target.value }))}
+                                        className="products-form-input"
+                                        placeholder={t('placeholder.attributeNameFr')}
+                                    />
+                                </div>
+                                <div className="attribute-input-group">
+                                    <label className="products-form-label">
+                                        {t('products.attributeValueFr')}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={newItemAttribute.value_fr}
+                                        onChange={(e) => setNewItemAttribute(prev => ({ ...prev, value_fr: e.target.value }))}
+                                        className="products-form-input"
+                                        placeholder={t('placeholder.attributeValueFr')}
+                                    />
+                                </div>
+                            </div>
+                            <div className="attribute-actions">
+                                <button
+                                    onClick={addItemAttribute}
+                                    className="products-add-attribute-button"
+                                    disabled={!newItemAttribute.name_en || !newItemAttribute.name_fr || 
+                                             !newItemAttribute.value_en || !newItemAttribute.value_fr}
+                                >
+                                    {t('products.addNewAttribute')}
+                                </button>
+                            </div>
+                        </div>
+
+                        {newItem.itemAttributes.length > 0 && (
+                            <div className="added-item-attributes">
+                                <h5>{t('products.attributes')}</h5>
+                                {newItem.itemAttributes.map((attr, index) => (
+                                    <div key={index} className="item-attribute-display">
+                                        <div className="attribute-display-content">
+                                            <div className="attribute-lang-pair">
+                                                <strong>{t('products.attributeNameEn')}:</strong> {attr.name_en} | 
+                                                <strong> {t('products.attributeValueEn')}:</strong> {attr.value_en}
+                                            </div>
+                                            <div className="attribute-lang-pair">
+                                                <strong>{t('products.attributeNameFr')}:</strong> {attr.name_fr} | 
+                                                <strong> {t('products.attributeValueFr')}:</strong> {attr.value_fr}
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => removeItemAttribute(index)}
+                                            className="products-remove-attribute-button"
+                                        >
+                                            {t('products.removeAttribute')}
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="products-variants-section">
@@ -561,6 +706,22 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                                 <span key={index} className="products-attribute-badge">
                                                     <strong>{attr.name}:</strong> {attr.values.join(', ')}
                                                 </span>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {item.itemAttributes && item.itemAttributes.length > 0 && (
+                                        <div className="products-item-attributes">
+                                            <h5>{t('products.itemAttributesTitle')}</h5>
+                                            {item.itemAttributes.map((attr, index) => (
+                                                <div key={index} className="item-attribute-display">
+                                                    <div className="attribute-lang-pair">
+                                                        <strong>EN:</strong> {attr.name_en}: {attr.value_en}
+                                                    </div>
+                                                    <div className="attribute-lang-pair">
+                                                        <strong>FR:</strong> {attr.name_fr}: {attr.value_fr}
+                                                    </div>
+                                                </div>
                                             ))}
                                         </div>
                                     )}

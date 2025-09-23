@@ -50,11 +50,11 @@ export const translations: TranslationResources = {
   // Product Form Labels
   'products.itemName': {
     en: 'Item Name',
-    fr: 'Nom de l\'article'
+    fr: 'Nom de l’article'
   },
   'products.itemNameFr': {
     en: 'Item Name (French)',
-    fr: 'Nom de l\'article (français)'
+    fr: 'Nom de l’article (français)'
   },
   'products.description': {
     en: 'Description',

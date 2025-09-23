@@ -9,6 +9,7 @@ import CompanyCreatedSuccess from './components/CompanyCreatedSuccess';
 import Seller from './components/Seller/Seller';
 import { ApiClient } from './utils/apiClient';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import type { CreateCompanyStep1Data } from './components/CreateCompanyStep1';
 import type { CreateCompanyStep2Data } from './components/CreateCompanyStep2';
 
@@ -294,9 +295,11 @@ function AppContent() {
 function App() {
     return (
         <Router>
-            <NotificationProvider>
-                <AppContent />
-            </NotificationProvider>
+            <LanguageProvider>
+                <NotificationProvider>
+                    <AppContent />
+                </NotificationProvider>
+            </LanguageProvider>
         </Router>
     );
 }

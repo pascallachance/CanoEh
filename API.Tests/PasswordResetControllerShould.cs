@@ -137,4 +137,73 @@ namespace API.Tests
             Assert.Equal("New password and confirm new password do not match.", statusResult.Value);
         }
     }
+
+    public class ForgotPasswordResponseLocaleShould
+    {
+        [Fact]
+        public void GetLocalizedMessage_ReturnEnglishMessage_WhenEnglishLocale()
+        {
+            // Act
+            var message = ForgotPasswordResponse.DefaultMessages.GetLocalizedMessage("en");
+
+            // Assert
+            Assert.Equal("If the email address exists in our system, you will receive a password reset link shortly.", message);
+        }
+
+        [Fact]
+        public void GetLocalizedMessage_ReturnFrenchMessage_WhenFrenchLocale()
+        {
+            // Act
+            var message = ForgotPasswordResponse.DefaultMessages.GetLocalizedMessage("fr");
+
+            // Assert
+            Assert.Equal("Si l'adresse e-mail existe dans notre système, vous recevrez bientôt un lien de réinitialisation du mot de passe.", message);
+        }
+
+        [Fact]
+        public void GetLocalizedMessage_ReturnEnglishMessage_WhenUnknownLocale()
+        {
+            // Act
+            var message = ForgotPasswordResponse.DefaultMessages.GetLocalizedMessage("de");
+
+            // Assert
+            Assert.Equal("If the email address exists in our system, you will receive a password reset link shortly.", message);
+        }
+
+        [Fact]
+        public void GetLocalizedMessage_ReturnEnglishMessage_WhenNullLocale()
+        {
+            // Act
+            var message = ForgotPasswordResponse.DefaultMessages.GetLocalizedMessage(null);
+
+            // Assert
+            Assert.Equal("If the email address exists in our system, you will receive a password reset link shortly.", message);
+        }
+
+        [Fact]
+        public void CreateWithLocale_SetsCorrectLocalizedMessage()
+        {
+            // Act
+            var responseEn = ForgotPasswordResponse.CreateWithLocale("test@example.com", "en");
+            var responseFr = ForgotPasswordResponse.CreateWithLocale("test@example.com", "fr");
+
+            // Assert
+            Assert.Equal("test@example.com", responseEn.Email);
+            Assert.Equal("If the email address exists in our system, you will receive a password reset link shortly.", responseEn.Message);
+            
+            Assert.Equal("test@example.com", responseFr.Email);
+            Assert.Equal("Si l'adresse e-mail existe dans notre système, vous recevrez bientôt un lien de réinitialisation du mot de passe.", responseFr.Message);
+        }
+
+        [Fact]
+        public void CreateWithLocale_WithCustomMessage_OverridesLocale()
+        {
+            // Act
+            var response = ForgotPasswordResponse.CreateWithLocale("test@example.com", "fr", "Custom message");
+
+            // Assert
+            Assert.Equal("test@example.com", response.Email);
+            Assert.Equal("Custom message", response.Message);
+        }
+    }
 }

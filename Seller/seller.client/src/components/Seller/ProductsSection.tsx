@@ -2,6 +2,27 @@ import { useState, useEffect, useMemo } from 'react';
 import './ProductsSection.css';
 import { useLanguage } from '../../contexts/LanguageContext';
 
+// Utility function to synchronize bilingual arrays (English and French)
+const synchronizeBilingualArrays = (arrayEn: string[], arrayFr: string[]) => {
+    const maxLength = Math.max(arrayEn.length, arrayFr.length);
+    const syncedArrayEn = [...arrayEn];
+    const syncedArrayFr = [...arrayFr];
+    
+    // Pad shorter array with empty strings to maintain synchronization
+    while (syncedArrayEn.length < maxLength) {
+        syncedArrayEn.push('');
+    }
+    while (syncedArrayFr.length < maxLength) {
+        syncedArrayFr.push('');
+    }
+    
+    return { 
+        values_en: syncedArrayEn, 
+        values_fr: syncedArrayFr, 
+        length: maxLength 
+    };
+};
+
 interface Company {
     id: string;
     ownerID: string;
@@ -95,19 +116,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
 
     // Helper function to ensure attribute value arrays are synchronized
     const getSynchronizedAttributeValues = () => {
-        const maxLength = Math.max(newAttribute.values_en.length, newAttribute.values_fr.length);
-        const syncedValuesEn = [...newAttribute.values_en];
-        const syncedValuesFr = [...newAttribute.values_fr];
-        
-        // Pad shorter array with empty strings to maintain synchronization
-        while (syncedValuesEn.length < maxLength) {
-            syncedValuesEn.push('');
-        }
-        while (syncedValuesFr.length < maxLength) {
-            syncedValuesFr.push('');
-        }
-        
-        return { values_en: syncedValuesEn, values_fr: syncedValuesFr, length: maxLength };
+        return synchronizeBilingualArrays(newAttribute.values_en, newAttribute.values_fr);
     };
 
     // Validation logic for save button
@@ -190,17 +199,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
     const removeAttributeValue = (index: number) => {
         setNewAttribute(prev => {
             // Ensure arrays are synchronized before removing
-            const maxLength = Math.max(prev.values_en.length, prev.values_fr.length);
-            const syncedValuesEn = [...prev.values_en];
-            const syncedValuesFr = [...prev.values_fr];
-            
-            // Pad shorter array with empty strings to maintain synchronization
-            while (syncedValuesEn.length < maxLength) {
-                syncedValuesEn.push('');
-            }
-            while (syncedValuesFr.length < maxLength) {
-                syncedValuesFr.push('');
-            }
+            const { values_en: syncedValuesEn, values_fr: syncedValuesFr } = synchronizeBilingualArrays(prev.values_en, prev.values_fr);
             
             // Only remove if the index is valid for both arrays
             if (index >= 0 && index < syncedValuesEn.length && index < syncedValuesFr.length) {
@@ -223,17 +222,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
     const updateAttributeValue = (index: number, value: string, language: 'en' | 'fr') => {
         setNewAttribute(prev => {
             // Ensure arrays are synchronized
-            const maxLength = Math.max(prev.values_en.length, prev.values_fr.length);
-            const syncedValuesEn = [...prev.values_en];
-            const syncedValuesFr = [...prev.values_fr];
-            
-            // Pad shorter array with empty strings to maintain synchronization
-            while (syncedValuesEn.length < maxLength) {
-                syncedValuesEn.push('');
-            }
-            while (syncedValuesFr.length < maxLength) {
-                syncedValuesFr.push('');
-            }
+            const { values_en: syncedValuesEn, values_fr: syncedValuesFr, length: maxLength } = synchronizeBilingualArrays(prev.values_en, prev.values_fr);
             
             // Update the specific value if index is valid
             if (index >= 0 && index < maxLength) {

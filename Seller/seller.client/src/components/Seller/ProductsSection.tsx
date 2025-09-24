@@ -215,9 +215,16 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         // Clear any previous error
         setAttributeError('');
         
-        if (!newAttribute.name_en || !newAttribute.name_fr || 
-            newAttribute.values_en.filter(v => v.trim()).length === 0 ||
-            newAttribute.values_fr.filter(v => v.trim()).length === 0) {
+        const nonEmptyValuesEn = newAttribute.values_en.filter(v => v.trim());
+        const nonEmptyValuesFr = newAttribute.values_fr.filter(v => v.trim());
+        if (
+            !newAttribute.name_en ||
+            !newAttribute.name_fr ||
+            nonEmptyValuesEn.length === 0 ||
+            nonEmptyValuesFr.length === 0 ||
+            nonEmptyValuesEn.length !== nonEmptyValuesFr.length
+        ) {
+            setAttributeError("Please ensure both English and French values are provided and have the same number of non-empty entries.");
             return;
         }
 

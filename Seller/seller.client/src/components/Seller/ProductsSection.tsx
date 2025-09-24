@@ -350,9 +350,14 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
             }
             
             const attribute = newItem.attributes[attrIndex];
-            const minLength = Math.min(attribute.values_en.length, attribute.values_fr.length);
             
-            for (let i = 0; i < minLength; i++) {
+            // Ensure synchronized arrays - validate that lengths match for safety
+            if (attribute.values_en.length !== attribute.values_fr.length) {
+                console.error(`Attribute "${attribute.name_en}" has mismatched array lengths: EN(${attribute.values_en.length}) vs FR(${attribute.values_fr.length})`);
+                return; // Skip this attribute to prevent silent data loss
+            }
+            
+            for (let i = 0; i < attribute.values_en.length; i++) {
                 const valueEn = attribute.values_en[i];
                 const valueFr = attribute.values_fr[i];
                 generateCombinations(

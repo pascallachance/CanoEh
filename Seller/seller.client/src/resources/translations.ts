@@ -199,6 +199,16 @@ export const translations: TranslationResources = {
     fr: 'Inconnu'
   },
 
+  // Error Messages
+  'error.bilingualValuesMismatch': {
+    en: 'Please ensure both English and French values are provided and have the same number of non-empty entries.',
+    fr: 'Veuillez vous assurer que les valeurs anglaises et françaises sont fournies et qu\'elles ont le même nombre d\'entrées non vides.'
+  },
+  'error.bilingualNamesMissing': {
+    en: 'Please ensure both English and French names are provided.',
+    fr: 'Veuillez vous assurer que les noms anglais et français sont fournis.'
+  },
+
   // Footer
   'footer.copyright': {
     en: '© 2024 CanoEh! Seller Platform. All rights reserved.',

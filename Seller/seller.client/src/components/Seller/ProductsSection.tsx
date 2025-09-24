@@ -234,7 +234,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         setAttributeError('');
         
         if (!newAttribute.name_en || !newAttribute.name_fr) {
-            setAttributeError("Please ensure both English and French names are provided.");
+            setAttributeError(t('error.bilingualNamesMissing'));
             return;
         }
 
@@ -242,7 +242,11 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         const validation = validateBilingualArraySync(
             newAttribute.values_en,
             newAttribute.values_fr,
-            { filterEmpty: true, errorType: 'user' }
+            { 
+                filterEmpty: true, 
+                errorType: 'user',
+                customUserErrorMessage: t('error.bilingualValuesMismatch')
+            }
         );
         
         if (!validation.isValid) {
@@ -251,7 +255,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         }
         
         if (validation.values_en!.length === 0 || validation.values_fr!.length === 0) {
-            setAttributeError("Please ensure both English and French values are provided and have the same number of non-empty entries.");
+            setAttributeError(t('error.bilingualValuesMismatch'));
             return;
         }
 

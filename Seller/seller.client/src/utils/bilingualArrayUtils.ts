@@ -58,9 +58,15 @@ export const validateBilingualArraySync = (
         filterEmpty?: boolean;
         attributeName?: string;
         errorType?: 'console' | 'user' | 'none';
+        customUserErrorMessage?: string;
     }
 ): BilingualArrayValidationResult => {
-    const { filterEmpty = false, attributeName, errorType = 'none' } = options || {};
+    const { 
+        filterEmpty = false, 
+        attributeName, 
+        errorType = 'none', 
+        customUserErrorMessage = "Please ensure both English and French values are provided and have the same number of non-empty entries." 
+    } = options || {};
     
     // Apply filtering if requested
     const workingArrayEn = filterEmpty ? arrayEn.filter(v => v.trim()) : arrayEn;
@@ -76,7 +82,7 @@ export const validateBilingualArraySync = (
                 : `Mismatched array lengths: EN(${workingArrayEn.length}) vs FR(${workingArrayFr.length})`;
             console.error(errorMessage);
         } else if (errorType === 'user') {
-            errorMessage = "Please ensure both English and French values are provided and have the same number of non-empty entries.";
+            errorMessage = customUserErrorMessage;
         }
         
         return {

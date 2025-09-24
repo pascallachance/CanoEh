@@ -76,10 +76,19 @@
 
 .products-variant-name {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .products-variant-values {
     flex: 2;
+    display: flex;
+    gap: 1rem;
+}
+
+.attribute-input-group {
+    flex: 1;
 }
 
 .products-variant-actions {

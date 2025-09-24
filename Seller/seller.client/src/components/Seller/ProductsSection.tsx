@@ -19,8 +19,10 @@ interface ProductsSectionProps {
 }
 
 interface ItemAttribute {
-    name: string;
-    values: string[];
+    name_en: string;
+    name_fr: string;
+    values_en: string[];
+    values_fr: string[];
 }
 
 interface BilingualItemAttribute {
@@ -32,7 +34,8 @@ interface BilingualItemAttribute {
 
 interface ItemVariant {
     id: string;
-    attributes: Record<string, string>;
+    attributes_en: Record<string, string>;
+    attributes_fr: Record<string, string>;
     sku: string;
     price: number;
     stock: number;
@@ -74,7 +77,12 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         attributes: [] as ItemAttribute[],
         itemAttributes: [] as BilingualItemAttribute[]
     });
-    const [newAttribute, setNewAttribute] = useState({ name: '', values: [''] });
+    const [newAttribute, setNewAttribute] = useState({ 
+        name_en: '', 
+        name_fr: '', 
+        values_en: [''], 
+        values_fr: [''] 
+    });
     const [attributeError, setAttributeError] = useState('');
     
     // State for the new bilingual item attributes
@@ -157,21 +165,24 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
     const addAttributeValue = () => {
         setNewAttribute(prev => ({
             ...prev,
-            values: [...prev.values, '']
+            values_en: [...prev.values_en, ''],
+            values_fr: [...prev.values_fr, '']
         }));
     };
 
     const removeAttributeValue = (index: number) => {
         setNewAttribute(prev => ({
             ...prev,
-            values: prev.values.filter((_, i) => i !== index)
+            values_en: prev.values_en.filter((_, i) => i !== index),
+            values_fr: prev.values_fr.filter((_, i) => i !== index)
         }));
     };
 
-    const updateAttributeValue = (index: number, value: string) => {
+    const updateAttributeValue = (index: number, value: string, language: 'en' | 'fr') => {
         setNewAttribute(prev => ({
             ...prev,
-            values: prev.values.map((v, i) => i === index ? value : v)
+            [language === 'en' ? 'values_en' : 'values_fr']: 
+                prev[language === 'en' ? 'values_en' : 'values_fr'].map((v, i) => i === index ? value : v)
         }));
     };
 
@@ -204,28 +215,45 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         // Clear any previous error
         setAttributeError('');
         
-        if (!newAttribute.name || newAttribute.values.filter(v => v.trim()).length === 0) {
+        const nonEmptyValuesEn = newAttribute.values_en.filter(v => v.trim());
+        const nonEmptyValuesFr = newAttribute.values_fr.filter(v => v.trim());
+        if (
+            !newAttribute.name_en ||
+            !newAttribute.name_fr ||
+            nonEmptyValuesEn.length === 0 ||
+            nonEmptyValuesFr.length === 0 ||
+            nonEmptyValuesEn.length !== nonEmptyValuesFr.length
+        ) {
+            setAttributeError("Please ensure both English and French values are provided and have the same number of non-empty entries.");
             return;
         }
 
         // Check for duplicate attribute names (case-insensitive)
         const isDuplicate = newItem.attributes.some(attr => 
-            attr.name.toLowerCase() === newAttribute.name.toLowerCase()
+            attr.name_en.toLowerCase() === newAttribute.name_en.toLowerCase() ||
+            attr.name_fr.toLowerCase() === newAttribute.name_fr.toLowerCase()
         );
 
         if (isDuplicate) {
-            setAttributeError(`Attribute "${newAttribute.name}" already exists. Please use a different name.`);
+            setAttributeError(`Attribute "${newAttribute.name_en}" or "${newAttribute.name_fr}" already exists. Please use different names.`);
             return;
         }
 
         setNewItem(prev => ({
             ...prev,
             attributes: [...prev.attributes, {
-                name: newAttribute.name,
-                values: newAttribute.values.filter(v => v.trim())
+                name_en: newAttribute.name_en,
+                name_fr: newAttribute.name_fr,
+                values_en: newAttribute.values_en.filter(v => v.trim()),
+                values_fr: newAttribute.values_fr.filter(v => v.trim())
             }]
         }));
-        setNewAttribute({ name: '', values: [''] });
+        setNewAttribute({ 
+            name_en: '', 
+            name_fr: '', 
+            values_en: [''], 
+            values_fr: [''] 
+        });
     };
 
     const removeAttribute = (index: number) => {
@@ -239,32 +267,42 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         if (newItem.attributes.length === 0) {
             return [{
                 id: '1',
-                attributes: {},
+                attributes_en: {},
+                attributes_fr: {},
                 sku: '',
                 price: 0,
                 stock: 0
             }];
         }
 
-        const combinations: Record<string, string>[] = [];
+        const combinations: { en: Record<string, string>, fr: Record<string, string> }[] = [];
         
-        const generateCombinations = (attrIndex: number, current: Record<string, string>) => {
+        const generateCombinations = (attrIndex: number, currentEn: Record<string, string>, currentFr: Record<string, string>) => {
             if (attrIndex >= newItem.attributes.length) {
-                combinations.push({ ...current });
+                combinations.push({ en: { ...currentEn }, fr: { ...currentFr } });
                 return;
             }
             
             const attribute = newItem.attributes[attrIndex];
-            for (const value of attribute.values) {
-                generateCombinations(attrIndex + 1, { ...current, [attribute.name]: value });
+            const minLength = Math.min(attribute.values_en.length, attribute.values_fr.length);
+            
+            for (let i = 0; i < minLength; i++) {
+                const valueEn = attribute.values_en[i];
+                const valueFr = attribute.values_fr[i];
+                generateCombinations(
+                    attrIndex + 1, 
+                    { ...currentEn, [attribute.name_en]: valueEn },
+                    { ...currentFr, [attribute.name_fr]: valueFr }
+                );
             }
         };
 
-        generateCombinations(0, {});
+        generateCombinations(0, {}, {});
 
         return combinations.map((combo, index) => ({
             id: `variant-${index + 1}`,
-            attributes: combo,
+            attributes_en: combo.en,
+            attributes_fr: combo.fr,
             sku: '',
             price: 0,
             stock: 0
@@ -273,7 +311,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
 
     const [variants, setVariants] = useState<ItemVariant[]>([]);
 
-    const updateVariant = (variantId: string, field: keyof Omit<ItemVariant, 'id' | 'attributes'>, value: string | number) => {
+    const updateVariant = (variantId: string, field: keyof Omit<ItemVariant, 'id' | 'attributes_en' | 'attributes_fr'>, value: string | number) => {
         setVariants(prev => prev.map(v => 
             v.id === variantId ? { ...v, [field]: value } : v
         ));
@@ -491,24 +529,46 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                         <h4>{t('products.itemAttributes')}</h4>
                         <div className="products-variant-input">
                             <div className="products-variant-name">
-                                <label className="products-form-label">
-                                    {t('products.attributeName')}
-                                </label>
-                                <input
-                                    type="text"
-                                    value={newAttribute.name}
-                                    onChange={(e) => {
-                                        setNewAttribute(prev => ({ ...prev, name: e.target.value }));
-                                        // Clear error when user starts typing
-                                        if (attributeError) {
-                                            setAttributeError('');
-                                        }
-                                    }}
-                                    className="products-form-input"
-                                    placeholder={t('placeholder.attributeName')}
-                                    aria-invalid={!!attributeError}
-                                    aria-describedby={attributeError ? "attribute-name-error" : undefined}
-                                />
+                                <div className="attribute-input-group">
+                                    <label className="products-form-label">
+                                        {t('products.attributeName')}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={newAttribute.name_en}
+                                        onChange={(e) => {
+                                            setNewAttribute(prev => ({ ...prev, name_en: e.target.value }));
+                                            // Clear error when user starts typing
+                                            if (attributeError) {
+                                                setAttributeError('');
+                                            }
+                                        }}
+                                        className="products-form-input"
+                                        placeholder={t('placeholder.attributeName')}
+                                        aria-invalid={!!attributeError}
+                                        aria-describedby={attributeError ? "attribute-name-error" : undefined}
+                                    />
+                                </div>
+                                <div className="attribute-input-group">
+                                    <label className="products-form-label">
+                                        {t('products.attributeNameFrVariant')}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={newAttribute.name_fr}
+                                        onChange={(e) => {
+                                            setNewAttribute(prev => ({ ...prev, name_fr: e.target.value }));
+                                            // Clear error when user starts typing
+                                            if (attributeError) {
+                                                setAttributeError('');
+                                            }
+                                        }}
+                                        className="products-form-input"
+                                        placeholder={t('placeholder.attributeNameFrVariant')}
+                                        aria-invalid={!!attributeError}
+                                        aria-describedby={attributeError ? "attribute-name-error" : undefined}
+                                    />
+                                </div>
                                 {attributeError && (
                                     <div
                                         id="attribute-name-error"
@@ -521,28 +581,54 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                 )}
                             </div>
                             <div className="products-variant-values">
-                                <label className="products-form-label">
-                                    {t('products.attributeValues')}
-                                </label>
-                                {newAttribute.values.map((value, index) => (
-                                    <div key={index} className="products-attribute-value-row">
-                                        <input
-                                            type="text"
-                                            value={value}
-                                            onChange={(e) => updateAttributeValue(index, e.target.value)}
-                                            className="products-attribute-value-input"
-                                            placeholder={t('placeholder.attributeValue')}
-                                        />
-                                        {newAttribute.values.length > 1 && (
-                                            <button
-                                                onClick={() => removeAttributeValue(index)}
-                                                className="products-remove-value-button"
-                                            >
-                                                {t('products.deleteItem')}
-                                            </button>
-                                        )}
-                                    </div>
-                                ))}
+                                <div className="attribute-input-group">
+                                    <label className="products-form-label">
+                                        {t('products.attributeValues')}
+                                    </label>
+                                    {newAttribute.values_en.map((value, index) => (
+                                        <div key={index} className="products-attribute-value-row">
+                                            <input
+                                                type="text"
+                                                value={value}
+                                                onChange={(e) => updateAttributeValue(index, e.target.value, 'en')}
+                                                className="products-attribute-value-input"
+                                                placeholder={t('placeholder.attributeValue')}
+                                            />
+                                            {newAttribute.values_en.length > 1 && (
+                                                <button
+                                                    onClick={() => removeAttributeValue(index)}
+                                                    className="products-remove-value-button"
+                                                >
+                                                    {t('products.deleteItem')}
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="attribute-input-group">
+                                    <label className="products-form-label">
+                                        {t('products.attributeValuesFr')}
+                                    </label>
+                                    {newAttribute.values_fr.map((value, index) => (
+                                        <div key={index} className="products-attribute-value-row">
+                                            <input
+                                                type="text"
+                                                value={value}
+                                                onChange={(e) => updateAttributeValue(index, e.target.value, 'fr')}
+                                                className="products-attribute-value-input"
+                                                placeholder={t('placeholder.attributeValueFrVariant')}
+                                            />
+                                            {newAttribute.values_fr.length > 1 && (
+                                                <button
+                                                    onClick={() => removeAttributeValue(index)}
+                                                    className="products-remove-value-button"
+                                                >
+                                                    {t('products.deleteItem')}
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
                                 <button
                                     onClick={addAttributeValue}
                                     className="products-add-value-button"
@@ -566,7 +652,8 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                 {newItem.attributes.map((attr, index) => (
                                     <div key={index} className="products-attribute-item">
                                         <span>
-                                            <strong>{attr.name}:</strong> {attr.values.join(', ')}
+                                            <div><strong>EN:</strong> {attr.name_en}: {attr.values_en.join(', ')}</div>
+                                            <div><strong>FR:</strong> {attr.name_fr}: {attr.values_fr.join(', ')}</div>
                                         </span>
                                         <button
                                             onClick={() => removeAttribute(index)}
@@ -594,8 +681,11 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                     <thead>
                                         <tr>
                                             {newItem.attributes.map(attr => (
-                                                <th key={attr.name}>
-                                                    {attr.name}
+                                                <th key={`${attr.name_en}-${attr.name_fr}`}>
+                                                    <div>
+                                                        <div><strong>EN:</strong> {attr.name_en}</div>
+                                                        <div><strong>FR:</strong> {attr.name_fr}</div>
+                                                    </div>
                                                 </th>
                                             ))}
                                             <th>SKU</th>
@@ -607,8 +697,11 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                         {variants.map(variant => (
                                             <tr key={variant.id}>
                                                 {newItem.attributes.map(attr => (
-                                                    <td key={attr.name}>
-                                                        {variant.attributes[attr.name] || '-'}
+                                                    <td key={`${attr.name_en}-${attr.name_fr}`}>
+                                                        <div>
+                                                            <div><strong>EN:</strong> {variant.attributes_en[attr.name_en] || '-'}</div>
+                                                            <div><strong>FR:</strong> {variant.attributes_fr[attr.name_fr] || '-'}</div>
+                                                        </div>
                                                     </td>
                                                 ))}
                                                 <td>
@@ -703,9 +796,10 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                         <div className="products-item-attributes">
                                             <h5>{t('products.attributes')}</h5>
                                             {item.attributes.map((attr, index) => (
-                                                <span key={index} className="products-attribute-badge">
-                                                    <strong>{attr.name}:</strong> {attr.values.join(', ')}
-                                                </span>
+                                                <div key={index} className="products-attribute-badge">
+                                                    <div><strong>EN:</strong> {attr.name_en}: {attr.values_en.join(', ')}</div>
+                                                    <div><strong>FR:</strong> {attr.name_fr}: {attr.values_fr.join(', ')}</div>
+                                                </div>
                                             ))}
                                         </div>
                                     )}
@@ -733,8 +827,11 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                                 <thead>
                                                     <tr>
                                                         {item.attributes.map(attr => (
-                                                            <th key={attr.name}>
-                                                                {attr.name}
+                                                            <th key={`${attr.name_en}-${attr.name_fr}`}>
+                                                                <div>
+                                                                    <div><strong>EN:</strong> {attr.name_en}</div>
+                                                                    <div><strong>FR:</strong> {attr.name_fr}</div>
+                                                                </div>
                                                             </th>
                                                         ))}
                                                         <th>SKU</th>
@@ -746,8 +843,11 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                                     {item.variants.map(variant => (
                                                         <tr key={variant.id}>
                                                             {item.attributes.map(attr => (
-                                                                <td key={attr.name}>
-                                                                    {variant.attributes[attr.name] || '-'}
+                                                                <td key={`${attr.name_en}-${attr.name_fr}`}>
+                                                                    <div>
+                                                                        <div><strong>EN:</strong> {variant.attributes_en[attr.name_en] || '-'}</div>
+                                                                        <div><strong>FR:</strong> {variant.attributes_fr[attr.name_fr] || '-'}</div>
+                                                                    </div>
                                                                 </td>
                                                             ))}
                                                             <td>

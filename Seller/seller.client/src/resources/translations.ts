@@ -77,12 +77,20 @@ export const translations: TranslationResources = {
     fr: 'Variantes de l\'article'
   },
   'products.attributeName': {
-    en: 'Variant Attribute Name',
-    fr: 'Nom de l\'attribut de variante'
+    en: 'Variant Attribute Name (English)',
+    fr: 'Nom de l\'attribut de variante (anglais)'
+  },
+  'products.attributeNameFrVariant': {
+    en: 'Variant Attribute Name (French)',
+    fr: 'Nom de l\'attribut de variante (français)'
   },
   'products.attributeValues': {
-    en: 'Variant Attribute Value',
-    fr: 'Valeur d\'attribut de variante'
+    en: 'Variant Attribute Value (English)',
+    fr: 'Valeur d\'attribut de variante (anglais)'
+  },
+  'products.attributeValuesFr': {
+    en: 'Variant Attribute Value (French)',
+    fr: 'Valeur d\'attribut de variante (français)'
   },
   'products.addValue': {
     en: 'Add Value',
@@ -153,12 +161,20 @@ export const translations: TranslationResources = {
     fr: 'Entrer la description de l\'article en français'
   },
   'placeholder.attributeName': {
-    en: 'Enter variant attribute name',
-    fr: 'Entrer le nom de l\'attribut de variante'
+    en: 'Enter variant attribute name in English',
+    fr: 'Entrer le nom de l\'attribut de variante en anglais'
+  },
+  'placeholder.attributeNameFrVariant': {
+    en: 'Enter variant attribute name in French',
+    fr: 'Entrer le nom de l\'attribut de variante en français'
   },
   'placeholder.attributeValue': {
-    en: 'Enter value',
-    fr: 'Entrer la valeur'
+    en: 'Enter value in English',
+    fr: 'Entrer la valeur en anglais'
+  },
+  'placeholder.attributeValueFrVariant': {
+    en: 'Enter value in French',
+    fr: 'Entrer la valeur en français'
   },
   'placeholder.attributeNameEn': {
     en: 'e.g., Brand',

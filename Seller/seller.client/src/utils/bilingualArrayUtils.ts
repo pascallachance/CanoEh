@@ -4,6 +4,8 @@
  * and common operations on bilingual data structures.
  */
 
+import { translations } from '../resources/translations';
+
 export interface BilingualArrays {
     values_en: string[];
     values_fr: string[];
@@ -66,7 +68,7 @@ export const validateBilingualArraySync = (
         filterEmpty = false, 
         attributeName, 
         errorType = 'none', 
-        customUserErrorMessage = "Please ensure both English and French values are provided and have the same number of non-empty entries.",
+        customUserErrorMessage = translations['error.bilingualValuesMismatch'].en,
         allowEmpty = true
     } = options || {};
     

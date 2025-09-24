@@ -245,17 +245,13 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
             { 
                 filterEmpty: true, 
                 errorType: 'user',
-                customUserErrorMessage: t('error.bilingualValuesMismatch')
+                customUserErrorMessage: t('error.bilingualValuesMismatch'),
+                allowEmpty: false
             }
         );
         
         if (!validation.isValid) {
             setAttributeError(validation.errorMessage || "Array synchronization failed.");
-            return;
-        }
-        
-        if (validation.values_en!.length === 0 || validation.values_fr!.length === 0) {
-            setAttributeError(t('error.bilingualValuesMismatch'));
             return;
         }
 

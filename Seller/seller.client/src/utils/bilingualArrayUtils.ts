@@ -59,13 +59,15 @@ export const validateBilingualArraySync = (
         attributeName?: string;
         errorType?: 'console' | 'user' | 'none';
         customUserErrorMessage?: string;
+        allowEmpty?: boolean;
     }
 ): BilingualArrayValidationResult => {
     const { 
         filterEmpty = false, 
         attributeName, 
         errorType = 'none', 
-        customUserErrorMessage = "Please ensure both English and French values are provided and have the same number of non-empty entries." 
+        customUserErrorMessage = "Please ensure both English and French values are provided and have the same number of non-empty entries.",
+        allowEmpty = true
     } = options || {};
     
     // Apply filtering if requested
@@ -80,6 +82,27 @@ export const validateBilingualArraySync = (
             errorMessage = attributeName 
                 ? `Attribute "${attributeName}" has mismatched array lengths: EN(${workingArrayEn.length}) vs FR(${workingArrayFr.length})`
                 : `Mismatched array lengths: EN(${workingArrayEn.length}) vs FR(${workingArrayFr.length})`;
+            console.error(errorMessage);
+        } else if (errorType === 'user') {
+            errorMessage = customUserErrorMessage;
+        }
+        
+        return {
+            isValid: false,
+            errorMessage,
+            values_en: workingArrayEn,
+            values_fr: workingArrayFr
+        };
+    }
+    
+    // Check for empty arrays if not allowed
+    if (!allowEmpty && (workingArrayEn.length === 0 || workingArrayFr.length === 0)) {
+        let errorMessage = '';
+        
+        if (errorType === 'console') {
+            errorMessage = attributeName 
+                ? `Attribute "${attributeName}" has empty arrays: EN(${workingArrayEn.length}) FR(${workingArrayFr.length})`
+                : `Empty arrays detected: EN(${workingArrayEn.length}) FR(${workingArrayFr.length})`;
             console.error(errorMessage);
         } else if (errorType === 'user') {
             errorMessage = customUserErrorMessage;

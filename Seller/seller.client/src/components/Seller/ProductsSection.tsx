@@ -103,6 +103,11 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
     // Validation logic for save button
     const isFormInvalid = !newItem.name || !newItem.name_fr || !newItem.description || !newItem.description_fr || !newItem.categoryId;
 
+    // Memoized synchronized attribute values to avoid redundant computation
+    const synchronizedAttributeValues = useMemo(() => {
+        return synchronizeBilingualArrays(newAttribute.values_en, newAttribute.values_fr);
+    }, [newAttribute.values_en, newAttribute.values_fr]);
+
     // Memoized helper function to get category display for an item
     const getCategoryDisplay = useMemo(() => {
         return (categoryId: string) => {
@@ -612,61 +617,56 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                 )}
                             </div>
                             <div className="products-variant-values">
-                                {(() => {
-                                    const { values_en, values_fr, length } = synchronizeBilingualArrays(newAttribute.values_en, newAttribute.values_fr);
-                                    return (
-                                        <>
-                                            <div className="attribute-input-group">
-                                                <label className="products-form-label">
-                                                    {t('products.attributeValues')}
-                                                </label>
-                                                {values_en.map((value, index) => (
-                                                    <div key={index} className="products-attribute-value-row">
-                                                        <input
-                                                            type="text"
-                                                            value={value}
-                                                            onChange={(e) => updateAttributeValue(index, e.target.value, 'en')}
-                                                            className="products-attribute-value-input"
-                                                            placeholder={t('placeholder.attributeValue')}
-                                                        />
-                                                        {length > 1 && (
-                                                            <button
-                                                                onClick={() => removeAttributeValue(index)}
-                                                                className="products-remove-value-button"
-                                                            >
-                                                                {t('products.deleteItem')}
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                ))}
+                                <>
+                                    <div className="attribute-input-group">
+                                        <label className="products-form-label">
+                                            {t('products.attributeValues')}
+                                        </label>
+                                        {synchronizedAttributeValues.values_en.map((value, index) => (
+                                            <div key={index} className="products-attribute-value-row">
+                                                <input
+                                                    type="text"
+                                                    value={value}
+                                                    onChange={(e) => updateAttributeValue(index, e.target.value, 'en')}
+                                                    className="products-attribute-value-input"
+                                                    placeholder={t('placeholder.attributeValue')}
+                                                />
+                                                {synchronizedAttributeValues.length > 1 && (
+                                                    <button
+                                                        onClick={() => removeAttributeValue(index)}
+                                                        className="products-remove-value-button"
+                                                    >
+                                                        {t('products.deleteItem')}
+                                                    </button>
+                                                )}
                                             </div>
-                                            <div className="attribute-input-group">
-                                                <label className="products-form-label">
-                                                    {t('products.attributeValuesFr')}
-                                                </label>
-                                                {values_fr.map((value, index) => (
-                                                    <div key={index} className="products-attribute-value-row">
-                                                        <input
-                                                            type="text"
-                                                            value={value}
-                                                            onChange={(e) => updateAttributeValue(index, e.target.value, 'fr')}
-                                                            className="products-attribute-value-input"
-                                                            placeholder={t('placeholder.attributeValueFrVariant')}
-                                                        />
-                                                        {length > 1 && (
-                                                            <button
-                                                                onClick={() => removeAttributeValue(index)}
-                                                                className="products-remove-value-button"
-                                                            >
-                                                                {t('products.deleteItem')}
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                ))}
+                                        ))}
+                                    </div>
+                                    <div className="attribute-input-group">
+                                        <label className="products-form-label">
+                                            {t('products.attributeValuesFr')}
+                                        </label>
+                                        {synchronizedAttributeValues.values_fr.map((value, index) => (
+                                            <div key={index} className="products-attribute-value-row">
+                                                <input
+                                                    type="text"
+                                                    value={value}
+                                                    onChange={(e) => updateAttributeValue(index, e.target.value, 'fr')}
+                                                    className="products-attribute-value-input"
+                                                    placeholder={t('placeholder.attributeValueFrVariant')}
+                                                />
+                                                {synchronizedAttributeValues.length > 1 && (
+                                                    <button
+                                                        onClick={() => removeAttributeValue(index)}
+                                                        className="products-remove-value-button"
+                                                    >
+                                                        {t('products.deleteItem')}
+                                                    </button>
+                                                )}
                                             </div>
-                                        </>
-                                    );
-                                })()}
+                                        ))}
+                                    </div>
+                                </>
                                 <button
                                     onClick={addAttributeValue}
                                     className="products-add-value-button"

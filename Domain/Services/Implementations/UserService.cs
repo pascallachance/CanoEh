@@ -378,8 +378,8 @@ namespace Domain.Services.Implementations
             // Always return success response to prevent email enumeration attacks
             var response = new ForgotPasswordResponse
             {
-                Email = forgotPasswordRequest.Email!,
-                Message = "If the email address exists in our system, you will receive a password reset link shortly."
+                Email = forgotPasswordRequest.Email!
+                // Message uses the default constant value
             };
 
             // Only send email if user exists and is not deleted

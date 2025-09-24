@@ -41,20 +41,6 @@ export const synchronizeBilingualArrays = (arrayEn: string[], arrayFr: string[])
  * Creates a state update function that synchronizes bilingual arrays before applying changes
  * This is a higher-order function that reduces code duplication in state updates
  */
-export const createBilingualArrayUpdater = <T extends { values_en: string[]; values_fr: string[] }>(
-    updateFn: (syncedData: BilingualArrays) => Partial<T>
-) => {
-    return (prevState: T): T => {
-        const syncedData = synchronizeBilingualArrays(prevState.values_en, prevState.values_fr);
-        const updates = updateFn(syncedData);
-        return {
-            ...prevState,
-            ...updates,
-            values_en: updates.values_en || syncedData.values_en,
-            values_fr: updates.values_fr || syncedData.values_fr
-        };
-    };
-};
 
 /**
  * Updates a specific index in synchronized bilingual arrays

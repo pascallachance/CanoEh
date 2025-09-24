@@ -1,23 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import './ProductsSection.css';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { 
+    synchronizeBilingualArrays, 
+    updateBilingualArrayValue, 
+    removeBilingualArrayValue 
+} from '../../utils/bilingualArrayUtils';
 
-// Utility function to synchronize bilingual arrays (English and French)
-const synchronizeBilingualArrays = (arrayEn: string[], arrayFr: string[]) => {
-    const maxLength = Math.max(arrayEn.length, arrayFr.length);
-    const syncedArrayEn = [...arrayEn];
-    const syncedArrayFr = [...arrayFr];
-    
-    // Pad shorter array with empty strings to maintain synchronization
-    const paddedArrayEn = [...syncedArrayEn, ...Array(maxLength - syncedArrayEn.length).fill('')];
-    const paddedArrayFr = [...syncedArrayFr, ...Array(maxLength - syncedArrayFr.length).fill('')];
-    
-    return { 
-        values_en: paddedArrayEn, 
-        values_fr: paddedArrayFr, 
-        length: maxLength 
-    };
-};
 
 interface Company {
     id: string;
@@ -194,45 +183,22 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
 
     const removeAttributeValue = (index: number) => {
         setNewAttribute(prev => {
-            // Ensure arrays are synchronized before removing
-            const { values_en: syncedValuesEn, values_fr: syncedValuesFr } = synchronizeBilingualArrays(prev.values_en, prev.values_fr);
-            
-            // Only remove if the index is valid for both arrays
-            if (index >= 0 && index < syncedValuesEn.length && index < syncedValuesFr.length) {
-                return {
-                    ...prev,
-                    values_en: syncedValuesEn.filter((_, i) => i !== index),
-                    values_fr: syncedValuesFr.filter((_, i) => i !== index)
-                };
-            }
-            
-            // Return synchronized arrays without removing if index is invalid
+            const { values_en, values_fr } = removeBilingualArrayValue(prev.values_en, prev.values_fr, index);
             return {
                 ...prev,
-                values_en: syncedValuesEn,
-                values_fr: syncedValuesFr
+                values_en,
+                values_fr
             };
         });
     };
 
     const updateAttributeValue = (index: number, value: string, language: 'en' | 'fr') => {
         setNewAttribute(prev => {
-            // Ensure arrays are synchronized
-            const { values_en: syncedValuesEn, values_fr: syncedValuesFr, length: maxLength } = synchronizeBilingualArrays(prev.values_en, prev.values_fr);
-            
-            // Update the specific value if index is valid
-            if (index >= 0 && index < maxLength) {
-                if (language === 'en') {
-                    syncedValuesEn[index] = value;
-                } else {
-                    syncedValuesFr[index] = value;
-                }
-            }
-            
+            const { values_en, values_fr } = updateBilingualArrayValue(prev.values_en, prev.values_fr, index, value, language);
             return {
                 ...prev,
-                values_en: syncedValuesEn,
-                values_fr: syncedValuesFr
+                values_en,
+                values_fr
             };
         });
     };

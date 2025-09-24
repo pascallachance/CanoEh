@@ -612,60 +612,61 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                 )}
                             </div>
                             <div className="products-variant-values">
-                                <div className="attribute-input-group">
-                                    <label className="products-form-label">
-                                        {t('products.attributeValues')}
-                                    </label>
-                                    {(() => {
-                                        const { values_en, length } = synchronizeBilingualArrays(newAttribute.values_en, newAttribute.values_fr);
-                                        return values_en.map((value, index) => (
-                                            <div key={index} className="products-attribute-value-row">
-                                                <input
-                                                    type="text"
-                                                    value={value}
-                                                    onChange={(e) => updateAttributeValue(index, e.target.value, 'en')}
-                                                    className="products-attribute-value-input"
-                                                    placeholder={t('placeholder.attributeValue')}
-                                                />
-                                                {length > 1 && (
-                                                    <button
-                                                        onClick={() => removeAttributeValue(index)}
-                                                        className="products-remove-value-button"
-                                                    >
-                                                        {t('products.deleteItem')}
-                                                    </button>
-                                                )}
+                                {(() => {
+                                    const { values_en, values_fr, length } = synchronizeBilingualArrays(newAttribute.values_en, newAttribute.values_fr);
+                                    return (
+                                        <>
+                                            <div className="attribute-input-group">
+                                                <label className="products-form-label">
+                                                    {t('products.attributeValues')}
+                                                </label>
+                                                {values_en.map((value, index) => (
+                                                    <div key={index} className="products-attribute-value-row">
+                                                        <input
+                                                            type="text"
+                                                            value={value}
+                                                            onChange={(e) => updateAttributeValue(index, e.target.value, 'en')}
+                                                            className="products-attribute-value-input"
+                                                            placeholder={t('placeholder.attributeValue')}
+                                                        />
+                                                        {length > 1 && (
+                                                            <button
+                                                                onClick={() => removeAttributeValue(index)}
+                                                                className="products-remove-value-button"
+                                                            >
+                                                                {t('products.deleteItem')}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ))}
                                             </div>
-                                        ));
-                                    })()}
-                                </div>
-                                <div className="attribute-input-group">
-                                    <label className="products-form-label">
-                                        {t('products.attributeValuesFr')}
-                                    </label>
-                                    {(() => {
-                                        const { values_fr, length } = synchronizeBilingualArrays(newAttribute.values_en, newAttribute.values_fr);
-                                        return values_fr.map((value, index) => (
-                                            <div key={index} className="products-attribute-value-row">
-                                                <input
-                                                    type="text"
-                                                    value={value}
-                                                    onChange={(e) => updateAttributeValue(index, e.target.value, 'fr')}
-                                                    className="products-attribute-value-input"
-                                                    placeholder={t('placeholder.attributeValueFrVariant')}
-                                                />
-                                                {length > 1 && (
-                                                    <button
-                                                        onClick={() => removeAttributeValue(index)}
-                                                        className="products-remove-value-button"
-                                                    >
-                                                        {t('products.deleteItem')}
-                                                    </button>
-                                                )}
+                                            <div className="attribute-input-group">
+                                                <label className="products-form-label">
+                                                    {t('products.attributeValuesFr')}
+                                                </label>
+                                                {values_fr.map((value, index) => (
+                                                    <div key={index} className="products-attribute-value-row">
+                                                        <input
+                                                            type="text"
+                                                            value={value}
+                                                            onChange={(e) => updateAttributeValue(index, e.target.value, 'fr')}
+                                                            className="products-attribute-value-input"
+                                                            placeholder={t('placeholder.attributeValueFrVariant')}
+                                                        />
+                                                        {length > 1 && (
+                                                            <button
+                                                                onClick={() => removeAttributeValue(index)}
+                                                                className="products-remove-value-button"
+                                                            >
+                                                                {t('products.deleteItem')}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ))}
                                             </div>
-                                        ));
-                                    })()}
-                                </div>
+                                        </>
+                                    );
+                                })()}
                                 <button
                                     onClick={addAttributeValue}
                                     className="products-add-value-button"

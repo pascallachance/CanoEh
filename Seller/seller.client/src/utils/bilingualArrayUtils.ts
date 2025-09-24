@@ -62,15 +62,20 @@ export const validateBilingualArraySync = (
         errorType?: 'console' | 'user' | 'none';
         customUserErrorMessage?: string;
         allowEmpty?: boolean;
+        language?: 'en' | 'fr';
     }
 ): BilingualArrayValidationResult => {
     const { 
         filterEmpty = false, 
         attributeName, 
         errorType = 'none', 
-        customUserErrorMessage = translations['error.bilingualValuesMismatch'].en,
-        allowEmpty = true
+        customUserErrorMessage,
+        allowEmpty = true,
+        language = 'en'
     } = options || {};
+    
+    // Use locale-aware default message if customUserErrorMessage is not provided
+    const defaultErrorMessage = customUserErrorMessage ?? translations['error.bilingualValuesMismatch'][language];
     
     // Apply filtering if requested
     const workingArrayEn = filterEmpty ? arrayEn.filter(v => v.trim()) : arrayEn;
@@ -86,7 +91,7 @@ export const validateBilingualArraySync = (
                 : `Mismatched array lengths: EN(${workingArrayEn.length}) vs FR(${workingArrayFr.length})`;
             console.error(errorMessage);
         } else if (errorType === 'user') {
-            errorMessage = customUserErrorMessage;
+            errorMessage = defaultErrorMessage;
         }
         
         return {
@@ -107,7 +112,7 @@ export const validateBilingualArraySync = (
                 : `Empty arrays detected: EN(${workingArrayEn.length}) FR(${workingArrayFr.length})`;
             console.error(errorMessage);
         } else if (errorType === 'user') {
-            errorMessage = customUserErrorMessage;
+            errorMessage = defaultErrorMessage;
         }
         
         return {

@@ -4,7 +4,8 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { 
     synchronizeBilingualArrays, 
     updateBilingualArrayValue, 
-    removeBilingualArrayValue 
+    removeBilingualArrayValue,
+    validateBilingualArraySync
 } from '../../utils/bilingualArrayUtils';
 
 
@@ -98,11 +99,6 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         value_en: '',
         value_fr: ''
     });
-
-    // Helper function to ensure attribute value arrays are synchronized
-    const getSynchronizedAttributeValues = () => {
-        return synchronizeBilingualArrays(newAttribute.values_en, newAttribute.values_fr);
-    };
 
     // Validation logic for save button
     const isFormInvalid = !newItem.name || !newItem.name_fr || !newItem.description || !newItem.description_fr || !newItem.categoryId;
@@ -232,15 +228,24 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         // Clear any previous error
         setAttributeError('');
         
-        const nonEmptyValuesEn = newAttribute.values_en.filter(v => v.trim());
-        const nonEmptyValuesFr = newAttribute.values_fr.filter(v => v.trim());
-        if (
-            !newAttribute.name_en ||
-            !newAttribute.name_fr ||
-            nonEmptyValuesEn.length === 0 ||
-            nonEmptyValuesFr.length === 0 ||
-            nonEmptyValuesEn.length !== nonEmptyValuesFr.length
-        ) {
+        if (!newAttribute.name_en || !newAttribute.name_fr) {
+            setAttributeError("Please ensure both English and French names are provided.");
+            return;
+        }
+
+        // Validate synchronized arrays for non-empty values
+        const validation = validateBilingualArraySync(
+            newAttribute.values_en,
+            newAttribute.values_fr,
+            { filterEmpty: true, errorType: 'user' }
+        );
+        
+        if (!validation.isValid) {
+            setAttributeError(validation.errorMessage || "Array synchronization failed.");
+            return;
+        }
+        
+        if (validation.values_en!.length === 0 || validation.values_fr!.length === 0) {
             setAttributeError("Please ensure both English and French values are provided and have the same number of non-empty entries.");
             return;
         }
@@ -261,8 +266,8 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
             attributes: [...prev.attributes, {
                 name_en: newAttribute.name_en,
                 name_fr: newAttribute.name_fr,
-                values_en: newAttribute.values_en.filter(v => v.trim()),
-                values_fr: newAttribute.values_fr.filter(v => v.trim())
+                values_en: validation.values_en!,
+                values_fr: validation.values_fr!
             }]
         }));
         setNewAttribute({ 
@@ -303,8 +308,12 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
             const attribute = newItem.attributes[attrIndex];
             
             // Ensure synchronized arrays - validate that lengths match for safety
-            if (attribute.values_en.length !== attribute.values_fr.length) {
-                console.error(`Attribute "${attribute.name_en}" has mismatched array lengths: EN(${attribute.values_en.length}) vs FR(${attribute.values_fr.length})`);
+            const validation = validateBilingualArraySync(
+                attribute.values_en, 
+                attribute.values_fr, 
+                { attributeName: attribute.name_en, errorType: 'console' }
+            );
+            if (!validation.isValid) {
                 return; // Skip this attribute to prevent silent data loss
             }
             
@@ -608,7 +617,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                         {t('products.attributeValues')}
                                     </label>
                                     {(() => {
-                                        const { values_en, length } = getSynchronizedAttributeValues();
+                                        const { values_en, length } = synchronizeBilingualArrays(newAttribute.values_en, newAttribute.values_fr);
                                         return values_en.map((value, index) => (
                                             <div key={index} className="products-attribute-value-row">
                                                 <input
@@ -635,7 +644,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                         {t('products.attributeValuesFr')}
                                     </label>
                                     {(() => {
-                                        const { values_fr, length } = getSynchronizedAttributeValues();
+                                        const { values_fr, length } = synchronizeBilingualArrays(newAttribute.values_en, newAttribute.values_fr);
                                         return values_fr.map((value, index) => (
                                             <div key={index} className="products-attribute-value-row">
                                                 <input

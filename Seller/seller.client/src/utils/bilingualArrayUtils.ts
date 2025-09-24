@@ -38,6 +38,63 @@ export const synchronizeBilingualArrays = (arrayEn: string[], arrayFr: string[])
 };
 
 /**
+ * Validation result for bilingual array synchronization
+ */
+export interface BilingualArrayValidationResult {
+    isValid: boolean;
+    errorMessage?: string;
+    values_en?: string[];
+    values_fr?: string[];
+}
+
+/**
+ * Validates and optionally synchronizes bilingual arrays
+ * This function consolidates synchronization validation logic to reduce code duplication
+ */
+export const validateBilingualArraySync = (
+    arrayEn: string[],
+    arrayFr: string[],
+    options?: {
+        filterEmpty?: boolean;
+        attributeName?: string;
+        errorType?: 'console' | 'user' | 'none';
+    }
+): BilingualArrayValidationResult => {
+    const { filterEmpty = false, attributeName, errorType = 'none' } = options || {};
+    
+    // Apply filtering if requested
+    const workingArrayEn = filterEmpty ? arrayEn.filter(v => v.trim()) : arrayEn;
+    const workingArrayFr = filterEmpty ? arrayFr.filter(v => v.trim()) : arrayFr;
+    
+    // Check if lengths match
+    if (workingArrayEn.length !== workingArrayFr.length) {
+        let errorMessage = '';
+        
+        if (errorType === 'console') {
+            errorMessage = attributeName 
+                ? `Attribute "${attributeName}" has mismatched array lengths: EN(${workingArrayEn.length}) vs FR(${workingArrayFr.length})`
+                : `Mismatched array lengths: EN(${workingArrayEn.length}) vs FR(${workingArrayFr.length})`;
+            console.error(errorMessage);
+        } else if (errorType === 'user') {
+            errorMessage = "Please ensure both English and French values are provided and have the same number of non-empty entries.";
+        }
+        
+        return {
+            isValid: false,
+            errorMessage,
+            values_en: workingArrayEn,
+            values_fr: workingArrayFr
+        };
+    }
+    
+    return {
+        isValid: true,
+        values_en: workingArrayEn,
+        values_fr: workingArrayFr
+    };
+};
+
+/**
  * Creates a state update function that synchronizes bilingual arrays before applying changes
  * This is a higher-order function that reduces code duplication in state updates
  */

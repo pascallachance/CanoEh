@@ -93,6 +93,23 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         value_fr: ''
     });
 
+    // Helper function to ensure attribute value arrays are synchronized
+    const getSynchronizedAttributeValues = () => {
+        const maxLength = Math.max(newAttribute.values_en.length, newAttribute.values_fr.length);
+        const syncedValuesEn = [...newAttribute.values_en];
+        const syncedValuesFr = [...newAttribute.values_fr];
+        
+        // Pad shorter array with empty strings to maintain synchronization
+        while (syncedValuesEn.length < maxLength) {
+            syncedValuesEn.push('');
+        }
+        while (syncedValuesFr.length < maxLength) {
+            syncedValuesFr.push('');
+        }
+        
+        return { values_en: syncedValuesEn, values_fr: syncedValuesFr, length: maxLength };
+    };
+
     // Validation logic for save button
     const isFormInvalid = !newItem.name || !newItem.name_fr || !newItem.description || !newItem.description_fr || !newItem.categoryId;
 
@@ -171,19 +188,68 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
     };
 
     const removeAttributeValue = (index: number) => {
-        setNewAttribute(prev => ({
-            ...prev,
-            values_en: prev.values_en.filter((_, i) => i !== index),
-            values_fr: prev.values_fr.filter((_, i) => i !== index)
-        }));
+        setNewAttribute(prev => {
+            // Ensure arrays are synchronized before removing
+            const maxLength = Math.max(prev.values_en.length, prev.values_fr.length);
+            const syncedValuesEn = [...prev.values_en];
+            const syncedValuesFr = [...prev.values_fr];
+            
+            // Pad shorter array with empty strings to maintain synchronization
+            while (syncedValuesEn.length < maxLength) {
+                syncedValuesEn.push('');
+            }
+            while (syncedValuesFr.length < maxLength) {
+                syncedValuesFr.push('');
+            }
+            
+            // Only remove if the index is valid for both arrays
+            if (index >= 0 && index < syncedValuesEn.length && index < syncedValuesFr.length) {
+                return {
+                    ...prev,
+                    values_en: syncedValuesEn.filter((_, i) => i !== index),
+                    values_fr: syncedValuesFr.filter((_, i) => i !== index)
+                };
+            }
+            
+            // Return synchronized arrays without removing if index is invalid
+            return {
+                ...prev,
+                values_en: syncedValuesEn,
+                values_fr: syncedValuesFr
+            };
+        });
     };
 
     const updateAttributeValue = (index: number, value: string, language: 'en' | 'fr') => {
-        setNewAttribute(prev => ({
-            ...prev,
-            [language === 'en' ? 'values_en' : 'values_fr']: 
-                prev[language === 'en' ? 'values_en' : 'values_fr'].map((v, i) => i === index ? value : v)
-        }));
+        setNewAttribute(prev => {
+            // Ensure arrays are synchronized
+            const maxLength = Math.max(prev.values_en.length, prev.values_fr.length);
+            const syncedValuesEn = [...prev.values_en];
+            const syncedValuesFr = [...prev.values_fr];
+            
+            // Pad shorter array with empty strings to maintain synchronization
+            while (syncedValuesEn.length < maxLength) {
+                syncedValuesEn.push('');
+            }
+            while (syncedValuesFr.length < maxLength) {
+                syncedValuesFr.push('');
+            }
+            
+            // Update the specific value if index is valid
+            if (index >= 0 && index < maxLength) {
+                if (language === 'en') {
+                    syncedValuesEn[index] = value;
+                } else {
+                    syncedValuesFr[index] = value;
+                }
+            }
+            
+            return {
+                ...prev,
+                values_en: syncedValuesEn,
+                values_fr: syncedValuesFr
+            };
+        });
     };
 
     const addItemAttribute = () => {
@@ -585,49 +651,55 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                     <label className="products-form-label">
                                         {t('products.attributeValues')}
                                     </label>
-                                    {newAttribute.values_en.map((value, index) => (
-                                        <div key={index} className="products-attribute-value-row">
-                                            <input
-                                                type="text"
-                                                value={value}
-                                                onChange={(e) => updateAttributeValue(index, e.target.value, 'en')}
-                                                className="products-attribute-value-input"
-                                                placeholder={t('placeholder.attributeValue')}
-                                            />
-                                            {newAttribute.values_en.length > 1 && (
-                                                <button
-                                                    onClick={() => removeAttributeValue(index)}
-                                                    className="products-remove-value-button"
-                                                >
-                                                    {t('products.deleteItem')}
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
+                                    {(() => {
+                                        const { values_en, length } = getSynchronizedAttributeValues();
+                                        return values_en.map((value, index) => (
+                                            <div key={index} className="products-attribute-value-row">
+                                                <input
+                                                    type="text"
+                                                    value={value}
+                                                    onChange={(e) => updateAttributeValue(index, e.target.value, 'en')}
+                                                    className="products-attribute-value-input"
+                                                    placeholder={t('placeholder.attributeValue')}
+                                                />
+                                                {length > 1 && (
+                                                    <button
+                                                        onClick={() => removeAttributeValue(index)}
+                                                        className="products-remove-value-button"
+                                                    >
+                                                        {t('products.deleteItem')}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ));
+                                    })()}
                                 </div>
                                 <div className="attribute-input-group">
                                     <label className="products-form-label">
                                         {t('products.attributeValuesFr')}
                                     </label>
-                                    {newAttribute.values_fr.map((value, index) => (
-                                        <div key={index} className="products-attribute-value-row">
-                                            <input
-                                                type="text"
-                                                value={value}
-                                                onChange={(e) => updateAttributeValue(index, e.target.value, 'fr')}
-                                                className="products-attribute-value-input"
-                                                placeholder={t('placeholder.attributeValueFrVariant')}
-                                            />
-                                            {newAttribute.values_fr.length > 1 && (
-                                                <button
-                                                    onClick={() => removeAttributeValue(index)}
-                                                    className="products-remove-value-button"
-                                                >
-                                                    {t('products.deleteItem')}
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
+                                    {(() => {
+                                        const { values_fr, length } = getSynchronizedAttributeValues();
+                                        return values_fr.map((value, index) => (
+                                            <div key={index} className="products-attribute-value-row">
+                                                <input
+                                                    type="text"
+                                                    value={value}
+                                                    onChange={(e) => updateAttributeValue(index, e.target.value, 'fr')}
+                                                    className="products-attribute-value-input"
+                                                    placeholder={t('placeholder.attributeValueFrVariant')}
+                                                />
+                                                {length > 1 && (
+                                                    <button
+                                                        onClick={() => removeAttributeValue(index)}
+                                                        className="products-remove-value-button"
+                                                    >
+                                                        {t('products.deleteItem')}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ));
+                                    })()}
                                 </div>
                                 <button
                                     onClick={addAttributeValue}

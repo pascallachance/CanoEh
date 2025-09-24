@@ -9,16 +9,12 @@ const synchronizeBilingualArrays = (arrayEn: string[], arrayFr: string[]) => {
     const syncedArrayFr = [...arrayFr];
     
     // Pad shorter array with empty strings to maintain synchronization
-    while (syncedArrayEn.length < maxLength) {
-        syncedArrayEn.push('');
-    }
-    while (syncedArrayFr.length < maxLength) {
-        syncedArrayFr.push('');
-    }
+    const paddedArrayEn = [...syncedArrayEn, ...Array(maxLength - syncedArrayEn.length).fill('')];
+    const paddedArrayFr = [...syncedArrayFr, ...Array(maxLength - syncedArrayFr.length).fill('')];
     
     return { 
-        values_en: syncedArrayEn, 
-        values_fr: syncedArrayFr, 
+        values_en: paddedArrayEn, 
+        values_fr: paddedArrayFr, 
         length: maxLength 
     };
 };

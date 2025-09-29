@@ -1038,7 +1038,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                                             </td>
                                                             <td>
                                                                 {variant.imageUrls && variant.imageUrls.length > 0 ? (
-                                                                    <span>{variant.imageUrls.length} image(s)</span>
+                                                                    <span>{variant.imageUrls.length} {variant.imageUrls.length === 1 ? 'image' : 'images'}</span>
                                                                 ) : '-'}
                                                             </td>
                                                         </tr>

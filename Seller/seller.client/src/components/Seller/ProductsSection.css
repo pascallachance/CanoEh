@@ -240,6 +240,23 @@
     width: 120px;
 }
 
+/* Validation styles for variant inputs */
+.products-variant-input--required {
+    border-color: #ffc107;
+    background-color: #fff3cd;
+}
+
+.products-variant-input--invalid {
+    border-color: #dc3545;
+    background-color: #f8d7da;
+}
+
+.products-add-value-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
 /* File Upload Styles */
 .products-file-input-container {
     display: flex;

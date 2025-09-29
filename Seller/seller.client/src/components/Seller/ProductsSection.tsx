@@ -883,7 +883,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                                         </label>
                                                         {variant.imageUrls && variant.imageUrls.length > 0 && (
                                                             <div className="products-images-preview">
-                                                                <small>{variant.imageUrls.length} image(s) selected</small>
+                                                                <small>{variant.imageUrls.length} {variant.imageUrls.length === 1 ? 'image' : 'images'} selected</small>
                                                                 <div className="products-images-grid">
                                                                     {variant.imageUrls.slice(0, 3).map((url, index) => (
                                                                         <img key={index} src={url} alt={`Product ${index + 1}`} className="products-image-preview-small" />

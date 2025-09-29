@@ -46,6 +46,10 @@ interface ItemVariant {
     sku: string;
     price: number;
     stock: number;
+    productIdentifierType?: string;
+    productIdentifierValue?: string;
+    thumbnailUrl?: string;
+    imageUrls?: string[]; // Array of image URLs (1-10 images)
 }
 
 interface Category {
@@ -298,7 +302,11 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                 attributes_fr: {},
                 sku: '',
                 price: 0,
-                stock: 0
+                stock: 0,
+                productIdentifierType: '',
+                productIdentifierValue: '',
+                thumbnailUrl: '',
+                imageUrls: []
             }];
         }
 
@@ -341,17 +349,59 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
             attributes_fr: combo.fr,
             sku: '',
             price: 0,
-            stock: 0
+            stock: 0,
+            productIdentifierType: '',
+            productIdentifierValue: '',
+            thumbnailUrl: '',
+            imageUrls: []
         }));
     };
 
     const [variants, setVariants] = useState<ItemVariant[]>([]);
 
-    const updateVariant = (variantId: string, field: keyof Omit<ItemVariant, 'id' | 'attributes_en' | 'attributes_fr'>, value: string | number) => {
+    const updateVariant = (variantId: string, field: keyof Omit<ItemVariant, 'id' | 'attributes_en' | 'attributes_fr'>, value: string | number | string[]) => {
         setVariants(prev => prev.map(v => 
             v.id === variantId ? { ...v, [field]: value } : v
         ));
     };
+
+    // Helper function to handle thumbnail file selection
+    const handleThumbnailChange = (variantId: string, file: File | null) => {
+        if (file) {
+            // In a real app, you would upload the file and get a URL
+            // For demo purposes, we'll create a local URL
+            const url = URL.createObjectURL(file);
+            updateVariant(variantId, 'thumbnailUrl', url);
+        } else {
+            updateVariant(variantId, 'thumbnailUrl', '');
+        }
+    };
+
+    // Helper function to handle product images file selection
+    const handleImagesChange = (variantId: string, files: FileList | null) => {
+        if (files && files.length > 0) {
+            // Limit to 10 images maximum
+            const fileArray = Array.from(files).slice(0, 10);
+            // In a real app, you would upload the files and get URLs
+            // For demo purposes, we'll create local URLs
+            const urls = fileArray.map(file => URL.createObjectURL(file));
+            updateVariant(variantId, 'imageUrls', urls);
+        } else {
+            updateVariant(variantId, 'imageUrls', []);
+        }
+    };
+
+    // Product identifier types
+    const identifierTypes = [
+        { value: '', label: t('products.selectIdType') },
+        { value: 'UPC', label: 'UPC' },
+        { value: 'EAN', label: 'EAN' },
+        { value: 'GTIN', label: 'GTIN' },
+        { value: 'ISBN', label: 'ISBN' },
+        { value: 'ASIN', label: 'ASIN' },
+        { value: 'SKU', label: 'SKU' },
+        { value: 'MPN', label: 'MPN (Manufacturer Part Number)' }
+    ];
 
     const handleGenerateVariants = () => {
         const newVariants = generateVariants();
@@ -727,8 +777,12 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                                 </th>
                                             ))}
                                             <th>SKU</th>
+                                            <th>{t('products.productIdentifierType')}</th>
+                                            <th>{t('products.productIdentifierValue')}</th>
                                             <th>Price</th>
                                             <th>Stock</th>
+                                            <th>{t('products.thumbnailImage')}</th>
+                                            <th>{t('products.productImages')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -752,6 +806,29 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                                     />
                                                 </td>
                                                 <td>
+                                                    <select
+                                                        value={variant.productIdentifierType || ''}
+                                                        onChange={(e) => updateVariant(variant.id, 'productIdentifierType', e.target.value)}
+                                                        className="products-variant-input products-variant-input--select"
+                                                    >
+                                                        {identifierTypes.map(type => (
+                                                            <option key={type.value} value={type.value}>
+                                                                {type.label}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input
+                                                        type="text"
+                                                        value={variant.productIdentifierValue || ''}
+                                                        onChange={(e) => updateVariant(variant.id, 'productIdentifierValue', e.target.value)}
+                                                        className="products-variant-input products-variant-input--identifier"
+                                                        placeholder="ID Value"
+                                                        disabled={!variant.productIdentifierType}
+                                                    />
+                                                </td>
+                                                <td>
                                                     <input
                                                         type="number"
                                                         value={variant.price}
@@ -771,6 +848,53 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                                         min="0"
                                                         placeholder="0"
                                                     />
+                                                </td>
+                                                <td>
+                                                    <div className="products-file-input-container">
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={(e) => handleThumbnailChange(variant.id, e.target.files?.[0] || null)}
+                                                            className="products-file-input"
+                                                            id={`thumbnail-${variant.id}`}
+                                                        />
+                                                        <label htmlFor={`thumbnail-${variant.id}`} className="products-file-label">
+                                                            {t('products.chooseThumbnail')}
+                                                        </label>
+                                                        {variant.thumbnailUrl && (
+                                                            <div className="products-image-preview">
+                                                                <img src={variant.thumbnailUrl} alt="Thumbnail" className="products-thumbnail-preview" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div className="products-file-input-container">
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            multiple
+                                                            onChange={(e) => handleImagesChange(variant.id, e.target.files)}
+                                                            className="products-file-input"
+                                                            id={`images-${variant.id}`}
+                                                        />
+                                                        <label htmlFor={`images-${variant.id}`} className="products-file-label">
+                                                            {t('products.chooseImages')}
+                                                        </label>
+                                                        {variant.imageUrls && variant.imageUrls.length > 0 && (
+                                                            <div className="products-images-preview">
+                                                                <small>{variant.imageUrls.length} {variant.imageUrls.length === 1 ? 'image' : 'images'} selected</small>
+                                                                <div className="products-images-grid">
+                                                                    {variant.imageUrls.slice(0, 3).map((url, index) => (
+                                                                        <img key={index} src={url} alt={`Product ${index + 1}`} className="products-image-preview-small" />
+                                                                    ))}
+                                                                    {variant.imageUrls.length > 3 && (
+                                                                        <div className="products-more-images">+{variant.imageUrls.length - 3}</div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -873,8 +997,12 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                                             </th>
                                                         ))}
                                                         <th>SKU</th>
+                                                        <th>{t('products.productIdentifierType')}</th>
+                                                        <th>{t('products.productIdentifierValue')}</th>
                                                         <th>Price</th>
                                                         <th>Stock</th>
+                                                        <th>{t('products.thumbnailImage')}</th>
+                                                        <th>{t('products.productImages')}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -892,10 +1020,26 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                                                 {variant.sku || '-'}
                                                             </td>
                                                             <td>
+                                                                {variant.productIdentifierType || '-'}
+                                                            </td>
+                                                            <td>
+                                                                {variant.productIdentifierValue || '-'}
+                                                            </td>
+                                                            <td>
                                                                 ${variant.price.toFixed(2)}
                                                             </td>
                                                             <td>
                                                                 {variant.stock}
+                                                            </td>
+                                                            <td>
+                                                                {variant.thumbnailUrl ? (
+                                                                    <img src={variant.thumbnailUrl} alt="Thumbnail" className="products-list-thumbnail" />
+                                                                ) : '-'}
+                                                            </td>
+                                                            <td>
+                                                                {variant.imageUrls && variant.imageUrls.length > 0 ? (
+                                                                    <span>{variant.imageUrls.length} {variant.imageUrls.length === 1 ? 'image' : 'images'}</span>
+                                                                ) : '-'}
                                                             </td>
                                                         </tr>
                                                     ))}

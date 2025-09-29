@@ -143,6 +143,36 @@ export const translations: TranslationResources = {
     fr: 'Supprimer'
   },
 
+  // Product Identifier Fields
+  'products.productIdentifierType': {
+    en: 'Product ID Type',
+    fr: 'Type d\'ID produit'
+  },
+  'products.productIdentifierValue': {
+    en: 'Product ID Value',
+    fr: 'Valeur d\'ID produit'
+  },
+  'products.thumbnailImage': {
+    en: 'Thumbnail Image',
+    fr: 'Image miniature'
+  },
+  'products.productImages': {
+    en: 'Product Images',
+    fr: 'Images du produit'
+  },
+  'products.chooseThumbnail': {
+    en: 'Choose Thumbnail',
+    fr: 'Choisir miniature'
+  },
+  'products.chooseImages': {
+    en: 'Choose Images (1-10)',
+    fr: 'Choisir images (1-10)'
+  },
+  'products.selectIdType': {
+    en: 'Select ID Type',
+    fr: 'Sélectionner type d\'ID'
+  },
+
   // Form Placeholders
   'placeholder.itemName': {
     en: 'Enter item name in English',

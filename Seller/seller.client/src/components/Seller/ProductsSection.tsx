@@ -104,8 +104,25 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         value_fr: ''
     });
 
+    // Variants state
+    const [variants, setVariants] = useState<ItemVariant[]>([]);
+
     // Validation logic for save button
-    const isFormInvalid = !newItem.name || !newItem.name_fr || !newItem.description || !newItem.description_fr || !newItem.categoryId;
+    const isFormInvalid = useMemo(() => {
+        // Basic form validation
+        if (!newItem.name || !newItem.name_fr || !newItem.description || !newItem.description_fr || !newItem.categoryId) {
+            return true;
+        }
+        
+        // Variant validation if variants exist
+        if (variants.length > 0) {
+            return variants.some(variant => 
+                !variant.sku.trim() || variant.price <= 0
+            );
+        }
+        
+        return false;
+    }, [newItem.name, newItem.name_fr, newItem.description, newItem.description_fr, newItem.categoryId, variants]);
 
     // Memoized synchronized attribute values to avoid redundant computation
     const synchronizedAttributeValues = useMemo(() => {
@@ -357,8 +374,6 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         }));
     };
 
-    const [variants, setVariants] = useState<ItemVariant[]>([]);
-
     const updateVariant = (variantId: string, field: keyof Omit<ItemVariant, 'id' | 'attributes_en' | 'attributes_fr'>, value: string | number | string[]) => {
         setVariants(prev => prev.map(v => 
             v.id === variantId ? { ...v, [field]: value } : v
@@ -409,33 +424,48 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
     };
 
     const handleSaveItem = () => {
-        if (newItem.name && newItem.name_fr && newItem.description && newItem.description_fr && newItem.categoryId) {
-            const item: Item = {
-                id: `item-${Date.now()}`,
-                name: newItem.name,
-                name_fr: newItem.name_fr,
-                description: newItem.description,
-                description_fr: newItem.description_fr,
-                categoryId: newItem.categoryId,
-                attributes: newItem.attributes,
-                itemAttributes: newItem.itemAttributes,
-                variants: variants
-            };
-            setItems(prev => [...prev, item]);
-            setNewItem({ 
-                name: '', 
-                name_fr: '', 
-                description: '', 
-                description_fr: '', 
-                categoryId: '', 
-                attributes: [],
-                itemAttributes: []
-            });
-            setVariants([]);
-            // Switch back to list view after saving
-            if (onViewModeChange) {
-                onViewModeChange('list');
+        // Validate basic item fields
+        if (!newItem.name || !newItem.name_fr || !newItem.description || !newItem.description_fr || !newItem.categoryId) {
+            return;
+        }
+        
+        // Validate variants if they exist
+        if (variants.length > 0) {
+            const hasInvalidVariants = variants.some(variant => 
+                !variant.sku.trim() || variant.price <= 0
+            );
+            
+            if (hasInvalidVariants) {
+                alert('Please ensure all variants have a SKU and price greater than 0.');
+                return;
             }
+        }
+        
+        const item: Item = {
+            id: `item-${Date.now()}`,
+            name: newItem.name,
+            name_fr: newItem.name_fr,
+            description: newItem.description,
+            description_fr: newItem.description_fr,
+            categoryId: newItem.categoryId,
+            attributes: newItem.attributes,
+            itemAttributes: newItem.itemAttributes,
+            variants: variants
+        };
+        setItems(prev => [...prev, item]);
+        setNewItem({ 
+            name: '', 
+            name_fr: '', 
+            description: '', 
+            description_fr: '', 
+            categoryId: '', 
+            attributes: [],
+            itemAttributes: []
+        });
+        setVariants([]);
+        // Switch back to list view after saving
+        if (onViewModeChange) {
+            onViewModeChange('list');
         }
     };
 
@@ -720,6 +750,8 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                 <button
                                     onClick={addAttributeValue}
                                     className="products-add-value-button"
+                                    disabled={synchronizedAttributeValues.values_en.some(value => value.trim() === '') || 
+                                             synchronizedAttributeValues.values_fr.some(value => value.trim() === '')}
                                 >
                                     {t('products.addValue')}
                                 </button>
@@ -801,8 +833,9 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                                         type="text"
                                                         value={variant.sku}
                                                         onChange={(e) => updateVariant(variant.id, 'sku', e.target.value)}
-                                                        className="products-variant-input products-variant-input--sku"
-                                                        placeholder="SKU"
+                                                        className={`products-variant-input products-variant-input--sku ${!variant.sku.trim() ? 'products-variant-input--required' : ''}`}
+                                                        placeholder="SKU *"
+                                                        required
                                                     />
                                                 </td>
                                                 <td>
@@ -833,10 +866,10 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                                         type="number"
                                                         value={variant.price}
                                                         onChange={(e) => updateVariant(variant.id, 'price', parseFloat(e.target.value) || 0)}
-                                                        className="products-variant-input"
+                                                        className={`products-variant-input ${variant.price <= 0 ? 'products-variant-input--invalid' : ''}`}
                                                         step="0.01"
-                                                        min="0"
-                                                        placeholder="0.00"
+                                                        min="0.01"
+                                                        placeholder="0.01"
                                                     />
                                                 </td>
                                                 <td>

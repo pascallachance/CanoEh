@@ -1124,7 +1124,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                             disabled={isFormInvalid || isSaving}
                             className={`products-action-button products-action-button--save${(isFormInvalid || isSaving) ? ' products-action-button--disabled' : ''}`}
                         >
-                            {isSaving ? 'Saving...' : t('products.addItem')}
+                            {isSaving ? t('products.saving') : t('products.addItem')}
                         </button>
                         <button
                             onClick={() => onViewModeChange && onViewModeChange('list')}

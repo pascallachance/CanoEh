@@ -181,3 +181,76 @@ export const removeBilingualArrayValue = (
     // Return synchronized arrays without removing if index is invalid
     return syncedData;
 };
+
+/**
+ * Interface for formatted bilingual attribute display data
+ */
+export interface FormattedAttributeDisplay {
+    en: string;
+    fr: string;
+}
+
+/**
+ * Formats an attribute display with name and values for bilingual display
+ * @param nameEn English attribute name
+ * @param nameFr French attribute name  
+ * @param valuesEn English attribute values
+ * @param valuesFr French attribute values
+ * @returns Object with formatted EN and FR strings
+ */
+export const formatAttributeDisplay = (
+    nameEn: string, 
+    nameFr: string, 
+    valuesEn: string[], 
+    valuesFr: string[]
+): FormattedAttributeDisplay => ({
+    en: `${nameEn}: ${valuesEn.join(', ')}`,
+    fr: `${nameFr}: ${valuesFr.join(', ')}`
+});
+
+/**
+ * Formats an attribute name-only display for bilingual display (e.g., table headers)
+ * @param nameEn English attribute name
+ * @param nameFr French attribute name
+ * @returns Object with formatted EN and FR strings
+ */
+export const formatAttributeName = (nameEn: string, nameFr: string): FormattedAttributeDisplay => ({
+    en: nameEn,
+    fr: nameFr
+});
+
+/**
+ * Formats a variant attribute display for bilingual display
+ * @param nameEn English attribute name
+ * @param nameFr French attribute name
+ * @param attributesEn English variant attributes record
+ * @param attributesFr French variant attributes record
+ * @returns Object with formatted EN and FR strings
+ */
+export const formatVariantAttribute = (
+    nameEn: string,
+    nameFr: string,
+    attributesEn: Record<string, string>,
+    attributesFr: Record<string, string>
+): FormattedAttributeDisplay => ({
+    en: attributesEn[nameEn] || '-',
+    fr: attributesFr[nameFr] || '-'
+});
+
+/**
+ * Formats an item attribute display for bilingual display (name: value pairs)
+ * @param nameEn English attribute name
+ * @param nameFr French attribute name
+ * @param valueEn English attribute value
+ * @param valueFr French attribute value
+ * @returns Object with formatted EN and FR strings
+ */
+export const formatItemAttribute = (
+    nameEn: string,
+    nameFr: string,
+    valueEn: string,
+    valueFr: string
+): FormattedAttributeDisplay => ({
+    en: `${nameEn}: ${valueEn}`,
+    fr: `${nameFr}: ${valueFr}`
+});

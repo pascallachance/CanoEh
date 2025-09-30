@@ -5,6 +5,7 @@ using Helpers.Common;
 using Infrastructure.Data;
 using Infrastructure.Repositories.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Data.SqlClient;
 
 namespace Domain.Services.Implementations
 {
@@ -75,9 +76,7 @@ namespace Domain.Services.Implementations
             {
                 // For development: When database is not available (e.g., LocalDB on Linux),
                 // return mock categories to allow frontend development to continue
-                if (ex.Message.Contains("LocalDB is not supported") || 
-                    ex.Message.Contains("connection") || 
-                    ex.Message.Contains("database"))
+                if (IsDatabaseUnavailableForDevelopment(ex))
                 {
                     var mockCategories = GetMockCategories();
                     return Result.Success(mockCategories);
@@ -299,9 +298,41 @@ namespace Domain.Services.Implementations
         }
 
         /// <summary>
-        /// Provides mock categories for development when database is not available.
-        /// This matches the mock data used in the frontend ProductsSection component.
+        /// Determines if an exception indicates that the database is unavailable,
+        /// specifically for development scenarios where LocalDB might not be available.
         /// </summary>
+        /// <param name="exception">The exception to check</param>
+        /// <returns>True if the exception indicates database unavailability for development fallback</returns>
+        private static bool IsDatabaseUnavailableForDevelopment(Exception exception)
+        {
+            // Check for specific SqlException error codes that indicate database unavailability
+            if (exception is SqlException sqlEx)
+            {
+                // Common error codes for LocalDB/connection issues:
+                // 2 - Network-related or instance-specific error
+                // 53 - Network path not found (LocalDB not available)
+                // 40 - Could not open a connection to SQL Server
+                // 1326 - Login failure (LocalDB authentication)
+                // 4060 - Cannot open database
+                return sqlEx.Number is 2 or 53 or 40 or 1326 or 4060;
+            }
+
+            // Check for specific platform-related messages for LocalDB on non-Windows systems
+            if (exception.Message.Contains("LocalDB is not supported", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            // Check for InvalidOperationException with LocalDB-specific messages
+            if (exception is InvalidOperationException && 
+                (exception.Message.Contains("LocalDB", StringComparison.OrdinalIgnoreCase) ||
+                 exception.Message.Contains("SQL Server LocalDB", StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+
+            return false;
+        }
         private static IEnumerable<GetCategoryResponse> GetMockCategories()
         {
             return new List<GetCategoryResponse>

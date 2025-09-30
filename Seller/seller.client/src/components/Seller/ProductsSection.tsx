@@ -7,7 +7,11 @@ import {
     synchronizeBilingualArrays, 
     updateBilingualArrayValue, 
     removeBilingualArrayValue,
-    validateBilingualArraySync
+    validateBilingualArraySync,
+    formatAttributeDisplay,
+    formatAttributeName,
+    formatVariantAttribute,
+    formatItemAttribute
 } from '../../utils/bilingualArrayUtils';
 
 
@@ -950,20 +954,23 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                         {newItem.attributes.length > 0 && (
                             <div className="products-added-attributes">
                                 <h5>{t('products.attributes')}</h5>
-                                {newItem.attributes.map((attr, index) => (
-                                    <div key={index} className="products-attribute-item">
-                                        <span>
-                                            <div><strong>EN:</strong> {attr.name_en}: {attr.values_en.join(', ')}</div>
-                                            <div><strong>FR:</strong> {attr.name_fr}: {attr.values_fr.join(', ')}</div>
-                                        </span>
-                                        <button
-                                            onClick={() => removeAttribute(index)}
-                                            className="products-remove-attribute-button"
-                                        >
-                                            {t('products.deleteItem')}
-                                        </button>
-                                    </div>
-                                ))}
+                                {newItem.attributes.map((attr, index) => {
+                                    const formatted = formatAttributeDisplay(attr.name_en, attr.name_fr, attr.values_en, attr.values_fr);
+                                    return (
+                                        <div key={index} className="products-attribute-item">
+                                            <span>
+                                                <div><strong>EN:</strong> {formatted.en}</div>
+                                                <div><strong>FR:</strong> {formatted.fr}</div>
+                                            </span>
+                                            <button
+                                                onClick={() => removeAttribute(index)}
+                                                className="products-remove-attribute-button"
+                                            >
+                                                {t('products.deleteItem')}
+                                            </button>
+                                        </div>
+                                    );
+                                })}
                                 <button
                                     onClick={handleGenerateVariants}
                                     className="products-generate-variants-button"
@@ -981,14 +988,17 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                 <table className="products-variants-table">
                                     <thead>
                                         <tr>
-                                            {newItem.attributes.map(attr => (
-                                                <th key={`${attr.name_en}-${attr.name_fr}`}>
-                                                    <div>
-                                                        <div><strong>EN:</strong> {attr.name_en}</div>
-                                                        <div><strong>FR:</strong> {attr.name_fr}</div>
-                                                    </div>
-                                                </th>
-                                            ))}
+                                            {newItem.attributes.map(attr => {
+                                                const formatted = formatAttributeName(attr.name_en, attr.name_fr);
+                                                return (
+                                                    <th key={`${attr.name_en}-${attr.name_fr}`}>
+                                                        <div>
+                                                            <div><strong>EN:</strong> {formatted.en}</div>
+                                                            <div><strong>FR:</strong> {formatted.fr}</div>
+                                                        </div>
+                                                    </th>
+                                                );
+                                            })}
                                             <th>SKU</th>
                                             <th>{t('products.productIdentifierType')}</th>
                                             <th>{t('products.productIdentifierValue')}</th>
@@ -1001,14 +1011,17 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                     <tbody>
                                         {variants.map(variant => (
                                             <tr key={variant.id}>
-                                                {newItem.attributes.map(attr => (
-                                                    <td key={`${attr.name_en}-${attr.name_fr}`}>
-                                                        <div>
-                                                            <div><strong>EN:</strong> {variant.attributes_en[attr.name_en] || '-'}</div>
-                                                            <div><strong>FR:</strong> {variant.attributes_fr[attr.name_fr] || '-'}</div>
-                                                        </div>
-                                                    </td>
-                                                ))}
+                                                {newItem.attributes.map(attr => {
+                                                    const formatted = formatVariantAttribute(attr.name_en, attr.name_fr, variant.attributes_en, variant.attributes_fr);
+                                                    return (
+                                                        <td key={`${attr.name_en}-${attr.name_fr}`}>
+                                                            <div>
+                                                                <div><strong>EN:</strong> {formatted.en}</div>
+                                                                <div><strong>FR:</strong> {formatted.fr}</div>
+                                                            </div>
+                                                        </td>
+                                                    );
+                                                })}
                                                 <td>
                                                     <input
                                                         type="text"
@@ -1171,28 +1184,34 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                     {item.attributes.length > 0 && (
                                         <div className="products-item-attributes">
                                             <h5>{t('products.attributes')}</h5>
-                                            {item.attributes.map((attr, index) => (
-                                                <div key={index} className="products-attribute-badge">
-                                                    <div><strong>EN:</strong> {attr.name_en}: {attr.values_en.join(', ')}</div>
-                                                    <div><strong>FR:</strong> {attr.name_fr}: {attr.values_fr.join(', ')}</div>
-                                                </div>
-                                            ))}
+                                            {item.attributes.map((attr, index) => {
+                                                const formatted = formatAttributeDisplay(attr.name_en, attr.name_fr, attr.values_en, attr.values_fr);
+                                                return (
+                                                    <div key={index} className="products-attribute-badge">
+                                                        <div><strong>EN:</strong> {formatted.en}</div>
+                                                        <div><strong>FR:</strong> {formatted.fr}</div>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     )}
 
                                     {item.itemAttributes && item.itemAttributes.length > 0 && (
                                         <div className="products-item-attributes">
                                             <h5>{t('products.itemAttributesTitle')}</h5>
-                                            {item.itemAttributes.map((attr, index) => (
-                                                <div key={index} className="item-attribute-display">
-                                                    <div className="attribute-lang-pair">
-                                                        <strong>EN:</strong> {attr.name_en}: {attr.value_en}
+                                            {item.itemAttributes.map((attr, index) => {
+                                                const formatted = formatItemAttribute(attr.name_en, attr.name_fr, attr.value_en, attr.value_fr);
+                                                return (
+                                                    <div key={index} className="item-attribute-display">
+                                                        <div className="attribute-lang-pair">
+                                                            <strong>EN:</strong> {formatted.en}
+                                                        </div>
+                                                        <div className="attribute-lang-pair">
+                                                            <strong>FR:</strong> {formatted.fr}
+                                                        </div>
                                                     </div>
-                                                    <div className="attribute-lang-pair">
-                                                        <strong>FR:</strong> {attr.name_fr}: {attr.value_fr}
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     )}
 
@@ -1202,14 +1221,17 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                             <table className="products-item-variants-table">
                                                 <thead>
                                                     <tr>
-                                                        {item.attributes.map(attr => (
-                                                            <th key={`${attr.name_en}-${attr.name_fr}`}>
-                                                                <div>
-                                                                    <div><strong>EN:</strong> {attr.name_en}</div>
-                                                                    <div><strong>FR:</strong> {attr.name_fr}</div>
-                                                                </div>
-                                                            </th>
-                                                        ))}
+                                                        {item.attributes.map(attr => {
+                                                            const formatted = formatAttributeName(attr.name_en, attr.name_fr);
+                                                            return (
+                                                                <th key={`${attr.name_en}-${attr.name_fr}`}>
+                                                                    <div>
+                                                                        <div><strong>EN:</strong> {formatted.en}</div>
+                                                                        <div><strong>FR:</strong> {formatted.fr}</div>
+                                                                    </div>
+                                                                </th>
+                                                            );
+                                                        })}
                                                         <th>SKU</th>
                                                         <th>{t('products.productIdentifierType')}</th>
                                                         <th>{t('products.productIdentifierValue')}</th>
@@ -1222,14 +1244,17 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                                 <tbody>
                                                     {item.variants.map(variant => (
                                                         <tr key={variant.id}>
-                                                            {item.attributes.map(attr => (
-                                                                <td key={`${attr.name_en}-${attr.name_fr}`}>
-                                                                    <div>
-                                                                        <div><strong>EN:</strong> {variant.attributes_en[attr.name_en] || '-'}</div>
-                                                                        <div><strong>FR:</strong> {variant.attributes_fr[attr.name_fr] || '-'}</div>
-                                                                    </div>
-                                                                </td>
-                                                            ))}
+                                                            {item.attributes.map(attr => {
+                                                                const formatted = formatVariantAttribute(attr.name_en, attr.name_fr, variant.attributes_en, variant.attributes_fr);
+                                                                return (
+                                                                    <td key={`${attr.name_en}-${attr.name_fr}`}>
+                                                                        <div>
+                                                                            <div><strong>EN:</strong> {formatted.en}</div>
+                                                                            <div><strong>FR:</strong> {formatted.fr}</div>
+                                                                        </div>
+                                                                    </td>
+                                                                );
+                                                            })}
                                                             <td>
                                                                 {variant.sku || '-'}
                                                             </td>

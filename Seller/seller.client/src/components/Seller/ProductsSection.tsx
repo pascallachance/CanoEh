@@ -123,8 +123,24 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                     });
                 }
             });
+            
+            // Clean up all object URLs from saved items when component unmounts
+            items.forEach(item => {
+                item.variants.forEach(variant => {
+                    if (variant.thumbnailUrl && variant.thumbnailUrl.startsWith('blob:')) {
+                        URL.revokeObjectURL(variant.thumbnailUrl);
+                    }
+                    if (variant.imageUrls) {
+                        variant.imageUrls.forEach(url => {
+                            if (url.startsWith('blob:')) {
+                                URL.revokeObjectURL(url);
+                            }
+                        });
+                    }
+                });
+            });
         };
-    }, [variants]);
+    }, [variants, items]);
 
     // Validation logic for save button
     const isFormInvalid = useMemo(() => {
@@ -434,8 +450,22 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
             const fileArray = Array.from(files).slice(0, 10);
             // In a real app, you would upload the files and get URLs
             // For demo purposes, we'll create local URLs
-            const urls = fileArray.map(file => URL.createObjectURL(file));
-            updateVariant(variantId, 'imageUrls', urls);
+            const urls: string[] = [];
+            try {
+                fileArray.forEach(file => {
+                    urls.push(URL.createObjectURL(file));
+                });
+                updateVariant(variantId, 'imageUrls', urls);
+            } catch (error) {
+                // If there's an error creating object URLs, clean up any that were created
+                urls.forEach(url => {
+                    if (url.startsWith('blob:')) {
+                        URL.revokeObjectURL(url);
+                    }
+                });
+                console.error('Error creating object URLs:', error);
+                updateVariant(variantId, 'imageUrls', []);
+            }
         } else {
             updateVariant(variantId, 'imageUrls', []);
         }
@@ -454,6 +484,20 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
     ];
 
     const handleGenerateVariants = () => {
+        // Clean up any existing object URLs before generating new variants
+        variants.forEach(variant => {
+            if (variant.thumbnailUrl && variant.thumbnailUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(variant.thumbnailUrl);
+            }
+            if (variant.imageUrls) {
+                variant.imageUrls.forEach(url => {
+                    if (url.startsWith('blob:')) {
+                        URL.revokeObjectURL(url);
+                    }
+                });
+            }
+        });
+        
         const newVariants = generateVariants();
         setVariants(newVariants);
     };
@@ -505,6 +549,23 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
     };
 
     const deleteItem = (itemId: string) => {
+        // Find the item to delete and clean up its object URLs
+        const itemToDelete = items.find(item => item.id === itemId);
+        if (itemToDelete) {
+            itemToDelete.variants.forEach(variant => {
+                if (variant.thumbnailUrl && variant.thumbnailUrl.startsWith('blob:')) {
+                    URL.revokeObjectURL(variant.thumbnailUrl);
+                }
+                if (variant.imageUrls) {
+                    variant.imageUrls.forEach(url => {
+                        if (url.startsWith('blob:')) {
+                            URL.revokeObjectURL(url);
+                        }
+                    });
+                }
+            });
+        }
+        
         setItems(prev => prev.filter(item => item.id !== itemId));
     };
 

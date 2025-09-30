@@ -103,8 +103,6 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         value_en: '',
         value_fr: ''
     });
-
-    // Variants state
     const [variants, setVariants] = useState<ItemVariant[]>([]);
 
     // Cleanup object URLs on component unmount

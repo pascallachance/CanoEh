@@ -179,6 +179,18 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         };
     }, [categories, language, t]);
 
+    // Memoized disabled state for "Add Attribute" button to avoid re-computation on every render
+    const isAddAttributeDisabled = useMemo(() => {
+        return !newItemAttribute.name_en || !newItemAttribute.name_fr || 
+               !newItemAttribute.value_en || !newItemAttribute.value_fr;
+    }, [newItemAttribute.name_en, newItemAttribute.name_fr, newItemAttribute.value_en, newItemAttribute.value_fr]);
+
+    // Memoized disabled state for "Add Value" button to avoid array iterations on every render
+    const isAddValueDisabled = useMemo(() => {
+        return synchronizedAttributeValues.values_en.some(value => value.trim() === '') || 
+               synchronizedAttributeValues.values_fr.some(value => value.trim() === '');
+    }, [synchronizedAttributeValues.values_en, synchronizedAttributeValues.values_fr]);
+
     // Fetch categories on component mount
     const fetchCategories = async () => {
         try {
@@ -702,8 +714,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                 <button
                                     onClick={addItemAttribute}
                                     className="products-add-attribute-button"
-                                    disabled={!newItemAttribute.name_en || !newItemAttribute.name_fr || 
-                                             !newItemAttribute.value_en || !newItemAttribute.value_fr}
+                                    disabled={isAddAttributeDisabled}
                                 >
                                     {t('products.addNewAttribute')}
                                 </button>
@@ -846,8 +857,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                                 <button
                                     onClick={addAttributeValue}
                                     className="products-add-value-button"
-                                    disabled={synchronizedAttributeValues.values_en.some(value => value.trim() === '') || 
-                                             synchronizedAttributeValues.values_fr.some(value => value.trim() === '')}
+                                    disabled={isAddValueDisabled}
                                 >
                                     {t('products.addValue')}
                                 </button>

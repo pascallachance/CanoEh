@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import './ProductsSection.css';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useNotifications } from '../../contexts/useNotifications';
+import { ApiClient } from '../../utils/apiClient';
 import { 
     synchronizeBilingualArrays, 
     updateBilingualArrayValue, 
@@ -74,7 +75,7 @@ interface Item {
     variants: ItemVariant[];
 }
 
-function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectionProps) {
+function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: ProductsSectionProps) {
     const [items, setItems] = useState<Item[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const { language, t } = useLanguage();
@@ -106,6 +107,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         value_fr: ''
     });
     const [variants, setVariants] = useState<ItemVariant[]>([]);
+    const [isSaving, setIsSaving] = useState(false);
 
     // Cleanup object URLs on component unmount
     useEffect(() => {
@@ -514,9 +516,17 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
         setVariants(newVariants);
     };
 
-    const handleSaveItem = () => {
+    const handleSaveItem = async () => {
         // Validate basic item fields
         if (!newItem.name || !newItem.name_fr || !newItem.description || !newItem.description_fr || !newItem.categoryId) {
+            showError('Please fill in all required fields.');
+            return;
+        }
+
+        // Get seller ID from first company (assuming user owns the companies)
+        const sellerId = companies.length > 0 ? companies[0].ownerID : null;
+        if (!sellerId) {
+            showError('Unable to determine seller ID. Please ensure you are logged in.');
             return;
         }
         
@@ -531,32 +541,97 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                 return;
             }
         }
-        
-        const item: Item = {
-            id: `item-${Date.now()}`,
-            name: newItem.name,
-            name_fr: newItem.name_fr,
-            description: newItem.description,
-            description_fr: newItem.description_fr,
-            categoryId: newItem.categoryId,
-            attributes: newItem.attributes,
-            itemAttributes: newItem.itemAttributes,
-            variants: variants
-        };
-        setItems(prev => [...prev, item]);
-        setNewItem({ 
-            name: '', 
-            name_fr: '', 
-            description: '', 
-            description_fr: '', 
-            categoryId: '', 
-            attributes: [],
-            itemAttributes: []
-        });
-        setVariants([]);
-        // Switch back to list view after saving
-        if (onViewModeChange) {
-            onViewModeChange('list');
+
+        setIsSaving(true);
+
+        try {
+            // Transform frontend data to match backend CreateItemRequest format
+            const createItemRequest = {
+                SellerID: sellerId,
+                Name_en: newItem.name,
+                Name_fr: newItem.name_fr,
+                Description_en: newItem.description,
+                Description_fr: newItem.description_fr,
+                CategoryID: newItem.categoryId,
+                Variants: variants.map(variant => ({
+                    Id: variant.id,
+                    ItemId: '00000000-0000-0000-0000-000000000000', // Will be set by the backend
+                    Price: variant.price,
+                    StockQuantity: variant.stock,
+                    Sku: variant.sku,
+                    ProductIdentifierType: variant.productIdentifierType || null,
+                    ProductIdentifierValue: variant.productIdentifierValue || null,
+                    ImageUrls: variant.imageUrls?.join(',') || null,
+                    ThumbnailUrl: variant.thumbnailUrl || null,
+                    ItemVariantName_en: variant.attributes_en ? Object.entries(variant.attributes_en).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
+                    ItemVariantName_fr: variant.attributes_fr ? Object.entries(variant.attributes_fr).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
+                    ItemVariantAttributes: [],
+                    Deleted: false
+                })),
+                ItemAttributes: newItem.itemAttributes.map(attr => ({
+                    Id: '00000000-0000-0000-0000-000000000000',
+                    ItemID: '00000000-0000-0000-0000-000000000000', // Will be set by the backend
+                    AttributeName_en: attr.name_en,
+                    AttributeName_fr: attr.name_fr,
+                    Attributes_en: attr.value_en,
+                    Attributes_fr: attr.value_fr
+                }))
+            };
+
+            // Call the API
+            const response = await ApiClient.post(
+                `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/CreateItem`,
+                createItemRequest
+            );
+
+            if (response.ok) {
+                const result = await response.json();
+                
+                // Add the created item to local state for immediate UI update
+                const createdItem: Item = {
+                    id: result.value?.id || `item-${Date.now()}`,
+                    name: newItem.name,
+                    name_fr: newItem.name_fr,
+                    description: newItem.description,
+                    description_fr: newItem.description_fr,
+                    categoryId: newItem.categoryId,
+                    attributes: newItem.attributes,
+                    itemAttributes: newItem.itemAttributes,
+                    variants: variants
+                };
+                
+                setItems(prev => [...prev, createdItem]);
+                
+                // Reset form
+                setNewItem({ 
+                    name: '', 
+                    name_fr: '', 
+                    description: '', 
+                    description_fr: '', 
+                    categoryId: '', 
+                    attributes: [],
+                    itemAttributes: []
+                });
+                setVariants([]);
+                
+                // Switch back to list view after saving
+                if (onViewModeChange) {
+                    onViewModeChange('list');
+                }
+                
+                // Show success message (you can add a success notification if available)
+                console.log('Item created successfully:', result);
+                
+            } else {
+                const errorText = await response.text();
+                showError(`Failed to create item: ${errorText}`);
+            }
+            
+        } catch (error) {
+            console.error('Error creating item:', error);
+            showError('An unexpected error occurred while creating the item.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -1046,10 +1121,10 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
                     <div className="products-form-actions">
                         <button
                             onClick={handleSaveItem}
-                            disabled={isFormInvalid}
-                            className={`products-action-button products-action-button--save${isFormInvalid ? ' products-action-button--disabled' : ''}`}
+                            disabled={isFormInvalid || isSaving}
+                            className={`products-action-button products-action-button--save${(isFormInvalid || isSaving) ? ' products-action-button--disabled' : ''}`}
                         >
-                            {t('products.addItem')}
+                            {isSaving ? 'Saving...' : t('products.addItem')}
                         </button>
                         <button
                             onClick={() => onViewModeChange && onViewModeChange('list')}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import './ProductsSection.css';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useNotifications } from '../../contexts/useNotifications';
 import { 
     synchronizeBilingualArrays, 
     updateBilingualArrayValue, 
@@ -77,6 +78,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
     const [items, setItems] = useState<Item[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const { language, t } = useLanguage();
+    const { showError } = useNotifications();
     const showAddForm = viewMode === 'add';
     const showListSection = viewMode === 'list';
     const [newItem, setNewItem] = useState({
@@ -513,7 +515,7 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
             );
             
             if (hasInvalidVariants) {
-                alert('Please ensure all variants have a SKU and price greater than 0.');
+                showError('Please ensure all variants have a SKU and price greater than 0.');
                 return;
             }
         }

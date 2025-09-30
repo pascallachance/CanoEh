@@ -123,6 +123,11 @@ function CreateCompanyStep2({ onSubmit, onBack, step1Data, initialData }: Create
                 return;
             }
 
+            // Revoke previous object URL before creating a new one
+            if (previewUrl && previewUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(previewUrl);
+            }
+
             setSelectedFile(file);
             
             // Create preview URL
@@ -139,6 +144,11 @@ function CreateCompanyStep2({ onSubmit, onBack, step1Data, initialData }: Create
     };
 
     const handleLogoModeChange = (mode: 'url' | 'file') => {
+        // Revoke object URL before changing modes
+        if (previewUrl && previewUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(previewUrl);
+        }
+
         setLogoInputMode(mode);
         // Clear previous values when switching modes
         if (mode === 'url') {

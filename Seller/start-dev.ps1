@@ -88,6 +88,8 @@ while ($elapsed -lt $timeout -and -not $apiReady) {
     $elapsed++
     
     try {
+        # NOTE: -SkipCertificateCheck is used here ONLY for local development with self-signed certificates.
+        #       This bypasses SSL certificate verification and MUST NOT be used in production scripts.
         $response = Invoke-WebRequest -Uri "https://localhost:7182/api/Category/GetAllCategories" -SkipCertificateCheck -ErrorAction SilentlyContinue
         if ($response.StatusCode -eq 200) {
             $apiReady = $true

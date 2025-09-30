@@ -107,6 +107,25 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
     // Variants state
     const [variants, setVariants] = useState<ItemVariant[]>([]);
 
+    // Cleanup object URLs on component unmount
+    useEffect(() => {
+        return () => {
+            // Clean up all object URLs from variants when component unmounts
+            variants.forEach(variant => {
+                if (variant.thumbnailUrl && variant.thumbnailUrl.startsWith('blob:')) {
+                    URL.revokeObjectURL(variant.thumbnailUrl);
+                }
+                if (variant.imageUrls) {
+                    variant.imageUrls.forEach(url => {
+                        if (url.startsWith('blob:')) {
+                            URL.revokeObjectURL(url);
+                        }
+                    });
+                }
+            });
+        };
+    }, [variants]);
+
     // Validation logic for save button
     const isFormInvalid = useMemo(() => {
         // Basic form validation
@@ -382,6 +401,12 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
 
     // Helper function to handle thumbnail file selection
     const handleThumbnailChange = (variantId: string, file: File | null) => {
+        // Find the current variant to revoke previous URL
+        const currentVariant = variants.find(v => v.id === variantId);
+        if (currentVariant?.thumbnailUrl && currentVariant.thumbnailUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(currentVariant.thumbnailUrl);
+        }
+
         if (file) {
             // In a real app, you would upload the file and get a URL
             // For demo purposes, we'll create a local URL
@@ -394,6 +419,16 @@ function ProductsSection({ viewMode = 'list', onViewModeChange }: ProductsSectio
 
     // Helper function to handle product images file selection
     const handleImagesChange = (variantId: string, files: FileList | null) => {
+        // Find the current variant to revoke previous URLs
+        const currentVariant = variants.find(v => v.id === variantId);
+        if (currentVariant?.imageUrls) {
+            currentVariant.imageUrls.forEach(url => {
+                if (url.startsWith('blob:')) {
+                    URL.revokeObjectURL(url);
+                }
+            });
+        }
+
         if (files && files.length > 0) {
             // Limit to 10 images maximum
             const fileArray = Array.from(files).slice(0, 10);

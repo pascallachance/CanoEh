@@ -33,7 +33,7 @@ namespace Domain.Services.Implementations
                     CategoryID = createItemRequest.CategoryID,
                     Variants = createItemRequest.Variants.Select(v => new ItemVariant
                     {
-                        Id = string.IsNullOrEmpty(v.Id) ? Guid.Empty : Guid.Parse(v.Id),
+                        Id = Guid.TryParse(v.Id, out var variantGuid) ? variantGuid : Guid.Empty,
                         ItemId = Guid.Empty, // Will be set by repository
                         Price = v.Price,
                         StockQuantity = v.StockQuantity,

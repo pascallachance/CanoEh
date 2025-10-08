@@ -558,7 +558,6 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                 Description_fr: newItem.description_fr,
                 CategoryID: newItem.categoryId,
                 Variants: variants.map(variant => ({
-                    Id: variant.id,
                     Price: variant.price,
                     StockQuantity: variant.stock,
                     Sku: variant.sku,

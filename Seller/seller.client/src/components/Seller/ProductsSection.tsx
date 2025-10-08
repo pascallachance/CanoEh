@@ -559,7 +559,6 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                 CategoryID: newItem.categoryId,
                 Variants: variants.map(variant => ({
                     Id: variant.id,
-                    ItemId: '00000000-0000-0000-0000-000000000000', // Will be set by the backend
                     Price: variant.price,
                     StockQuantity: variant.stock,
                     Sku: variant.sku,
@@ -573,8 +572,6 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                     Deleted: false
                 })),
                 ItemAttributes: newItem.itemAttributes.map(attr => ({
-                    Id: '00000000-0000-0000-0000-000000000000',
-                    ItemID: '00000000-0000-0000-0000-000000000000', // Will be set by the backend
                     AttributeName_en: attr.name_en,
                     AttributeName_fr: attr.name_fr,
                     Attributes_en: attr.value_en,

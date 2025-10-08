@@ -31,8 +31,31 @@ namespace Domain.Services.Implementations
                     Description_en = createItemRequest.Description_en,
                     Description_fr = createItemRequest.Description_fr,
                     CategoryID = createItemRequest.CategoryID,
-                    Variants = createItemRequest.Variants,
-                    ItemAttributes = createItemRequest.ItemAttributes,
+                    Variants = createItemRequest.Variants.Select(v => new ItemVariant
+                    {
+                        Id = string.IsNullOrEmpty(v.Id) ? Guid.Empty : Guid.Parse(v.Id),
+                        ItemId = Guid.Empty, // Will be set by repository
+                        Price = v.Price,
+                        StockQuantity = v.StockQuantity,
+                        Sku = v.Sku,
+                        ProductIdentifierType = v.ProductIdentifierType,
+                        ProductIdentifierValue = v.ProductIdentifierValue,
+                        ImageUrls = v.ImageUrls,
+                        ThumbnailUrl = v.ThumbnailUrl,
+                        ItemVariantName_en = v.ItemVariantName_en,
+                        ItemVariantName_fr = v.ItemVariantName_fr,
+                        ItemVariantAttributes = new List<ItemVariantAttribute>(),
+                        Deleted = v.Deleted
+                    }).ToList(),
+                    ItemAttributes = createItemRequest.ItemAttributes.Select(a => new ItemAttribute
+                    {
+                        Id = Guid.Empty, // Will be set by repository
+                        ItemID = Guid.Empty, // Will be set by repository
+                        AttributeName_en = a.AttributeName_en,
+                        AttributeName_fr = a.AttributeName_fr,
+                        Attributes_en = a.Attributes_en,
+                        Attributes_fr = a.Attributes_fr
+                    }).ToList(),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null,
                     Deleted = false

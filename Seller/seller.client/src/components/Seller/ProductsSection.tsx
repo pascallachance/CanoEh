@@ -83,7 +83,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
     const [items, setItems] = useState<Item[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const { language, t } = useLanguage();
-    const { showError } = useNotifications();
+    const { showError, showSuccess } = useNotifications();
     const showAddForm = viewMode === 'add';
     const showListSection = viewMode === 'list';
     const [newItem, setNewItem] = useState({
@@ -623,8 +623,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                     onViewModeChange('list');
                 }
                 
-                // Show success message (you can add a success notification if available)
-                console.log('Item created successfully:', result);
+                // Show success message
+                showSuccess('Item created successfully!');
                 
             } else {
                 const errorText = await response.text();

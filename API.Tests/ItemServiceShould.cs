@@ -375,7 +375,6 @@ namespace API.Tests
                 {
                     new CreateItemVariantRequest
                     {
-                        Id = "variant-1",
                         Price = 19.99m,
                         StockQuantity = 100,
                         Sku = "TEST-SKU-001",

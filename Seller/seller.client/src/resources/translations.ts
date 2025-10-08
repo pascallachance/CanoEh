@@ -104,6 +104,10 @@ export const translations: TranslationResources = {
     en: 'Add Item',
     fr: 'Ajouter l\'article'
   },
+  'products.saving': {
+    en: 'Saving...',
+    fr: 'Enregistrement...'
+  },
   'products.deleteItem': {
     en: 'Delete',
     fr: 'Supprimer'

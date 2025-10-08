@@ -30,8 +30,8 @@ namespace API.Tests
                 Description_en = "Test Description EN",
                 Description_fr = "Test Description FR",
                 CategoryID = Guid.NewGuid(),
-                Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>()
+                Variants = new List<CreateItemVariantRequest>(),
+                ItemAttributes = new List<CreateItemAttributeRequest>()
             };
 
             var item = new Item
@@ -43,8 +43,8 @@ namespace API.Tests
                 Description_en = createItemRequest.Description_en,
                 Description_fr = createItemRequest.Description_fr,
                 CategoryID = createItemRequest.CategoryID,
-                Variants = createItemRequest.Variants,
-                ItemAttributes = createItemRequest.ItemAttributes,
+                Variants = new List<ItemVariant>(),
+                ItemAttributes = new List<ItemAttribute>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false
@@ -76,8 +76,8 @@ namespace API.Tests
                 Description_en = "Test Description EN",
                 Description_fr = "Test Description FR",
                 CategoryID = Guid.NewGuid(),
-                Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>()
+                Variants = new List<CreateItemVariantRequest>(),
+                ItemAttributes = new List<CreateItemAttributeRequest>()
             };
 
             // Act
@@ -357,6 +357,107 @@ namespace API.Tests
             Assert.True(result.IsFailure);
             Assert.Equal(StatusCodes.Status404NotFound, result.ErrorCode);
             Assert.Equal("Item or variant not found.", result.Error);
+        }
+
+        [Fact]
+        public async Task CreateItemAsync_MapsVariantsCorrectly_WhenVariantsProvided()
+        {
+            // Arrange
+            var createItemRequest = new CreateItemRequest
+            {
+                SellerID = Guid.NewGuid(),
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Description_en = "Test Description EN",
+                Description_fr = "Test Description FR",
+                CategoryID = Guid.NewGuid(),
+                Variants = new List<CreateItemVariantRequest>
+                {
+                    new CreateItemVariantRequest
+                    {
+                        Id = "variant-1",
+                        Price = 19.99m,
+                        StockQuantity = 100,
+                        Sku = "TEST-SKU-001",
+                        ProductIdentifierType = "UPC",
+                        ProductIdentifierValue = "123456789012",
+                        ItemVariantName_en = "Color: Red",
+                        ItemVariantName_fr = "Couleur: Rouge",
+                        Deleted = false
+                    }
+                },
+                ItemAttributes = new List<CreateItemAttributeRequest>()
+            };
+
+            Item? capturedItem = null;
+            _mockItemRepository.Setup(x => x.AddAsync(It.IsAny<Item>()))
+                              .Callback<Item>(item => capturedItem = item)
+                              .ReturnsAsync((Item item) => item);
+
+            // Act
+            var result = await _itemService.CreateItemAsync(createItemRequest);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(capturedItem);
+            Assert.Single(capturedItem.Variants);
+            var variant = capturedItem.Variants.First();
+            Assert.Equal(19.99m, variant.Price);
+            Assert.Equal(100, variant.StockQuantity);
+            Assert.Equal("TEST-SKU-001", variant.Sku);
+            Assert.Equal("UPC", variant.ProductIdentifierType);
+            Assert.Equal("123456789012", variant.ProductIdentifierValue);
+            Assert.Equal("Color: Red", variant.ItemVariantName_en);
+            Assert.Equal("Couleur: Rouge", variant.ItemVariantName_fr);
+            // ItemId should be empty, will be set by repository
+            Assert.Equal(Guid.Empty, variant.ItemId);
+        }
+
+        [Fact]
+        public async Task CreateItemAsync_MapsItemAttributesCorrectly_WhenAttributesProvided()
+        {
+            // Arrange
+            var createItemRequest = new CreateItemRequest
+            {
+                SellerID = Guid.NewGuid(),
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Description_en = "Test Description EN",
+                Description_fr = "Test Description FR",
+                CategoryID = Guid.NewGuid(),
+                Variants = new List<CreateItemVariantRequest>(),
+                ItemAttributes = new List<CreateItemAttributeRequest>
+                {
+                    new CreateItemAttributeRequest
+                    {
+                        AttributeName_en = "Material",
+                        AttributeName_fr = "Materiaux",
+                        Attributes_en = "Cotton",
+                        Attributes_fr = "Coton"
+                    }
+                }
+            };
+
+            Item? capturedItem = null;
+            _mockItemRepository.Setup(x => x.AddAsync(It.IsAny<Item>()))
+                              .Callback<Item>(item => capturedItem = item)
+                              .ReturnsAsync((Item item) => item);
+
+            // Act
+            var result = await _itemService.CreateItemAsync(createItemRequest);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(capturedItem);
+            Assert.Single(capturedItem.ItemAttributes);
+            var attribute = capturedItem.ItemAttributes.First();
+            Assert.Equal("Material", attribute.AttributeName_en);
+            Assert.Equal("Materiaux", attribute.AttributeName_fr);
+            Assert.Equal("Cotton", attribute.Attributes_en);
+            Assert.Equal("Coton", attribute.Attributes_fr);
+            // Id and ItemID should be empty, will be set by repository
+            Assert.Equal(Guid.Empty, attribute.Id);
+            Assert.Equal(Guid.Empty, attribute.ItemID);
         }
     }
 }

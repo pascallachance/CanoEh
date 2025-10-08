@@ -78,8 +78,8 @@ namespace API.Tests
                 Description_en = description_en,
                 Description_fr = description_fr,
                 CategoryID = Guid.NewGuid(),
-                Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>()
+                Variants = new List<CreateItemVariantRequest>(),
+                ItemAttributes = new List<CreateItemAttributeRequest>()
             };
 
             // Assert

@@ -231,7 +231,7 @@ The implementation includes comprehensive error handling:
 
 3. **User Feedback**:
    - Loading state during save (`isSaving` flag)
-   - Success notification (console log, could add toast notification)
+   - Success notification via `showSuccess()` toast notification
    - Error messages displayed to user via `showError()`
 
 4. **Error Responses**:

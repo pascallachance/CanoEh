@@ -81,7 +81,17 @@ public class Program
         builder.Services.AddScoped<ILoginService, LoginService>();
         builder.Services.AddScoped<ISessionService, SessionService>();
         builder.Services.AddScoped<IEmailService, EmailService>();
-        builder.Services.AddScoped<IItemService, ItemService>();
+        builder.Services.AddScoped<IItemService>(provider =>
+        {
+            var config = provider.GetRequiredService<IConfiguration>();
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            var itemRepository = provider.GetRequiredService<IItemRepository>();
+            var itemVariantRepository = provider.GetRequiredService<IItemVariantRepository>();
+            var itemAttributeRepository = provider.GetRequiredService<IItemAttributeRepository>();
+            var itemVariantAttributeRepository = provider.GetRequiredService<IItemVariantAttributeRepository>();
+            return new ItemService(itemRepository, itemVariantRepository, itemAttributeRepository, 
+                                 itemVariantAttributeRepository, connectionString);
+        });
         builder.Services.AddScoped<ICategoryService, CategoryService>();
         builder.Services.AddScoped<ICompanyService, CompanyService>();
         builder.Services.AddScoped<IAddressService, AddressService>();

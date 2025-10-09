@@ -460,5 +460,81 @@ namespace API.Tests
             Assert.Equal(Guid.Empty, attribute.Id);
             Assert.Equal(Guid.Empty, attribute.ItemID);
         }
+
+        [Fact]
+        public async Task CreateItemAsync_MapsItemVariantAttributesCorrectly_WhenVariantAttributesProvided()
+        {
+            // Arrange
+            var createItemRequest = new CreateItemRequest
+            {
+                SellerID = Guid.NewGuid(),
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Description_en = "Test Description EN",
+                Description_fr = "Test Description FR",
+                CategoryID = Guid.NewGuid(),
+                Variants = new List<CreateItemVariantRequest>
+                {
+                    new CreateItemVariantRequest
+                    {
+                        Price = 29.99m,
+                        StockQuantity = 50,
+                        Sku = "TEST-SKU-002",
+                        ItemVariantAttributes = new List<CreateItemVariantAttributeRequest>
+                        {
+                            new CreateItemVariantAttributeRequest
+                            {
+                                AttributeName_en = "Size",
+                                AttributeName_fr = "Taille",
+                                Attributes_en = "Large",
+                                Attributes_fr = "Grand"
+                            },
+                            new CreateItemVariantAttributeRequest
+                            {
+                                AttributeName_en = "Color",
+                                AttributeName_fr = "Couleur",
+                                Attributes_en = "Blue",
+                                Attributes_fr = "Bleu"
+                            }
+                        }
+                    }
+                },
+                ItemAttributes = new List<CreateItemAttributeRequest>()
+            };
+
+            Item? capturedItem = null;
+            _mockItemRepository.Setup(x => x.AddAsync(It.IsAny<Item>()))
+                              .Callback<Item>(item => capturedItem = item)
+                              .ReturnsAsync((Item item) => item);
+
+            // Act
+            var result = await _itemService.CreateItemAsync(createItemRequest);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(capturedItem);
+            Assert.Single(capturedItem.Variants);
+            var variant = capturedItem.Variants.First();
+            Assert.NotNull(variant.ItemVariantAttributes);
+            Assert.Equal(2, variant.ItemVariantAttributes.Count);
+            
+            var sizeAttribute = variant.ItemVariantAttributes.First();
+            Assert.Equal("Size", sizeAttribute.AttributeName_en);
+            Assert.Equal("Taille", sizeAttribute.AttributeName_fr);
+            Assert.Equal("Large", sizeAttribute.Attributes_en);
+            Assert.Equal("Grand", sizeAttribute.Attributes_fr);
+            // Id and ItemVariantID should be empty, will be set by repository
+            Assert.Equal(Guid.Empty, sizeAttribute.Id);
+            Assert.Equal(Guid.Empty, sizeAttribute.ItemVariantID);
+
+            var colorAttribute = variant.ItemVariantAttributes.Last();
+            Assert.Equal("Color", colorAttribute.AttributeName_en);
+            Assert.Equal("Couleur", colorAttribute.AttributeName_fr);
+            Assert.Equal("Blue", colorAttribute.Attributes_en);
+            Assert.Equal("Bleu", colorAttribute.Attributes_fr);
+            // Id and ItemVariantID should be empty, will be set by repository
+            Assert.Equal(Guid.Empty, colorAttribute.Id);
+            Assert.Equal(Guid.Empty, colorAttribute.ItemVariantID);
+        }
     }
 }

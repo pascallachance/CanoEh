@@ -201,7 +201,7 @@ VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_e
                     }
 
                     // Commit transaction - all operations succeeded
-                    transaction.Commit();
+                    await transaction.CommitAsync();
 
                     // Set the collections on the item for the response
                     item.ItemAttributes = itemAttributes;

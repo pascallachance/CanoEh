@@ -126,6 +126,13 @@ public class Program
             return new ItemRepository(connectionString);
         });
 
+        builder.Services.AddScoped<IItemVariantRepository>(provider =>
+        {
+            var config = provider.GetRequiredService<IConfiguration>();
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            return new ItemVariantRepository(connectionString);
+        });
+
         builder.Services.AddScoped<ICategoryRepository>(provider =>
         {
             var config = provider.GetRequiredService<IConfiguration>();

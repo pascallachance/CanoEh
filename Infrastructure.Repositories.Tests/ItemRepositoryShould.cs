@@ -10,11 +10,13 @@ namespace Infrastructure.Repositories.Tests
     {
         private readonly ItemRepository _itemRepository;
         private readonly Mock<IItemRepository> _mockItemRepository;
+        private readonly Mock<IItemVariantRepository> _mockItemVariantRepository;
 
         public ItemRepositoryShould()
         {
             _itemRepository = new ItemRepository(ConnectionString);
             _mockItemRepository = new Mock<IItemRepository>();
+            _mockItemVariantRepository = new Mock<IItemVariantRepository>();
         }
 
         protected override Item CreateValidEntity()
@@ -127,15 +129,15 @@ namespace Infrastructure.Repositories.Tests
             // Arrange
             var itemId = Guid.NewGuid();
             var variantId = Guid.NewGuid();
-            _mockItemRepository.Setup(repo => repo.DeleteItemVariantAsync(itemId, variantId))
+            _mockItemVariantRepository.Setup(repo => repo.DeleteItemVariantAsync(itemId, variantId))
                               .ReturnsAsync(true);
 
             // Act
-            var result = await _mockItemRepository.Object.DeleteItemVariantAsync(itemId, variantId);
+            var result = await _mockItemVariantRepository.Object.DeleteItemVariantAsync(itemId, variantId);
 
             // Assert
             Assert.True(result);
-            _mockItemRepository.Verify(repo => repo.DeleteItemVariantAsync(itemId, variantId), Times.Once);
+            _mockItemVariantRepository.Verify(repo => repo.DeleteItemVariantAsync(itemId, variantId), Times.Once);
         }
 
         [Fact]
@@ -144,15 +146,15 @@ namespace Infrastructure.Repositories.Tests
             // Arrange
             var itemId = Guid.NewGuid();
             var variantId = Guid.NewGuid();
-            _mockItemRepository.Setup(repo => repo.DeleteItemVariantAsync(itemId, variantId))
+            _mockItemVariantRepository.Setup(repo => repo.DeleteItemVariantAsync(itemId, variantId))
                               .ReturnsAsync(false);
 
             // Act
-            var result = await _mockItemRepository.Object.DeleteItemVariantAsync(itemId, variantId);
+            var result = await _mockItemVariantRepository.Object.DeleteItemVariantAsync(itemId, variantId);
 
             // Assert
             Assert.False(result);
-            _mockItemRepository.Verify(repo => repo.DeleteItemVariantAsync(itemId, variantId), Times.Once);
+            _mockItemVariantRepository.Verify(repo => repo.DeleteItemVariantAsync(itemId, variantId), Times.Once);
         }
 
         [Fact]

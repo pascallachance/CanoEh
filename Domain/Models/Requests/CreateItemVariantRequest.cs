@@ -1,3 +1,5 @@
+using Infrastructure.Data;
+
 namespace Domain.Models.Requests
 {
     public class CreateItemVariantRequest
@@ -11,7 +13,7 @@ namespace Domain.Models.Requests
         public string? ThumbnailUrl { get; set; }
         public string? ItemVariantName_en { get; set; }
         public string? ItemVariantName_fr { get; set; }
-        public List<object> ItemVariantAttributes { get; set; } = new();
+        public List<ItemVariantAttribute> ItemVariantAttributes { get; set; } = new();
         public bool Deleted { get; set; } = false;
     }
 }

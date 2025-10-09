@@ -236,7 +236,7 @@ VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_e
                 catch (Exception ex)
                 {
                     // Rollback transaction on error
-                    transaction.Rollback();
+                    await transaction.RollbackAsync();
                     throw new InvalidOperationException($"Transaction failed: {ex.Message}", ex);
                 }
             }

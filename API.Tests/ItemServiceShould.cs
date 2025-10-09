@@ -10,12 +10,14 @@ namespace API.Tests
     public class ItemServiceShould
     {
         private readonly Mock<IItemRepository> _mockItemRepository;
+        private readonly Mock<IItemVariantRepository> _mockItemVariantRepository;
         private readonly ItemService _itemService;
 
         public ItemServiceShould()
         {
             _mockItemRepository = new Mock<IItemRepository>();
-            _itemService = new ItemService(_mockItemRepository.Object);
+            _mockItemVariantRepository = new Mock<IItemVariantRepository>();
+            _itemService = new ItemService(_mockItemRepository.Object, _mockItemVariantRepository.Object);
         }
 
         [Fact]
@@ -326,7 +328,7 @@ namespace API.Tests
             var itemId = Guid.NewGuid();
             var variantId = Guid.NewGuid();
 
-            _mockItemRepository.Setup(x => x.DeleteItemVariantAsync(itemId, variantId))
+            _mockItemVariantRepository.Setup(x => x.DeleteItemVariantAsync(itemId, variantId))
                               .ReturnsAsync(true);
 
             // Act
@@ -347,7 +349,7 @@ namespace API.Tests
             var itemId = Guid.NewGuid();
             var variantId = Guid.NewGuid();
 
-            _mockItemRepository.Setup(x => x.DeleteItemVariantAsync(itemId, variantId))
+            _mockItemVariantRepository.Setup(x => x.DeleteItemVariantAsync(itemId, variantId))
                               .ReturnsAsync(false);
 
             // Act

@@ -8,9 +8,10 @@ using Microsoft.AspNetCore.Http;
 
 namespace Domain.Services.Implementations
 {
-    public class ItemService(IItemRepository itemRepository) : IItemService
+    public class ItemService(IItemRepository itemRepository, IItemVariantRepository itemVariantRepository) : IItemService
     {
         private readonly IItemRepository _itemRepository = itemRepository;
+        private readonly IItemVariantRepository _itemVariantRepository = itemVariantRepository;
 
         public async Task<Result<CreateItemResponse>> CreateItemAsync(CreateItemRequest createItemRequest)
         {
@@ -233,7 +234,7 @@ namespace Domain.Services.Implementations
         {
             try
             {
-                var success = await _itemRepository.DeleteItemVariantAsync(itemId, variantId);
+                var success = await _itemVariantRepository.DeleteItemVariantAsync(itemId, variantId);
                 if (!success)
                 {
                     return Result.Failure<DeleteItemVariantResponse>("Item or variant not found.", StatusCodes.Status404NotFound);

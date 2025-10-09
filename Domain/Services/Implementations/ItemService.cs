@@ -45,7 +45,7 @@ namespace Domain.Services.Implementations
                         ThumbnailUrl = v.ThumbnailUrl,
                         ItemVariantName_en = v.ItemVariantName_en,
                         ItemVariantName_fr = v.ItemVariantName_fr,
-                        ItemVariantAttributes = new List<ItemVariantAttribute>(),
+                        ItemVariantAttributes = v.ItemVariantAttributes,
                         Deleted = v.Deleted
                     }).ToList(),
                     ItemAttributes = createItemRequest.ItemAttributes.Select(a => new ItemAttribute

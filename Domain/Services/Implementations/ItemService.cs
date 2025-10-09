@@ -45,7 +45,15 @@ namespace Domain.Services.Implementations
                         ThumbnailUrl = v.ThumbnailUrl,
                         ItemVariantName_en = v.ItemVariantName_en,
                         ItemVariantName_fr = v.ItemVariantName_fr,
-                        ItemVariantAttributes = v.ItemVariantAttributes,
+                        ItemVariantAttributes = v.ItemVariantAttributes.Select(a => new ItemVariantAttribute
+                        {
+                            Id = Guid.Empty, // Will be set by repository
+                            ItemVariantID = Guid.Empty, // Will be set by repository
+                            AttributeName_en = a.AttributeName_en,
+                            AttributeName_fr = a.AttributeName_fr,
+                            Attributes_en = a.Attributes_en,
+                            Attributes_fr = a.Attributes_fr
+                        }).ToList(),
                         Deleted = v.Deleted
                     }).ToList(),
                     ItemAttributes = createItemRequest.ItemAttributes.Select(a => new ItemAttribute

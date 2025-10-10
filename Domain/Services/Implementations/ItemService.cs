@@ -112,7 +112,7 @@ namespace Domain.Services.Implementations
                 {
                     // 1. Insert Item
                     var itemQuery = @"
-INSERT INTO dbo.Items (
+INSERT INTO dbo.Item (
     Id,
     SellerID,
     Name_en, 

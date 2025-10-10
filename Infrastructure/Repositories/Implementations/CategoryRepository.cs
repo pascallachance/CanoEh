@@ -259,7 +259,7 @@ ORDER BY Name_en";
 
             // Note: This assumes we'll update Item table to use CategoryId instead of Category string
             // For now, this will always return false until the Item model is updated
-            var query = "SELECT COUNT(1) FROM dbo.Items WHERE CategoryId = @categoryId AND Deleted = 0";
+            var query = "SELECT COUNT(1) FROM dbo.Item WHERE CategoryId = @categoryId AND Deleted = 0";
             var count = await dbConnection.ExecuteScalarAsync<int>(query, new { categoryId });
             return count > 0;
         }

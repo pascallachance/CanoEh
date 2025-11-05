@@ -549,7 +549,7 @@ WHERE Id = @ItemVariantID";
                                     if (currentStock < quantityDifference)
                                     {
                                         // Get item details for better error message
-                                        var itemQuery = "SELECT Name_en FROM dbo.Items WHERE Id = @ItemID";
+                                        var itemQuery = "SELECT Name_en FROM dbo.Item WHERE Id = @ItemID";
                                         var itemName = await connection.QueryFirstOrDefaultAsync<string>(itemQuery, new { orderItem.ItemID }, transaction);
                                         
                                         return Result.Failure<UpdateOrderResponse>(

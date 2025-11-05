@@ -183,7 +183,7 @@ WHERE Id = @variantId AND ItemId = @itemId AND Deleted = 0";
             if (rowsAffected > 0)
             {
                 // Update the item's UpdatedAt timestamp
-                var updateItemQuery = "UPDATE dbo.Items SET UpdatedAt = @UpdatedAt WHERE Id = @itemId";
+                var updateItemQuery = "UPDATE dbo.Item SET UpdatedAt = @UpdatedAt WHERE Id = @itemId";
                 await dbConnection.ExecuteAsync(updateItemQuery, new { UpdatedAt = DateTime.UtcNow, itemId });
                 return true;
             }

@@ -370,3 +370,6 @@ FodyWeavers.xsd
 /Infrastructure/Services/EmailService.cs
 /CanoEhShop/canoehshop.client/obj/Debug//package.g.props
 /CanoEhShop/canoehshop.client/obj/Debug//package.g.props
+
+# Folders with backslash in name (Windows-style paths on Linux)
+**/*\Debug/

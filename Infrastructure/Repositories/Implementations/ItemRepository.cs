@@ -16,7 +16,7 @@ namespace Infrastructure.Repositories.Implementations
             
             // Insert Item only - variants should be managed by ItemVariantRepository
             var itemQuery = @"
-INSERT INTO dbo.Items (
+INSERT INTO dbo.Item (
     SellerID,
     Name_en, 
     Name_fr, 
@@ -84,7 +84,7 @@ VALUES (
             {
                 dbConnection.Open();
             }
-            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.Items WHERE Id = @id", new { id });
+            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.Item WHERE Id = @id", new { id });
         }
 
         public override async Task<IEnumerable<Item>> FindAsync(Func<Item, bool> predicate)
@@ -105,7 +105,7 @@ VALUES (
             }
             
             // Query Item table only - variants should be loaded separately via ItemVariantRepository
-            var query = "SELECT * FROM dbo.Items WHERE Deleted = 0";
+            var query = "SELECT * FROM dbo.Item WHERE Deleted = 0";
             
             return await dbConnection.QueryAsync<Item>(query);
         }
@@ -118,7 +118,7 @@ VALUES (
             }
             
             // Query Item table only - variants should be loaded separately via ItemVariantRepository
-            var query = "SELECT * FROM dbo.Items WHERE Id = @id";
+            var query = "SELECT * FROM dbo.Item WHERE Id = @id";
 
             var item = await dbConnection.QueryFirstOrDefaultAsync<Item>(query, new { id });
             
@@ -134,7 +134,7 @@ VALUES (
             
             // Update Item only - variants should be managed by ItemVariantRepository
             var itemQuery = @"
-UPDATE dbo.Items
+UPDATE dbo.Item
 SET
     SellerID = @SellerID,
     Name_en = @Name_en,
@@ -173,7 +173,7 @@ WHERE Id = @Id";
             }
             
             // Query Item table only - variants should be loaded separately via ItemVariantRepository
-            var query = "SELECT * FROM dbo.Items WHERE Id = @id AND Deleted = 0";
+            var query = "SELECT * FROM dbo.Item WHERE Id = @id AND Deleted = 0";
 
             return await dbConnection.QueryFirstOrDefaultAsync<Item>(query, new { id });
         }

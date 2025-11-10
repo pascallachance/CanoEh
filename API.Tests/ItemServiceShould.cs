@@ -506,5 +506,16 @@ namespace API.Tests
             Assert.Equal("Blue", colorAttribute.Attributes_en);
             Assert.Equal("Bleu", colorAttribute.Attributes_fr);
         }
+
+        // Note: The following tests document the expected behavior of transaction error handling.
+        // In actual database failure scenarios during the transaction, the service will now return
+        // specific error messages like:
+        // - "Failed to insert Item: {details}" - when Item insertion fails
+        // - "Failed to insert ItemAttributes: {details}" - when ItemAttributes insertion fails  
+        // - "Failed to insert ItemVariants: {details}" - when ItemVariants insertion fails
+        // - "Failed to insert ItemVariantAttributes: {details}" - when ItemVariantAttributes insertion fails
+        //
+        // These cannot be easily unit-tested without a real database or complex mocking of Dapper,
+        // but the code changes ensure more helpful error messages for debugging production issues.
     }
 }

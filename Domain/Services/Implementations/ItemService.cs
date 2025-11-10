@@ -270,6 +270,16 @@ VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_e
             }
             catch (Exception ex)
             {
+                // If the exception already contains specific transaction step information, preserve it
+                if (ex is InvalidOperationException && 
+                    (ex.Message.Contains("Failed to insert Item") ||
+                     ex.Message.Contains("Failed to insert ItemAttributes") ||
+                     ex.Message.Contains("Failed to insert ItemVariants") ||
+                     ex.Message.Contains("Failed to insert ItemVariantAttributes")))
+                {
+                    return Result.Failure<CreateItemResponse>(ex.Message, StatusCodes.Status500InternalServerError);
+                }
+                
                 return Result.Failure<CreateItemResponse>($"An error occurred while creating the item: {ex.Message}", StatusCodes.Status500InternalServerError);
             }
         }

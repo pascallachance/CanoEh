@@ -111,7 +111,9 @@ namespace Domain.Services.Implementations
                 try
                 {
                     // 1. Insert Item
-                    var itemQuery = @"
+                    try
+                    {
+                        var itemQuery = @"
 INSERT INTO dbo.Item (
     Id,
     SellerID,
@@ -135,25 +137,47 @@ VALUES (
     @UpdatedAt, 
     @Deleted)";
 
-                    await connection.ExecuteAsync(itemQuery, item, transaction);
+                        await connection.ExecuteAsync(itemQuery, item, transaction);
+                    }
+                    catch (SqlException sqlEx)
+                    {
+                        throw new InvalidOperationException($"Database error inserting Item: {sqlEx.Message}", sqlEx);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidOperationException($"Failed to insert Item: {ex.Message}", ex);
+                    }
 
                     // 2. Insert ItemAttributes
                     if (itemAttributes.Any())
                     {
-                        var itemAttributeQuery = @"
+                        try
+                        {
+                            var itemAttributeQuery = @"
 INSERT INTO dbo.ItemAttribute (Id, ItemID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
 VALUES (@Id, @ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
 
-                        foreach (var attribute in itemAttributes)
+                            foreach (var attribute in itemAttributes)
+                            {
+                                await connection.ExecuteAsync(itemAttributeQuery, attribute, transaction);
+                            }
+                        }
+                        catch (SqlException sqlEx)
                         {
-                            await connection.ExecuteAsync(itemAttributeQuery, attribute, transaction);
+                            throw new InvalidOperationException($"Database error inserting ItemAttributes: {sqlEx.Message}", sqlEx);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new InvalidOperationException($"Failed to insert ItemAttributes: {ex.Message}", ex);
                         }
                     }
 
                     // 3. Insert ItemVariants
                     if (itemVariants.Any())
                     {
-                        var itemVariantQuery = @"
+                        try
+                        {
+                            var itemVariantQuery = @"
 INSERT INTO dbo.ItemVariants (
     Id,
     ItemId,
@@ -181,22 +205,42 @@ VALUES (
     @ItemVariantName_fr,
     @Deleted)";
 
-                        foreach (var variant in itemVariants)
+                            foreach (var variant in itemVariants)
+                            {
+                                await connection.ExecuteAsync(itemVariantQuery, variant, transaction);
+                            }
+                        }
+                        catch (SqlException sqlEx)
                         {
-                            await connection.ExecuteAsync(itemVariantQuery, variant, transaction);
+                            throw new InvalidOperationException($"Database error inserting ItemVariants: {sqlEx.Message}", sqlEx);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new InvalidOperationException($"Failed to insert ItemVariants: {ex.Message}", ex);
                         }
                     }
 
                     // 4. Insert ItemVariantAttributes
                     if (itemVariantAttributes.Any())
                     {
-                        var itemVariantAttributeQuery = @"
+                        try
+                        {
+                            var itemVariantAttributeQuery = @"
 INSERT INTO dbo.ItemVariantAttribute (Id, ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
 VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
 
-                        foreach (var variantAttribute in itemVariantAttributes)
+                            foreach (var variantAttribute in itemVariantAttributes)
+                            {
+                                await connection.ExecuteAsync(itemVariantAttributeQuery, variantAttribute, transaction);
+                            }
+                        }
+                        catch (SqlException sqlEx)
                         {
-                            await connection.ExecuteAsync(itemVariantAttributeQuery, variantAttribute, transaction);
+                            throw new InvalidOperationException($"Database error inserting ItemVariantAttributes: {sqlEx.Message}", sqlEx);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new InvalidOperationException($"Failed to insert ItemVariantAttributes: {ex.Message}", ex);
                         }
                     }
 
@@ -232,6 +276,12 @@ VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_e
                     };
 
                     return Result.Success(response);
+                }
+                catch (InvalidOperationException)
+                {
+                    // Rollback transaction on error
+                    await transaction.RollbackAsync();
+                    throw; // Preserve the specific exception with context
                 }
                 catch (Exception ex)
                 {

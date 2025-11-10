@@ -139,6 +139,10 @@ VALUES (
 
                         await connection.ExecuteAsync(itemQuery, item, transaction);
                     }
+                    catch (SqlException sqlEx)
+                    {
+                        throw new InvalidOperationException($"Database error inserting Item: {sqlEx.Message}", sqlEx);
+                    }
                     catch (Exception ex)
                     {
                         throw new InvalidOperationException($"Failed to insert Item: {ex.Message}", ex);
@@ -157,6 +161,10 @@ VALUES (@Id, @ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Att
                             {
                                 await connection.ExecuteAsync(itemAttributeQuery, attribute, transaction);
                             }
+                        }
+                        catch (SqlException sqlEx)
+                        {
+                            throw new InvalidOperationException($"Database error inserting ItemAttributes: {sqlEx.Message}", sqlEx);
                         }
                         catch (Exception ex)
                         {
@@ -202,6 +210,10 @@ VALUES (
                                 await connection.ExecuteAsync(itemVariantQuery, variant, transaction);
                             }
                         }
+                        catch (SqlException sqlEx)
+                        {
+                            throw new InvalidOperationException($"Database error inserting ItemVariants: {sqlEx.Message}", sqlEx);
+                        }
                         catch (Exception ex)
                         {
                             throw new InvalidOperationException($"Failed to insert ItemVariants: {ex.Message}", ex);
@@ -221,6 +233,10 @@ VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_e
                             {
                                 await connection.ExecuteAsync(itemVariantAttributeQuery, variantAttribute, transaction);
                             }
+                        }
+                        catch (SqlException sqlEx)
+                        {
+                            throw new InvalidOperationException($"Database error inserting ItemVariantAttributes: {sqlEx.Message}", sqlEx);
                         }
                         catch (Exception ex)
                         {
@@ -261,25 +277,21 @@ VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_e
 
                     return Result.Success(response);
                 }
-                catch (Exception)
+                catch (InvalidOperationException)
                 {
                     // Rollback transaction on error
                     await transaction.RollbackAsync();
-                    throw;
+                    throw; // Preserve the specific exception with context
+                }
+                catch (Exception ex)
+                {
+                    // Rollback transaction on error
+                    await transaction.RollbackAsync();
+                    throw new InvalidOperationException($"Transaction failed: {ex.Message}", ex);
                 }
             }
             catch (Exception ex)
             {
-                // If the exception already contains specific transaction step information, preserve it
-                if (ex is InvalidOperationException && 
-                    (ex.Message.Contains("Failed to insert Item") ||
-                     ex.Message.Contains("Failed to insert ItemAttributes") ||
-                     ex.Message.Contains("Failed to insert ItemVariants") ||
-                     ex.Message.Contains("Failed to insert ItemVariantAttributes")))
-                {
-                    return Result.Failure<CreateItemResponse>(ex.Message, StatusCodes.Status500InternalServerError);
-                }
-                
                 return Result.Failure<CreateItemResponse>($"An error occurred while creating the item: {ex.Message}", StatusCodes.Status500InternalServerError);
             }
         }

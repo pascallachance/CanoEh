@@ -197,7 +197,7 @@ Items Table:
   Id: abc123...
   Name_en: Cotton T-Shirt
   
-ItemVariants Table:
+ItemVariant Table:
   Id: def456...
   ItemId: abc123...  (FK to Items)
   Sku: TSHIRT-BLK-L

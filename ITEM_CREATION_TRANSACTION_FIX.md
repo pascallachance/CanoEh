@@ -2,7 +2,7 @@
 
 ## Problem Statement
 
-The original `ItemRepository.AddAsync` method only inserted the Item into the Items table, without creating the related ItemAttributes, ItemVariants, and ItemVariantAttributes. This resulted in incomplete item creation.
+The original `ItemRepository.AddAsync` method only inserted the Item into the Items table, without creating the related ItemAttributes, ItemVariant, and ItemVariantAttributes. This resulted in incomplete item creation.
 
 ## Solution
 
@@ -47,7 +47,7 @@ try
         await connection.ExecuteAsync(itemAttributeQuery, attribute, transaction);
     }
 
-    // 3. Insert ItemVariants (if any)
+    // 3. Insert ItemVariant (if any)
     foreach (var variant in itemVariants)
     {
         await connection.ExecuteAsync(itemVariantQuery, variant, transaction);
@@ -101,11 +101,11 @@ The new implementation follows this exact sequence:
 2. **Prepare all entities with proper foreign key relationships**
    - Item with `itemId`
    - ItemAttributes with `ItemID = itemId`
-   - ItemVariants with `ItemId = itemId` (each gets new `variantId`)
+   - ItemVariant with `ItemId = itemId` (each gets new `variantId`)
    - ItemVariantAttributes with `ItemVariantID = variantId`
 
 3. **Execute in single transaction**
-   - Insert Item → Insert ItemAttributes → Insert ItemVariants → Insert ItemVariantAttributes
+   - Insert Item → Insert ItemAttributes → Insert ItemVariant → Insert ItemVariantAttributes
    - All succeed or all fail (atomic operation)
 
 4. **Return complete response**
@@ -177,9 +177,9 @@ INSERT INTO dbo.ItemAttribute (Id, ItemID, AttributeName_en, AttributeName_fr,
                                 Attributes_en, Attributes_fr)
 ```
 
-### ItemVariants
+### ItemVariant
 ```sql
-INSERT INTO dbo.ItemVariants (Id, ItemId, Price, StockQuantity, Sku, ProductIdentifierType,
+INSERT INTO dbo.ItemVariant (Id, ItemId, Price, StockQuantity, Sku, ProductIdentifierType,
                                ProductIdentifierValue, ImageUrls, ThumbnailUrl,
                                ItemVariantName_en, ItemVariantName_fr, Deleted)
 ```

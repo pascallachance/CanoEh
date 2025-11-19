@@ -52,7 +52,7 @@ const response = await ApiClient.post(
 - ✅ **ItemController.cs**: `[HttpPost("CreateItem")]` endpoint
 - ✅ **ItemService.cs**: `CreateItemAsync()` method
 - ✅ **ItemRepository.cs**: `AddAsync()` with transaction
-- ✅ **Database**: Items, ItemVariants, ItemAttributes tables
+- ✅ **Database**: Items, ItemVariant, ItemAttributes tables
 
 ### Testing
 ```
@@ -70,7 +70,7 @@ POST /api/Item/CreateItem
     ↓
 Backend validates → Service processes → Repository saves
     ↓
-Database (Items, ItemVariants, ItemAttributes)
+Database (Items, ItemVariant, ItemAttributes)
     ↓
 Response → UI updated or error shown
 ```

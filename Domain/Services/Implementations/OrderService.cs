@@ -304,7 +304,7 @@ VALUES (
 
                     // Decrease stock quantities
                     var stockUpdateQuery = @"
-UPDATE dbo.ItemVariants 
+UPDATE dbo.ItemVariant 
 SET StockQuantity = StockQuantity - @Quantity 
 WHERE Id = @ItemVariantID";
 
@@ -543,7 +543,7 @@ WHERE Id = @ItemVariantID";
                                 if (quantityDifference > 0)
                                 {
                                     // Get current stock quantity for this variant
-                                    var stockQuery = "SELECT StockQuantity FROM dbo.ItemVariants WHERE Id = @ItemVariantID";
+                                    var stockQuery = "SELECT StockQuantity FROM dbo.ItemVariant WHERE Id = @ItemVariantID";
                                     var currentStock = await connection.QueryFirstOrDefaultAsync<int>(stockQuery, new { orderItem.ItemVariantID }, transaction);
                                     
                                     if (currentStock < quantityDifference)
@@ -579,7 +579,7 @@ WHERE Id = @ItemVariantID";
                                     // Quantity increased - subtract additional quantity from stock
                                     var additionalQuantity = newQuantity - oldQuantity;
                                     var stockUpdateQuery = @"
-UPDATE dbo.ItemVariants 
+UPDATE dbo.ItemVariant 
 SET StockQuantity = StockQuantity - @AdditionalQuantity 
 WHERE Id = @ItemVariantID";
 
@@ -590,7 +590,7 @@ WHERE Id = @ItemVariantID";
                                     // Quantity decreased - add the returned quantity back to stock
                                     var returnedQuantity = oldQuantity - newQuantity;
                                     var stockUpdateQuery = @"
-UPDATE dbo.ItemVariants 
+UPDATE dbo.ItemVariant 
 SET StockQuantity = StockQuantity + @ReturnedQuantity 
 WHERE Id = @ItemVariantID";
 

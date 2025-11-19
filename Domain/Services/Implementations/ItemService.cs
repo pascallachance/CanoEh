@@ -257,11 +257,11 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                         }
                         catch (SqlException sqlEx)
                         {
-                            throw new InvalidOperationException($"Database error inserting ItemVariants: {sqlEx.Message}", sqlEx);
+                            throw new InvalidOperationException($"Database error inserting ItemVariant: {sqlEx.Message}", sqlEx);
                         }
                         catch (Exception ex)
                         {
-                            throw new InvalidOperationException($"Failed to insert ItemVariants: {ex.Message}", ex);
+                            throw new InvalidOperationException($"Failed to insert ItemVariant: {ex.Message}", ex);
                         }
                     }
 

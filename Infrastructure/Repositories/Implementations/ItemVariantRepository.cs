@@ -20,7 +20,7 @@ namespace Infrastructure.Repositories.Implementations
             }
 
             var query = @"
-INSERT INTO dbo.ItemVariants (
+INSERT INTO dbo.ItemVariant (
     Id,
     ItemId,
     Price,
@@ -91,7 +91,7 @@ VALUES (
                 dbConnection.Open();
             }
             
-            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.ItemVariants WHERE Id = @id", new { id });
+            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.ItemVariant WHERE Id = @id", new { id });
         }
 
         public override async Task<IEnumerable<ItemVariant>> FindAsync(Func<ItemVariant, bool> predicate)
@@ -107,7 +107,7 @@ VALUES (
                 dbConnection.Open();
             }
             
-            var query = "SELECT * FROM dbo.ItemVariants WHERE Deleted = 0";
+            var query = "SELECT * FROM dbo.ItemVariant WHERE Deleted = 0";
             return await dbConnection.QueryAsync<ItemVariant>(query);
         }
 
@@ -118,7 +118,7 @@ VALUES (
                 dbConnection.Open();
             }
             
-            var query = "SELECT * FROM dbo.ItemVariants WHERE Id = @id";
+            var query = "SELECT * FROM dbo.ItemVariant WHERE Id = @id";
             var result = await dbConnection.QueryFirstOrDefaultAsync<ItemVariant>(query, new { id });
             
             return result ?? throw new InvalidOperationException($"ItemVariant with id {id} not found");
@@ -132,7 +132,7 @@ VALUES (
             }
             
             var query = @"
-UPDATE dbo.ItemVariants 
+UPDATE dbo.ItemVariant 
 SET ItemId = @ItemId,
     Price = @Price,
     StockQuantity = @StockQuantity,
@@ -174,7 +174,7 @@ WHERE Id = @Id";
             }
             
             var query = @"
-UPDATE dbo.ItemVariants 
+UPDATE dbo.ItemVariant 
 SET Deleted = 1 
 WHERE Id = @variantId AND ItemId = @itemId AND Deleted = 0";
             

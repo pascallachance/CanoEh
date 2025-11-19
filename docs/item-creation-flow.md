@@ -68,7 +68,7 @@
 │         ItemRepository.AddAsync()                                   │
 │  1. Begin transaction                                               │
 │  2. INSERT INTO dbo.Items                                           │
-│  3. INSERT INTO dbo.ItemVariants (for each variant)                 │
+│  3. INSERT INTO dbo.ItemVariant (for each variant)                  │
 │  4. INSERT INTO dbo.ItemAttributes (for each attribute)             │
 │  5. Commit transaction                                              │
 │  6. Return created item                                             │
@@ -80,7 +80,7 @@
                       │   SQL Server LocalDB   │
                       │                        │
                       │  • dbo.Items           │
-                      │  • dbo.ItemVariants    │
+                      │  • dbo.ItemVariant     │
                       │  • dbo.ItemAttributes  │
                       └────────────────────────┘
                                   │

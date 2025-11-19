@@ -512,7 +512,7 @@ namespace API.Tests
         // specific error messages like:
         // - "Failed to insert Item: {details}" - when Item insertion fails
         // - "Failed to insert ItemAttributes: {details}" - when ItemAttributes insertion fails  
-        // - "Failed to insert ItemVariants: {details}" - when ItemVariants insertion fails
+        // - "Failed to insert ItemVariant: {details}" - when ItemVariant insertion fails
         // - "Failed to insert ItemVariantAttributes: {details}" - when ItemVariantAttributes insertion fails
         //
         // These cannot be easily unit-tested without a real database or complex mocking of Dapper,

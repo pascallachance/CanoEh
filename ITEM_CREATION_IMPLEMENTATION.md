@@ -142,7 +142,7 @@ The `AddAsync` method:
 1. Opens database connection
 2. Begins transaction
 3. Inserts item into dbo.Items table
-4. Inserts variants into dbo.ItemVariants table
+4. Inserts variants into dbo.ItemVariant table
 5. Inserts item attributes into dbo.ItemAttributes table
 6. Commits transaction
 7. Returns created item

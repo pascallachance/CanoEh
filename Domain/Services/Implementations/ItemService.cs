@@ -152,7 +152,7 @@ VALUES (@ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attribut
                         try
                         {
                             var itemVariantQuery = @"
-INSERT INTO dbo.ItemVariants (
+INSERT INTO dbo.ItemVariant (
     ItemId,
     Price,
     StockQuantity,

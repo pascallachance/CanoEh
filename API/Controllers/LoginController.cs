@@ -22,6 +22,7 @@ namespace API.Controllers
         private readonly IUserService _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         private readonly ISessionService _sessionService = sessionService ?? throw new ArgumentNullException(nameof(sessionService));
 
+        [AllowAnonymous]
         [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LoginRequest))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

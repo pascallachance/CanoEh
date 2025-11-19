@@ -244,6 +244,14 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                                             });
                                         }
                                     }
+                                    catch (SqlException sqlEx)
+                                    {
+                                        throw new InvalidOperationException($"Database error inserting ItemVariantAttributes: {sqlEx.Message}", sqlEx);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        throw new InvalidOperationException($"Failed to insert ItemVariantAttributes: {ex.Message}", ex);
+                                    }
                                 }
                             }
                         }

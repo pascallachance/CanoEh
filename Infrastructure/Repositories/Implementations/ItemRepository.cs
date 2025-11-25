@@ -178,7 +178,7 @@ WHERE Id = @Id";
             return await dbConnection.QueryFirstOrDefaultAsync<Item>(query, new { id });
         }
 
-        public async Task<IEnumerable<Item>> GetAllFromSellerByID(Guid sellerId)
+        public async Task<IEnumerable<Item>> GetBySellerIdAsync(Guid sellerId)
         {
             if (dbConnection.State != ConnectionState.Open)
             {

@@ -118,5 +118,19 @@ namespace API.Tests
             Assert.Null(variant.ItemVariantName_fr);
             Assert.False(variant.Deleted);
         }
+
+        [Fact]
+        public void GetAllFromSellerByID_MethodExists_OnItemRepository()
+        {
+            // Arrange
+            var connectionString = "Data Source=test.db";
+            var repository = new ItemRepository(connectionString);
+
+            // Act & Assert - Verify the method exists and can be accessed
+            // This test verifies that GetAllFromSellerByID method is properly defined
+            var methodInfo = repository.GetType().GetMethod("GetAllFromSellerByID");
+            Assert.NotNull(methodInfo);
+            Assert.Equal(typeof(Task<IEnumerable<Item>>), methodInfo.ReturnType);
+        }
     }
 }

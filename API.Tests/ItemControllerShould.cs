@@ -336,5 +336,77 @@ namespace API.Tests
             var notFoundResult = Assert.IsType<ObjectResult>(response);
             Assert.Equal(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
         }
+
+        [Fact]
+        public async Task GetSellerItems_ReturnOk_WhenSellerHasItems()
+        {
+            // Arrange
+            var sellerId = Guid.NewGuid();
+            var items = new List<GetItemResponse>
+            {
+                new GetItemResponse
+                {
+                    Id = Guid.NewGuid(),
+                    SellerID = sellerId,
+                    Name_en = "Test Item 1",
+                    Name_fr = "Article de test 1",
+                    Description_en = "Test Description EN",
+                    Description_fr = "Test Description FR",
+                    CategoryID = Guid.NewGuid(),
+                    Variants = new List<ItemVariant>(),
+                    ItemAttributes = new List<ItemAttribute>(),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = null,
+                    Deleted = false
+                }
+            };
+
+            var result = Result.Success<IEnumerable<GetItemResponse>>(items);
+            _mockItemService.Setup(x => x.GetAllItemsFromSellerAsync(sellerId))
+                           .ReturnsAsync(result);
+
+            // Act
+            var response = await _controller.GetSellerItems(sellerId);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(response);
+            Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetSellerItems_ReturnOk_WhenSellerHasNoItems()
+        {
+            // Arrange
+            var sellerId = Guid.NewGuid();
+            var items = new List<GetItemResponse>();
+
+            var result = Result.Success<IEnumerable<GetItemResponse>>(items);
+            _mockItemService.Setup(x => x.GetAllItemsFromSellerAsync(sellerId))
+                           .ReturnsAsync(result);
+
+            // Act
+            var response = await _controller.GetSellerItems(sellerId);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(response);
+            Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetSellerItems_ReturnInternalServerError_WhenServiceFails()
+        {
+            // Arrange
+            var sellerId = Guid.NewGuid();
+            var result = Result.Failure<IEnumerable<GetItemResponse>>("An error occurred", StatusCodes.Status500InternalServerError);
+            _mockItemService.Setup(x => x.GetAllItemsFromSellerAsync(sellerId))
+                           .ReturnsAsync(result);
+
+            // Act
+            var response = await _controller.GetSellerItems(sellerId);
+
+            // Assert
+            var errorResult = Assert.IsType<ObjectResult>(response);
+            Assert.Equal(StatusCodes.Status500InternalServerError, errorResult.StatusCode);
+        }
     }
 }

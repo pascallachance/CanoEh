@@ -517,5 +517,94 @@ namespace API.Tests
         //
         // These cannot be easily unit-tested without a real database or complex mocking of Dapper,
         // but the code changes ensure more helpful error messages for debugging production issues.
+
+        [Fact]
+        public async Task GetAllItemsFromSellerAsync_ReturnSuccess_WhenSellerHasItems()
+        {
+            // Arrange
+            var sellerId = Guid.NewGuid();
+            var items = new List<Item>
+            {
+                new Item
+                {
+                    Id = Guid.NewGuid(),
+                    SellerID = sellerId,
+                    Name_en = "Test Item 1",
+                    Name_fr = "Article de test 1",
+                    Description_en = "Test item 1 description EN",
+                    Description_fr = "Test item 1 description FR",
+                    CategoryID = Guid.NewGuid(),
+                    Variants = new List<ItemVariant>(),
+                    ItemAttributes = new List<ItemAttribute>(),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = null,
+                    Deleted = false
+                },
+                new Item
+                {
+                    Id = Guid.NewGuid(),
+                    SellerID = sellerId,
+                    Name_en = "Test Item 2",
+                    Name_fr = "Article de test 2",
+                    Description_en = "Test item 2 description EN",
+                    Description_fr = "Test item 2 description FR",
+                    CategoryID = Guid.NewGuid(),
+                    Variants = new List<ItemVariant>(),
+                    ItemAttributes = new List<ItemAttribute>(),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = null,
+                    Deleted = false
+                }
+            };
+
+            _mockItemRepository.Setup(x => x.GetAllFromSellerByID(sellerId))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _itemService.GetAllItemsFromSellerAsync(sellerId);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Equal(2, result.Value.Count());
+            Assert.All(result.Value, item => Assert.Equal(sellerId, item.SellerID));
+        }
+
+        [Fact]
+        public async Task GetAllItemsFromSellerAsync_ReturnEmptyList_WhenSellerHasNoItems()
+        {
+            // Arrange
+            var sellerId = Guid.NewGuid();
+            var items = new List<Item>();
+
+            _mockItemRepository.Setup(x => x.GetAllFromSellerByID(sellerId))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _itemService.GetAllItemsFromSellerAsync(sellerId);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Empty(result.Value);
+        }
+
+        [Fact]
+        public async Task GetAllItemsFromSellerAsync_ReturnFailure_WhenRepositoryThrowsException()
+        {
+            // Arrange
+            var sellerId = Guid.NewGuid();
+
+            _mockItemRepository.Setup(x => x.GetAllFromSellerByID(sellerId))
+                              .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _itemService.GetAllItemsFromSellerAsync(sellerId);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.ErrorCode);
+            Assert.Contains("An error occurred while retrieving items for the seller", result.Error);
+        }
     }
 }

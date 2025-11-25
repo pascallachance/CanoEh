@@ -177,5 +177,17 @@ WHERE Id = @Id";
 
             return await dbConnection.QueryFirstOrDefaultAsync<Item>(query, new { id });
         }
+
+        public async Task<IEnumerable<Item>> GetAllFromSellerByID(Guid sellerId)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            
+            var query = "SELECT * FROM dbo.Item WHERE SellerID = @sellerId AND Deleted = 0";
+
+            return await dbConnection.QueryAsync<Item>(query, new { sellerId });
+        }
     }
 }

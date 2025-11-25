@@ -380,6 +380,35 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             }
         }
 
+        public async Task<Result<IEnumerable<GetItemResponse>>> GetAllItemsFromSellerAsync(Guid sellerId)
+        {
+            try
+            {
+                var items = await _itemRepository.GetAllFromSellerByID(sellerId);
+                var response = items.Select(item => new GetItemResponse
+                {
+                    Id = item.Id,
+                    SellerID = item.SellerID,
+                    Name_en = item.Name_en,
+                    Name_fr = item.Name_fr,
+                    Description_en = item.Description_en,
+                    Description_fr = item.Description_fr,
+                    CategoryID = item.CategoryID,
+                    Variants = item.Variants,
+                    ItemAttributes = item.ItemAttributes,
+                    CreatedAt = item.CreatedAt,
+                    UpdatedAt = item.UpdatedAt,
+                    Deleted = item.Deleted
+                });
+
+                return Result.Success(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<IEnumerable<GetItemResponse>>($"An error occurred while retrieving items for the seller: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
         public async Task<Result<UpdateItemResponse>> UpdateItemAsync(UpdateItemRequest updateItemRequest)
         {
             try

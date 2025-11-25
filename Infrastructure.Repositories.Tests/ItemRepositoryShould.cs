@@ -288,96 +288,38 @@ namespace Infrastructure.Repositories.Tests
         }
 
         [Fact]
-        public async Task GetBySellerIdAsync_ShouldReturnItemsWithRelatedEntities()
+        public void GetBySellerIdAsync_MethodExists_OnItemRepository()
         {
-            // Arrange
-            var sellerId = Guid.NewGuid();
-            var itemId = Guid.NewGuid();
-            var variantId = Guid.NewGuid();
+            // Arrange & Act
+            // This test verifies that GetBySellerIdAsync method is properly defined on ItemRepository
+            // and returns the expected type (Task<IEnumerable<Item>>).
+            // Integration tests with a real database would be needed to verify:
+            // - The early return logic when no items are found
+            // - The batched queries and dictionary lookups work correctly
+            // - ItemVariants, ItemVariantAttributes, and ItemAttributes are properly loaded
+            var methodInfo = _itemRepository.GetType().GetMethod("GetBySellerIdAsync");
             
-            var itemAttribute = new ItemAttribute
-            {
-                Id = Guid.NewGuid(),
-                ItemID = itemId,
-                AttributeName_en = "Material",
-                Attributes_en = "Cotton"
-            };
-            
-            var variantAttribute = new ItemVariantAttribute
-            {
-                Id = Guid.NewGuid(),
-                ItemVariantID = variantId,
-                AttributeName_en = "Size",
-                Attributes_en = "Large"
-            };
-            
-            var variant = new ItemVariant
-            {
-                Id = variantId,
-                ItemId = itemId,
-                Price = 19.99m,
-                Sku = "TEST-001",
-                ItemVariantAttributes = new List<ItemVariantAttribute> { variantAttribute }
-            };
-            
-            var item = new Item
-            {
-                Id = itemId,
-                SellerID = sellerId,
-                Name_en = "Test Item",
-                Name_fr = "Article de test",
-                Variants = new List<ItemVariant> { variant },
-                ItemAttributes = new List<ItemAttribute> { itemAttribute }
-            };
-
-            _mockItemRepository.Setup(repo => repo.GetBySellerIdAsync(sellerId))
-                              .ReturnsAsync(new List<Item> { item });
-
-            // Act
-            var result = await _mockItemRepository.Object.GetBySellerIdAsync(sellerId);
-
             // Assert
-            Assert.NotNull(result);
-            var items = result.ToList();
-            Assert.Single(items);
+            Assert.NotNull(methodInfo);
+            Assert.Equal(typeof(Task<IEnumerable<Item>>), methodInfo.ReturnType);
             
-            var returnedItem = items[0];
-            Assert.Equal(itemId, returnedItem.Id);
-            Assert.Equal(sellerId, returnedItem.SellerID);
-            
-            // Verify ItemVariants are included
-            Assert.NotNull(returnedItem.Variants);
-            Assert.Single(returnedItem.Variants);
-            Assert.Equal(variantId, returnedItem.Variants[0].Id);
-            
-            // Verify ItemVariantAttributes are included
-            Assert.NotNull(returnedItem.Variants[0].ItemVariantAttributes);
-            Assert.Single(returnedItem.Variants[0].ItemVariantAttributes);
-            Assert.Equal("Size", returnedItem.Variants[0].ItemVariantAttributes[0].AttributeName_en);
-            
-            // Verify ItemAttributes are included
-            Assert.NotNull(returnedItem.ItemAttributes);
-            Assert.Single(returnedItem.ItemAttributes);
-            Assert.Equal("Material", returnedItem.ItemAttributes[0].AttributeName_en);
-            
-            _mockItemRepository.Verify(repo => repo.GetBySellerIdAsync(sellerId), Times.Once);
+            // Verify method parameter
+            var parameters = methodInfo.GetParameters();
+            Assert.Single(parameters);
+            Assert.Equal("sellerId", parameters[0].Name);
+            Assert.Equal(typeof(Guid), parameters[0].ParameterType);
         }
 
         [Fact]
-        public async Task GetBySellerIdAsync_ShouldReturnEmptyList_WhenNoItemsExist()
+        public void GetBySellerIdAsync_Interface_ShouldDefineMethod()
         {
-            // Arrange
-            var sellerId = Guid.NewGuid();
-            _mockItemRepository.Setup(repo => repo.GetBySellerIdAsync(sellerId))
-                              .ReturnsAsync(new List<Item>());
-
-            // Act
-            var result = await _mockItemRepository.Object.GetBySellerIdAsync(sellerId);
-
+            // Arrange & Act
+            // Verify the interface contract for GetBySellerIdAsync
+            var interfaceMethodInfo = typeof(IItemRepository).GetMethod("GetBySellerIdAsync");
+            
             // Assert
-            Assert.NotNull(result);
-            Assert.Empty(result);
-            _mockItemRepository.Verify(repo => repo.GetBySellerIdAsync(sellerId), Times.Once);
+            Assert.NotNull(interfaceMethodInfo);
+            Assert.Equal(typeof(Task<IEnumerable<Item>>), interfaceMethodInfo.ReturnType);
         }
     }
 }

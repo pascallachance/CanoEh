@@ -286,5 +286,40 @@ namespace Infrastructure.Repositories.Tests
             Assert.Equal(string.Empty, attribute.Attributes_en);
             Assert.Null(attribute.Attributes_fr);
         }
+
+        [Fact]
+        public void GetBySellerIdAsync_MethodExists_OnItemRepository()
+        {
+            // Arrange & Act
+            // This test verifies that GetBySellerIdAsync method is properly defined on ItemRepository
+            // and returns the expected type (Task<IEnumerable<Item>>).
+            // Integration tests with a real database would be needed to verify:
+            // - The early return logic when no items are found
+            // - The batched queries and dictionary lookups work correctly
+            // - ItemVariants, ItemVariantAttributes, and ItemAttributes are properly loaded
+            var methodInfo = _itemRepository.GetType().GetMethod("GetBySellerIdAsync");
+            
+            // Assert
+            Assert.NotNull(methodInfo);
+            Assert.Equal(typeof(Task<IEnumerable<Item>>), methodInfo.ReturnType);
+            
+            // Verify method parameter
+            var parameters = methodInfo.GetParameters();
+            Assert.Single(parameters);
+            Assert.Equal("sellerId", parameters[0].Name);
+            Assert.Equal(typeof(Guid), parameters[0].ParameterType);
+        }
+
+        [Fact]
+        public void GetBySellerIdAsync_Interface_ShouldDefineMethod()
+        {
+            // Arrange & Act
+            // Verify the interface contract for GetBySellerIdAsync
+            var interfaceMethodInfo = typeof(IItemRepository).GetMethod("GetBySellerIdAsync");
+            
+            // Assert
+            Assert.NotNull(interfaceMethodInfo);
+            Assert.Equal(typeof(Task<IEnumerable<Item>>), interfaceMethodInfo.ReturnType);
+        }
     }
 }

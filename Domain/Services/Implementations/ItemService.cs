@@ -384,7 +384,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
         {
             try
             {
-                var items = await _itemRepository.GetAllFromSellerByID(sellerId);
+                var items = await _itemRepository.GetBySellerIdAsync(sellerId);
                 var response = items.Select(item => new GetItemResponse
                 {
                     Id = item.Id,

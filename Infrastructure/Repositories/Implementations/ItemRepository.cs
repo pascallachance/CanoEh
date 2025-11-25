@@ -185,9 +185,48 @@ WHERE Id = @Id";
                 dbConnection.Open();
             }
             
-            var query = "SELECT * FROM dbo.Item WHERE SellerID = @sellerId AND Deleted = 0";
-
-            return await dbConnection.QueryAsync<Item>(query, new { sellerId });
+            // Get all items for the seller
+            var itemQuery = "SELECT * FROM dbo.Item WHERE SellerID = @sellerId AND Deleted = 0";
+            var items = (await dbConnection.QueryAsync<Item>(itemQuery, new { sellerId })).ToList();
+            
+            if (!items.Any())
+            {
+                return items;
+            }
+            
+            var itemIds = items.Select(i => i.Id).ToList();
+            
+            // Get all ItemAttributes for the items
+            var itemAttributeQuery = "SELECT * FROM dbo.ItemAttribute WHERE ItemID IN @itemIds";
+            var itemAttributes = (await dbConnection.QueryAsync<ItemAttribute>(itemAttributeQuery, new { itemIds })).ToList();
+            
+            // Get all ItemVariants for the items (non-deleted)
+            var variantQuery = "SELECT * FROM dbo.ItemVariant WHERE ItemId IN @itemIds AND Deleted = 0";
+            var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { itemIds })).ToList();
+            
+            if (variants.Any())
+            {
+                var variantIds = variants.Select(v => v.Id).ToList();
+                
+                // Get all ItemVariantAttributes for the variants
+                var variantAttributeQuery = "SELECT * FROM dbo.ItemVariantAttribute WHERE ItemVariantID IN @variantIds";
+                var variantAttributes = (await dbConnection.QueryAsync<ItemVariantAttribute>(variantAttributeQuery, new { variantIds })).ToList();
+                
+                // Assign ItemVariantAttributes to their respective ItemVariants
+                foreach (var variant in variants)
+                {
+                    variant.ItemVariantAttributes = variantAttributes.Where(va => va.ItemVariantID == variant.Id).ToList();
+                }
+            }
+            
+            // Assign ItemVariants and ItemAttributes to their respective Items
+            foreach (var item in items)
+            {
+                item.Variants = variants.Where(v => v.ItemId == item.Id).ToList();
+                item.ItemAttributes = itemAttributes.Where(ia => ia.ItemID == item.Id).ToList();
+            }
+            
+            return items;
         }
     }
 }

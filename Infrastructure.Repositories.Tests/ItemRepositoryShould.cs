@@ -286,5 +286,98 @@ namespace Infrastructure.Repositories.Tests
             Assert.Equal(string.Empty, attribute.Attributes_en);
             Assert.Null(attribute.Attributes_fr);
         }
+
+        [Fact]
+        public async Task GetBySellerIdAsync_ShouldReturnItemsWithRelatedEntities()
+        {
+            // Arrange
+            var sellerId = Guid.NewGuid();
+            var itemId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            
+            var itemAttribute = new ItemAttribute
+            {
+                Id = Guid.NewGuid(),
+                ItemID = itemId,
+                AttributeName_en = "Material",
+                Attributes_en = "Cotton"
+            };
+            
+            var variantAttribute = new ItemVariantAttribute
+            {
+                Id = Guid.NewGuid(),
+                ItemVariantID = variantId,
+                AttributeName_en = "Size",
+                Attributes_en = "Large"
+            };
+            
+            var variant = new ItemVariant
+            {
+                Id = variantId,
+                ItemId = itemId,
+                Price = 19.99m,
+                Sku = "TEST-001",
+                ItemVariantAttributes = new List<ItemVariantAttribute> { variantAttribute }
+            };
+            
+            var item = new Item
+            {
+                Id = itemId,
+                SellerID = sellerId,
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Variants = new List<ItemVariant> { variant },
+                ItemAttributes = new List<ItemAttribute> { itemAttribute }
+            };
+
+            _mockItemRepository.Setup(repo => repo.GetBySellerIdAsync(sellerId))
+                              .ReturnsAsync(new List<Item> { item });
+
+            // Act
+            var result = await _mockItemRepository.Object.GetBySellerIdAsync(sellerId);
+
+            // Assert
+            Assert.NotNull(result);
+            var items = result.ToList();
+            Assert.Single(items);
+            
+            var returnedItem = items[0];
+            Assert.Equal(itemId, returnedItem.Id);
+            Assert.Equal(sellerId, returnedItem.SellerID);
+            
+            // Verify ItemVariants are included
+            Assert.NotNull(returnedItem.Variants);
+            Assert.Single(returnedItem.Variants);
+            Assert.Equal(variantId, returnedItem.Variants[0].Id);
+            
+            // Verify ItemVariantAttributes are included
+            Assert.NotNull(returnedItem.Variants[0].ItemVariantAttributes);
+            Assert.Single(returnedItem.Variants[0].ItemVariantAttributes);
+            Assert.Equal("Size", returnedItem.Variants[0].ItemVariantAttributes[0].AttributeName_en);
+            
+            // Verify ItemAttributes are included
+            Assert.NotNull(returnedItem.ItemAttributes);
+            Assert.Single(returnedItem.ItemAttributes);
+            Assert.Equal("Material", returnedItem.ItemAttributes[0].AttributeName_en);
+            
+            _mockItemRepository.Verify(repo => repo.GetBySellerIdAsync(sellerId), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetBySellerIdAsync_ShouldReturnEmptyList_WhenNoItemsExist()
+        {
+            // Arrange
+            var sellerId = Guid.NewGuid();
+            _mockItemRepository.Setup(repo => repo.GetBySellerIdAsync(sellerId))
+                              .ReturnsAsync(new List<Item>());
+
+            // Act
+            var result = await _mockItemRepository.Object.GetBySellerIdAsync(sellerId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+            _mockItemRepository.Verify(repo => repo.GetBySellerIdAsync(sellerId), Times.Once);
+        }
     }
 }

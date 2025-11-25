@@ -120,15 +120,15 @@ namespace API.Tests
         }
 
         [Fact]
-        public void GetAllFromSellerByID_MethodExists_OnItemRepository()
+        public void GetBySellerIdAsync_MethodExists_OnItemRepository()
         {
             // Arrange
             var connectionString = "Data Source=test.db";
             var repository = new ItemRepository(connectionString);
 
             // Act & Assert - Verify the method exists and can be accessed
-            // This test verifies that GetAllFromSellerByID method is properly defined
-            var methodInfo = repository.GetType().GetMethod("GetAllFromSellerByID");
+            // This test verifies that GetBySellerIdAsync method is properly defined
+            var methodInfo = repository.GetType().GetMethod("GetBySellerIdAsync");
             Assert.NotNull(methodInfo);
             Assert.Equal(typeof(Task<IEnumerable<Item>>), methodInfo.ReturnType);
         }

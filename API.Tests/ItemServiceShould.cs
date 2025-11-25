@@ -557,7 +557,7 @@ namespace API.Tests
                 }
             };
 
-            _mockItemRepository.Setup(x => x.GetAllFromSellerByID(sellerId))
+            _mockItemRepository.Setup(x => x.GetBySellerIdAsync(sellerId))
                               .ReturnsAsync(items);
 
             // Act
@@ -577,7 +577,7 @@ namespace API.Tests
             var sellerId = Guid.NewGuid();
             var items = new List<Item>();
 
-            _mockItemRepository.Setup(x => x.GetAllFromSellerByID(sellerId))
+            _mockItemRepository.Setup(x => x.GetBySellerIdAsync(sellerId))
                               .ReturnsAsync(items);
 
             // Act
@@ -595,7 +595,7 @@ namespace API.Tests
             // Arrange
             var sellerId = Guid.NewGuid();
 
-            _mockItemRepository.Setup(x => x.GetAllFromSellerByID(sellerId))
+            _mockItemRepository.Setup(x => x.GetBySellerIdAsync(sellerId))
                               .ThrowsAsync(new Exception("Database error"));
 
             // Act

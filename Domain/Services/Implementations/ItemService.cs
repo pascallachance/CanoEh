@@ -541,7 +541,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 ThumbnailUrl = variant.ThumbnailUrl,
                 ItemVariantName_en = variant.ItemVariantName_en,
                 ItemVariantName_fr = variant.ItemVariantName_fr,
-                ItemVariantAttributes = variant.ItemVariantAttributes.Select(MapToItemVariantAttributeDto).ToList(),
+                ItemVariantAttributes = variant.ItemVariantAttributes?.Select(MapToItemVariantAttributeDto).ToList() ?? [],
                 Deleted = variant.Deleted
             };
         }
@@ -558,13 +558,21 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             };
         }
 
-        private static List<ItemVariantDto> MapToItemVariantDtos(List<ItemVariant> variants)
+        private static List<ItemVariantDto> MapToItemVariantDtos(List<ItemVariant>? variants)
         {
+            if (variants == null || variants.Count == 0)
+            {
+                return [];
+            }
             return variants.Select(MapToItemVariantDto).ToList();
         }
 
-        private static List<ItemAttributeDto> MapToItemAttributeDtos(List<ItemAttribute> attributes)
+        private static List<ItemAttributeDto> MapToItemAttributeDtos(List<ItemAttribute>? attributes)
         {
+            if (attributes == null || attributes.Count == 0)
+            {
+                return [];
+            }
             return attributes.Select(MapToItemAttributeDto).ToList();
         }
     }

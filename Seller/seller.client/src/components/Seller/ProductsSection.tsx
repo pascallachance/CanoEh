@@ -567,7 +567,18 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                     ThumbnailUrl: variant.thumbnailUrl || null,
                     ItemVariantName_en: variant.attributes_en ? Object.entries(variant.attributes_en).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
                     ItemVariantName_fr: variant.attributes_fr ? Object.entries(variant.attributes_fr).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
-                    ItemVariantAttributes: [],
+                    ItemVariantAttributes: Object.entries(variant.attributes_en).map(([attrNameEn, attrValueEn]) => {
+                        // Find the corresponding ItemAttribute to get the French attribute name
+                        const itemAttribute = newItem.attributes.find(attr => attr.name_en === attrNameEn);
+                        const attrNameFr = itemAttribute?.name_fr || null;
+                        const attrValueFr = attrNameFr && variant.attributes_fr ? variant.attributes_fr[attrNameFr] : null;
+                        return {
+                            AttributeName_en: attrNameEn,
+                            AttributeName_fr: attrNameFr,
+                            Attributes_en: attrValueEn,
+                            Attributes_fr: attrValueFr
+                        };
+                    }),
                     Deleted: false
                 })),
                 ItemAttributes: newItem.itemAttributes.map(attr => ({

@@ -289,8 +289,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                         Description_en = item.Description_en,
                         Description_fr = item.Description_fr,
                         CategoryID = item.CategoryID,
-                        Variants = item.Variants,
-                        ItemAttributes = item.ItemAttributes,
+                        Variants = MapToItemVariantDtos(item.Variants),
+                        ItemAttributes = MapToItemAttributeDtos(item.ItemAttributes),
                         CreatedAt = item.CreatedAt,
                         UpdatedAt = item.UpdatedAt,
                         Deleted = item.Deleted
@@ -331,8 +331,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     Description_en = item.Description_en,
                     Description_fr = item.Description_fr,
                     CategoryID = item.CategoryID,
-                    Variants = item.Variants,
-                    ItemAttributes = item.ItemAttributes,
+                    Variants = MapToItemVariantDtos(item.Variants),
+                    ItemAttributes = MapToItemAttributeDtos(item.ItemAttributes),
                     CreatedAt = item.CreatedAt,
                     UpdatedAt = item.UpdatedAt,
                     Deleted = item.Deleted
@@ -365,8 +365,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     Description_en = item.Description_en,
                     Description_fr = item.Description_fr,
                     CategoryID = item.CategoryID,
-                    Variants = item.Variants,
-                    ItemAttributes = item.ItemAttributes,
+                    Variants = MapToItemVariantDtos(item.Variants),
+                    ItemAttributes = MapToItemAttributeDtos(item.ItemAttributes),
                     CreatedAt = item.CreatedAt,
                     UpdatedAt = item.UpdatedAt,
                     Deleted = item.Deleted
@@ -394,8 +394,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     Description_en = item.Description_en,
                     Description_fr = item.Description_fr,
                     CategoryID = item.CategoryID,
-                    Variants = item.Variants,
-                    ItemAttributes = item.ItemAttributes,
+                    Variants = MapToItemVariantDtos(item.Variants),
+                    ItemAttributes = MapToItemAttributeDtos(item.ItemAttributes),
                     CreatedAt = item.CreatedAt,
                     UpdatedAt = item.UpdatedAt,
                     Deleted = item.Deleted
@@ -446,8 +446,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     Description_en = updatedItem.Description_en,
                     Description_fr = updatedItem.Description_fr,
                     CategoryID = updatedItem.CategoryID,
-                    Variants = updatedItem.Variants,
-                    ItemAttributes = updatedItem.ItemAttributes,
+                    Variants = MapToItemVariantDtos(updatedItem.Variants),
+                    ItemAttributes = MapToItemAttributeDtos(updatedItem.ItemAttributes),
                     CreatedAt = updatedItem.CreatedAt,
                     UpdatedAt = updatedItem.UpdatedAt,
                     Deleted = updatedItem.Deleted
@@ -512,6 +512,60 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             {
                 return Result.Failure<DeleteItemVariantResponse>($"An error occurred while deleting the item variant: {ex.Message}", StatusCodes.Status500InternalServerError);
             }
+        }
+
+        // Helper methods for mapping entities to DTOs
+        private static ItemVariantAttributeDto MapToItemVariantAttributeDto(ItemVariantAttribute attribute)
+        {
+            return new ItemVariantAttributeDto
+            {
+                Id = attribute.Id,
+                AttributeName_en = attribute.AttributeName_en,
+                AttributeName_fr = attribute.AttributeName_fr,
+                Attributes_en = attribute.Attributes_en,
+                Attributes_fr = attribute.Attributes_fr
+            };
+        }
+
+        private static ItemVariantDto MapToItemVariantDto(ItemVariant variant)
+        {
+            return new ItemVariantDto
+            {
+                Id = variant.Id,
+                Price = variant.Price,
+                StockQuantity = variant.StockQuantity,
+                Sku = variant.Sku,
+                ProductIdentifierType = variant.ProductIdentifierType,
+                ProductIdentifierValue = variant.ProductIdentifierValue,
+                ImageUrls = variant.ImageUrls,
+                ThumbnailUrl = variant.ThumbnailUrl,
+                ItemVariantName_en = variant.ItemVariantName_en,
+                ItemVariantName_fr = variant.ItemVariantName_fr,
+                ItemVariantAttributes = variant.ItemVariantAttributes.Select(MapToItemVariantAttributeDto).ToList(),
+                Deleted = variant.Deleted
+            };
+        }
+
+        private static ItemAttributeDto MapToItemAttributeDto(ItemAttribute attribute)
+        {
+            return new ItemAttributeDto
+            {
+                Id = attribute.Id,
+                AttributeName_en = attribute.AttributeName_en,
+                AttributeName_fr = attribute.AttributeName_fr,
+                Attributes_en = attribute.Attributes_en,
+                Attributes_fr = attribute.Attributes_fr
+            };
+        }
+
+        private static List<ItemVariantDto> MapToItemVariantDtos(List<ItemVariant> variants)
+        {
+            return variants.Select(MapToItemVariantDto).ToList();
+        }
+
+        private static List<ItemAttributeDto> MapToItemAttributeDtos(List<ItemAttribute> attributes)
+        {
+            return attributes.Select(MapToItemAttributeDto).ToList();
         }
     }
 }

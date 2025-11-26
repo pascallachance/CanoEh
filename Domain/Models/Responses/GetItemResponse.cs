@@ -1,5 +1,3 @@
-using Infrastructure.Data;
-
 namespace Domain.Models.Responses
 {
     public class GetItemResponse
@@ -11,8 +9,8 @@ namespace Domain.Models.Responses
         public string? Description_en { get; set; }
         public string? Description_fr { get; set; }
         public Guid CategoryID { get; set; }
-        public List<ItemVariant> Variants { get; set; } = new();
-        public List<ItemAttribute> ItemAttributes { get; set; } = new();
+        public List<ItemVariantDto> Variants { get; set; } = new();
+        public List<ItemAttributeDto> ItemAttributes { get; set; } = new();
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool Deleted { get; set; }

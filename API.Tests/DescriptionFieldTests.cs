@@ -130,8 +130,8 @@ namespace API.Tests
                 Description_en = description_en,
                 Description_fr = description_fr,
                 CategoryID = Guid.NewGuid(),
-                Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>(),
+                Variants = new List<ItemVariantDto>(),
+                ItemAttributes = new List<ItemAttributeDto>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false

@@ -15,7 +15,7 @@ namespace Infrastructure.Repositories.Implementations
             }
 
             var query = @"
-INSERT INTO dbo.Categories (Name_en, Name_fr, ParentCategoryId, CreatedAt)
+INSERT INTO dbo.Category (Name_en, Name_fr, ParentCategoryId, CreatedAt)
 OUTPUT INSERTED.Id
 VALUES (@Name_en, @Name_fr, @ParentCategoryId, @CreatedAt)";
 
@@ -64,7 +64,7 @@ VALUES (@Name_en, @Name_fr, @ParentCategoryId, @CreatedAt)";
                 throw new InvalidOperationException("Cannot delete category that has items.");
             }
 
-            var query = "DELETE FROM dbo.Categories WHERE Id = @Id";
+            var query = "DELETE FROM dbo.Category WHERE Id = @Id";
             await dbConnection.ExecuteAsync(query, new { entity.Id });
         }
 
@@ -74,7 +74,7 @@ VALUES (@Name_en, @Name_fr, @ParentCategoryId, @CreatedAt)";
             {
                 dbConnection.Open();
             }
-            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.Categories WHERE Id = @id", new { id });
+            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.Category WHERE Id = @id", new { id });
         }
 
         public override async Task<IEnumerable<Category>> FindAsync(Func<Category, bool> predicate)
@@ -96,7 +96,7 @@ VALUES (@Name_en, @Name_fr, @ParentCategoryId, @CreatedAt)";
 
             var query = @"
 SELECT Id, Name_en, Name_fr, ParentCategoryId, CreatedAt, UpdatedAt
-FROM dbo.Categories
+FROM dbo.Category
 ORDER BY Name_en";
 
             var categoriesData = await dbConnection.QueryAsync<CategoryDto>(query);
@@ -137,7 +137,7 @@ ORDER BY Name_en";
             }
 
             var query = @"
-UPDATE dbo.Categories
+UPDATE dbo.Category
 SET Name_en = @Name_en,
     Name_fr = @Name_fr,
     ParentCategoryId = @ParentCategoryId,
@@ -167,7 +167,7 @@ WHERE Id = @Id";
 
             var query = @"
 SELECT Id, Name_en, Name_fr, ParentCategoryId, CreatedAt, UpdatedAt
-FROM dbo.Categories
+FROM dbo.Category
 WHERE Id = @id";
 
             var dto = await dbConnection.QueryFirstOrDefaultAsync<CategoryDto>(query, new { id });
@@ -195,7 +195,7 @@ WHERE Id = @id";
 
             var query = @"
 SELECT Id, Name_en, Name_fr, ParentCategoryId, CreatedAt, UpdatedAt
-FROM dbo.Categories
+FROM dbo.Category
 WHERE ParentCategoryId IS NULL
 ORDER BY Name_en";
 
@@ -221,7 +221,7 @@ ORDER BY Name_en";
 
             var query = @"
 SELECT Id, Name_en, Name_fr, ParentCategoryId, CreatedAt, UpdatedAt
-FROM dbo.Categories
+FROM dbo.Category
 WHERE ParentCategoryId = @parentCategoryId
 ORDER BY Name_en";
 
@@ -245,7 +245,7 @@ ORDER BY Name_en";
                 dbConnection.Open();
             }
 
-            var query = "SELECT COUNT(1) FROM dbo.Categories WHERE ParentCategoryId = @categoryId";
+            var query = "SELECT COUNT(1) FROM dbo.Category WHERE ParentCategoryId = @categoryId";
             var count = await dbConnection.ExecuteScalarAsync<int>(query, new { categoryId });
             return count > 0;
         }
@@ -275,13 +275,13 @@ ORDER BY Name_en";
             var query = @"
 WITH CategoryAncestors AS (
     SELECT Id, ParentCategoryId
-    FROM dbo.Categories
+    FROM dbo.Category
     WHERE Id = @proposedParentId
     
     UNION ALL
     
     SELECT c.Id, c.ParentCategoryId
-    FROM dbo.Categories c
+    FROM dbo.Category c
     INNER JOIN CategoryAncestors ca ON c.Id = ca.ParentCategoryId
 )
 SELECT COUNT(1)

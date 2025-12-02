@@ -26,13 +26,13 @@ The following fields need to be added to the `Users` table:
 
 ```sql
 -- Add refresh token fields to Users table
-ALTER TABLE dbo.Users 
+ALTER TABLE dbo.User 
 ADD refreshToken NVARCHAR(255) NULL,
     refreshTokenExpiry DATETIME2 NULL;
 
 -- Add index for performance on token lookups
 CREATE INDEX IX_Users_RefreshToken 
-ON dbo.Users (refreshToken)
+ON dbo.User (refreshToken)
 WHERE refreshToken IS NOT NULL;
 ```
 
@@ -133,7 +133,7 @@ Expired tokens can be cleaned up with a periodic job:
 
 ```sql
 -- Clean up expired refresh tokens (optional maintenance)
-UPDATE dbo.Users 
+UPDATE dbo.User 
 SET refreshToken = NULL, 
     refreshTokenExpiry = NULL
 WHERE refreshTokenExpiry < GETUTCDATE();

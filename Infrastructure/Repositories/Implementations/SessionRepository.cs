@@ -14,7 +14,7 @@ namespace Infrastructure.Repositories.Implementations
                 dbConnection.Open();
             }
             var query = @"
-INSERT INTO dbo.Sessions (
+INSERT INTO dbo.Session (
     SessionId,
     UserId, 
     CreatedAt, 
@@ -52,7 +52,7 @@ VALUES (
                 dbConnection.Open();
             }
             var query = @"
-UPDATE dbo.Sessions
+UPDATE dbo.Session
 SET
     UserId = @UserId,
     CreatedAt = @CreatedAt,
@@ -91,7 +91,7 @@ WHERE SessionId = @SessionId";
             }
             var query = @"
 SELECT TOP(1) * 
-FROM dbo.Sessions 
+FROM dbo.Session 
 WHERE SessionId = @id";
             return await dbConnection.QueryFirstAsync<Session>(query, new { id });
         }
@@ -102,7 +102,7 @@ WHERE SessionId = @id";
             {
                 dbConnection.Open();
             }
-            return await dbConnection.QueryAsync<Session>("SELECT * FROM dbo.Sessions");
+            return await dbConnection.QueryAsync<Session>("SELECT * FROM dbo.Session");
         }
 
         public override async Task<IEnumerable<Session>> FindAsync(Func<Session, bool> predicate)
@@ -111,7 +111,7 @@ WHERE SessionId = @id";
             {
                 dbConnection.Open();
             }
-            var sessions = await dbConnection.QueryAsync<Session>("SELECT * FROM dbo.Sessions");
+            var sessions = await dbConnection.QueryAsync<Session>("SELECT * FROM dbo.Session");
             return sessions.Where(predicate);
         }
 
@@ -121,7 +121,7 @@ WHERE SessionId = @id";
             {
                 dbConnection.Open();
             }
-            var sessions = await dbConnection.QueryAsync<Session>("SELECT * FROM dbo.Sessions");
+            var sessions = await dbConnection.QueryAsync<Session>("SELECT * FROM dbo.Session");
             return sessions.Count(predicate);
         }
 
@@ -131,7 +131,7 @@ WHERE SessionId = @id";
             {
                 dbConnection.Open();
             }
-            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.Sessions WHERE SessionId = @id", new { id });
+            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.Session WHERE SessionId = @id", new { id });
         }
 
         // ISessionRepository specific methods
@@ -143,7 +143,7 @@ WHERE SessionId = @id";
             }
             var query = @"
 SELECT TOP(1) * 
-FROM dbo.Sessions 
+FROM dbo.Session 
 WHERE SessionId = @sessionId";
             return await dbConnection.QueryFirstOrDefaultAsync<Session>(query, new { sessionId });
         }
@@ -156,7 +156,7 @@ WHERE SessionId = @sessionId";
             }
             var query = @"
 SELECT * 
-FROM dbo.Sessions 
+FROM dbo.Session 
 WHERE UserId = @userId
 ORDER BY CreatedAt DESC";
             return await dbConnection.QueryAsync<Session>(query, new { userId });
@@ -170,7 +170,7 @@ ORDER BY CreatedAt DESC";
             }
             var query = @"
 SELECT * 
-FROM dbo.Sessions 
+FROM dbo.Session 
 WHERE UserId = @userId 
     AND LoggedOutAt IS NULL 
     AND ExpiresAt > @now
@@ -185,7 +185,7 @@ ORDER BY CreatedAt DESC";
                 dbConnection.Open();
             }
             var query = @"
-UPDATE dbo.Sessions
+UPDATE dbo.Session
 SET LoggedOutAt = @loggedOutAt
 WHERE SessionId = @sessionId";
 
@@ -203,7 +203,7 @@ WHERE SessionId = @sessionId";
             }
             var query = @"
 SELECT COUNT(1) 
-FROM dbo.Sessions 
+FROM dbo.Session 
 WHERE SessionId = @sessionId 
     AND LoggedOutAt IS NULL 
     AND ExpiresAt > @now";

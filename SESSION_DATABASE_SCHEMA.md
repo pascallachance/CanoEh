@@ -6,7 +6,7 @@ This file contains the SQL scripts required to create the Sessions table for the
 
 ```sql
 -- Create Sessions table
-CREATE TABLE dbo.Sessions (
+CREATE TABLE dbo.Session (
     SessionId UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     UserId UNIQUEIDENTIFIER NOT NULL,
     CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
@@ -17,7 +17,7 @@ CREATE TABLE dbo.Sessions (
     
     -- Foreign key constraint
     CONSTRAINT FK_Sessions_Users FOREIGN KEY (UserId) 
-        REFERENCES dbo.Users(ID) ON DELETE CASCADE,
+        REFERENCES dbo.User(ID) ON DELETE CASCADE,
         
     -- Index for performance
     INDEX IX_Sessions_UserId (UserId),
@@ -57,7 +57,7 @@ To clean up expired sessions (can be run as a scheduled job):
 
 ```sql
 -- Delete expired sessions older than 30 days
-DELETE FROM dbo.Sessions 
+DELETE FROM dbo.Session 
 WHERE ExpiresAt < DATEADD(DAY, -30, GETUTCDATE());
 ```
 

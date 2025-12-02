@@ -26,13 +26,13 @@ The following fields need to be added to the `Users` table:
 
 ```sql
 -- Add restore user token fields to Users table
-ALTER TABLE dbo.Users 
+ALTER TABLE dbo.User 
 ADD restoreUserToken NVARCHAR(255) NULL,
     restoreUserTokenExpiry DATETIME2 NULL;
 
 -- Add index for performance on token lookups
 CREATE INDEX IX_Users_RestoreUserToken 
-ON dbo.Users (restoreUserToken)
+ON dbo.User (restoreUserToken)
 WHERE restoreUserToken IS NOT NULL;
 ```
 
@@ -91,7 +91,7 @@ Expired tokens can be cleaned up with a periodic job:
 
 ```sql
 -- Clean up expired restore tokens (optional maintenance)
-UPDATE dbo.Users 
+UPDATE dbo.User 
 SET restoreUserToken = NULL, 
     restoreUserTokenExpiry = NULL
 WHERE restoreUserTokenExpiry < GETUTCDATE();

@@ -31,7 +31,7 @@ ADD restoreUserToken NVARCHAR(255) NULL,
     restoreUserTokenExpiry DATETIME2 NULL;
 
 -- Add index for performance on token lookups
-CREATE INDEX IX_Users_RestoreUserToken 
+CREATE INDEX IX_User_RestoreUserToken 
 ON dbo.User (restoreUserToken)
 WHERE restoreUserToken IS NOT NULL;
 ```

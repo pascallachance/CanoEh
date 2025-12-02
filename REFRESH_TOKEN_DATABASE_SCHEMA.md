@@ -31,7 +31,7 @@ ADD refreshToken NVARCHAR(255) NULL,
     refreshTokenExpiry DATETIME2 NULL;
 
 -- Add index for performance on token lookups
-CREATE INDEX IX_Users_RefreshToken 
+CREATE INDEX IX_User_RefreshToken 
 ON dbo.User (refreshToken)
 WHERE refreshToken IS NOT NULL;
 ```

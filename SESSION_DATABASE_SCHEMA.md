@@ -1,11 +1,11 @@
 # Session Management Database Schema
 
-This file contains the SQL scripts required to create the Sessions table for the session management functionality.
+This file contains the SQL scripts required to create the Session table for the session management functionality.
 
-## Sessions Table Creation Script
+## Session Table Creation Script
 
 ```sql
--- Create Sessions table
+-- Create Session table
 CREATE TABLE dbo.Session (
     SessionId UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     UserId UNIQUEIDENTIFIER NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE dbo.Session (
 ## Column Descriptions
 
 - **SessionId**: Unique identifier for each session (Primary Key)
-- **UserId**: Foreign key reference to the Users table
+- **UserId**: Foreign key reference to the User table
 - **CreatedAt**: Timestamp when the session was created (UTC)
 - **LoggedOutAt**: Timestamp when the user logged out (NULL if still active)
 - **ExpiresAt**: Timestamp when the session expires (UTC)

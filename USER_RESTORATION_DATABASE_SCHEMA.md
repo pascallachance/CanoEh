@@ -4,11 +4,11 @@ This document describes the database schema changes required for the User Restor
 
 ## Overview
 
-The User Restoration feature allows deleted users to restore their accounts via email verification. This requires adding two new fields to the existing `Users` table.
+The User Restoration feature allows deleted users to restore their accounts via email verification. This requires adding two new fields to the existing `User` table.
 
 ## Database Changes Required
 
-The following fields need to be added to the `Users` table:
+The following fields need to be added to the `User` table:
 
 ### New Columns
 
@@ -25,14 +25,14 @@ The following fields need to be added to the `Users` table:
 ## SQL Script to Add Columns
 
 ```sql
--- Add restore user token fields to Users table
-ALTER TABLE dbo.Users 
+-- Add restore user token fields to User table
+ALTER TABLE dbo.User 
 ADD restoreUserToken NVARCHAR(255) NULL,
     restoreUserTokenExpiry DATETIME2 NULL;
 
 -- Add index for performance on token lookups
-CREATE INDEX IX_Users_RestoreUserToken 
-ON dbo.Users (restoreUserToken)
+CREATE INDEX IX_User_RestoreUserToken 
+ON dbo.User (restoreUserToken)
 WHERE restoreUserToken IS NOT NULL;
 ```
 
@@ -91,7 +91,7 @@ Expired tokens can be cleaned up with a periodic job:
 
 ```sql
 -- Clean up expired restore tokens (optional maintenance)
-UPDATE dbo.Users 
+UPDATE dbo.User 
 SET restoreUserToken = NULL, 
     restoreUserTokenExpiry = NULL
 WHERE restoreUserTokenExpiry < GETUTCDATE();

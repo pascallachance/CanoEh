@@ -4,11 +4,11 @@ This document describes the database schema changes required for the Refresh Tok
 
 ## Overview
 
-The Refresh Token feature enables persistent authentication by allowing users to stay logged in across browser sessions. This requires adding two new fields to the existing `Users` table to store refresh tokens securely.
+The Refresh Token feature enables persistent authentication by allowing users to stay logged in across browser sessions. This requires adding two new fields to the existing `User` table to store refresh tokens securely.
 
 ## Database Changes Required
 
-The following fields need to be added to the `Users` table:
+The following fields need to be added to the `User` table:
 
 ### New Columns
 
@@ -25,14 +25,14 @@ The following fields need to be added to the `Users` table:
 ## SQL Script to Add Columns
 
 ```sql
--- Add refresh token fields to Users table
-ALTER TABLE dbo.Users 
+-- Add refresh token fields to User table
+ALTER TABLE dbo.User 
 ADD refreshToken NVARCHAR(255) NULL,
     refreshTokenExpiry DATETIME2 NULL;
 
 -- Add index for performance on token lookups
-CREATE INDEX IX_Users_RefreshToken 
-ON dbo.Users (refreshToken)
+CREATE INDEX IX_User_RefreshToken 
+ON dbo.User (refreshToken)
 WHERE refreshToken IS NOT NULL;
 ```
 
@@ -133,7 +133,7 @@ Expired tokens can be cleaned up with a periodic job:
 
 ```sql
 -- Clean up expired refresh tokens (optional maintenance)
-UPDATE dbo.Users 
+UPDATE dbo.User 
 SET refreshToken = NULL, 
     refreshTokenExpiry = NULL
 WHERE refreshTokenExpiry < GETUTCDATE();

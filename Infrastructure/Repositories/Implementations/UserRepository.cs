@@ -15,7 +15,7 @@ namespace Infrastructure.Repositories.Implementations
                 dbConnection.Open();
             }
             var query = @"
-INSERT INTO dbo.Users (
+INSERT INTO dbo.User (
     email,
     firstname, 
     lastname, 
@@ -66,7 +66,7 @@ VALUES (
             {
                 dbConnection.Open();
             }
-            var users = await dbConnection.QueryAsync<User>("SELECT * FROM dbo.Users");
+            var users = await dbConnection.QueryAsync<User>("SELECT * FROM dbo.User");
             return users.Count(predicate);
         }
 
@@ -86,7 +86,7 @@ VALUES (
             {
                 dbConnection.Open();
             }
-            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.Users WHERE id = @id", new { id });
+            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.User WHERE id = @id", new { id });
         }
 
         public override async Task<IEnumerable<User>> FindAsync(Func<User, bool> predicate)
@@ -95,7 +95,7 @@ VALUES (
             {
                 dbConnection.Open();
             }
-            var users = await dbConnection.QueryAsync<User>("SELECT * FROM dbo.Users");
+            var users = await dbConnection.QueryAsync<User>("SELECT * FROM dbo.User");
             return users.Where(predicate);
         }
 
@@ -105,7 +105,7 @@ VALUES (
             {
                 dbConnection.Open();
             }
-            return await dbConnection.QueryAsync<User>("SELECT * FROM dbo.Users");
+            return await dbConnection.QueryAsync<User>("SELECT * FROM dbo.User");
         }
 
         public override async Task<User> GetByIdAsync(Guid id)
@@ -116,7 +116,7 @@ VALUES (
             }
             var query = @"
 SELECT TOP(1) * 
-FROM dbo.Users 
+FROM dbo.User 
 WHERE id = @id";
             return await dbConnection.QueryFirstAsync<User>(query, new { id });
         }
@@ -128,22 +128,22 @@ WHERE id = @id";
                 dbConnection.Open();
             }
             var query = @"
-UPDATE dbo.Users
+UPDATE dbo.User
 SET
-     dbo.Users.firstname = @firstname,
-    dbo.Users.lastname = @lastname,
-    dbo.Users.email = @email,
-    dbo.Users.phone = @phone,
-    dbo.Users.lastlogin = @lastlogin,
-    dbo.Users.lastupdatedat = @lastupdatedat,
-    dbo.Users.deleted = @deleted,
-    dbo.Users.validemail = @validemail,
-    dbo.Users.emailValidationToken = @emailValidationToken,
-    dbo.Users.passwordResetToken = @passwordResetToken,
-    dbo.Users.passwordResetTokenExpiry = @passwordResetTokenExpiry,
-    dbo.Users.restoreUserToken = @restoreUserToken,
-    dbo.Users.restoreUserTokenExpiry = @restoreUserTokenExpiry
-WHERE dbo.Users.id = @id";
+     dbo.User.firstname = @firstname,
+    dbo.User.lastname = @lastname,
+    dbo.User.email = @email,
+    dbo.User.phone = @phone,
+    dbo.User.lastlogin = @lastlogin,
+    dbo.User.lastupdatedat = @lastupdatedat,
+    dbo.User.deleted = @deleted,
+    dbo.User.validemail = @validemail,
+    dbo.User.emailValidationToken = @emailValidationToken,
+    dbo.User.passwordResetToken = @passwordResetToken,
+    dbo.User.passwordResetTokenExpiry = @passwordResetTokenExpiry,
+    dbo.User.restoreUserToken = @restoreUserToken,
+    dbo.User.restoreUserTokenExpiry = @restoreUserTokenExpiry
+WHERE dbo.User.id = @id";
 
             var parameters = new
             {
@@ -176,7 +176,7 @@ WHERE dbo.Users.id = @id";
             }
             var query = @"
 SELECT TOP(1) * 
-FROM dbo.Users 
+FROM dbo.User 
 WHERE email = @email AND deleted = 0";
             return await dbConnection.QueryFirstOrDefaultAsync<User>(query, new { email });
         }
@@ -189,7 +189,7 @@ WHERE email = @email AND deleted = 0";
             }
             var query = @"
 SELECT * 
-FROM dbo.Users 
+FROM dbo.User 
 WHERE deleted = @deleted";
             return await dbConnection.QueryAsync<User>(query, new { deleted });
         }
@@ -200,7 +200,7 @@ WHERE deleted = @deleted";
             {
                 dbConnection.Open();
             }
-            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.Users WHERE email = @email AND deleted = 0", new { email });
+            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.User WHERE email = @email AND deleted = 0", new { email });
         }
 
         public async Task<User?> FindByEmailValidationTokenAsync(string token)
@@ -211,7 +211,7 @@ WHERE deleted = @deleted";
             }
             var query = @"
 SELECT TOP(1) * 
-FROM dbo.Users 
+FROM dbo.User 
 WHERE emailValidationToken = @token AND deleted = 0";
             return await dbConnection.QueryFirstOrDefaultAsync<User>(query, new { token });
         }
@@ -224,7 +224,7 @@ WHERE emailValidationToken = @token AND deleted = 0";
             }
             var query = @"
 SELECT TOP(1) * 
-FROM dbo.Users 
+FROM dbo.User 
 WHERE passwordResetToken = @token AND deleted = 0 AND passwordResetTokenExpiry > @now";
             return await dbConnection.QueryFirstOrDefaultAsync<User>(query, new { token, now = DateTime.UtcNow });
         }
@@ -236,7 +236,7 @@ WHERE passwordResetToken = @token AND deleted = 0 AND passwordResetTokenExpiry >
                 dbConnection.Open();
             }
             var query = @"
-UPDATE dbo.Users 
+UPDATE dbo.User 
 SET passwordResetToken = @token, passwordResetTokenExpiry = @expiry, lastupdatedat = @now
 WHERE email = @email AND deleted = 0";
             var rowsAffected = await dbConnection.ExecuteAsync(query, new { email, token, expiry, now = DateTime.UtcNow });
@@ -250,7 +250,7 @@ WHERE email = @email AND deleted = 0";
                 dbConnection.Open();
             }
             var query = @"
-UPDATE dbo.Users 
+UPDATE dbo.User 
 SET passwordResetToken = NULL, passwordResetTokenExpiry = NULL, lastupdatedat = @now
 WHERE email = @email AND deleted = 0";
             var rowsAffected = await dbConnection.ExecuteAsync(query, new { email, now = DateTime.UtcNow });
@@ -265,7 +265,7 @@ WHERE email = @email AND deleted = 0";
             }
             var query = @"
 SELECT TOP(1) * 
-FROM dbo.Users 
+FROM dbo.User 
 WHERE email = @email AND deleted = 1";
             return await dbConnection.QueryFirstOrDefaultAsync<User>(query, new { email });
         }
@@ -278,7 +278,7 @@ WHERE email = @email AND deleted = 1";
             }
             var query = @"
 SELECT TOP(1) * 
-FROM dbo.Users 
+FROM dbo.User 
 WHERE restoreUserToken = @token AND deleted = 1 AND restoreUserTokenExpiry > @now";
             return await dbConnection.QueryFirstOrDefaultAsync<User>(query, new { token, now = DateTime.UtcNow });
         }
@@ -290,7 +290,7 @@ WHERE restoreUserToken = @token AND deleted = 1 AND restoreUserTokenExpiry > @no
                 dbConnection.Open();
             }
             var query = @"
-UPDATE dbo.Users 
+UPDATE dbo.User 
 SET restoreUserToken = @token, restoreUserTokenExpiry = @expiry, lastupdatedat = @now
 WHERE email = @email AND deleted = 1";
             var rowsAffected = await dbConnection.ExecuteAsync(query, new { email, token, expiry, now = DateTime.UtcNow });
@@ -304,7 +304,7 @@ WHERE email = @email AND deleted = 1";
                 dbConnection.Open();
             }
             var query = @"
-UPDATE dbo.Users 
+UPDATE dbo.User 
 SET deleted = 0, restoreUserToken = NULL, restoreUserTokenExpiry = NULL, lastupdatedat = @now
 WHERE restoreUserToken = @token AND deleted = 1 AND restoreUserTokenExpiry > @now";
             var rowsAffected = await dbConnection.ExecuteAsync(query, new { token, now = DateTime.UtcNow });
@@ -319,7 +319,7 @@ WHERE restoreUserToken = @token AND deleted = 1 AND restoreUserTokenExpiry > @no
             }
             var query = @"
 SELECT TOP(1) * 
-FROM dbo.Users 
+FROM dbo.User 
 WHERE refreshToken = @refreshToken AND deleted = 0 AND refreshTokenExpiry > @now";
             return await dbConnection.QueryFirstOrDefaultAsync<User>(query, new { refreshToken, now = DateTime.UtcNow });
         }
@@ -331,7 +331,7 @@ WHERE refreshToken = @refreshToken AND deleted = 0 AND refreshTokenExpiry > @now
                 dbConnection.Open();
             }
             var query = @"
-UPDATE dbo.Users 
+UPDATE dbo.User 
 SET refreshToken = @refreshToken, refreshTokenExpiry = @expiry, lastupdatedat = @now
 WHERE email = @email AND deleted = 0";
             var rowsAffected = await dbConnection.ExecuteAsync(query, new { email, refreshToken, expiry, now = DateTime.UtcNow });
@@ -345,7 +345,7 @@ WHERE email = @email AND deleted = 0";
                 dbConnection.Open();
             }
             var query = @"
-UPDATE dbo.Users 
+UPDATE dbo.User 
 SET refreshToken = NULL, refreshTokenExpiry = NULL, lastupdatedat = @now
 WHERE email = @email AND deleted = 0";
             var rowsAffected = await dbConnection.ExecuteAsync(query, new { email, now = DateTime.UtcNow });

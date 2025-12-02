@@ -16,14 +16,14 @@ CREATE TABLE dbo.Session (
     IpAddress NVARCHAR(45) NULL, -- Supports both IPv4 and IPv6
     
     -- Foreign key constraint
-    CONSTRAINT FK_Sessions_Users FOREIGN KEY (UserId) 
+    CONSTRAINT FK_Session_User FOREIGN KEY (UserId) 
         REFERENCES dbo.User(ID) ON DELETE CASCADE,
         
     -- Index for performance
-    INDEX IX_Sessions_UserId (UserId),
-    INDEX IX_Sessions_CreatedAt (CreatedAt),
-    INDEX IX_Sessions_ExpiresAt (ExpiresAt),
-    INDEX IX_Sessions_Active (UserId, LoggedOutAt, ExpiresAt) 
+    INDEX IX_Session_UserId (UserId),
+    INDEX IX_Session_CreatedAt (CreatedAt),
+    INDEX IX_Session_ExpiresAt (ExpiresAt),
+    INDEX IX_Session_Active (UserId, LoggedOutAt, ExpiresAt) 
         WHERE LoggedOutAt IS NULL AND ExpiresAt > GETUTCDATE()
 );
 ```
@@ -40,10 +40,10 @@ CREATE TABLE dbo.Session (
 
 ## Indexes
 
-1. **IX_Sessions_UserId**: For finding sessions by user
-2. **IX_Sessions_CreatedAt**: For sorting sessions by creation time
-3. **IX_Sessions_ExpiresAt**: For cleanup of expired sessions
-4. **IX_Sessions_Active**: Composite index for efficiently finding active sessions
+1. **IX_Session_UserId**: For finding sessions by user
+2. **IX_Session_CreatedAt**: For sorting sessions by creation time
+3. **IX_Session_ExpiresAt**: For cleanup of expired sessions
+4. **IX_Session_Active**: Composite index for efficiently finding active sessions
 
 ## Session States
 

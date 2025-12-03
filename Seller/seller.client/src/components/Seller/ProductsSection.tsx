@@ -309,11 +309,20 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
         setExpandedItemId(null);
     }, [currentPage]);
 
+    // Sort items by name based on current language
+    const sortedItems = useMemo(() => {
+        return [...sellerItems].sort((a, b) => {
+            const nameA = language === 'fr' ? a.name_fr : a.name_en;
+            const nameB = language === 'fr' ? b.name_fr : b.name_en;
+            return nameA.localeCompare(nameB, language === 'fr' ? 'fr' : 'en', { sensitivity: 'base' });
+        });
+    }, [sellerItems, language]);
+
     // Pagination calculations
-    const totalPages = Math.ceil(sellerItems.length / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(sortedItems.length / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
-    const paginatedItems = sellerItems.slice(startIndex, endIndex);
+    const paginatedItems = sortedItems.slice(startIndex, endIndex);
 
     // Toggle expanded row
     const toggleExpandedRow = (itemId: string) => {

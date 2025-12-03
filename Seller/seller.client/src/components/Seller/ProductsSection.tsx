@@ -257,7 +257,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
             if (response.ok) {
                 const result = await response.json();
                 // The API returns Result<List<GetItemResponse>> with value property
-                const fetchedItems = result.value || result || [];
+                const fetchedItems = Array.isArray(result?.value) ? result.value : Array.isArray(result) ? result : [];
                 setSellerItems(fetchedItems);
             } else {
                 const errorText = await response.text();
@@ -284,6 +284,16 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [companies.length]);
+
+    // Reset to page 1 when seller items change (e.g., after creating a new item)
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [sellerItems.length]);
+
+    // Reset expanded state when navigating to a different page
+    useEffect(() => {
+        setExpandedItemId(null);
+    }, [currentPage]);
 
     // Pagination calculations
     const totalPages = Math.ceil(sellerItems.length / ITEMS_PER_PAGE);
@@ -1226,6 +1236,15 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                                 <tr 
                                                     className={`products-list-row ${expandedItemId === item.id ? 'expanded' : ''}`}
                                                     onClick={() => toggleExpandedRow(item.id)}
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    aria-expanded={expandedItemId === item.id}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' || e.key === ' ') {
+                                                            e.preventDefault();
+                                                            toggleExpandedRow(item.id);
+                                                        }
+                                                    }}
                                                 >
                                                     <td>{getItemName(item)}</td>
                                                     <td>{getCategoryName(item.categoryID)}</td>
@@ -1235,7 +1254,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                                 {expandedItemId === item.id && (
                                                     <tr className="products-variants-row">
                                                         <td colSpan={4}>
-                                                            {(item.variants && item.variants.filter(v => !v.deleted).length > 0) ? (
+                                                            {item.variants && item.variants.filter(v => !v.deleted).length > 0 ? (
                                                                 <div className="products-variants-expanded">
                                                                     <table className="products-variants-inner-table">
                                                                         <thead>

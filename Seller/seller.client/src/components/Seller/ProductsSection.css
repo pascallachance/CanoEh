@@ -695,8 +695,35 @@
         font-size: 0.9rem;
     }
 
+    .products-variants-inner-table th,
+    .products-variants-inner-table td {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.85rem;
+    }
+
     .products-pagination {
         flex-direction: column;
         gap: 0.5rem;
     }
+}
+
+/* Accessibility: Focus-visible indicators for keyboard navigation */
+.products-pagination-btn:focus-visible {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
+}
+
+.products-list-row:focus-visible {
+    outline: 2px solid #007bff;
+    outline-offset: -2px;
+}
+
+/* No variants message */
+.products-no-variants {
+    padding: 1rem;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    background: #f8f9fa;
+    border-radius: 4px;
 }

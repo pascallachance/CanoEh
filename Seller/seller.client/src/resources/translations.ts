@@ -276,6 +276,14 @@ export const translations: TranslationResources = {
     en: 'Current Items',
     fr: 'Articles actuels'
   },
+  'products.list.noVariants': {
+    en: 'No variants available',
+    fr: 'Aucune variante disponible'
+  },
+  'products.error.noSellerId': {
+    en: 'Unable to determine seller ID.',
+    fr: 'Impossible de déterminer l\'ID du vendeur.'
+  },
 
   // Item Variants List
   'products.variant.name': {

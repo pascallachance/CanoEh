@@ -638,6 +638,16 @@
     transition: background-color 0.2s;
 }
 
+/* Accessibility: Focus-visible indicators for keyboard navigation */
+.products-pagination-btn:focus-visible {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
+}
+
+.products-list-row:focus-visible {
+    outline: 2px solid #007bff;
+    outline-offset: -2px;
+}
 .products-pagination-btn:hover:not(:disabled) {
     background: #0056b3;
 }

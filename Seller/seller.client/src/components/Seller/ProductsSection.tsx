@@ -10,8 +10,7 @@ import {
     validateBilingualArraySync,
     formatAttributeDisplay,
     formatAttributeName,
-    formatVariantAttribute,
-    formatItemAttribute
+    formatVariantAttribute
 } from '../../utils/bilingualArrayUtils';
 
 
@@ -67,25 +66,50 @@ interface Category {
     updatedAt?: string;
 }
 
-interface Item {
+// API response types for fetched items
+interface ApiItemVariant {
     id: string;
-    name: string;
+    price: number;
+    stockQuantity: number;
+    sku: string;
+    productIdentifierType?: string;
+    productIdentifierValue?: string;
+    imageUrls?: string;
+    thumbnailUrl?: string;
+    itemVariantName_en?: string;
+    itemVariantName_fr?: string;
+    deleted: boolean;
+}
+
+interface ApiItem {
+    id: string;
+    sellerID: string;
+    name_en: string;
     name_fr: string;
-    description: string;
-    description_fr: string;
-    categoryId: string;
-    attributes: ItemAttribute[];
-    itemAttributes: BilingualItemAttribute[];
-    variants: ItemVariant[];
+    description_en?: string;
+    description_fr?: string;
+    categoryID: string;
+    variants: ApiItemVariant[];
+    createdAt: string;
+    updatedAt?: string;
+    deleted: boolean;
 }
 
 function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: ProductsSectionProps) {
-    const [items, setItems] = useState<Item[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const { language, t } = useLanguage();
     const { showError, showSuccess } = useNotifications();
     const showAddForm = viewMode === 'add';
     const showListSection = viewMode === 'list';
+
+    // State for fetched seller items from API
+    const [sellerItems, setSellerItems] = useState<ApiItem[]>([]);
+    const [isLoadingItems, setIsLoadingItems] = useState(false);
+    const [loadItemsError, setLoadItemsError] = useState<string>('');
+    const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 25;
+
     const [newItem, setNewItem] = useState({
         name: '',
         name_fr: '',
@@ -129,24 +153,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                     });
                 }
             });
-            
-            // Clean up all object URLs from saved items when component unmounts
-            items.forEach(item => {
-                item.variants.forEach(variant => {
-                    if (variant.thumbnailUrl && variant.thumbnailUrl.startsWith('blob:')) {
-                        URL.revokeObjectURL(variant.thumbnailUrl);
-                    }
-                    if (variant.imageUrls) {
-                        variant.imageUrls.forEach(url => {
-                            if (url.startsWith('blob:')) {
-                                URL.revokeObjectURL(url);
-                            }
-                        });
-                    }
-                });
-            });
         };
-    }, [variants, items]);
+    }, [variants]);
 
     // Validation logic for save button
     const isFormInvalid = useMemo(() => {
@@ -169,21 +177,6 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
     const synchronizedAttributeValues = useMemo(() => {
         return synchronizeBilingualArrays(newAttribute.values_en, newAttribute.values_fr);
     }, [newAttribute.values_en, newAttribute.values_fr]);
-
-    // Memoized helper function to get category display for an item
-    const getCategoryDisplay = useMemo(() => {
-        return (categoryId: string) => {
-            const category = categories.find(c => c.id === categoryId);
-            const displayName = language === 'fr' 
-                ? category?.name_fr || t('common.unknown')
-                : category?.name_en || t('common.unknown');
-            return {
-                name_en: category?.name_en || t('common.unknown'),
-                name_fr: category?.name_fr || t('common.unknown'),
-                displayName
-            };
-        };
-    }, [categories, language, t]);
 
     // Memoized disabled state for "Add Attribute" button to avoid re-computation on every render
     const isAddAttributeDisabled = useMemo(() => {
@@ -243,10 +236,91 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
         ]);
     };
 
+    // Fetch seller items from API
+    const fetchSellerItems = async () => {
+        // Get seller ID from first company (assuming user owns the companies)
+        const sellerId = companies.length > 0 ? companies[0].ownerID : null;
+        if (!sellerId) {
+            setLoadItemsError('Unable to determine seller ID.');
+            return;
+        }
+
+        setIsLoadingItems(true);
+        setLoadItemsError('');
+
+        try {
+            const response = await ApiClient.get(
+                `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/GetSellerItems/${sellerId}`
+            );
+
+            if (response.ok) {
+                const result = await response.json();
+                // The API returns Result<List<GetItemResponse>> with value property
+                const fetchedItems = result.value || result || [];
+                setSellerItems(fetchedItems);
+            } else {
+                const errorText = await response.text();
+                setLoadItemsError(errorText || t('products.list.error'));
+            }
+        } catch (error) {
+            console.error('Failed to fetch seller items:', error);
+            setLoadItemsError(t('products.list.error'));
+        } finally {
+            setIsLoadingItems(false);
+        }
+    };
+
     // Load categories when component mounts
     useEffect(() => {
         fetchCategories();
     }, []);
+
+    // Load seller items when component mounts or companies change
+    useEffect(() => {
+        if (companies.length > 0) {
+            fetchSellerItems();
+        }
+    }, [companies]);
+
+    // Pagination calculations
+    const totalPages = Math.ceil(sellerItems.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const paginatedItems = sellerItems.slice(startIndex, endIndex);
+
+    // Toggle expanded row
+    const toggleExpandedRow = (itemId: string) => {
+        setExpandedItemId(prev => prev === itemId ? null : itemId);
+    };
+
+    // Get category name by ID
+    const getCategoryName = (categoryId: string): string => {
+        const category = categories.find(c => c.id === categoryId);
+        if (!category) return t('common.unknown');
+        return language === 'fr' ? category.name_fr : category.name_en;
+    };
+
+    // Get item name based on language
+    const getItemName = (item: ApiItem): string => {
+        return language === 'fr' ? item.name_fr : item.name_en;
+    };
+
+    // Get variant name based on language
+    const getVariantName = (variant: ApiItemVariant): string => {
+        const name = language === 'fr' ? variant.itemVariantName_fr : variant.itemVariantName_en;
+        return name || '-';
+    };
+
+    // Format date for display
+    const formatDate = (dateString: string | undefined): string => {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleDateString(language === 'fr' ? 'fr-CA' : 'en-CA', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    };
 
     const addAttributeValue = () => {
         setNewAttribute(prev => ({
@@ -596,22 +670,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
             );
 
             if (response.ok) {
-                const result = await response.json();
-                
-                // Add the created item to local state for immediate UI update
-                const createdItem: Item = {
-                    id: result.value?.id || `item-${Date.now()}`,
-                    name: newItem.name,
-                    name_fr: newItem.name_fr,
-                    description: newItem.description,
-                    description_fr: newItem.description_fr,
-                    categoryId: newItem.categoryId,
-                    attributes: newItem.attributes,
-                    itemAttributes: newItem.itemAttributes,
-                    variants: variants
-                };
-                
-                setItems(prev => [...prev, createdItem]);
+                // Refresh the seller items list from API
+                await fetchSellerItems();
                 
                 // Reset form
                 setNewItem({ 
@@ -644,27 +704,6 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
         } finally {
             setIsSaving(false);
         }
-    };
-
-    const deleteItem = (itemId: string) => {
-        // Find the item to delete and clean up its object URLs
-        const itemToDelete = items.find(item => item.id === itemId);
-        if (itemToDelete) {
-            itemToDelete.variants.forEach(variant => {
-                if (variant.thumbnailUrl && variant.thumbnailUrl.startsWith('blob:')) {
-                    URL.revokeObjectURL(variant.thumbnailUrl);
-                }
-                if (variant.imageUrls) {
-                    variant.imageUrls.forEach(url => {
-                        if (url.startsWith('blob:')) {
-                            URL.revokeObjectURL(url);
-                        }
-                    });
-                }
-            });
-        }
-        
-        setItems(prev => prev.filter(item => item.id !== itemId));
     };
 
     return (
@@ -1158,145 +1197,100 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
 
             {showListSection && (
                 <div className="products-list-section">
-                    <h3>Current Items ({items.length})</h3>
-                    {items.length === 0 ? (
-                        <p className="products-empty">
-                            No items added yet. Click "Add New Item" to create your first product.
-                        </p>
+                    <h3>{t('products.list.currentItems')} ({sellerItems.length})</h3>
+                    
+                    {isLoadingItems ? (
+                        <p className="products-loading">{t('products.list.loading')}</p>
+                    ) : loadItemsError ? (
+                        <p className="products-error">{loadItemsError}</p>
+                    ) : sellerItems.length === 0 ? (
+                        <p className="products-empty">{t('products.list.noItems')}</p>
                     ) : (
-                        <div className="products-items-grid">
-                            {items.map(item => {
-                                const categoryDisplay = getCategoryDisplay(item.categoryId);
-                                return (
-                                    <div key={item.id} className="products-item-card">
-                                        <div className="products-item-header">
-                                            <div className="products-item-info">
-                                                <h4>{item.name} / {item.name_fr}</h4>
-                                                <p className="products-item-description">
-                                                    <strong>EN:</strong> {item.description}<br/>
-                                                    <strong>FR:</strong> {item.description_fr}
-                                                </p>
-                                                <p className="products-item-category">
-                                                    <strong>{t('products.category')}:</strong> {categoryDisplay.displayName}
-                                                </p>
-                                            </div>
-                                        <button
-                                            onClick={() => deleteItem(item.id)}
-                                            className="products-delete-button"
-                                        >
-                                            {t('products.deleteItem')}
-                                        </button>
-                                    </div>
-                                    
-                                    {item.attributes.length > 0 && (
-                                        <div className="products-item-attributes">
-                                            <h5>{t('products.attributes')}</h5>
-                                            {item.attributes.map((attr, index) => {
-                                                const formatted = formatAttributeDisplay(attr.name_en, attr.name_fr, attr.values_en, attr.values_fr);
-                                                return (
-                                                    <div key={index} className="products-attribute-badge">
-                                                        <div><strong>EN:</strong> {formatted.en}</div>
-                                                        <div><strong>FR:</strong> {formatted.fr}</div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-
-                                    {item.itemAttributes && item.itemAttributes.length > 0 && (
-                                        <div className="products-item-attributes">
-                                            <h5>{t('products.itemAttributesTitle')}</h5>
-                                            {item.itemAttributes.map((attr, index) => {
-                                                const formatted = formatItemAttribute(attr.name_en, attr.name_fr, attr.value_en, attr.value_fr);
-                                                return (
-                                                    <div key={index} className="item-attribute-display">
-                                                        <div className="attribute-lang-pair">
-                                                            <strong>EN:</strong> {formatted.en}
-                                                        </div>
-                                                        <div className="attribute-lang-pair">
-                                                            <strong>FR:</strong> {formatted.fr}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-
-                                    <div>
-                                        <h5>Variants ({item.variants.length}):</h5>
-                                        <div className="products-variants-table-container">
-                                            <table className="products-item-variants-table">
-                                                <thead>
-                                                    <tr>
-                                                        {item.attributes.map(attr => {
-                                                            const formatted = formatAttributeName(attr.name_en, attr.name_fr);
-                                                            return (
-                                                                <th key={`${attr.name_en}-${attr.name_fr}`}>
-                                                                    <div>
-                                                                        <div><strong>EN:</strong> {formatted.en}</div>
-                                                                        <div><strong>FR:</strong> {formatted.fr}</div>
-                                                                    </div>
-                                                                </th>
-                                                            );
-                                                        })}
-                                                        <th>SKU</th>
-                                                        <th>{t('products.productIdentifierType')}</th>
-                                                        <th>{t('products.productIdentifierValue')}</th>
-                                                        <th>Price</th>
-                                                        <th>Stock</th>
-                                                        <th>{t('products.thumbnailImage')}</th>
-                                                        <th>{t('products.productImages')}</th>
+                        <>
+                            <div className="products-list-table-container">
+                                <table className="products-list-table">
+                                    <thead>
+                                        <tr>
+                                            <th>{t('products.list.itemName')}</th>
+                                            <th>{t('products.list.itemCategory')}</th>
+                                            <th>{t('products.list.creationDate')}</th>
+                                            <th>{t('products.list.lastUpdated')}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {paginatedItems.map(item => (
+                                            <>
+                                                <tr 
+                                                    key={item.id}
+                                                    className={`products-list-row ${expandedItemId === item.id ? 'expanded' : ''}`}
+                                                    onClick={() => toggleExpandedRow(item.id)}
+                                                >
+                                                    <td>{getItemName(item)}</td>
+                                                    <td>{getCategoryName(item.categoryID)}</td>
+                                                    <td>{formatDate(item.createdAt)}</td>
+                                                    <td>{formatDate(item.updatedAt)}</td>
+                                                </tr>
+                                                {expandedItemId === item.id && item.variants && item.variants.length > 0 && (
+                                                    <tr key={`${item.id}-variants`} className="products-variants-row">
+                                                        <td colSpan={4}>
+                                                            <div className="products-variants-expanded">
+                                                                <table className="products-variants-inner-table">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>{t('products.variant.name')}</th>
+                                                                            <th>{t('products.variant.price')}</th>
+                                                                            <th>{t('products.variant.stockQty')}</th>
+                                                                            <th>{t('products.variant.sku')}</th>
+                                                                            <th>{t('products.variant.productIdType')}</th>
+                                                                            <th>{t('products.variant.productIdValue')}</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {item.variants.filter(v => !v.deleted).map(variant => (
+                                                                            <tr key={variant.id}>
+                                                                                <td>{getVariantName(variant)}</td>
+                                                                                <td>${variant.price.toFixed(2)}</td>
+                                                                                <td>{variant.stockQuantity}</td>
+                                                                                <td>{variant.sku || '-'}</td>
+                                                                                <td>{variant.productIdentifierType || '-'}</td>
+                                                                                <td>{variant.productIdentifierValue || '-'}</td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </td>
                                                     </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {item.variants.map(variant => (
-                                                        <tr key={variant.id}>
-                                                            {item.attributes.map(attr => {
-                                                                const formatted = formatVariantAttribute(attr.name_en, attr.name_fr, variant.attributes_en, variant.attributes_fr);
-                                                                return (
-                                                                    <td key={`${attr.name_en}-${attr.name_fr}`}>
-                                                                        <div>
-                                                                            <div><strong>EN:</strong> {formatted.en}</div>
-                                                                            <div><strong>FR:</strong> {formatted.fr}</div>
-                                                                        </div>
-                                                                    </td>
-                                                                );
-                                                            })}
-                                                            <td>
-                                                                {variant.sku || '-'}
-                                                            </td>
-                                                            <td>
-                                                                {variant.productIdentifierType || '-'}
-                                                            </td>
-                                                            <td>
-                                                                {variant.productIdentifierValue || '-'}
-                                                            </td>
-                                                            <td>
-                                                                ${variant.price.toFixed(2)}
-                                                            </td>
-                                                            <td>
-                                                                {variant.stock}
-                                                            </td>
-                                                            <td>
-                                                                {variant.thumbnailUrl ? (
-                                                                    <img src={variant.thumbnailUrl} alt="Thumbnail" className="products-list-thumbnail" />
-                                                                ) : '-'}
-                                                            </td>
-                                                            <td>
-                                                                {variant.imageUrls && variant.imageUrls.length > 0 ? (
-                                                                    <span>{variant.imageUrls.length} {variant.imageUrls.length === 1 ? 'image' : 'images'}</span>
-                                                                ) : '-'}
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
+                                                )}
+                                            </>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Pagination */}
+                            {totalPages > 1 && (
+                                <div className="products-pagination">
+                                    <button
+                                        className="products-pagination-btn"
+                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                        disabled={currentPage === 1}
+                                    >
+                                        {t('pagination.previous')}
+                                    </button>
+                                    <span className="products-pagination-info">
+                                        {t('pagination.page')} {currentPage} {t('pagination.of')} {totalPages}
+                                    </span>
+                                    <button
+                                        className="products-pagination-btn"
+                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        {t('pagination.next')}
+                                    </button>
                                 </div>
-                                );
-                            })}
-                        </div>
+                            )}
+                        </>
                     )}
                 </div>
             )}

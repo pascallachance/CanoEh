@@ -243,6 +243,84 @@ export const translations: TranslationResources = {
     fr: 'Veuillez vous assurer que les noms anglais et français sont fournis.'
   },
 
+  // Product List Section
+  'products.list.itemName': {
+    en: 'Item Name',
+    fr: 'Nom de l\'article'
+  },
+  'products.list.itemCategory': {
+    en: 'Item Category',
+    fr: 'Catégorie de l\'article'
+  },
+  'products.list.creationDate': {
+    en: 'Creation date',
+    fr: 'Date de création'
+  },
+  'products.list.lastUpdated': {
+    en: 'Last updated',
+    fr: 'Dernière mise à jour'
+  },
+  'products.list.noItems': {
+    en: 'No items found. Click "Add Product" to create your first product.',
+    fr: 'Aucun article trouvé. Cliquez sur "Ajouter un produit" pour créer votre premier produit.'
+  },
+  'products.list.loading': {
+    en: 'Loading items...',
+    fr: 'Chargement des articles...'
+  },
+  'products.list.error': {
+    en: 'Failed to load items. Please try again.',
+    fr: 'Échec du chargement des articles. Veuillez réessayer.'
+  },
+  'products.list.currentItems': {
+    en: 'Current Items',
+    fr: 'Articles actuels'
+  },
+
+  // Item Variants List
+  'products.variant.name': {
+    en: 'Variant Name',
+    fr: 'Nom de la variante'
+  },
+  'products.variant.price': {
+    en: 'Price',
+    fr: 'Prix'
+  },
+  'products.variant.stockQty': {
+    en: 'Stock Qty',
+    fr: 'Qté en stock'
+  },
+  'products.variant.sku': {
+    en: 'SKU',
+    fr: 'SKU'
+  },
+  'products.variant.productIdType': {
+    en: 'Product ID Type',
+    fr: 'Type d\'ID produit'
+  },
+  'products.variant.productIdValue': {
+    en: 'Product ID Value',
+    fr: 'Valeur d\'ID produit'
+  },
+
+  // Pagination
+  'pagination.previous': {
+    en: 'Previous',
+    fr: 'Précédent'
+  },
+  'pagination.next': {
+    en: 'Next',
+    fr: 'Suivant'
+  },
+  'pagination.page': {
+    en: 'Page',
+    fr: 'Page'
+  },
+  'pagination.of': {
+    en: 'of',
+    fr: 'sur'
+  },
+
   // Footer
   'footer.copyright': {
     en: '© 2024 CanoEh! Seller Platform. All rights reserved.',

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Fragment } from 'react';
 import './ProductsSection.css';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useNotifications } from '../../contexts/useNotifications';
@@ -238,7 +238,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
 
     // Fetch seller items from API
     const fetchSellerItems = async () => {
-        // Get seller ID from first company (assuming user owns the companies)
+        // Get seller ID from first company's ownerID. The ownerID is the user ID of the seller
+        // who owns the company, which is the currently logged-in user.
         const sellerId = companies.length > 0 ? companies[0].ownerID : null;
         if (!sellerId) {
             setLoadItemsError('Unable to determine seller ID.');
@@ -275,12 +276,14 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
         fetchCategories();
     }, []);
 
-    // Load seller items when component mounts or companies change
+    // Load seller items when component mounts or when companies length changes
+    // Using companies.length to avoid unnecessary API calls when company details change
     useEffect(() => {
         if (companies.length > 0) {
             fetchSellerItems();
         }
-    }, [companies]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [companies.length]);
 
     // Pagination calculations
     const totalPages = Math.ceil(sellerItems.length / ITEMS_PER_PAGE);
@@ -1219,9 +1222,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                     </thead>
                                     <tbody>
                                         {paginatedItems.map(item => (
-                                            <>
+                                            <Fragment key={item.id}>
                                                 <tr 
-                                                    key={item.id}
                                                     className={`products-list-row ${expandedItemId === item.id ? 'expanded' : ''}`}
                                                     onClick={() => toggleExpandedRow(item.id)}
                                                 >
@@ -1231,7 +1233,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                                     <td>{formatDate(item.updatedAt)}</td>
                                                 </tr>
                                                 {expandedItemId === item.id && item.variants && item.variants.length > 0 && (
-                                                    <tr key={`${item.id}-variants`} className="products-variants-row">
+                                                    <tr className="products-variants-row">
                                                         <td colSpan={4}>
                                                             <div className="products-variants-expanded">
                                                                 <table className="products-variants-inner-table">
@@ -1262,7 +1264,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                                         </td>
                                                     </tr>
                                                 )}
-                                            </>
+                                            </Fragment>
                                         ))}
                                     </tbody>
                                 </table>

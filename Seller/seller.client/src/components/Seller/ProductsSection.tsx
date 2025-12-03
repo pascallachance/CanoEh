@@ -1239,6 +1239,15 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                                     role="button"
                                                     tabIndex={0}
                                                     aria-expanded={expandedItemId === item.id}
+                                                    onKeyDown={e => {
+                                                        if (e.key === 'Enter' || e.key === ' ') {
+                                                            e.preventDefault();
+                                                            toggleExpandedRow(item.id);
+                                                        }
+                                                    }}
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    aria-expanded={expandedItemId === item.id}
                                                     onKeyDown={(e) => {
                                                         if (e.key === 'Enter' || e.key === ' ') {
                                                             e.preventDefault();

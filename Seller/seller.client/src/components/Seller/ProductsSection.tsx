@@ -242,7 +242,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
         // who owns the company, which is the currently logged-in user.
         const sellerId = companies.length > 0 ? companies[0].ownerID : null;
         if (!sellerId) {
-            setLoadItemsError('Unable to determine seller ID.');
+            setLoadItemsError(t('products.error.noSellerId'));
             return;
         }
 

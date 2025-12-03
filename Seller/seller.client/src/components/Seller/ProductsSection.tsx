@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, Fragment } from 'react';
+import { useState, useEffect, useMemo, useCallback, Fragment } from 'react';
 import './ProductsSection.css';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useNotifications } from '../../contexts/useNotifications';
@@ -237,7 +237,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
     };
 
     // Fetch seller items from API
-    const fetchSellerItems = async () => {
+    const fetchSellerItems = useCallback(async (signal?: AbortSignal) => {
         // Get seller ID from first company's ownerID. The ownerID is the user ID of the seller
         // who owns the company, which is the currently logged-in user.
         const sellerId = companies.length > 0 ? companies[0].ownerID : null;
@@ -251,8 +251,14 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
 
         try {
             const response = await ApiClient.get(
-                `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/GetSellerItems/${sellerId}`
+                `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/GetSellerItems/${sellerId}`,
+                { signal }
             );
+
+            // Check if the request was aborted
+            if (signal?.aborted) {
+                return;
+            }
 
             if (response.ok) {
                 const result = await response.json();
@@ -264,26 +270,34 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                 setLoadItemsError(errorText || t('products.list.error'));
             }
         } catch (error) {
+            // Don't log or set error if the request was aborted
+            if (signal?.aborted) {
+                return;
+            }
             console.error('Failed to fetch seller items:', error);
             setLoadItemsError(t('products.list.error'));
         } finally {
-            setIsLoadingItems(false);
+            // Only update loading state if not aborted
+            if (!signal?.aborted) {
+                setIsLoadingItems(false);
+            }
         }
-    };
+    }, [companies, t]);
 
     // Load categories when component mounts
     useEffect(() => {
         fetchCategories();
     }, []);
 
-    // Load seller items when component mounts or when companies length changes
-    // Using companies.length to avoid unnecessary API calls when company details change
+    // Load seller items when component mounts or when fetchSellerItems changes
+    // Uses AbortController to cancel pending requests and prevent race conditions
     useEffect(() => {
         if (companies.length > 0) {
-            fetchSellerItems();
+            const abortController = new AbortController();
+            fetchSellerItems(abortController.signal);
+            return () => abortController.abort();
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [companies.length]);
+    }, [fetchSellerItems, companies.length]);
 
     // Reset to page 1 when seller items change (e.g., after creating a new item)
     useEffect(() => {
@@ -1236,15 +1250,6 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                                 <tr 
                                                     className={`products-list-row ${expandedItemId === item.id ? 'expanded' : ''}`}
                                                     onClick={() => toggleExpandedRow(item.id)}
-                                                    role="button"
-                                                    tabIndex={0}
-                                                    aria-expanded={expandedItemId === item.id}
-                                                    onKeyDown={e => {
-                                                        if (e.key === 'Enter' || e.key === ' ') {
-                                                            e.preventDefault();
-                                                            toggleExpandedRow(item.id);
-                                                        }
-                                                    }}
                                                     role="button"
                                                     tabIndex={0}
                                                     aria-expanded={expandedItemId === item.id}

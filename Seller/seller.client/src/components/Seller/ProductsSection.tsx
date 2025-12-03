@@ -1232,35 +1232,41 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                                     <td>{formatDate(item.createdAt)}</td>
                                                     <td>{formatDate(item.updatedAt)}</td>
                                                 </tr>
-                                                {expandedItemId === item.id && item.variants && item.variants.length > 0 && (
+                                                {expandedItemId === item.id && (
                                                     <tr className="products-variants-row">
                                                         <td colSpan={4}>
-                                                            <div className="products-variants-expanded">
-                                                                <table className="products-variants-inner-table">
-                                                                    <thead>
-                                                                        <tr>
-                                                                            <th>{t('products.variant.name')}</th>
-                                                                            <th>{t('products.variant.price')}</th>
-                                                                            <th>{t('products.variant.stockQty')}</th>
-                                                                            <th>{t('products.variant.sku')}</th>
-                                                                            <th>{t('products.variant.productIdType')}</th>
-                                                                            <th>{t('products.variant.productIdValue')}</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        {item.variants.filter(v => !v.deleted).map(variant => (
-                                                                            <tr key={variant.id}>
-                                                                                <td>{getVariantName(variant)}</td>
-                                                                                <td>${variant.price.toFixed(2)}</td>
-                                                                                <td>{variant.stockQuantity}</td>
-                                                                                <td>{variant.sku || '-'}</td>
-                                                                                <td>{variant.productIdentifierType || '-'}</td>
-                                                                                <td>{variant.productIdentifierValue || '-'}</td>
+                                                            {(item.variants && item.variants.filter(v => !v.deleted).length > 0) ? (
+                                                                <div className="products-variants-expanded">
+                                                                    <table className="products-variants-inner-table">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th>{t('products.variant.name')}</th>
+                                                                                <th>{t('products.variant.price')}</th>
+                                                                                <th>{t('products.variant.stockQty')}</th>
+                                                                                <th>{t('products.variant.sku')}</th>
+                                                                                <th>{t('products.variant.productIdType')}</th>
+                                                                                <th>{t('products.variant.productIdValue')}</th>
                                                                             </tr>
-                                                                        ))}
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {item.variants.filter(v => !v.deleted).map(variant => (
+                                                                                <tr key={variant.id}>
+                                                                                    <td>{getVariantName(variant)}</td>
+                                                                                    <td>${variant.price.toFixed(2)}</td>
+                                                                                    <td>{variant.stockQuantity}</td>
+                                                                                    <td>{variant.sku || '-'}</td>
+                                                                                    <td>{variant.productIdentifierType || '-'}</td>
+                                                                                    <td>{variant.productIdentifierValue || '-'}</td>
+                                                                                </tr>
+                                                                            ))}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="products-no-variants">
+                                                                    {t('products.list.noVariants')}
+                                                                </div>
+                                                            )}
                                                         </td>
                                                     </tr>
                                                 )}

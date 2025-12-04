@@ -195,7 +195,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
         try {
             // For demo purposes, using mock categories when API is not available
             // Replace with your actual API endpoint when database is configured
-            const response = await fetch('/api/Category/GetAllCategories');
+            const response = await ApiClient.get(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Category/GetAllCategories`);
             if (response.ok) {
                 const result = await response.json();
                 if (result.value) {

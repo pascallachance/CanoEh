@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './Login.css';
 
 interface LoginRequest {
@@ -153,10 +154,10 @@ function Login({ onLoginSuccess }: LoginProps) {
                         </button>
                         <div className="separator"></div>
                         <div className="other-options">
-                            <a href="/CreateUser" className="other-options">
+                            <Link to="/CreateUser" className="other-options">
                                 Create account?
-                            </a>
-                            <a href="/RestorePassword">Forgot Password?</a>
+                            </Link>
+                            <Link to="/RestorePassword">Forgot Password?</Link>
                         </div>
                     </form>
                 </div>

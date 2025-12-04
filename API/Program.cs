@@ -283,7 +283,6 @@ public class Program
         app.UseCors("AllowClient");
 
         app.MapControllers();
-        app.MapDefaultControllerRoute();
 
         app.Run();
     }

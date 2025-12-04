@@ -277,11 +277,11 @@ public class Program
         }
 
         app.UseHttpsRedirection();
-         
-        app.UseAuthentication();
-        app.UseAuthorization();
 
         app.UseCors("AllowClient");
+
+        app.UseAuthentication();
+        app.UseAuthorization();
 
         app.MapControllers();
         app.MapDefaultControllerRoute();

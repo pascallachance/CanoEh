@@ -11,7 +11,6 @@ function Login({ onLoginSuccess }: LoginProps) {
             title="CanoEh!"
             apiBaseUrl={import.meta.env.VITE_API_STORE_BASE_URL}
             onLoginSuccess={onLoginSuccess}
-            enableEscapeKeyHandling={true}
         />
     );
 }

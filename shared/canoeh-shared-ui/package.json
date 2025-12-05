@@ -3,16 +3,14 @@
   "version": "1.0.0",
   "description": "Shared UI components for CanoEh applications",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "exports": {
-    ".": "./dist/index.js",
-    "./Login.css": "./dist/Login.css"
+    ".": "./src/index.ts",
+    "./Login.css": "./src/Login.css"
   },
   "scripts": {
-    "lint": "eslint src/",
-    "typecheck": "tsc --noEmit",
-    "build": "tsc"
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "react": "^19.0.0",

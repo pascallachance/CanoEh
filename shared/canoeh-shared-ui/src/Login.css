@@ -11,7 +11,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background: transparent;
+    background: linear-gradient(135deg, #f000 0%, #f000 100%);
     padding: 20px;
     box-sizing: border-box;
 }

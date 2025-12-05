@@ -1,4 +1,4 @@
-﻿namespace canoeh_shared_ui;
+﻿namespace CanoEh.Shared.UI;
 
 public class Class1
 {

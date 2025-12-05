@@ -373,3 +373,6 @@ FodyWeavers.xsd
 
 # Folders with backslash in name (Windows-style paths on Linux)
 **/*\Debug/
+
+# Shared package lock file (peer dependencies should be resolved by consuming projects)
+shared/canoeh-shared-ui/package-lock.json

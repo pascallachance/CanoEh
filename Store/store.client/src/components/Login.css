@@ -25,6 +25,7 @@
     max-width: 400px;
     text-align: center;
     border: 1px solid #e0dede;
+    margin: 0 auto;
 }
 
 .login-title {

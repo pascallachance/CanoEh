@@ -8,7 +8,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./Login.css": "./src/Login.css",
-    "./CreateUser.css": "./src/CreateUser.css"
+    "./CreateUser.css": "./src/CreateUser.css",
+    "./ForgotPassword.css": "./src/ForgotPassword.css"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

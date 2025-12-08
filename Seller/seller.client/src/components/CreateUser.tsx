@@ -8,8 +8,8 @@ interface CreateUserProps {
 function CreateUser({ onCreateSuccess }: CreateUserProps) {
     return (
         <SharedCreateUser
-            title="CanoEh!"
-            apiBaseUrl={import.meta.env.VITE_API_STORE_BASE_URL}
+            title="CanoEh! Seller"
+            apiBaseUrl={import.meta.env.VITE_API_SELLER_BASE_URL}
             onCreateSuccess={onCreateSuccess}
         />
     );

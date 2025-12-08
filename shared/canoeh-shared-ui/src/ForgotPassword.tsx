@@ -51,6 +51,18 @@ export function ForgotPassword({
         return () => document.removeEventListener('keydown', handleKeyDown);
     }, [loading, enableEscapeKeyHandling]);
 
+    const getCsrfToken = (): string => {
+        // Get CSRF token from cookie for API calls
+        const cookies = document.cookie.split(';');
+        for (const cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'X-CSRF-Token') {
+                return value;
+            }
+        }
+        return '';
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -65,6 +77,7 @@ export function ForgotPassword({
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRF-Token': getCsrfToken(),
                 },
                 credentials: 'include', // Include cookies if needed
                 body: JSON.stringify(forgotPasswordRequest),
@@ -73,6 +86,7 @@ export function ForgotPassword({
             if (response.ok) {
                 await response.json(); // Consume response
                 setSuccess(true);
+                console.log('Password reset email sent successfully');
 
                 // Notify parent component of successful submission
                 if (onSubmitSuccess) {
@@ -84,6 +98,7 @@ export function ForgotPassword({
             }
         } catch (err) {
             setError('Network error occurred. Please try again.');
+            console.error('Forgot password error:', err);
         } finally {
             setLoading(false);
         }

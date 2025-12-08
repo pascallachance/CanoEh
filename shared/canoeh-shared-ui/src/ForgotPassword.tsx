@@ -6,11 +6,6 @@ interface ForgotPasswordRequest {
     email: string;
 }
 
-interface ForgotPasswordResponse {
-    email: string;
-    message: string;
-}
-
 export interface ForgotPasswordProps {
     /**
      * Title displayed at the top of the forgot password form (e.g., "CanoEh!" or "CanoEh! Seller")
@@ -76,9 +71,8 @@ export function ForgotPassword({
             });
 
             if (response.ok) {
-                const result: ForgotPasswordResponse = await response.json();
+                await response.json(); // Consume response
                 setSuccess(true);
-                console.log('Forgot password request successful:', result);
 
                 // Notify parent component of successful submission
                 if (onSubmitSuccess) {
@@ -90,7 +84,6 @@ export function ForgotPassword({
             }
         } catch (err) {
             setError('Network error occurred. Please try again.');
-            console.error('Forgot password error:', err);
         } finally {
             setLoading(false);
         }

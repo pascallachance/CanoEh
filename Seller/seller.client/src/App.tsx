@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocat
 import './App.css';
 import Login from './components/Login';
 import CreateUser from './components/CreateUser';
+import ForgotPassword from './components/ForgotPassword';
 import NoCompanyPage from './components/NoCompanyPage';
 import CreateCompanyStep1 from './components/CreateCompanyStep1';
 import CreateCompanyStep2 from './components/CreateCompanyStep2';
@@ -253,6 +254,7 @@ function AppContent() {
         <Routes>
             <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
             <Route path="/CreateUser" element={<CreateUser onCreateSuccess={() => navigate('/login')} />} />
+            <Route path="/RestorePassword" element={<ForgotPassword />} />
             <Route path="/seller" element={<SellerRoute />} />
             <Route path="/create-company" element={
                 <ProtectedRoute>

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import './App.css';
 import Login from './components/Login';
 import CreateUser from './components/CreateUser';
+import ForgotPassword from './components/ForgotPassword';
 
 function App() {
     const [showSuccessPage, setShowSuccessPage] = useState(false);
@@ -58,6 +59,7 @@ function App() {
             <Routes>
                 <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
                 <Route path="/CreateUser" element={<CreateUser onCreateSuccess={() => {/* Navigate to login after creation */}} />} />
+                <Route path="/RestorePassword" element={<ForgotPassword />} />
                 <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
         </Router>

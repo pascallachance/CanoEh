@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import './CreateUser.css';
 
 interface CreateUserRequest {
@@ -35,7 +35,6 @@ export function CreateUser({
     onCreateSuccess, 
     enableEscapeKeyHandling = true 
 }: CreateUserProps) {
-    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [firstname, setFirstname] = useState('');
     const [lastname, setLastname] = useState('');
@@ -110,10 +109,7 @@ export function CreateUser({
                 console.log('User created successfully');
                 
                 if (onCreateSuccess) {
-                    setTimeout(() => onCreateSuccess(), 2000);
-                } else {
-                    // Navigate to login after 2 seconds
-                    setTimeout(() => navigate('/login'), 2000);
+                    setTimeout(() => onCreateSuccess(), 1500);
                 }
             } else {
                 const errorText = await response.text();
@@ -144,7 +140,7 @@ export function CreateUser({
 
     return (
         <div className="createuser-container">
-            <div style={{ width: "100%" }}>
+            <div className="createuser-wrapper">
                 <h1 className="create-user-title">{title}</h1>
                 <form className="createuser-form" onSubmit={handleSubmit}>
                     <h2>Create Account</h2>
@@ -154,14 +150,13 @@ export function CreateUser({
                     <div className="form-group">
                         <label htmlFor="email">Email:</label>
                         <input
-                            type="text"
+                            type="email"
                             id="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            minLength={8}
-                            placeholder="Enter your username (min 8 characters)"
-                            autoComplete="username"
+                            placeholder="Enter your email address"
+                            autoComplete="email"
                         />
                     </div>
 

@@ -9,7 +9,7 @@ function CreateUser({ onCreateSuccess }: CreateUserProps) {
     return (
         <SharedCreateUser
             title="CanoEh!"
-            apiBaseUrl="https://localhost:7182"
+            apiBaseUrl={import.meta.env.VITE_API_STORE_BASE_URL}
             onCreateSuccess={onCreateSuccess}
         />
     );

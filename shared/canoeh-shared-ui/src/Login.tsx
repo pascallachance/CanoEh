@@ -134,7 +134,7 @@ export function Login({
     return (
         <div className="centered-container">
             <div className="login-container">
-                <div style={{ width: "100%" }}>
+                <div className="login-wrapper">
                     <h1 className="login-title">{title}</h1>
                     <form className="login-form" onSubmit={handleSubmit}>
                         <h2>Sign in or create account</h2>

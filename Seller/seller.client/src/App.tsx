@@ -243,15 +243,9 @@ function AppContent() {
         setProductStep2Data(null);
         setProductStep3Data(null);
         // Refresh companies/items and navigate to seller with products section active
-        checkExistingSession()
-            .then(() => {
-                navigate('/seller', { state: { section: 'products' } });
-            })
-            .catch((error) => {
-                console.error('Error checking session after product creation:', error);
-                // Navigate anyway to show the products page, even if session check fails
-                navigate('/seller', { state: { section: 'products' } });
-            });
+        checkExistingSession().then(() => {
+            navigate('/seller', { state: { section: 'products' } });
+        });
     };
 
     // Protected route component

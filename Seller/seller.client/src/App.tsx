@@ -8,12 +8,19 @@ import NoCompanyPage from './components/NoCompanyPage';
 import CreateCompanyStep1 from './components/CreateCompanyStep1';
 import CreateCompanyStep2 from './components/CreateCompanyStep2';
 import CompanyCreatedSuccess from './components/CompanyCreatedSuccess';
+import AddProductStep1 from './components/AddProductStep1';
+import AddProductStep2 from './components/AddProductStep2';
+import AddProductStep3 from './components/AddProductStep3';
+import AddProductStep4 from './components/AddProductStep4';
 import Seller from './components/Seller/Seller';
 import { ApiClient } from './utils/apiClient';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import type { CreateCompanyStep1Data } from './components/CreateCompanyStep1';
 import type { CreateCompanyStep2Data } from './components/CreateCompanyStep2';
+import type { AddProductStep1Data } from './components/AddProductStep1';
+import type { AddProductStep2Data } from './components/AddProductStep2';
+import type { AddProductStep3Data } from './components/AddProductStep3';
 
 interface Company {
     id: string;
@@ -33,6 +40,12 @@ function AppContent() {
     const [error, setError] = useState<string>('');
     const [isCheckingSession, setIsCheckingSession] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    
+    // Product creation state
+    const [productStep1Data, setProductStep1Data] = useState<AddProductStep1Data | null>(null);
+    const [productStep2Data, setProductStep2Data] = useState<AddProductStep2Data | null>(null);
+    const [productStep3Data, setProductStep3Data] = useState<AddProductStep3Data | null>(null);
+    
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -191,6 +204,50 @@ function AppContent() {
         });
     };
 
+    // Product creation handlers
+    const handleProductStep1Next = (data: AddProductStep1Data) => {
+        setProductStep1Data(data);
+        navigate('/add-product/step2');
+    };
+
+    const handleProductStep1Cancel = () => {
+        setProductStep1Data(null);
+        navigate('/seller');
+    };
+
+    const handleProductStep2Next = (data: AddProductStep2Data) => {
+        setProductStep2Data(data);
+        navigate('/add-product/step3');
+    };
+
+    const handleProductStep2Back = () => {
+        navigate('/add-product');
+    };
+
+    const handleProductStep3Next = (data: AddProductStep3Data) => {
+        setProductStep3Data(data);
+        navigate('/add-product/step4');
+    };
+
+    const handleProductStep3Back = () => {
+        navigate('/add-product/step2');
+    };
+
+    const handleProductStep4Back = () => {
+        navigate('/add-product/step3');
+    };
+
+    const handleProductSubmit = () => {
+        // Reset product creation state
+        setProductStep1Data(null);
+        setProductStep2Data(null);
+        setProductStep3Data(null);
+        // Refresh companies/items and navigate to seller
+        checkExistingSession().then(() => {
+            navigate('/seller');
+        });
+    };
+
     // Protected route component
     const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         if (isCheckingSession) {
@@ -287,6 +344,60 @@ function AppContent() {
                         />
                     ) : (
                         <Navigate to="/seller" replace />
+                    )}
+                </ProtectedRoute>
+            } />
+            <Route path="/add-product" element={
+                <ProtectedRoute>
+                    <AddProductStep1
+                        onNext={handleProductStep1Next}
+                        onCancel={handleProductStep1Cancel}
+                        initialData={productStep1Data || undefined}
+                    />
+                </ProtectedRoute>
+            } />
+            <Route path="/add-product/step2" element={
+                <ProtectedRoute>
+                    {productStep1Data ? (
+                        <AddProductStep2
+                            onNext={handleProductStep2Next}
+                            onBack={handleProductStep2Back}
+                            step1Data={productStep1Data}
+                            initialData={productStep2Data || undefined}
+                        />
+                    ) : (
+                        <Navigate to="/add-product" replace />
+                    )}
+                </ProtectedRoute>
+            } />
+            <Route path="/add-product/step3" element={
+                <ProtectedRoute>
+                    {productStep1Data && productStep2Data ? (
+                        <AddProductStep3
+                            onNext={handleProductStep3Next}
+                            onBack={handleProductStep3Back}
+                            step1Data={productStep1Data}
+                            step2Data={productStep2Data}
+                            initialData={productStep3Data || undefined}
+                        />
+                    ) : (
+                        <Navigate to="/add-product" replace />
+                    )}
+                </ProtectedRoute>
+            } />
+            <Route path="/add-product/step4" element={
+                <ProtectedRoute>
+                    {productStep1Data && productStep2Data && productStep3Data ? (
+                        <AddProductStep4
+                            onSubmit={handleProductSubmit}
+                            onBack={handleProductStep4Back}
+                            step1Data={productStep1Data}
+                            step2Data={productStep2Data}
+                            step3Data={productStep3Data}
+                            companies={companies}
+                        />
+                    ) : (
+                        <Navigate to="/add-product" replace />
                     )}
                 </ProtectedRoute>
             } />

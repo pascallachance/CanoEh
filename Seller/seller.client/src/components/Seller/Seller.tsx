@@ -35,6 +35,7 @@ function Seller({ companies, onLogout }: SellerProps) {
     const stateProcessedRef = useRef(false);
 
     // Check for navigation state to set initial section
+    // Run only once on mount to avoid unnecessary re-runs
     useEffect(() => {
         const state = location.state as { section?: SellerSection } | null;
         // Only process state once and only if it contains a section
@@ -44,15 +45,9 @@ function Seller({ companies, onLogout }: SellerProps) {
             // Clear the section from state to prevent it from persisting
             // Preserve any other state properties that might exist
             const { section, ...remainingState } = state;
-            // Only update history if there are other state properties to preserve
-            if (Object.keys(remainingState).length > 0) {
-                navigate(location.pathname, { replace: true, state: remainingState });
-            } else {
-                navigate(location.pathname, { replace: true, state: null });
-            }
+            navigate(location.pathname, { replace: true, state: remainingState });
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // Run only once on mount
+    }, []); // Empty dependency array: run only once on mount
 
     const renderContent = () => {
         switch (activeSection) {

@@ -11,6 +11,10 @@ import type { PeriodType } from './AnalyticsPeriodSelector';
 
 type SellerSection = 'analytics' | 'products' | 'orders' | 'company';
 
+interface NavigationState {
+    section?: SellerSection;
+}
+
 interface SellerProps {
     companies: Company[];
     onLogout: () => void;
@@ -32,12 +36,14 @@ function Seller({ companies, onLogout }: SellerProps) {
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
     const { language, setLanguage, t } = useLanguage();
     const navigate = useNavigate();
+    // Track the last navigation key we processed to avoid reprocessing
+    // Empty string ensures first real navigation will always be different
     const lastProcessedKeyRef = useRef<string>('');
 
     // Process navigation state to update active section when specified
     // Use location.key to detect and handle unique navigations
     useEffect(() => {
-        const state = location.state as { section?: SellerSection } | null;
+        const state = location.state as NavigationState | null;
         const currentKey = location.key;
         
         // Only process state if:

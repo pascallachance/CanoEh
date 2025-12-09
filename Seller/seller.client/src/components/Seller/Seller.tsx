@@ -32,22 +32,24 @@ function Seller({ companies, onLogout }: SellerProps) {
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
     const { language, setLanguage, t } = useLanguage();
     const navigate = useNavigate();
-    const stateProcessedRef = useRef(false);
+    const lastProcessedKeyRef = useRef<string>('');
 
     // Check for navigation state to set initial section
-    // Run only once on mount to avoid unnecessary re-runs
+    // Use location.key to detect unique navigations
     useEffect(() => {
         const state = location.state as { section?: SellerSection } | null;
-        // Only process state once and only if it contains a section
-        if (state?.section && !stateProcessedRef.current) {
+        // Only process state if:
+        // 1. State contains a section
+        // 2. We haven't processed this specific navigation (tracked by location.key)
+        if (state?.section && location.key !== lastProcessedKeyRef.current) {
             setActiveSection(state.section);
-            stateProcessedRef.current = true;
+            lastProcessedKeyRef.current = location.key;
             // Clear the section from state to prevent it from persisting
             // Preserve any other state properties that might exist
             const { section, ...remainingState } = state;
             navigate(location.pathname, { replace: true, state: remainingState });
         }
-    }, []); // Empty dependency array: run only once on mount
+    }, [location.key, location.state, location.pathname, navigate]);
 
     const renderContent = () => {
         switch (activeSection) {

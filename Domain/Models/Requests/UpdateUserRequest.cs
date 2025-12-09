@@ -11,6 +11,7 @@ namespace Domain.Models.Requests
         public required string Firstname { get; set; }
         public required string Lastname { get; set; }
         public string? Phone { get; set; }
+        public string? Language { get; set; } // Optional - only update if provided
 
         public Result Validate()
         {
@@ -37,6 +38,14 @@ namespace Domain.Models.Requests
             if (!IsValidEmail(Email))
             {
                 return Result.Failure("Email must be a valid email address.", StatusCodes.Status400BadRequest);
+            }
+            if (!string.IsNullOrWhiteSpace(Language) && Language.Length > 10)
+            {
+                return Result.Failure("Language code must not exceed 10 characters.", StatusCodes.Status400BadRequest);
+            }
+            if (!string.IsNullOrWhiteSpace(Language) && !LanguageConstants.SupportedLanguages.Contains(Language.ToLowerInvariant()))
+            {
+                return Result.Failure("Language must be 'en' or 'fr'.", StatusCodes.Status400BadRequest);
             }
             return Result.Success();
         }

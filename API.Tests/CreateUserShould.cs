@@ -288,6 +288,157 @@ namespace API.Tests
             Assert.Equal(StatusCodes.Status400BadRequest, objectResult.StatusCode);
             Assert.Equal(result.Error, objectResult.Value);
         }
+
+        [Fact]
+        public async Task CreateUser_WithSpecificLanguage_PersistsLanguageCorrectly()
+        {
+            // Arrange
+            var mockRepo = new Mock<IUserRepository>();
+            var mockEmailService = new Mock<IEmailService>();
+            var inputModel = new CreateUserRequest
+            {
+                Email = "test@example.com",
+                Firstname = "Jean",
+                Lastname = "Dupont",
+                Password = "password123",
+                Language = "fr"
+            };
+
+            User? createdUser = null;
+            mockRepo
+                .Setup(repo => repo.AddAsync(It.IsAny<User>()))
+                .ReturnsAsync((User u) =>
+                {
+                    createdUser = u;
+                    return u;
+                });
+
+            mockEmailService
+                .Setup(es => es.SendEmailValidationAsync(It.IsAny<User>()))
+                .ReturnsAsync(Result.Success());
+
+            var userService = new UserService(mockRepo.Object, mockEmailService.Object);
+
+            // Act
+            var result = await userService.CreateUserAsync(inputModel);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(createdUser);
+            Assert.Equal("fr", createdUser.Language);
+        }
+
+        [Fact]
+        public async Task CreateUser_WithoutSpecifyingLanguage_DefaultsToEnglish()
+        {
+            // Arrange
+            var mockRepo = new Mock<IUserRepository>();
+            var mockEmailService = new Mock<IEmailService>();
+            var inputModel = new CreateUserRequest
+            {
+                Email = "test@example.com",
+                Firstname = "John",
+                Lastname = "Doe",
+                Password = "password123"
+                // Language not specified, should default to "en"
+            };
+
+            User? createdUser = null;
+            mockRepo
+                .Setup(repo => repo.AddAsync(It.IsAny<User>()))
+                .ReturnsAsync((User u) =>
+                {
+                    createdUser = u;
+                    return u;
+                });
+
+            mockEmailService
+                .Setup(es => es.SendEmailValidationAsync(It.IsAny<User>()))
+                .ReturnsAsync(Result.Success());
+
+            var userService = new UserService(mockRepo.Object, mockEmailService.Object);
+
+            // Act
+            var result = await userService.CreateUserAsync(inputModel);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(createdUser);
+            Assert.Equal("en", createdUser.Language);
+        }
+
+        [Fact]
+        public void CreateUserRequest_Validate_RejectInvalidLanguageCode()
+        {
+            // Arrange
+            var request = new CreateUserRequest
+            {
+                Email = "test@example.com",
+                Firstname = "Test",
+                Lastname = "User",
+                Password = "password123",
+                Language = "es" // Spanish - not supported
+            };
+
+            // Act
+            var result = request.Validate();
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Contains("Language must be 'en' or 'fr'", result.Error);
+        }
+
+        [Fact]
+        public void CreateUserRequest_Validate_RejectLanguageCodeTooLong()
+        {
+            // Arrange
+            var request = new CreateUserRequest
+            {
+                Email = "test@example.com",
+                Firstname = "Test",
+                Lastname = "User",
+                Password = "password123",
+                Language = "verylonglanguagecode" // Too long
+            };
+
+            // Act
+            var result = request.Validate();
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Contains("Language code must not exceed 10 characters", result.Error);
+        }
+
+        [Fact]
+        public void CreateUserRequest_Validate_AcceptValidLanguageCodes()
+        {
+            // Arrange
+            var requestEn = new CreateUserRequest
+            {
+                Email = "test@example.com",
+                Firstname = "Test",
+                Lastname = "User",
+                Password = "password123",
+                Language = "en"
+            };
+
+            var requestFr = new CreateUserRequest
+            {
+                Email = "test@example.com",
+                Firstname = "Test",
+                Lastname = "User",
+                Password = "password123",
+                Language = "fr"
+            };
+
+            // Act
+            var resultEn = requestEn.Validate();
+            var resultFr = requestFr.Validate();
+
+            // Assert
+            Assert.True(resultEn.IsSuccess);
+            Assert.True(resultFr.IsSuccess);
+        }
     }
 }
 

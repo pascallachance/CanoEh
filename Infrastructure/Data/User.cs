@@ -7,6 +7,7 @@
         public required string Firstname { get; set; }
         public required string Lastname { get; set; }
         public string? Phone { get; set; }
+        public string Language { get; set; } = "en"; // Default to English
         public DateTime? Lastlogin { get; set; }
         public DateTime? Lastlogout { get; set; }
         public DateTime Createdat { get; set; }

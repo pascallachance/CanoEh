@@ -12,6 +12,7 @@ namespace Domain.Models.Requests
         public required string Lastname { get; set; }
         public string? Phone { get; set; }
         public required string Password { get; set; }
+        public string Language { get; set; } = "en"; // Default to English
 
         public Result Validate()
         {
@@ -46,6 +47,14 @@ namespace Domain.Models.Requests
             if (Password.Length < 8)
             {
                 return Result.Failure("Password must be at least 8 characters long.", StatusCodes.Status400BadRequest);
+            }
+            if (!string.IsNullOrWhiteSpace(Language) && Language.Length > 10)
+            {
+                return Result.Failure("Language code must not exceed 10 characters.", StatusCodes.Status400BadRequest);
+            }
+            if (!string.IsNullOrWhiteSpace(Language) && !LanguageConstants.SupportedLanguages.Contains(Language.ToLowerInvariant()))
+            {
+                return Result.Failure("Language must be 'en' or 'fr'.", StatusCodes.Status400BadRequest);
             }
             return Result.Success();
         }

@@ -31,7 +31,7 @@ interface Category {
     updatedAt?: string;
 }
 
-function AddProductStep2({ onNext, onBack, step1Data, initialData }: AddProductStep2Props) {
+function AddProductStep2({ onNext, onBack, initialData }: AddProductStep2Props) {
     const [formData, setFormData] = useState<AddProductStep2Data>(initialData || {
         categoryId: '',
         itemAttributes: []

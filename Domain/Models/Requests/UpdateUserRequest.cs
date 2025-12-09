@@ -43,8 +43,7 @@ namespace Domain.Models.Requests
             {
                 return Result.Failure("Language code must not exceed 10 characters.", StatusCodes.Status400BadRequest);
             }
-            var supportedLanguages = new[] { "en", "fr" };
-            if (!string.IsNullOrWhiteSpace(Language) && !supportedLanguages.Contains(Language.ToLowerInvariant()))
+            if (!string.IsNullOrWhiteSpace(Language) && !LanguageConstants.SupportedLanguages.Contains(Language.ToLowerInvariant()))
             {
                 return Result.Failure("Language must be 'en' or 'fr'.", StatusCodes.Status400BadRequest);
             }

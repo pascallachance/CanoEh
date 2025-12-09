@@ -48,6 +48,15 @@ namespace Domain.Models.Requests
             {
                 return Result.Failure("Password must be at least 8 characters long.", StatusCodes.Status400BadRequest);
             }
+            if (!string.IsNullOrWhiteSpace(Language) && Language.Length > 10)
+            {
+                return Result.Failure("Language code must not exceed 10 characters.", StatusCodes.Status400BadRequest);
+            }
+            var supportedLanguages = new[] { "en", "fr" };
+            if (!string.IsNullOrWhiteSpace(Language) && !supportedLanguages.Contains(Language.ToLowerInvariant()))
+            {
+                return Result.Failure("Language must be 'en' or 'fr'.", StatusCodes.Status400BadRequest);
+            }
             return Result.Success();
         }
 

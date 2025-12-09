@@ -342,5 +342,156 @@ namespace API.Tests
             Assert.Contains("Email must be a valid email address.", result.Error);
         }
 
+        [Fact]
+        public async Task UpdateUser_WithLanguage_UpdatesLanguageCorrectly()
+        {
+            // Arrange
+            var mockRepo = new Mock<IUserRepository>();
+            var mockEmailService = new Mock<IEmailService>();
+            
+            var existingUser = new User
+            {
+                ID = Guid.NewGuid(),
+                Email = "test@example.com",
+                Firstname = "John",
+                Lastname = "Doe",
+                Password = "hashedpassword",
+                Createdat = DateTime.UtcNow,
+                Language = "en",
+                Deleted = false,
+                ValidEmail = true
+            };
+
+            mockRepo.Setup(r => r.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync(existingUser);
+            mockRepo.Setup(r => r.UpdateAsync(It.IsAny<User>())).ReturnsAsync((User u) => u);
+
+            var userService = new UserService(mockRepo.Object, mockEmailService.Object);
+
+            var updateRequest = new UpdateUserRequest
+            {
+                Email = "test@example.com",
+                Firstname = "John",
+                Lastname = "Doe",
+                Language = "fr"
+            };
+
+            // Act
+            var result = await userService.UpdateUserAsync(updateRequest);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            mockRepo.Verify(r => r.UpdateAsync(It.Is<User>(u => u.Language == "fr")), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateUser_WithoutLanguage_DoesNotChangeLanguage()
+        {
+            // Arrange
+            var mockRepo = new Mock<IUserRepository>();
+            var mockEmailService = new Mock<IEmailService>();
+            
+            var existingUser = new User
+            {
+                ID = Guid.NewGuid(),
+                Email = "test@example.com",
+                Firstname = "John",
+                Lastname = "Doe",
+                Password = "hashedpassword",
+                Createdat = DateTime.UtcNow,
+                Language = "fr",
+                Deleted = false,
+                ValidEmail = true
+            };
+
+            mockRepo.Setup(r => r.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync(existingUser);
+            mockRepo.Setup(r => r.UpdateAsync(It.IsAny<User>())).ReturnsAsync((User u) => u);
+
+            var userService = new UserService(mockRepo.Object, mockEmailService.Object);
+
+            var updateRequest = new UpdateUserRequest
+            {
+                Email = "test@example.com",
+                Firstname = "John",
+                Lastname = "Doe"
+                // Language not provided
+            };
+
+            // Act
+            var result = await userService.UpdateUserAsync(updateRequest);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            mockRepo.Verify(r => r.UpdateAsync(It.Is<User>(u => u.Language == "fr")), Times.Once);
+        }
+
+        [Fact]
+        public void UpdateUserRequest_Validate_RejectInvalidLanguageCode()
+        {
+            // Arrange
+            var request = new UpdateUserRequest
+            {
+                Email = "test@example.com",
+                Firstname = "Test",
+                Lastname = "User",
+                Language = "de" // German - not supported
+            };
+
+            // Act
+            var result = request.Validate();
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Contains("Language must be 'en' or 'fr'", result.Error);
+        }
+
+        [Fact]
+        public void UpdateUserRequest_Validate_RejectLanguageCodeTooLong()
+        {
+            // Arrange
+            var request = new UpdateUserRequest
+            {
+                Email = "test@example.com",
+                Firstname = "Test",
+                Lastname = "User",
+                Language = "verylonglanguagecode"
+            };
+
+            // Act
+            var result = request.Validate();
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Contains("Language code must not exceed 10 characters", result.Error);
+        }
+
+        [Fact]
+        public void UpdateUserRequest_Validate_AcceptValidLanguageCodes()
+        {
+            // Arrange
+            var requestEn = new UpdateUserRequest
+            {
+                Email = "test@example.com",
+                Firstname = "Test",
+                Lastname = "User",
+                Language = "en"
+            };
+
+            var requestFr = new UpdateUserRequest
+            {
+                Email = "test@example.com",
+                Firstname = "Test",
+                Lastname = "User",
+                Language = "fr"
+            };
+
+            // Act
+            var resultEn = requestEn.Validate();
+            var resultFr = requestFr.Validate();
+
+            // Assert
+            Assert.True(resultEn.IsSuccess);
+            Assert.True(resultFr.IsSuccess);
+        }
+
     }
 }

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './Seller.css';
 import ProductsSection from './ProductsSection';
 import OrdersSection from './OrdersSection';
@@ -10,6 +10,10 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import type { PeriodType } from './AnalyticsPeriodSelector';
 
 type SellerSection = 'analytics' | 'products' | 'orders' | 'company';
+
+interface NavigationState {
+    section?: SellerSection;
+}
 
 interface SellerProps {
     companies: Company[];
@@ -27,10 +31,29 @@ interface Company {
 }
 
 function Seller({ companies, onLogout }: SellerProps) {
+    const location = useLocation();
     const [activeSection, setActiveSection] = useState<SellerSection>('analytics');
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
     const { language, setLanguage, t } = useLanguage();
     const navigate = useNavigate();
+    // Track the last navigation key we processed to avoid reprocessing
+    // Empty string ensures first real navigation will always be different
+    const lastProcessedKeyRef = useRef<string>('');
+
+    // Process navigation state to update active section when specified
+    // Use location.key to detect and handle unique navigations
+    useEffect(() => {
+        const state = location.state as NavigationState | null;
+        const currentKey = location.key;
+        
+        // Only process state if:
+        // 1. State contains a section
+        // 2. We haven't processed this specific navigation (tracked by location.key)
+        if (state?.section && currentKey !== lastProcessedKeyRef.current) {
+            setActiveSection(state.section);
+            lastProcessedKeyRef.current = currentKey;
+        }
+    }, [location.key, location.state]);
 
     const renderContent = () => {
         switch (activeSection) {

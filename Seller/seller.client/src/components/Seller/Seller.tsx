@@ -44,9 +44,15 @@ function Seller({ companies, onLogout }: SellerProps) {
             // Clear the section from state to prevent it from persisting
             // Preserve any other state properties that might exist
             const { section, ...remainingState } = state;
-            navigate(location.pathname, { replace: true, state: remainingState });
+            // Only update history if there are other state properties to preserve
+            if (Object.keys(remainingState).length > 0) {
+                navigate(location.pathname, { replace: true, state: remainingState });
+            } else {
+                navigate(location.pathname, { replace: true, state: null });
+            }
         }
-    }, [location.state, location.pathname, navigate]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Run only once on mount
 
     const renderContent = () => {
         switch (activeSection) {

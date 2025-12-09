@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import './AddProductStep4.css';
 import { ApiClient } from '../utils/apiClient';
 import { validateBilingualArraySync, formatVariantAttribute } from '../utils/bilingualArrayUtils';
+import { useNotifications } from '../contexts/useNotifications';
 import type { AddProductStep1Data } from './AddProductStep1';
 import type { AddProductStep2Data } from './AddProductStep2';
 import type { AddProductStep3Data } from './AddProductStep3';
@@ -29,6 +30,7 @@ interface AddProductStep4Props {
 }
 
 function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, companies }: AddProductStep4Props) {
+    const { showSuccess, showError } = useNotifications();
     const [variants, setVariants] = useState<ItemVariant[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string>('');
@@ -204,14 +206,18 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
             );
 
             if (hasInvalidVariants) {
-                setError('Please ensure all variants have a SKU and price greater than 0.');
+                const errorMessage = 'Please ensure all variants have a SKU and price greater than 0.';
+                setError(errorMessage);
+                showError(errorMessage);
                 return;
             }
         }
 
         const sellerId = companies.length > 0 ? companies[0].ownerID : null;
         if (!sellerId) {
-            setError('Unable to determine seller ID. Please ensure you are logged in.');
+            const errorMessage = 'Unable to determine seller ID. Please ensure you are logged in.';
+            setError(errorMessage);
+            showError(errorMessage);
             return;
         }
 
@@ -272,15 +278,22 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
             );
 
             if (response.ok) {
+                // Show success message that will persist after navigation
+                showSuccess('Product created successfully!');
+                // Navigate to products list
                 onSubmit();
             } else {
                 const errorText = await response.text();
-                setError(`Failed to create item: ${errorText}`);
+                const errorMessage = `Failed to create item: ${errorText}`;
+                setError(errorMessage);
+                showError(errorMessage);
             }
 
         } catch (error) {
             console.error('Error creating item:', error);
-            setError('An unexpected error occurred while creating the item.');
+            const errorMessage = 'An unexpected error occurred while creating the item.';
+            setError(errorMessage);
+            showError(errorMessage);
         } finally {
             setIsSaving(false);
         }

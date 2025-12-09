@@ -242,12 +242,9 @@ function AppContent() {
         checkExistingSession().then(() => {
             navigate('/seller', { state: { section: 'products' } });
             // Reset product creation state after navigation is initiated.
-            // Note: navigate() updates React Router's location state synchronously, but the
-            // actual route change happens in the next render. By resetting state here, both
-            // the navigation and state updates are batched by React. Since React Router
-            // processes the location change first during the re-render, the /add-product/step4
-            // route guard won't re-evaluate (we're already navigating to /seller), preventing
-            // the unwanted redirect to /add-product.
+            // By resetting state here (after navigate() but in the same .then() callback),
+            // we ensure navigation takes precedence over the route guard evaluation in
+            // /add-product/step4, preventing the unwanted redirect to /add-product.
             setProductStep1Data(null);
             setProductStep2Data(null);
             setProductStep3Data(null);

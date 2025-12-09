@@ -42,7 +42,8 @@ namespace Domain.Services.Implementations
                     Email = newUser.Email,
                     Firstname = newUser.Firstname,
                     Lastname = newUser.Lastname,
-                    Phone = newUser.Phone, 
+                    Phone = newUser.Phone,
+                    Language = newUser.Language, 
                     Lastlogin = null,
                     Createdat = DateTime.UtcNow,
                     Lastupdatedat = null,
@@ -156,6 +157,10 @@ namespace Domain.Services.Implementations
             userToUpdate.Lastname = updateRequest.Lastname;
             userToUpdate.Email = updateRequest.Email;
             userToUpdate.Phone = updateRequest.Phone;
+            if (!string.IsNullOrWhiteSpace(updateRequest.Language))
+            {
+                userToUpdate.Language = updateRequest.Language;
+            }
             userToUpdate.Lastupdatedat = DateTime.UtcNow; // Update LastUpdatedAt as required
 
             // Save changes

@@ -12,6 +12,7 @@ namespace Domain.Models.Requests
         public required string Lastname { get; set; }
         public string? Phone { get; set; }
         public required string Password { get; set; }
+        public string Language { get; set; } = "en"; // Default to English
 
         public Result Validate()
         {

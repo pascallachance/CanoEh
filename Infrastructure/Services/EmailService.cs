@@ -36,16 +36,7 @@ namespace Infrastructure.Services
             try
             {
                 var validationUrl = $"{_baseUrl}/api/EmailValidation/ValidateEmail/{user.EmailValidationToken}";
-                var body = $@"Hello {user.Firstname} {user.Lastname},
-
-Thank you for registering with CanoEh! To complete your registration, please click the link below to validate your email address:
-
-{validationUrl}
-
-If you did not create this account, please ignore this email.
-
-Best regards,
-The CanoEh Team";
+                var (subject, body) = EmailContent.GetEmailValidation(user.Firstname, user.Lastname, validationUrl, user.Language);
 
                 using var smtp = new SmtpClient(_smtpServer, _smtpPort.Value)
                 {
@@ -55,7 +46,7 @@ The CanoEh Team";
                 var mail = new MailMessage(_smtpUsername, user.Email)
                 {
                     From = new MailAddress(_fromEmail ?? "Unknown", _fromName),
-                    Subject = "Email Validation",
+                    Subject = subject,
                     Body = body
                 };
                 await smtp.SendMailAsync(mail);
@@ -96,16 +87,7 @@ The CanoEh Team";
             try
             {
                 var resetUrl = $"{_baseUrl}/api/PasswordReset/ResetPassword?token={user.PasswordResetToken}";
-                var body = $@"Hello {user.Firstname} {user.Lastname},
-
-You have requested to reset your password for your CanoEh account. To reset your password, please click the link below:
-
-{resetUrl}
-
-This link will expire in 24 hours. If you did not request a password reset, please ignore this email.
-
-Best regards,
-The CanoEh Team";
+                var (subject, body) = EmailContent.GetPasswordReset(user.Firstname, user.Lastname, resetUrl, user.Language);
 
                 using var smtp = new SmtpClient(_smtpServer, _smtpPort.Value)
                 {
@@ -115,7 +97,7 @@ The CanoEh Team";
                 var mail = new MailMessage(_smtpUsername, user.Email)
                 {
                     From = new MailAddress(_fromEmail ?? "Unknown", _fromName),
-                    Subject = "Password Reset Request",
+                    Subject = subject,
                     Body = body
                 };
                 await smtp.SendMailAsync(mail);
@@ -156,16 +138,7 @@ The CanoEh Team";
             try
             {
                 var restoreUrl = $"{_baseUrl}/api/User/RestoreUser?token={user.RestoreUserToken}";
-                var body = $@"Hello {user.Firstname} {user.Lastname},
-
-You have requested to restore your deleted CanoEh account. To restore your account, please click the link below:
-
-{restoreUrl}
-
-This link will expire in 24 hours. If you did not request account restoration, please ignore this email.
-
-Best regards,
-The CanoEh Team";
+                var (subject, body) = EmailContent.GetRestoreUser(user.Firstname, user.Lastname, restoreUrl, user.Language);
 
                 using var smtp = new SmtpClient(_smtpServer, _smtpPort.Value)
                 {
@@ -175,7 +148,7 @@ The CanoEh Team";
                 var mail = new MailMessage(_smtpUsername, user.Email)
                 {
                     From = new MailAddress(_fromEmail ?? "Unknown", _fromName),
-                    Subject = "Account Restoration Request",
+                    Subject = subject,
                     Body = body
                 };
                 await smtp.SendMailAsync(mail);

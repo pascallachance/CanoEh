@@ -11,6 +11,7 @@ namespace Domain.Models.Requests
         public required string Firstname { get; set; }
         public required string Lastname { get; set; }
         public string? Phone { get; set; }
+        public string? Language { get; set; } // Optional - only update if provided
 
         public Result Validate()
         {

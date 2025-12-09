@@ -38,18 +38,23 @@ function Seller({ companies, onLogout }: SellerProps) {
     // Use location.key to detect unique navigations
     useEffect(() => {
         const state = location.state as { section?: SellerSection } | null;
+        const currentKey = location.key;
+        
         // Only process state if:
         // 1. State contains a section
         // 2. We haven't processed this specific navigation (tracked by location.key)
-        if (state?.section && location.key !== lastProcessedKeyRef.current) {
+        if (state?.section && currentKey !== lastProcessedKeyRef.current) {
             setActiveSection(state.section);
-            lastProcessedKeyRef.current = location.key;
+            lastProcessedKeyRef.current = currentKey;
             // Clear the section from state to prevent it from persisting
             // Preserve any other state properties that might exist
             const { section, ...remainingState } = state;
-            navigate(location.pathname, { replace: true, state: remainingState });
+            // Use setTimeout to avoid updating location during render
+            setTimeout(() => {
+                navigate(location.pathname, { replace: true, state: remainingState });
+            }, 0);
         }
-    }, [location.key, location.state, location.pathname, navigate]);
+    }, [location.key]); // Only depend on location.key for new navigations
 
     const renderContent = () => {
         switch (activeSection) {

@@ -46,15 +46,8 @@ function Seller({ companies, onLogout }: SellerProps) {
         if (state?.section && currentKey !== lastProcessedKeyRef.current) {
             setActiveSection(state.section);
             lastProcessedKeyRef.current = currentKey;
-            // Clear the section from state to prevent it from persisting
-            // Preserve any other state properties that might exist
-            const { section, ...remainingState } = state;
-            // Use setTimeout to avoid updating location during render
-            setTimeout(() => {
-                navigate(location.pathname, { replace: true, state: remainingState });
-            }, 0);
         }
-    }, [location.key]); // Only depend on location.key for new navigations
+    }, [location.key, location.state]);
 
     const renderContent = () => {
         switch (activeSection) {

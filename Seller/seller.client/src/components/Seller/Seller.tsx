@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './Seller.css';
 import ProductsSection from './ProductsSection';
 import OrdersSection from './OrdersSection';
@@ -27,10 +27,21 @@ interface Company {
 }
 
 function Seller({ companies, onLogout }: SellerProps) {
+    const location = useLocation();
     const [activeSection, setActiveSection] = useState<SellerSection>('analytics');
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
     const { language, setLanguage, t } = useLanguage();
     const navigate = useNavigate();
+
+    // Check for navigation state to set initial section
+    useEffect(() => {
+        const state = location.state as { section?: SellerSection } | null;
+        if (state?.section) {
+            setActiveSection(state.section);
+            // Clear the state to prevent it from persisting
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+    }, [location.state, location.pathname, navigate]);
 
     const renderContent = () => {
         switch (activeSection) {

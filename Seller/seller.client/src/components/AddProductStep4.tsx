@@ -49,7 +49,7 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
     useEffect(() => {
         const generated = generateVariants();
         setVariants(generated);
-    }, []);
+    }, [step3Data]);
 
     // Cleanup object URLs on component unmount
     useEffect(() => {
@@ -220,6 +220,12 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
 
         try {
             // Transform frontend data to match backend CreateItemRequest format
+            // NOTE: Image URLs are currently blob: URLs from URL.createObjectURL()
+            // These are only valid in the current browser session and won't work when sent to the API.
+            // TODO: Implement proper file upload handling:
+            // - Convert files to base64 strings, OR
+            // - Upload files separately to get actual URLs from server, OR
+            // - Use FormData for multipart/form-data upload
             const createItemRequest = {
                 SellerID: sellerId,
                 Name_en: step1Data.name,
@@ -233,6 +239,7 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                     Sku: variant.sku,
                     ProductIdentifierType: variant.productIdentifierType || null,
                     ProductIdentifierValue: variant.productIdentifierValue || null,
+                    // WARNING: blob: URLs will not work on the server
                     ImageUrls: variant.imageUrls?.join(',') || null,
                     ThumbnailUrl: variant.thumbnailUrl || null,
                     ItemVariantName_en: variant.attributes_en ? Object.entries(variant.attributes_en).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
@@ -405,6 +412,7 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                                                     onChange={(e) => handleThumbnailChange(variant.id, e.target.files?.[0] || null)}
                                                     className="file-input"
                                                     id={`thumbnail-${variant.id}`}
+                                                    aria-label="Upload thumbnail image for variant"
                                                 />
                                                 <label htmlFor={`thumbnail-${variant.id}`} className="file-label">
                                                     Choose
@@ -425,6 +433,7 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                                                     onChange={(e) => handleImagesChange(variant.id, e.target.files)}
                                                     className="file-input"
                                                     id={`images-${variant.id}`}
+                                                    aria-label="Upload product images for variant"
                                                 />
                                                 <label htmlFor={`images-${variant.id}`} className="file-label">
                                                     Choose

@@ -223,7 +223,7 @@ function AddProductStep3({ onNext, onBack, initialData }: AddProductStep3Props) 
                                                 onChange={(e) => updateAttributeValue(index, e.target.value, 'en')}
                                                 placeholder="e.g., Small"
                                             />
-                                            {synchronizedAttributeValues.length > 1 && (
+                                            {synchronizedAttributeValues.values_en.length > 1 && (
                                                 <button
                                                     type="button"
                                                     onClick={() => removeAttributeValue(index)}
@@ -245,7 +245,7 @@ function AddProductStep3({ onNext, onBack, initialData }: AddProductStep3Props) 
                                                 onChange={(e) => updateAttributeValue(index, e.target.value, 'fr')}
                                                 placeholder="e.g., Petit"
                                             />
-                                            {synchronizedAttributeValues.length > 1 && (
+                                            {synchronizedAttributeValues.values_fr.length > 1 && (
                                                 <button
                                                     type="button"
                                                     onClick={() => removeAttributeValue(index)}

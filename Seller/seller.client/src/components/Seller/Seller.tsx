@@ -34,8 +34,8 @@ function Seller({ companies, onLogout }: SellerProps) {
     const navigate = useNavigate();
     const lastProcessedKeyRef = useRef<string>('');
 
-    // Check for navigation state to set initial section
-    // Use location.key to detect unique navigations
+    // Process navigation state to update active section when specified
+    // Use location.key to detect and handle unique navigations
     useEffect(() => {
         const state = location.state as { section?: SellerSection } | null;
         const currentKey = location.key;

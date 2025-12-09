@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Seller.css';
 import ProductsSection from './ProductsSection';
 import OrdersSection from './OrdersSection';
@@ -28,13 +29,8 @@ interface Company {
 function Seller({ companies, onLogout }: SellerProps) {
     const [activeSection, setActiveSection] = useState<SellerSection>('analytics');
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
-    const [productsViewMode, setProductsViewMode] = useState<'list' | 'add'>('list');
     const { language, setLanguage, t } = useLanguage();
-
-    // Reset products view mode to 'list' whenever the active section changes
-    useEffect(() => {
-        setProductsViewMode('list');
-    }, [activeSection]);
+    const navigate = useNavigate();
 
     const renderContent = () => {
         switch (activeSection) {
@@ -43,8 +39,8 @@ function Seller({ companies, onLogout }: SellerProps) {
             case 'products':
                 return <ProductsSection 
                     companies={companies} 
-                    viewMode={productsViewMode}
-                    onViewModeChange={setProductsViewMode}
+                    viewMode="list"
+                    onViewModeChange={() => {}}
                 />;
             case 'orders':
                 return <OrdersSection companies={companies} />;
@@ -68,14 +64,8 @@ function Seller({ companies, onLogout }: SellerProps) {
                 return (
                     <div className="action-buttons">
                         <button 
-                            className={`action-button ${productsViewMode === 'list' ? '' : 'secondary'}`}
-                            onClick={() => setProductsViewMode('list')}
-                        >
-                            {t('products.listProducts')}
-                        </button>
-                        <button 
-                            className={`action-button ${productsViewMode === 'add' ? '' : 'secondary'}`}
-                            onClick={() => setProductsViewMode('add')}
+                            className="action-button"
+                            onClick={() => navigate('/add-product')}
                         >
                             {t('products.addProduct')}
                         </button>

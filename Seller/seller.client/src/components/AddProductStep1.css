@@ -1,0 +1,201 @@
+.add-product-step1-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f000 0%, #f000 100%);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.add-product-step1-content {
+    background: white;
+    border-radius: 10px;
+    padding: 20px 26px 20px 26px;
+    max-width: 800px;
+    width: 100%;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e0dede;
+}
+
+.step-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.step-header h1 {
+    color: #333;
+    margin-bottom: 1rem;
+    font-size: 2.5rem;
+}
+
+.step-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.step {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    background: #bbb;
+    transition: all 0.3s ease;
+}
+
+.step.active {
+    background: #3498db;
+}
+
+.step.completed {
+    background: #27ae60;
+}
+
+.step-divider {
+    width: 30px;
+    height: 2px;
+    background: #bbb;
+}
+
+.step-header h2 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.step-header p {
+    color: #666;
+    margin-bottom: 0;
+}
+
+.product-form {
+    width: 100%;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e1e1e1;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+    background: white;
+    font-family: inherit;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-group input.error,
+.form-group textarea.error {
+    border-color: #c33;
+    box-shadow: 0 0 0 3px rgba(204, 51, 51, 0.1);
+}
+
+.error-message {
+    color: #c33;
+    font-size: 14px;
+    margin-top: 0.25rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    padding-top: 20px;
+    border-top: 1px solid #e1e1e1;
+    margin-top: 25px;
+}
+
+.cancel-btn,
+.next-btn {
+    width: 100%;
+    padding: 8px 16px 8px 16px;
+    background: linear-gradient(135deg, #f00 0%, #f00 100%);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-top: 10px;
+}
+
+.cancel-btn {
+    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+}
+
+.cancel-btn:hover,
+.next-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .add-product-step1-container {
+        padding: 15px;
+    }
+    
+    .add-product-step1-content {
+        padding: 30px 20px;
+    }
+    
+    .step-header h1 {
+        font-size: 24px;
+    }
+    
+    .step-indicator {
+        gap: 0.25rem;
+    }
+    
+    .step {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+    }
+    
+    .step-divider {
+        width: 20px;
+    }
+}

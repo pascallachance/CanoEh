@@ -249,9 +249,9 @@ function AppContent() {
     const handleProductSubmit = () => {
         // Navigate to seller with products section active
         // State will be cleared by the useEffect that watches location.pathname
-        navigate('/seller', { state: { section: 'products' }, replace: true });
-        // Refresh companies/items in background
-        checkExistingSession();
+        checkExistingSession().then(() => {
+            navigate('/seller', { state: { section: 'products' }, replace: true });
+        });
     };
 
     // Protected route component

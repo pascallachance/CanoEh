@@ -81,6 +81,12 @@ public class Program
         builder.Services.AddScoped<ILoginService, LoginService>();
         builder.Services.AddScoped<ISessionService, SessionService>();
         builder.Services.AddScoped<IEmailService, EmailService>();
+        builder.Services.AddScoped<IFileStorageService>(provider =>
+        {
+            var logger = provider.GetRequiredService<ILogger<LocalFileStorageService>>();
+            var contentRootPath = builder.Environment.ContentRootPath;
+            return new LocalFileStorageService(contentRootPath, logger);
+        });
         builder.Services.AddScoped<IItemService>(provider =>
         {
             var config = provider.GetRequiredService<IConfiguration>();
@@ -277,6 +283,7 @@ public class Program
         }
 
         app.UseHttpsRedirection();
+        app.UseStaticFiles(); // Enable serving static files from wwwroot
 
         app.UseAuthentication();
         app.UseAuthorization();

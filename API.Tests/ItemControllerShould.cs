@@ -4,6 +4,7 @@ using Domain.Models.Responses;
 using Domain.Services.Interfaces;
 using Helpers.Common;
 using Infrastructure.Data;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -13,12 +14,14 @@ namespace API.Tests
     public class ItemControllerShould
     {
         private readonly Mock<IItemService> _mockItemService;
+        private readonly Mock<IFileStorageService> _mockFileStorageService;
         private readonly ItemController _controller;
 
         public ItemControllerShould()
         {
             _mockItemService = new Mock<IItemService>();
-            _controller = new ItemController(_mockItemService.Object);
+            _mockFileStorageService = new Mock<IFileStorageService>();
+            _controller = new ItemController(_mockItemService.Object, _mockFileStorageService.Object);
         }
 
         [Fact]

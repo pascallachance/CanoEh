@@ -1,15 +1,17 @@
 using System.Diagnostics;
 using Domain.Models.Requests;
 using Domain.Services.Interfaces;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ItemController(IItemService itemService) : ControllerBase
+    public class ItemController(IItemService itemService, IFileStorageService fileStorageService) : ControllerBase
     {
         private readonly IItemService _itemService = itemService;
+        private readonly IFileStorageService _fileStorageService = fileStorageService;
 
         /// <summary>
         /// Creates a new item.
@@ -215,6 +217,44 @@ namespace API.Controllers
                 }
 
                 return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Uploads a product image.
+        /// </summary>
+        /// <param name="file">The image file to upload.</param>
+        /// <param name="itemId">Optional item ID to associate the image with.</param>
+        /// <returns>Returns the image URL or an error response.</returns>
+        [HttpPost("UploadImage")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UploadImage(IFormFile file, [FromQuery] Guid? itemId = null)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest("No file provided.");
+                }
+
+                // Generate custom filename if itemId is provided
+                string? fileName = itemId.HasValue ? $"item_{itemId.Value}" : null;
+
+                var result = await _fileStorageService.UploadFileAsync(file, fileName);
+
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
+                }
+
+                return Ok(new { imageUrl = result.Value });
             }
             catch (Exception ex)
             {

@@ -238,17 +238,15 @@ function AppContent() {
     };
 
     const handleProductSubmit = () => {
-        // Refresh companies/items and navigate to seller with products section active
-        checkExistingSession().then(() => {
-            navigate('/seller', { state: { section: 'products' } });
-            // Reset product creation state after navigation is initiated.
-            // By resetting state here (after navigate() but in the same .then() callback),
-            // we ensure navigation takes precedence over the route guard evaluation in
-            // /add-product/step4, preventing the unwanted redirect to /add-product.
-            setProductStep1Data(null);
-            setProductStep2Data(null);
-            setProductStep3Data(null);
-        });
+        // Navigate to seller with products section active immediately
+        // This ensures navigation happens before state reset can trigger route guard
+        navigate('/seller', { state: { section: 'products' }, replace: true });
+        // Reset product creation state after navigation
+        setProductStep1Data(null);
+        setProductStep2Data(null);
+        setProductStep3Data(null);
+        // Refresh companies/items in background
+        checkExistingSession();
     };
 
     // Protected route component

@@ -239,11 +239,6 @@ namespace API.Controllers
         {
             try
             {
-                if (file == null || file.Length == 0)
-                {
-                    return BadRequest("No file provided.");
-                }
-
                 // Generate custom filename if itemId is provided
                 string? fileName = itemId.HasValue ? $"item_{itemId.Value}" : null;
 

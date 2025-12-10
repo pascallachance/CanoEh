@@ -85,31 +85,31 @@ namespace Infrastructure.Services
             return $"/{_uploadFolder}/{fileName}";
         }
 
-        public async Task<Result> DeleteFileAsync(string fileName)
+        public Task<Result> DeleteFileAsync(string fileName)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(fileName))
                 {
-                    return Result.Failure("File name is required.", StatusCodes.Status400BadRequest);
+                    return Task.FromResult(Result.Failure("File name is required.", StatusCodes.Status400BadRequest));
                 }
 
                 var filePath = Path.Combine(_contentRootPath, "wwwroot", _uploadFolder, fileName);
                 
                 if (!File.Exists(filePath))
                 {
-                    return Result.Failure("File not found.", StatusCodes.Status404NotFound);
+                    return Task.FromResult(Result.Failure("File not found.", StatusCodes.Status404NotFound));
                 }
 
-                await Task.Run(() => File.Delete(filePath));
+                File.Delete(filePath);
                 _logger.LogInformation("File deleted successfully: {FileName}", fileName);
 
-                return Result.Success();
+                return Task.FromResult(Result.Success());
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting file");
-                return Result.Failure($"Error deleting file: {ex.Message}", StatusCodes.Status500InternalServerError);
+                return Task.FromResult(Result.Failure($"Error deleting file: {ex.Message}", StatusCodes.Status500InternalServerError));
             }
         }
     }

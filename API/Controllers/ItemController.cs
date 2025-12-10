@@ -1,7 +1,9 @@
 using System.Diagnostics;
+using System.Security.Claims;
 using Domain.Models.Requests;
 using Domain.Services.Interfaces;
 using Infrastructure.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -232,15 +234,41 @@ namespace API.Controllers
         /// <param name="itemId">Optional item ID to associate the image with.</param>
         /// <returns>Returns the image URL or an error response.</returns>
         [HttpPost("UploadImage")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UploadImage(IFormFile file, [FromQuery] Guid? itemId = null)
         {
             try
             {
-                // Generate custom filename if itemId is provided
-                string? fileName = itemId.HasValue ? $"item_{itemId.Value}" : null;
+                // If itemId is provided, validate that the item exists and is owned by the authenticated user
+                string? fileName = null;
+                if (itemId.HasValue)
+                {
+                    // Get user ID from claims
+                    var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "sub" || c.Type == "userId");
+                    if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+                    {
+                        return StatusCode(StatusCodes.Status401Unauthorized, "User ID not found in token.");
+                    }
+
+                    var itemResult = await _itemService.GetItemByIdAsync(itemId.Value);
+                    if (itemResult.IsFailure)
+                    {
+                        return NotFound("Item not found.");
+                    }
+
+                    if (itemResult.Value?.SellerID != userId)
+                    {
+                        return StatusCode(StatusCodes.Status403Forbidden, "You do not have permission to upload images for this item.");
+                    }
+
+                    fileName = $"item_{itemId.Value}";
+                }
 
                 var result = await _fileStorageService.UploadFileAsync(file, fileName);
 

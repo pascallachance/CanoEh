@@ -34,6 +34,13 @@ namespace Infrastructure.Services
                     return Result.Failure<string>($"Invalid file type. Allowed types: {string.Join(", ", allowedExtensions)}", StatusCodes.Status400BadRequest);
                 }
 
+                // Verify MIME type matches the file extension
+                var allowedMimeTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" };
+                if (!string.IsNullOrEmpty(file.ContentType) && !allowedMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
+                {
+                    return Result.Failure<string>("Invalid file content type.", StatusCodes.Status400BadRequest);
+                }
+
                 // Validate file size (max 5MB)
                 const long maxFileSize = 5 * 1024 * 1024; // 5MB
                 if (file.Length > maxFileSize)
@@ -51,6 +58,13 @@ namespace Infrastructure.Services
                     fileName = $"{fileName}{fileExtension}";
                 }
 
+                // Validate fileName to prevent path traversal
+                if (fileName != Path.GetFileName(fileName) ||
+                    fileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+                {
+                    return Result.Failure<string>("Invalid file name.", StatusCodes.Status400BadRequest);
+                }
+
                 // Ensure the upload directory exists
                 var uploadsPath = Path.Combine(_contentRootPath, "wwwroot", _uploadFolder);
                 if (!Directory.Exists(uploadsPath))
@@ -61,6 +75,13 @@ namespace Infrastructure.Services
 
                 // Save the file
                 var filePath = Path.Combine(uploadsPath, fileName);
+                
+                // Check if file already exists to prevent overwrite
+                if (File.Exists(filePath))
+                {
+                    return Result.Failure<string>("A file with this name already exists.", StatusCodes.Status409Conflict);
+                }
+                
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);
@@ -94,7 +115,20 @@ namespace Infrastructure.Services
                     return Task.FromResult(Result.Failure("File name is required.", StatusCodes.Status400BadRequest));
                 }
 
-                var filePath = Path.Combine(_contentRootPath, "wwwroot", _uploadFolder, fileName);
+                // Prevent path traversal: reject file names with path separators or relative components
+                if (fileName.Contains("..") || fileName.Contains(Path.DirectorySeparatorChar) || fileName.Contains(Path.AltDirectorySeparatorChar))
+                {
+                    return Task.FromResult(Result.Failure("Invalid file name.", StatusCodes.Status400BadRequest));
+                }
+
+                var uploadsRoot = Path.GetFullPath(Path.Combine(_contentRootPath, "wwwroot", _uploadFolder));
+                var filePath = Path.GetFullPath(Path.Combine(uploadsRoot, fileName));
+
+                // Ensure the file is within the uploads directory
+                if (!filePath.StartsWith(uploadsRoot + Path.DirectorySeparatorChar) && filePath != uploadsRoot)
+                {
+                    return Task.FromResult(Result.Failure("Invalid file path.", StatusCodes.Status400BadRequest));
+                }
                 
                 if (!File.Exists(filePath))
                 {

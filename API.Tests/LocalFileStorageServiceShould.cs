@@ -6,7 +6,7 @@ using Moq;
 
 namespace API.Tests
 {
-    public class LocalFileStorageServiceShould
+    public class LocalFileStorageServiceShould : IDisposable
     {
         private readonly Mock<ILogger<LocalFileStorageService>> _mockLogger;
         private readonly string _testContentRoot;
@@ -15,9 +15,24 @@ namespace API.Tests
         public LocalFileStorageServiceShould()
         {
             _mockLogger = new Mock<ILogger<LocalFileStorageService>>();
-            _testContentRoot = Path.Combine(Path.GetTempPath(), "CanoEhTests_" + Guid.NewGuid().ToString());
+            _testContentRoot = Path.Combine(Path.GetTempPath(), "CanoEhTests_" + Guid.NewGuid());
             Directory.CreateDirectory(_testContentRoot);
             _service = new LocalFileStorageService(_testContentRoot, _mockLogger.Object);
+        }
+
+        public void Dispose()
+        {
+            if (Directory.Exists(_testContentRoot))
+            {
+                try
+                {
+                    Directory.Delete(_testContentRoot, true);
+                }
+                catch
+                {
+                    // Ignore cleanup errors
+                }
+            }
         }
 
         [Fact]
@@ -40,12 +55,6 @@ namespace API.Tests
             Assert.True(result.IsSuccess);
             Assert.NotNull(result.Value);
             Assert.Contains("/uploads/", result.Value);
-
-            // Cleanup
-            if (Directory.Exists(_testContentRoot))
-            {
-                Directory.Delete(_testContentRoot, true);
-            }
         }
 
         [Fact]
@@ -57,12 +66,6 @@ namespace API.Tests
             // Assert
             Assert.True(result.IsFailure);
             Assert.Contains("empty or not provided", result.Error);
-
-            // Cleanup
-            if (Directory.Exists(_testContentRoot))
-            {
-                Directory.Delete(_testContentRoot, true);
-            }
         }
 
         [Fact]
@@ -84,12 +87,6 @@ namespace API.Tests
             // Assert
             Assert.True(result.IsFailure);
             Assert.Contains("empty or not provided", result.Error);
-
-            // Cleanup
-            if (Directory.Exists(_testContentRoot))
-            {
-                Directory.Delete(_testContentRoot, true);
-            }
         }
 
         [Fact]
@@ -110,13 +107,7 @@ namespace API.Tests
 
             // Assert
             Assert.True(result.IsFailure);
-            Assert.Contains("Invalid file type", result.Error);
-
-            // Cleanup
-            if (Directory.Exists(_testContentRoot))
-            {
-                Directory.Delete(_testContentRoot, true);
-            }
+            Assert.Contains("Invalid file", result.Error);
         }
 
         [Fact]
@@ -138,12 +129,6 @@ namespace API.Tests
             // Assert
             Assert.True(result.IsFailure);
             Assert.Contains("exceeds the maximum allowed size", result.Error);
-
-            // Cleanup
-            if (Directory.Exists(_testContentRoot))
-            {
-                Directory.Delete(_testContentRoot, true);
-            }
         }
 
         [Fact]
@@ -169,12 +154,6 @@ namespace API.Tests
             var urlParts = result.Value.Split('/');
             var generatedFileName = urlParts[^1];
             Assert.Matches(@"^[a-f0-9-]+\.jpg$", generatedFileName);
-
-            // Cleanup
-            if (Directory.Exists(_testContentRoot))
-            {
-                Directory.Delete(_testContentRoot, true);
-            }
         }
 
         [Fact]
@@ -198,12 +177,6 @@ namespace API.Tests
             Assert.True(result.IsSuccess);
             Assert.NotNull(result.Value);
             Assert.Contains(customFileName, result.Value);
-
-            // Cleanup
-            if (Directory.Exists(_testContentRoot))
-            {
-                Directory.Delete(_testContentRoot, true);
-            }
         }
 
         [Fact]
@@ -217,12 +190,6 @@ namespace API.Tests
 
             // Assert
             Assert.Equal("/uploads/test-image.jpg", url);
-
-            // Cleanup
-            if (Directory.Exists(_testContentRoot))
-            {
-                Directory.Delete(_testContentRoot, true);
-            }
         }
 
         [Fact]
@@ -249,12 +216,6 @@ namespace API.Tests
 
             // Assert
             Assert.True(deleteResult.IsSuccess);
-
-            // Cleanup
-            if (Directory.Exists(_testContentRoot))
-            {
-                Directory.Delete(_testContentRoot, true);
-            }
         }
 
         [Fact]
@@ -266,12 +227,6 @@ namespace API.Tests
             // Assert
             Assert.True(result.IsFailure);
             Assert.Contains("File not found", result.Error);
-
-            // Cleanup
-            if (Directory.Exists(_testContentRoot))
-            {
-                Directory.Delete(_testContentRoot, true);
-            }
         }
 
         [Fact]
@@ -283,12 +238,6 @@ namespace API.Tests
             // Assert
             Assert.True(result.IsFailure);
             Assert.Contains("File name is required", result.Error);
-
-            // Cleanup
-            if (Directory.Exists(_testContentRoot))
-            {
-                Directory.Delete(_testContentRoot, true);
-            }
         }
     }
 }

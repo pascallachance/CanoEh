@@ -54,6 +54,15 @@ function AppContent() {
         checkExistingSession();
     }, []);
 
+    // Clear product creation state when navigating away from add-product routes
+    useEffect(() => {
+        if (!location.pathname.startsWith('/add-product')) {
+            setProductStep1Data(null);
+            setProductStep2Data(null);
+            setProductStep3Data(null);
+        }
+    }, [location.pathname]);
+
     const checkExistingSession = async () => {
         try {
             setIsCheckingSession(true);
@@ -238,17 +247,11 @@ function AppContent() {
     };
 
     const handleProductSubmit = () => {
-        // Refresh companies/items and navigate to seller with products section active
-        checkExistingSession().then(() => {
-            navigate('/seller', { state: { section: 'products' } });
-            // Reset product creation state after navigation is initiated.
-            // By resetting state here (after navigate() but in the same .then() callback),
-            // we ensure navigation takes precedence over the route guard evaluation in
-            // /add-product/step4, preventing the unwanted redirect to /add-product.
-            setProductStep1Data(null);
-            setProductStep2Data(null);
-            setProductStep3Data(null);
-        });
+        // Navigate to seller with products section active
+        // State will be cleared by the useEffect that watches location.pathname
+        navigate('/seller', { state: { section: 'products' }, replace: true });
+        // Refresh companies/items in background
+        checkExistingSession();
     };
 
     // Protected route component

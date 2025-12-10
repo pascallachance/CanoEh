@@ -238,13 +238,16 @@ function AppContent() {
     };
 
     const handleProductSubmit = () => {
-        // Reset product creation state
-        setProductStep1Data(null);
-        setProductStep2Data(null);
-        setProductStep3Data(null);
         // Refresh companies/items and navigate to seller with products section active
         checkExistingSession().then(() => {
             navigate('/seller', { state: { section: 'products' } });
+            // Reset product creation state after navigation is initiated.
+            // By resetting state here (after navigate() but in the same .then() callback),
+            // we ensure navigation takes precedence over the route guard evaluation in
+            // /add-product/step4, preventing the unwanted redirect to /add-product.
+            setProductStep1Data(null);
+            setProductStep2Data(null);
+            setProductStep3Data(null);
         });
     };
 

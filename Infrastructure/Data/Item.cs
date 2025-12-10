@@ -8,6 +8,7 @@ namespace Infrastructure.Data
         public string Name_fr { get; set; } = string.Empty;
         public string? Description_en { get; set; }
         public string? Description_fr { get; set; }
+        public string? ImageUrl { get; set; }
         public Guid CategoryID { get; set; }
         public List<ItemVariant> Variants { get; set; } = new();
         public List<ItemAttribute> ItemAttributes { get; set; } = new();

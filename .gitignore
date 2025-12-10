@@ -376,3 +376,6 @@ FodyWeavers.xsd
 
 # Shared package lock file (peer dependencies should be resolved by consuming projects)
 shared/canoeh-shared-ui/package-lock.json
+
+# Uploaded files (test files)
+API/wwwroot/uploads/

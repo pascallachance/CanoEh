@@ -8,6 +8,7 @@ namespace Domain.Models.Responses
         public string Name_fr { get; set; } = string.Empty;
         public string? Description_en { get; set; }
         public string? Description_fr { get; set; }
+        public string? ImageUrl { get; set; }
         public Guid CategoryID { get; set; }
         public List<ItemVariantDto> Variants { get; set; } = new();
         public List<ItemAttributeDto> ItemAttributes { get; set; } = new();

@@ -379,3 +379,4 @@ shared/canoeh-shared-ui/package-lock.json
 
 # Uploaded files (test files)
 API/wwwroot/uploads/
+Store/Store.Server/wwwroot/uploads/

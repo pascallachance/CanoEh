@@ -523,48 +523,34 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
         {
             try
             {
-                // Query to find the item that contains the specified variant and belongs to the user
-                using var connection = new SqlConnection(_connectionString);
-                await connection.OpenAsync();
-
-                var query = @"
-                    SELECT i.*
-                    FROM dbo.Item i
-                    INNER JOIN dbo.ItemVariant iv ON i.Id = iv.ItemId
-                    WHERE iv.Id = @VariantId 
-                    AND i.SellerID = @UserId
-                    AND i.Deleted = 0
-                    AND iv.Deleted = 0";
-
-                var item = await connection.QueryFirstOrDefaultAsync<Item>(query, new { VariantId = variantId, UserId = userId });
+                // Get seller's items and find the one containing the variant
+                // This is more efficient than GetAllAsync as it's filtered by sellerId in the database
+                var sellerItems = await _itemRepository.GetBySellerIdAsync(userId);
+                var item = sellerItems.FirstOrDefault(i => 
+                    !i.Deleted &&
+                    i.Variants != null && 
+                    i.Variants.Any(v => v.Id == variantId && !v.Deleted));
 
                 if (item == null)
                 {
                     return Result.Failure<GetItemResponse>("Variant not found or you do not have permission to access this item.", StatusCodes.Status404NotFound);
                 }
 
-                // Get full item details with variants and attributes
-                var fullItem = await _itemRepository.GetItemByIdAsync(item.Id);
-                if (fullItem == null)
-                {
-                    return Result.Failure<GetItemResponse>("Item not found.", StatusCodes.Status404NotFound);
-                }
-
                 var response = new GetItemResponse
                 {
-                    Id = fullItem.Id,
-                    SellerID = fullItem.SellerID,
-                    Name_en = fullItem.Name_en,
-                    Name_fr = fullItem.Name_fr,
-                    Description_en = fullItem.Description_en,
-                    Description_fr = fullItem.Description_fr,
-                    ImageUrl = fullItem.ImageUrl,
-                    CategoryID = fullItem.CategoryID,
-                    Variants = MapToItemVariantDtos(fullItem.Variants),
-                    ItemAttributes = MapToItemAttributeDtos(fullItem.ItemAttributes),
-                    CreatedAt = fullItem.CreatedAt,
-                    UpdatedAt = fullItem.UpdatedAt,
-                    Deleted = fullItem.Deleted
+                    Id = item.Id,
+                    SellerID = item.SellerID,
+                    Name_en = item.Name_en,
+                    Name_fr = item.Name_fr,
+                    Description_en = item.Description_en,
+                    Description_fr = item.Description_fr,
+                    ImageUrl = item.ImageUrl,
+                    CategoryID = item.CategoryID,
+                    Variants = MapToItemVariantDtos(item.Variants),
+                    ItemAttributes = MapToItemAttributeDtos(item.ItemAttributes),
+                    CreatedAt = item.CreatedAt,
+                    UpdatedAt = item.UpdatedAt,
+                    Deleted = item.Deleted
                 };
 
                 return Result.Success(response);

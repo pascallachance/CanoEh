@@ -55,6 +55,8 @@ interface ItemVariant {
     productIdentifierValue?: string;
     thumbnailUrl?: string;
     imageUrls?: string[]; // Array of image URLs (1-10 images)
+    thumbnailFile?: File;
+    imageFiles?: File[];
 }
 
 interface Category {
@@ -486,7 +488,9 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                 productIdentifierType: '',
                 productIdentifierValue: '',
                 thumbnailUrl: '',
-                imageUrls: []
+                imageUrls: [],
+                thumbnailFile: undefined,
+                imageFiles: []
             }];
         }
 
@@ -533,7 +537,9 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
             productIdentifierType: '',
             productIdentifierValue: '',
             thumbnailUrl: '',
-            imageUrls: []
+            imageUrls: [],
+            thumbnailFile: undefined,
+            imageFiles: []
         }));
     };
 
@@ -552,12 +558,14 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
         }
 
         if (file) {
-            // In a real app, you would upload the file and get a URL
-            // For demo purposes, we'll create a local URL
             const url = URL.createObjectURL(file);
-            updateVariant(variantId, 'thumbnailUrl', url);
+            setVariants(prev => prev.map(v => 
+                v.id === variantId ? { ...v, thumbnailUrl: url, thumbnailFile: file } : v
+            ));
         } else {
-            updateVariant(variantId, 'thumbnailUrl', '');
+            setVariants(prev => prev.map(v => 
+                v.id === variantId ? { ...v, thumbnailUrl: '', thumbnailFile: undefined } : v
+            ));
         }
     };
 
@@ -576,14 +584,14 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
         if (files && files.length > 0) {
             // Limit to 10 images maximum
             const fileArray = Array.from(files).slice(0, 10);
-            // In a real app, you would upload the files and get URLs
-            // For demo purposes, we'll create local URLs
             const urls: string[] = [];
             try {
                 fileArray.forEach(file => {
                     urls.push(URL.createObjectURL(file));
                 });
-                updateVariant(variantId, 'imageUrls', urls);
+                setVariants(prev => prev.map(v => 
+                    v.id === variantId ? { ...v, imageUrls: urls, imageFiles: fileArray } : v
+                ));
             } catch (error) {
                 // If there's an error creating object URLs, clean up any that were created
                 urls.forEach(url => {
@@ -592,10 +600,14 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                     }
                 });
                 console.error('Error creating object URLs:', error);
-                updateVariant(variantId, 'imageUrls', []);
+                setVariants(prev => prev.map(v => 
+                    v.id === variantId ? { ...v, imageUrls: [], imageFiles: [] } : v
+                ));
             }
         } else {
-            updateVariant(variantId, 'imageUrls', []);
+            setVariants(prev => prev.map(v => 
+                v.id === variantId ? { ...v, imageUrls: [], imageFiles: [] } : v
+            ));
         }
     };
 
@@ -660,6 +672,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
 
         try {
             // Transform frontend data to match backend CreateItemRequest format
+            // Images will be uploaded after item creation
             const createItemRequest = {
                 SellerID: sellerId,
                 Name_en: newItem.name,
@@ -673,8 +686,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                     Sku: variant.sku,
                     ProductIdentifierType: variant.productIdentifierType || null,
                     ProductIdentifierValue: variant.productIdentifierValue || null,
-                    ImageUrls: variant.imageUrls?.join(',') || null,
-                    ThumbnailUrl: variant.thumbnailUrl || null,
+                    ImageUrls: null, // Will be set after uploading images
+                    ThumbnailUrl: null, // Will be set after uploading thumbnail
                     ItemVariantName_en: variant.attributes_en ? Object.entries(variant.attributes_en).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
                     ItemVariantName_fr: variant.attributes_fr ? Object.entries(variant.attributes_fr).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
                     ItemVariantAttributes: variant.attributes_en ? Object.entries(variant.attributes_en).map(([attrNameEn, attrValueEn]) => {
@@ -699,13 +712,77 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                 }))
             };
 
-            // Call the API
+            // Call the API to create the item
             const response = await ApiClient.post(
                 `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/CreateItem`,
                 createItemRequest
             );
 
             if (response.ok) {
+                const result = await response.json();
+                const createdItem = result.value;
+
+                // Upload images for variants that have files
+                if (createdItem && createdItem.variants) {
+                    for (let i = 0; i < variants.length; i++) {
+                        const variant = variants[i];
+                        const createdVariant = createdItem.variants[i];
+
+                        if (!createdVariant || !createdVariant.id) {
+                            console.warn(`Variant ${i} was not created properly, skipping image upload`);
+                            continue;
+                        }
+
+                        // Upload thumbnail if present
+                        if (variant.thumbnailFile) {
+                            try {
+                                const formData = new FormData();
+                                formData.append('file', variant.thumbnailFile);
+
+                                const uploadResponse = await fetch(
+                                    `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/UploadImage?variantId=${createdVariant.id}&imageType=thumbnail`,
+                                    {
+                                        method: 'POST',
+                                        credentials: 'include',
+                                        body: formData,
+                                    }
+                                );
+
+                                if (!uploadResponse.ok) {
+                                    console.error(`Failed to upload thumbnail for variant ${createdVariant.id}`);
+                                }
+                            } catch (error) {
+                                console.error(`Error uploading thumbnail for variant ${createdVariant.id}:`, error);
+                            }
+                        }
+
+                        // Upload product images if present
+                        if (variant.imageFiles && variant.imageFiles.length > 0) {
+                            for (let imageIndex = 0; imageIndex < variant.imageFiles.length; imageIndex++) {
+                                try {
+                                    const formData = new FormData();
+                                    formData.append('file', variant.imageFiles[imageIndex]);
+
+                                    const uploadResponse = await fetch(
+                                        `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/UploadImage?variantId=${createdVariant.id}&imageType=image&imageNumber=${imageIndex + 1}`,
+                                        {
+                                            method: 'POST',
+                                            credentials: 'include',
+                                            body: formData,
+                                        }
+                                    );
+
+                                    if (!uploadResponse.ok) {
+                                        console.error(`Failed to upload image ${imageIndex + 1} for variant ${createdVariant.id}`);
+                                    }
+                                } catch (error) {
+                                    console.error(`Error uploading image ${imageIndex + 1} for variant ${createdVariant.id}:`, error);
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Refresh the seller items list from API
                 await fetchSellerItems();
                 

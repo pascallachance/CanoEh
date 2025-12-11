@@ -519,6 +519,48 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             }
         }
 
+        public async Task<Result<GetItemResponse>> GetItemByVariantIdAsync(Guid variantId, Guid userId)
+        {
+            try
+            {
+                // Get seller's items and find the one containing the variant
+                // This is more efficient than GetAllAsync as it's filtered by sellerId in the database
+                var sellerItems = await _itemRepository.GetBySellerIdAsync(userId);
+                var item = sellerItems.FirstOrDefault(i => 
+                    !i.Deleted &&
+                    i.Variants != null && 
+                    i.Variants.Any(v => v.Id == variantId && !v.Deleted));
+
+                if (item == null)
+                {
+                    return Result.Failure<GetItemResponse>("Variant not found or you do not have permission to access this item.", StatusCodes.Status404NotFound);
+                }
+
+                var response = new GetItemResponse
+                {
+                    Id = item.Id,
+                    SellerID = item.SellerID,
+                    Name_en = item.Name_en,
+                    Name_fr = item.Name_fr,
+                    Description_en = item.Description_en,
+                    Description_fr = item.Description_fr,
+                    ImageUrl = item.ImageUrl,
+                    CategoryID = item.CategoryID,
+                    Variants = MapToItemVariantDtos(item.Variants),
+                    ItemAttributes = MapToItemAttributeDtos(item.ItemAttributes),
+                    CreatedAt = item.CreatedAt,
+                    UpdatedAt = item.UpdatedAt,
+                    Deleted = item.Deleted
+                };
+
+                return Result.Success(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<GetItemResponse>($"An error occurred while retrieving item by variant: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
         // Helper methods for mapping entities to DTOs
         private static ItemVariantAttributeDto MapToItemVariantAttributeDto(ItemVariantAttribute attribute)
         {

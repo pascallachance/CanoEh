@@ -6,6 +6,7 @@ using Domain.Services.Interfaces;
 using Helpers.Common;
 using Infrastructure.Data;
 using Infrastructure.Repositories.Interfaces;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -17,13 +18,15 @@ namespace API.Tests
     {
         private readonly Mock<ICompanyService> _mockCompanyService;
         private readonly Mock<IUserService> _mockUserService;
+        private readonly Mock<IFileStorageService> _mockFileStorageService;
         private readonly CompanyController _controller;
 
         public CompanyControllerShould()
         {
             _mockCompanyService = new Mock<ICompanyService>();
             _mockUserService = new Mock<IUserService>();
-            _controller = new CompanyController(_mockCompanyService.Object, _mockUserService.Object);
+            _mockFileStorageService = new Mock<IFileStorageService>();
+            _controller = new CompanyController(_mockCompanyService.Object, _mockUserService.Object, _mockFileStorageService.Object);
         }
 
         [Fact]

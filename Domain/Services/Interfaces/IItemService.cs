@@ -14,5 +14,6 @@ namespace Domain.Services.Interfaces
         Task<Result<UpdateItemResponse>> UpdateItemAsync(UpdateItemRequest updateItemRequest);
         Task<Result<DeleteItemResponse>> DeleteItemAsync(Guid id);
         Task<Result<DeleteItemVariantResponse>> DeleteItemVariantAsync(Guid itemId, Guid variantId);
+        Task<Result<GetItemResponse>> GetItemByVariantIdAsync(Guid variantId, Guid userId);
     }
 }

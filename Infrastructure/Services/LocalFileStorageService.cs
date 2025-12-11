@@ -16,7 +16,7 @@ namespace Infrastructure.Services
             _logger = logger;
         }
 
-        public async Task<Result<string>> UploadFileAsync(IFormFile file, string? fileName = null)
+        public async Task<Result<string>> UploadFileAsync(IFormFile file, string? fileName = null, string? subPath = null)
         {
             try
             {
@@ -65,32 +65,53 @@ namespace Infrastructure.Services
                     return Result.Failure<string>("Invalid file name.", StatusCodes.Status400BadRequest);
                 }
 
-                // Ensure the upload directory exists
+                // Validate and sanitize subPath if provided
+                if (!string.IsNullOrWhiteSpace(subPath))
+                {
+                    // Normalize path separators
+                    subPath = subPath.Replace('\\', '/');
+                    
+                    // Validate subPath to prevent path traversal
+                    if (subPath.Contains("..") || 
+                        subPath.StartsWith('/') ||
+                        subPath.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
+                    {
+                        return Result.Failure<string>("Invalid subpath.", StatusCodes.Status400BadRequest);
+                    }
+                }
+
+                // Build the full directory path
                 var uploadsPath = Path.Combine(_contentRootPath, "wwwroot", _uploadFolder);
+                if (!string.IsNullOrWhiteSpace(subPath))
+                {
+                    uploadsPath = Path.Combine(uploadsPath, subPath);
+                }
+
+                // Ensure the full directory path (including subdirectories) exists
                 if (!Directory.Exists(uploadsPath))
                 {
                     Directory.CreateDirectory(uploadsPath);
-                    _logger.LogInformation("Created uploads directory at {Path}", uploadsPath);
+                    _logger.LogInformation("Created directory at {Path}", uploadsPath);
                 }
 
                 // Save the file
                 var filePath = Path.Combine(uploadsPath, fileName);
                 
-                // Check if file already exists to prevent overwrite
-                if (File.Exists(filePath))
-                {
-                    return Result.Failure<string>("A file with this name already exists.", StatusCodes.Status409Conflict);
-                }
-                
+                // Overwrite existing file if it exists (allows updating images)
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);
                 }
 
-                _logger.LogInformation("File uploaded successfully: {FileName}", fileName);
+                // Build the relative path for URL
+                var relativePath = string.IsNullOrWhiteSpace(subPath) 
+                    ? fileName 
+                    : $"{subPath}/{fileName}";
+
+                _logger.LogInformation("File uploaded successfully: {RelativePath}", relativePath);
 
                 // Return the URL
-                var fileUrl = GetFileUrl(fileName);
+                var fileUrl = GetFileUrl(relativePath);
                 return Result.Success(fileUrl);
             }
             catch (Exception ex)
@@ -100,43 +121,49 @@ namespace Infrastructure.Services
             }
         }
 
-        public string GetFileUrl(string fileName)
+        public string GetFileUrl(string filePath)
         {
+            // Normalize path separators for URL
+            filePath = filePath.Replace('\\', '/');
+            
             // Return a relative URL that can be used by the frontend
-            return $"/{_uploadFolder}/{fileName}";
+            return $"/{_uploadFolder}/{filePath}";
         }
 
-        public Task<Result> DeleteFileAsync(string fileName)
+        public Task<Result> DeleteFileAsync(string filePath)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(fileName))
+                if (string.IsNullOrWhiteSpace(filePath))
                 {
-                    return Task.FromResult(Result.Failure("File name is required.", StatusCodes.Status400BadRequest));
+                    return Task.FromResult(Result.Failure("File path is required.", StatusCodes.Status400BadRequest));
                 }
 
-                // Prevent path traversal: reject file names with path separators or relative components
-                if (fileName.Contains("..") || fileName.Contains(Path.DirectorySeparatorChar) || fileName.Contains(Path.AltDirectorySeparatorChar))
+                // Normalize path separators
+                filePath = filePath.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
+
+                // Prevent path traversal: reject file paths with relative components
+                if (filePath.Contains(".."))
                 {
-                    return Task.FromResult(Result.Failure("Invalid file name.", StatusCodes.Status400BadRequest));
+                    return Task.FromResult(Result.Failure("Invalid file path.", StatusCodes.Status400BadRequest));
                 }
 
                 var uploadsRoot = Path.GetFullPath(Path.Combine(_contentRootPath, "wwwroot", _uploadFolder));
-                var filePath = Path.GetFullPath(Path.Combine(uploadsRoot, fileName));
+                var fullFilePath = Path.GetFullPath(Path.Combine(uploadsRoot, filePath));
 
                 // Ensure the file is within the uploads directory
-                if (!filePath.StartsWith(uploadsRoot + Path.DirectorySeparatorChar) && filePath != uploadsRoot)
+                if (!fullFilePath.StartsWith(uploadsRoot + Path.DirectorySeparatorChar) && fullFilePath != uploadsRoot)
                 {
                     return Task.FromResult(Result.Failure("Invalid file path.", StatusCodes.Status400BadRequest));
                 }
                 
-                if (!File.Exists(filePath))
+                if (!File.Exists(fullFilePath))
                 {
                     return Task.FromResult(Result.Failure("File not found.", StatusCodes.Status404NotFound));
                 }
 
-                File.Delete(filePath);
-                _logger.LogInformation("File deleted successfully: {FileName}", fileName);
+                File.Delete(fullFilePath);
+                _logger.LogInformation("File deleted successfully: {FilePath}", filePath);
 
                 return Task.FromResult(Result.Success());
             }

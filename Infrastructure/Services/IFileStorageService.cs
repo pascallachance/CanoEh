@@ -10,21 +10,22 @@ namespace Infrastructure.Services
         /// </summary>
         /// <param name="file">The file to upload.</param>
         /// <param name="fileName">Optional custom file name. If not provided, a unique name will be generated.</param>
+        /// <param name="subPath">Optional subdirectory path (e.g., "companyId/variantId"). Directories will be created automatically.</param>
         /// <returns>A Result containing the file URL if successful, or an error message.</returns>
-        Task<Result<string>> UploadFileAsync(IFormFile file, string? fileName = null);
+        Task<Result<string>> UploadFileAsync(IFormFile file, string? fileName = null, string? subPath = null);
 
         /// <summary>
         /// Gets the URL for accessing a file.
         /// </summary>
-        /// <param name="fileName">The name of the file.</param>
+        /// <param name="filePath">The relative path to the file (can include subdirectories).</param>
         /// <returns>The URL for accessing the file.</returns>
-        string GetFileUrl(string fileName);
+        string GetFileUrl(string filePath);
 
         /// <summary>
         /// Deletes a file from the storage system.
         /// </summary>
-        /// <param name="fileName">The name of the file to delete.</param>
+        /// <param name="filePath">The relative path to the file to delete (can include subdirectories).</param>
         /// <returns>A Result indicating success or failure.</returns>
-        Task<Result> DeleteFileAsync(string fileName);
+        Task<Result> DeleteFileAsync(string filePath);
     }
 }

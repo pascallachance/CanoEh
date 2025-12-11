@@ -228,10 +228,12 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Uploads a product image.
+        /// Uploads a product image (thumbnail or additional images).
         /// </summary>
         /// <param name="file">The image file to upload.</param>
-        /// <param name="itemId">Optional item ID to associate the image with.</param>
+        /// <param name="variantId">The variant ID to associate the image with.</param>
+        /// <param name="imageType">Type of image: "thumbnail" or "image".</param>
+        /// <param name="imageNumber">Image number for additional images (e.g., 1, 2, 3). Only used when imageType is "image".</param>
         /// <returns>Returns the image URL or an error response.</returns>
         [HttpPost("UploadImage")]
         [Authorize]
@@ -241,36 +243,60 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UploadImage(IFormFile file, [FromQuery] Guid? itemId = null)
+        public async Task<IActionResult> UploadImage(
+            IFormFile file, 
+            [FromQuery] Guid variantId,
+            [FromQuery] string imageType = "image",
+            [FromQuery] int imageNumber = 1)
         {
             try
             {
-                // If itemId is provided, validate that the item exists and is owned by the authenticated user
-                string? fileName = null;
-                if (itemId.HasValue)
+                // Validate imageType
+                if (imageType != "thumbnail" && imageType != "image")
                 {
-                    // Get user ID from claims
-                    var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "sub" || c.Type == "userId");
-                    if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
-                    {
-                        return StatusCode(StatusCodes.Status401Unauthorized, "User ID not found in token.");
-                    }
-
-                    var itemResult = await _itemService.GetItemByIdAsync(itemId.Value);
-                    if (itemResult.IsFailure)
-                    {
-                        return NotFound("Item not found.");
-                    }
-
-                    if (itemResult.Value?.SellerID != userId)
-                    {
-                        return StatusCode(StatusCodes.Status403Forbidden, "You do not have permission to upload images for this item.");
-                    }
-
-                    fileName = $"item_{itemId.Value}";
+                    return BadRequest("Invalid imageType. Must be 'thumbnail' or 'image'.");
                 }
 
-                var result = await _fileStorageService.UploadFileAsync(file, fileName);
+                // Validate imageNumber
+                if (imageType == "image" && imageNumber < 1)
+                {
+                    return BadRequest("imageNumber must be greater than 0.");
+                }
+
+                if (variantId == Guid.Empty)
+                {
+                    return BadRequest("variantId is required.");
+                }
+
+                // Get user ID from claims
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "sub" || c.Type == "userId");
+                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+                {
+                    return StatusCode(StatusCodes.Status401Unauthorized, "User ID not found in token.");
+                }
+
+                // Get the item by variant ID and verify ownership efficiently
+                var itemResult = await _itemService.GetItemByVariantIdAsync(variantId, userId);
+                if (itemResult.IsFailure)
+                {
+                    if (itemResult.ErrorCode == StatusCodes.Status404NotFound)
+                        return NotFound("Variant not found or you do not have permission to upload images for this variant.");
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving item by variant.");
+                }
+
+                var item = itemResult.Value;
+
+                // Use SellerID as the companyID
+                var companyId = item.SellerID;
+                
+                // Build the file path according to the spec
+                // Format: {companyID}/{ItemVariantID}/{ItemVariantID}_thumb.jpg or {ItemVariantID}_{imageNumber}.jpg
+                var subPath = $"{companyId}/{variantId}";
+                var fileName = imageType == "thumbnail" 
+                    ? $"{variantId}_thumb" 
+                    : $"{variantId}_{imageNumber}";
+
+                var result = await _fileStorageService.UploadFileAsync(file, fileName, subPath);
 
                 if (result.IsFailure)
                 {

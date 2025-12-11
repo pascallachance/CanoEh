@@ -88,11 +88,11 @@ namespace Infrastructure.Services
                     uploadsPath = Path.Combine(uploadsPath, subPath);
                 }
 
-                // Ensure the upload directory exists
+                // Ensure the full directory path (including subdirectories) exists
                 if (!Directory.Exists(uploadsPath))
                 {
                     Directory.CreateDirectory(uploadsPath);
-                    _logger.LogInformation("Created uploads directory at {Path}", uploadsPath);
+                    _logger.LogInformation("Created directory at {Path}", uploadsPath);
                 }
 
                 // Save the file

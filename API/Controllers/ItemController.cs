@@ -276,6 +276,10 @@ namespace API.Controllers
                 }
 
                 // Get the item by variant ID and verify ownership
+                // Note: This loads all items from the seller to find the variant. This is acceptable
+                // because it's filtered by userId (only user's items), and we need to verify ownership.
+                // Future optimization: Add GetItemByVariantIdAsync(variantId, userId) to ItemService
+                // to avoid loading unnecessary data when dealing with sellers that have many items.
                 var allItemsResult = await _itemService.GetAllItemsFromSellerAsync(userId);
                 if (allItemsResult.IsFailure)
                 {

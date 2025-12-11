@@ -18,6 +18,8 @@ interface ItemVariant {
     productIdentifierValue?: string;
     thumbnailUrl?: string;
     imageUrls?: string[];
+    thumbnailFile?: File;
+    imageFiles?: File[];
 }
 
 interface AddProductStep4Props {
@@ -83,7 +85,9 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                 productIdentifierType: '',
                 productIdentifierValue: '',
                 thumbnailUrl: '',
-                imageUrls: []
+                imageUrls: [],
+                thumbnailFile: undefined,
+                imageFiles: []
             }];
         }
 
@@ -130,7 +134,9 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
             productIdentifierType: '',
             productIdentifierValue: '',
             thumbnailUrl: '',
-            imageUrls: []
+            imageUrls: [],
+            thumbnailFile: undefined,
+            imageFiles: []
         }));
     };
 
@@ -149,9 +155,13 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
 
         if (file) {
             const url = URL.createObjectURL(file);
-            updateVariant(variantId, 'thumbnailUrl', url);
+            setVariants(prev => prev.map(v => 
+                v.id === variantId ? { ...v, thumbnailUrl: url, thumbnailFile: file } : v
+            ));
         } else {
-            updateVariant(variantId, 'thumbnailUrl', '');
+            setVariants(prev => prev.map(v => 
+                v.id === variantId ? { ...v, thumbnailUrl: '', thumbnailFile: undefined } : v
+            ));
         }
     };
 
@@ -173,7 +183,9 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                 fileArray.forEach(file => {
                     urls.push(URL.createObjectURL(file));
                 });
-                updateVariant(variantId, 'imageUrls', urls);
+                setVariants(prev => prev.map(v => 
+                    v.id === variantId ? { ...v, imageUrls: urls, imageFiles: fileArray } : v
+                ));
             } catch (error) {
                 urls.forEach(url => {
                     if (url.startsWith('blob:')) {
@@ -181,10 +193,14 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                     }
                 });
                 console.error('Error creating object URLs:', error);
-                updateVariant(variantId, 'imageUrls', []);
+                setVariants(prev => prev.map(v => 
+                    v.id === variantId ? { ...v, imageUrls: [], imageFiles: [] } : v
+                ));
             }
         } else {
-            updateVariant(variantId, 'imageUrls', []);
+            setVariants(prev => prev.map(v => 
+                v.id === variantId ? { ...v, imageUrls: [], imageFiles: [] } : v
+            ));
         }
     };
 
@@ -226,12 +242,7 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
 
         try {
             // Transform frontend data to match backend CreateItemRequest format
-            // NOTE: Image URLs are currently blob: URLs from URL.createObjectURL()
-            // These are only valid in the current browser session and won't work when sent to the API.
-            // TODO: Implement proper file upload handling:
-            // - Convert files to base64 strings, OR
-            // - Upload files separately to get actual URLs from server, OR
-            // - Use FormData for multipart/form-data upload
+            // Images will be uploaded after item creation
             const createItemRequest = {
                 SellerID: sellerId,
                 Name_en: step1Data.name,
@@ -245,9 +256,8 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                     Sku: variant.sku,
                     ProductIdentifierType: variant.productIdentifierType || null,
                     ProductIdentifierValue: variant.productIdentifierValue || null,
-                    // WARNING: blob: URLs will not work on the server
-                    ImageUrls: variant.imageUrls?.join(',') || null,
-                    ThumbnailUrl: variant.thumbnailUrl || null,
+                    ImageUrls: null, // Will be set after uploading images
+                    ThumbnailUrl: null, // Will be set after uploading thumbnail
                     ItemVariantName_en: variant.attributes_en ? Object.entries(variant.attributes_en).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
                     ItemVariantName_fr: variant.attributes_fr ? Object.entries(variant.attributes_fr).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
                     ItemVariantAttributes: variant.attributes_en ? Object.entries(variant.attributes_en).map(([attrNameEn, attrValueEn]) => {
@@ -271,13 +281,80 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                 }))
             };
 
-            // Call the API
+            // Call the API to create the item
             const response = await ApiClient.post(
                 `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/CreateItem`,
                 createItemRequest
             );
 
             if (response.ok) {
+                const result = await response.json();
+                const createdItem = result.value;
+
+                // Upload images for variants that have files
+                // Match variants by SKU to avoid issues if backend reorders them
+                if (createdItem && createdItem.variants) {
+                    for (const variant of variants) {
+                        // Find the corresponding created variant by SKU
+                        const createdVariant = createdItem.variants.find((v: any) => v.sku === variant.sku);
+
+                        if (!createdVariant || !createdVariant.id) {
+                            console.warn(`Created variant with SKU "${variant.sku}" not found, skipping image upload`);
+                            continue;
+                        }
+
+                        // Upload thumbnail if present
+                        if (variant.thumbnailFile) {
+                            try {
+                                const formData = new FormData();
+                                formData.append('file', variant.thumbnailFile);
+
+                                const uploadResponse = await fetch(
+                                    `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/UploadImage?variantId=${createdVariant.id}&imageType=thumbnail`,
+                                    {
+                                        method: 'POST',
+                                        credentials: 'include',
+                                        body: formData,
+                                    }
+                                );
+
+                                if (!uploadResponse.ok) {
+                                    const errorText = await uploadResponse.text();
+                                    console.error(`Failed to upload thumbnail for variant ${createdVariant.id}: ${uploadResponse.status} ${uploadResponse.statusText}`, errorText);
+                                }
+                            } catch (error) {
+                                console.error(`Error uploading thumbnail for variant ${createdVariant.id}:`, error);
+                            }
+                        }
+
+                        // Upload product images if present
+                        if (variant.imageFiles && variant.imageFiles.length > 0) {
+                            for (let imageIndex = 0; imageIndex < variant.imageFiles.length; imageIndex++) {
+                                try {
+                                    const formData = new FormData();
+                                    formData.append('file', variant.imageFiles[imageIndex]);
+
+                                    const uploadResponse = await fetch(
+                                        `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/UploadImage?variantId=${createdVariant.id}&imageType=image&imageNumber=${imageIndex + 1}`,
+                                        {
+                                            method: 'POST',
+                                            credentials: 'include',
+                                            body: formData,
+                                        }
+                                    );
+
+                                    if (!uploadResponse.ok) {
+                                        const errorText = await uploadResponse.text();
+                                        console.error(`Failed to upload image ${imageIndex + 1} for variant ${createdVariant.id}: ${uploadResponse.status} ${uploadResponse.statusText}`, errorText);
+                                    }
+                                } catch (error) {
+                                    console.error(`Error uploading image ${imageIndex + 1} for variant ${createdVariant.id}:`, error);
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Show success message that will persist after navigation
                 showSuccess('Product created successfully!');
                 // Navigate to products list

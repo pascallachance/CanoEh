@@ -73,8 +73,7 @@ namespace Infrastructure.Services
                     
                     // Validate subPath to prevent path traversal
                     if (subPath.Contains("..") || 
-                        subPath.StartsWith('/') || 
-                        subPath.StartsWith('\\') ||
+                        subPath.StartsWith('/') ||
                         subPath.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
                     {
                         return Result.Failure<string>("Invalid subpath.", StatusCodes.Status400BadRequest);
@@ -98,12 +97,7 @@ namespace Infrastructure.Services
                 // Save the file
                 var filePath = Path.Combine(uploadsPath, fileName);
                 
-                // Check if file already exists to prevent overwrite
-                if (File.Exists(filePath))
-                {
-                    return Result.Failure<string>("A file with this name already exists.", StatusCodes.Status409Conflict);
-                }
-                
+                // Overwrite existing file if it exists (allows updating images)
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);

@@ -275,24 +275,16 @@ namespace API.Controllers
                     return StatusCode(StatusCodes.Status401Unauthorized, "User ID not found in token.");
                 }
 
-                // Get the item by variant ID and verify ownership
-                // Note: This loads all items from the seller to find the variant. This is acceptable
-                // because it's filtered by userId (only user's items), and we need to verify ownership.
-                // Future optimization: Add GetItemByVariantIdAsync(variantId, userId) to ItemService
-                // to avoid loading unnecessary data when dealing with sellers that have many items.
-                var allItemsResult = await _itemService.GetAllItemsFromSellerAsync(userId);
-                if (allItemsResult.IsFailure)
+                // Get the item by variant ID and verify ownership efficiently
+                var itemResult = await _itemService.GetItemByVariantIdAsync(variantId, userId);
+                if (itemResult.IsFailure)
                 {
-                    return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving items.");
+                    if (itemResult.ErrorCode == StatusCodes.Status404NotFound)
+                        return NotFound("Variant not found or you do not have permission to upload images for this variant.");
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving item by variant.");
                 }
 
-                var item = allItemsResult.Value?.FirstOrDefault(i => 
-                    i.Variants?.Any(v => v.Id == variantId) == true);
-                
-                if (item == null)
-                {
-                    return NotFound("Variant not found or you do not have permission to upload images for this variant.");
-                }
+                var item = itemResult.Value;
 
                 // Use SellerID as the companyID
                 var companyId = item.SellerID;

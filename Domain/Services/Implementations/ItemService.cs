@@ -519,6 +519,62 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             }
         }
 
+        public async Task<Result<GetItemResponse>> GetItemByVariantIdAsync(Guid variantId, Guid userId)
+        {
+            try
+            {
+                // Query to find the item that contains the specified variant and belongs to the user
+                using var connection = new SqlConnection(_connectionString);
+                await connection.OpenAsync();
+
+                var query = @"
+                    SELECT i.*
+                    FROM dbo.Item i
+                    INNER JOIN dbo.ItemVariant iv ON i.Id = iv.ItemId
+                    WHERE iv.Id = @VariantId 
+                    AND i.SellerID = @UserId
+                    AND i.Deleted = 0
+                    AND iv.Deleted = 0";
+
+                var item = await connection.QueryFirstOrDefaultAsync<Item>(query, new { VariantId = variantId, UserId = userId });
+
+                if (item == null)
+                {
+                    return Result.Failure<GetItemResponse>("Variant not found or you do not have permission to access this item.", StatusCodes.Status404NotFound);
+                }
+
+                // Get full item details with variants and attributes
+                var fullItem = await _itemRepository.GetItemByIdAsync(item.Id);
+                if (fullItem == null)
+                {
+                    return Result.Failure<GetItemResponse>("Item not found.", StatusCodes.Status404NotFound);
+                }
+
+                var response = new GetItemResponse
+                {
+                    Id = fullItem.Id,
+                    SellerID = fullItem.SellerID,
+                    Name_en = fullItem.Name_en,
+                    Name_fr = fullItem.Name_fr,
+                    Description_en = fullItem.Description_en,
+                    Description_fr = fullItem.Description_fr,
+                    ImageUrl = fullItem.ImageUrl,
+                    CategoryID = fullItem.CategoryID,
+                    Variants = MapToItemVariantDtos(fullItem.Variants),
+                    ItemAttributes = MapToItemAttributeDtos(fullItem.ItemAttributes),
+                    CreatedAt = fullItem.CreatedAt,
+                    UpdatedAt = fullItem.UpdatedAt,
+                    Deleted = fullItem.Deleted
+                };
+
+                return Result.Success(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<GetItemResponse>($"An error occurred while retrieving item by variant: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
         // Helper methods for mapping entities to DTOs
         private static ItemVariantAttributeDto MapToItemVariantAttributeDto(ItemVariantAttribute attribute)
         {

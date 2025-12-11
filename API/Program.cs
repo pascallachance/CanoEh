@@ -14,10 +14,11 @@ public class Program
 {
     private static void Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
-
-        // Set the web root path explicitly
-        builder.WebHost.UseWebRoot("wwwroot");
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            Args = args,
+            WebRootPath = "wwwroot"
+        });
 
         var jwtSettings = builder.Configuration.GetSection("JwtSettings");
         var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Secret"]);

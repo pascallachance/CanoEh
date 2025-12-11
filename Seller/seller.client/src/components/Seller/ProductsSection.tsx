@@ -749,7 +749,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                 );
 
                                 if (!uploadResponse.ok) {
-                                    console.error(`Failed to upload thumbnail for variant ${createdVariant.id}`);
+                                    const errorText = await uploadResponse.text();
+                                    console.error(`Failed to upload thumbnail for variant ${createdVariant.id}: ${uploadResponse.status} ${uploadResponse.statusText}`, errorText);
                                 }
                             } catch (error) {
                                 console.error(`Error uploading thumbnail for variant ${createdVariant.id}:`, error);
@@ -773,7 +774,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                     );
 
                                     if (!uploadResponse.ok) {
-                                        console.error(`Failed to upload image ${imageIndex + 1} for variant ${createdVariant.id}`);
+                                        const errorText = await uploadResponse.text();
+                                        console.error(`Failed to upload image ${imageIndex + 1} for variant ${createdVariant.id}: ${uploadResponse.status} ${uploadResponse.statusText}`, errorText);
                                     }
                                 } catch (error) {
                                     console.error(`Error uploading image ${imageIndex + 1} for variant ${createdVariant.id}:`, error);

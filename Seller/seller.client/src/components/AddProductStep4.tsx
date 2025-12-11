@@ -292,13 +292,14 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                 const createdItem = result.value;
 
                 // Upload images for variants that have files
+                // Match variants by SKU to avoid issues if backend reorders them
                 if (createdItem && createdItem.variants) {
-                    for (let i = 0; i < variants.length; i++) {
-                        const variant = variants[i];
-                        const createdVariant = createdItem.variants[i];
+                    for (const variant of variants) {
+                        // Find the corresponding created variant by SKU
+                        const createdVariant = createdItem.variants.find((v: any) => v.sku === variant.sku);
 
                         if (!createdVariant || !createdVariant.id) {
-                            console.warn(`Variant ${i} was not created properly, skipping image upload`);
+                            console.warn(`Created variant with SKU "${variant.sku}" not found, skipping image upload`);
                             continue;
                         }
 

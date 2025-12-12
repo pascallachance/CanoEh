@@ -18,6 +18,7 @@ interface NavigationState {
 interface SellerProps {
     companies: Company[];
     onLogout: () => void;
+    onEditProduct: (itemId: string, step1Data: any, step2Data: any, step3Data: any) => void;
 }
 
 interface Company {
@@ -30,7 +31,7 @@ interface Company {
     updatedAt?: string;
 }
 
-function Seller({ companies, onLogout }: SellerProps) {
+function Seller({ companies, onLogout, onEditProduct }: SellerProps) {
     const location = useLocation();
     const [activeSection, setActiveSection] = useState<SellerSection>('analytics');
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
@@ -64,6 +65,7 @@ function Seller({ companies, onLogout }: SellerProps) {
                     companies={companies} 
                     viewMode="list"
                     onViewModeChange={() => {}}
+                    onEditProduct={onEditProduct}
                 />;
             case 'orders':
                 return <OrdersSection companies={companies} />;

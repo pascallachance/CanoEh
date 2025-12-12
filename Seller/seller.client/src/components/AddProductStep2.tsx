@@ -20,6 +20,7 @@ interface AddProductStep2Props {
     onBack: () => void;
     step1Data: AddProductStep1Data;
     initialData?: AddProductStep2Data;
+    editMode?: boolean;
 }
 
 interface Category {
@@ -31,7 +32,7 @@ interface Category {
     updatedAt?: string;
 }
 
-function AddProductStep2({ onNext, onBack, initialData }: AddProductStep2Props) {
+function AddProductStep2({ onNext, onBack, initialData, editMode = false }: AddProductStep2Props) {
     const [formData, setFormData] = useState<AddProductStep2Data>(initialData || {
         categoryId: '',
         itemAttributes: []
@@ -153,7 +154,7 @@ function AddProductStep2({ onNext, onBack, initialData }: AddProductStep2Props) 
         <div className="add-product-step2-container">
             <div className="add-product-step2-content">
                 <header className="step-header">
-                    <h1>Add New Product</h1>
+                    <h1>{editMode ? 'Edit Product' : 'Add New Product'}</h1>
                     <div className="step-indicator">
                         <span className="step completed">1</span>
                         <span className="step-divider"></span>

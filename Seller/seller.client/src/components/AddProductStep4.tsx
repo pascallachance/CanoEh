@@ -29,9 +29,11 @@ interface AddProductStep4Props {
     step2Data: AddProductStep2Data;
     step3Data: AddProductStep3Data;
     companies: Array<{ id: string; ownerID: string; name: string }>;
+    editMode?: boolean;
+    itemId?: string;
 }
 
-function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, companies }: AddProductStep4Props) {
+function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, companies, editMode = false, itemId }: AddProductStep4Props) {
     const { showSuccess, showError } = useNotifications();
     const [variants, setVariants] = useState<ItemVariant[]>([]);
     const [isSaving, setIsSaving] = useState(false);
@@ -241,51 +243,178 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
         setError('');
 
         try {
-            // Transform frontend data to match backend CreateItemRequest format
-            // Images will be uploaded after item creation
-            const createItemRequest = {
-                SellerID: sellerId,
-                Name_en: step1Data.name,
-                Name_fr: step1Data.name_fr,
-                Description_en: step1Data.description,
-                Description_fr: step1Data.description_fr,
-                CategoryID: step2Data.categoryId,
-                Variants: variants.map(variant => ({
-                    Price: variant.price,
-                    StockQuantity: variant.stock,
-                    Sku: variant.sku,
-                    ProductIdentifierType: variant.productIdentifierType || null,
-                    ProductIdentifierValue: variant.productIdentifierValue || null,
-                    ImageUrls: null, // Will be set after uploading images
-                    ThumbnailUrl: null, // Will be set after uploading thumbnail
-                    ItemVariantName_en: variant.attributes_en ? Object.entries(variant.attributes_en).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
-                    ItemVariantName_fr: variant.attributes_fr ? Object.entries(variant.attributes_fr).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
-                    ItemVariantAttributes: variant.attributes_en ? Object.entries(variant.attributes_en).map(([attrNameEn, attrValueEn]) => {
-                        const itemAttribute = step3Data.attributes.find(attr => attr.name_en === attrNameEn);
-                        const attrNameFr = itemAttribute?.name_fr || null;
-                        const attrValueFr = attrNameFr && variant.attributes_fr ? variant.attributes_fr[attrNameFr] : null;
-                        return {
-                            AttributeName_en: attrNameEn,
-                            AttributeName_fr: attrNameFr,
-                            Attributes_en: attrValueEn,
-                            Attributes_fr: attrValueFr
-                        };
-                    }) : [],
-                    Deleted: false
-                })),
-                ItemAttributes: step2Data.itemAttributes.map(attr => ({
-                    AttributeName_en: attr.name_en,
-                    AttributeName_fr: attr.name_fr,
-                    Attributes_en: attr.value_en,
-                    Attributes_fr: attr.value_fr
-                }))
-            };
+            if (editMode && itemId) {
+                // Update mode - call UpdateItem endpoint
+                const updateItemRequest = {
+                    Id: itemId,
+                    SellerID: sellerId,
+                    Name_en: step1Data.name,
+                    Name_fr: step1Data.name_fr,
+                    Description_en: step1Data.description,
+                    Description_fr: step1Data.description_fr,
+                    CategoryID: step2Data.categoryId,
+                    Variants: variants.map(variant => ({
+                        Id: variant.id.startsWith('variant-') ? null : variant.id, // null for new variants
+                        Price: variant.price,
+                        StockQuantity: variant.stock,
+                        Sku: variant.sku,
+                        ProductIdentifierType: variant.productIdentifierType || null,
+                        ProductIdentifierValue: variant.productIdentifierValue || null,
+                        ImageUrls: null, // Will be set after uploading images
+                        ThumbnailUrl: null, // Will be set after uploading thumbnail
+                        ItemVariantName_en: variant.attributes_en ? Object.entries(variant.attributes_en).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
+                        ItemVariantName_fr: variant.attributes_fr ? Object.entries(variant.attributes_fr).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
+                        ItemVariantAttributes: variant.attributes_en ? Object.entries(variant.attributes_en).map(([attrNameEn, attrValueEn]) => {
+                            const itemAttribute = step3Data.attributes.find(attr => attr.name_en === attrNameEn);
+                            const attrNameFr = itemAttribute?.name_fr || null;
+                            const attrValueFr = attrNameFr && variant.attributes_fr ? variant.attributes_fr[attrNameFr] : null;
+                            return {
+                                AttributeName_en: attrNameEn,
+                                AttributeName_fr: attrNameFr,
+                                Attributes_en: attrValueEn,
+                                Attributes_fr: attrValueFr
+                            };
+                        }) : [],
+                        Deleted: false
+                    })),
+                    ItemAttributes: step2Data.itemAttributes.map(attr => ({
+                        AttributeName_en: attr.name_en,
+                        AttributeName_fr: attr.name_fr,
+                        Attributes_en: attr.value_en,
+                        Attributes_fr: attr.value_fr
+                    }))
+                };
 
-            // Call the API to create the item
-            const response = await ApiClient.post(
-                `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/CreateItem`,
-                createItemRequest
-            );
+                // Call the API to update the item
+                const response = await ApiClient.put(
+                    `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/UpdateItem`,
+                    updateItemRequest
+                );
+
+                if (response.ok) {
+                    const result = await response.json();
+                    const updatedItem = result.value;
+
+                    // Upload images for variants that have files
+                    if (updatedItem && updatedItem.variants) {
+                        for (const variant of variants) {
+                            // Find the corresponding updated variant by SKU
+                            const updatedVariant = updatedItem.variants.find((v: any) => v.sku === variant.sku);
+
+                            if (!updatedVariant || !updatedVariant.id) {
+                                console.warn(`Updated variant with SKU "${variant.sku}" not found, skipping image upload`);
+                                continue;
+                            }
+
+                            // Upload thumbnail if present and it's a new file
+                            if (variant.thumbnailFile) {
+                                try {
+                                    const formData = new FormData();
+                                    formData.append('file', variant.thumbnailFile);
+
+                                    const uploadResponse = await fetch(
+                                        `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/UploadImage?variantId=${updatedVariant.id}&imageType=thumbnail`,
+                                        {
+                                            method: 'POST',
+                                            credentials: 'include',
+                                            body: formData,
+                                        }
+                                    );
+
+                                    if (!uploadResponse.ok) {
+                                        const errorText = await uploadResponse.text();
+                                        console.error(`Failed to upload thumbnail for variant ${updatedVariant.id}: ${uploadResponse.status} ${uploadResponse.statusText}`, errorText);
+                                    }
+                                } catch (error) {
+                                    console.error(`Error uploading thumbnail for variant ${updatedVariant.id}:`, error);
+                                }
+                            }
+
+                            // Upload product images if present and they're new files
+                            if (variant.imageFiles && variant.imageFiles.length > 0) {
+                                for (let imageIndex = 0; imageIndex < variant.imageFiles.length; imageIndex++) {
+                                    try {
+                                        const formData = new FormData();
+                                        formData.append('file', variant.imageFiles[imageIndex]);
+
+                                        const uploadResponse = await fetch(
+                                            `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/UploadImage?variantId=${updatedVariant.id}&imageType=image&imageNumber=${imageIndex + 1}`,
+                                            {
+                                                method: 'POST',
+                                                credentials: 'include',
+                                                body: formData,
+                                            }
+                                        );
+
+                                        if (!uploadResponse.ok) {
+                                            const errorText = await uploadResponse.text();
+                                            console.error(`Failed to upload image ${imageIndex + 1} for variant ${updatedVariant.id}: ${uploadResponse.status} ${uploadResponse.statusText}`, errorText);
+                                        }
+                                    } catch (error) {
+                                        console.error(`Error uploading image ${imageIndex + 1} for variant ${updatedVariant.id}:`, error);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Show success message
+                    showSuccess('Product updated successfully!');
+                    // Navigate to products list
+                    onSubmit();
+                } else {
+                    const errorText = await response.text();
+                    const errorMessage = `Failed to update item: ${errorText}`;
+                    setError(errorMessage);
+                    showError(errorMessage);
+                }
+            } else {
+                // Create mode - call CreateItem endpoint
+                // Transform frontend data to match backend CreateItemRequest format
+                // Images will be uploaded after item creation
+                const createItemRequest = {
+                    SellerID: sellerId,
+                    Name_en: step1Data.name,
+                    Name_fr: step1Data.name_fr,
+                    Description_en: step1Data.description,
+                    Description_fr: step1Data.description_fr,
+                    CategoryID: step2Data.categoryId,
+                    Variants: variants.map(variant => ({
+                        Price: variant.price,
+                        StockQuantity: variant.stock,
+                        Sku: variant.sku,
+                        ProductIdentifierType: variant.productIdentifierType || null,
+                        ProductIdentifierValue: variant.productIdentifierValue || null,
+                        ImageUrls: null, // Will be set after uploading images
+                        ThumbnailUrl: null, // Will be set after uploading thumbnail
+                        ItemVariantName_en: variant.attributes_en ? Object.entries(variant.attributes_en).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
+                        ItemVariantName_fr: variant.attributes_fr ? Object.entries(variant.attributes_fr).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
+                        ItemVariantAttributes: variant.attributes_en ? Object.entries(variant.attributes_en).map(([attrNameEn, attrValueEn]) => {
+                            const itemAttribute = step3Data.attributes.find(attr => attr.name_en === attrNameEn);
+                            const attrNameFr = itemAttribute?.name_fr || null;
+                            const attrValueFr = attrNameFr && variant.attributes_fr ? variant.attributes_fr[attrNameFr] : null;
+                            return {
+                                AttributeName_en: attrNameEn,
+                                AttributeName_fr: attrNameFr,
+                                Attributes_en: attrValueEn,
+                                Attributes_fr: attrValueFr
+                            };
+                        }) : [],
+                        Deleted: false
+                    })),
+                    ItemAttributes: step2Data.itemAttributes.map(attr => ({
+                        AttributeName_en: attr.name_en,
+                        AttributeName_fr: attr.name_fr,
+                        Attributes_en: attr.value_en,
+                        Attributes_fr: attr.value_fr
+                    }))
+                };
+
+                // Call the API to create the item
+                const response = await ApiClient.post(
+                    `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/CreateItem`,
+                    createItemRequest
+                );
 
             if (response.ok) {
                 const result = await response.json();
@@ -365,10 +494,11 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                 setError(errorMessage);
                 showError(errorMessage);
             }
+            }
 
         } catch (error) {
-            console.error('Error creating item:', error);
-            const errorMessage = 'An unexpected error occurred while creating the item.';
+            console.error(`Error ${editMode ? 'updating' : 'creating'} item:`, error);
+            const errorMessage = `An unexpected error occurred while ${editMode ? 'updating' : 'creating'} the item.`;
             setError(errorMessage);
             showError(errorMessage);
         } finally {
@@ -380,7 +510,7 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
         <div className="add-product-step4-container">
             <div className="add-product-step4-content">
                 <header className="step-header">
-                    <h1>Add New Product</h1>
+                    <h1>{editMode ? 'Edit Product' : 'Add New Product'}</h1>
                     <div className="step-indicator">
                         <span className="step completed">1</span>
                         <span className="step-divider"></span>
@@ -552,7 +682,9 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                         disabled={isFormInvalid || isSaving}
                         className={`submit-btn${(isFormInvalid || isSaving) ? ' disabled' : ''}`}
                     >
-                        {isSaving ? 'Creating Product...' : 'Create Product'}
+                        {isSaving 
+                            ? (editMode ? 'Updating Product...' : 'Creating Product...') 
+                            : (editMode ? 'Update Product' : 'Create Product')}
                     </button>
                 </div>
             </div>

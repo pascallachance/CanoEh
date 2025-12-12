@@ -28,6 +28,7 @@ interface ProductsSectionProps {
     companies: Company[];
     viewMode?: 'list' | 'add' | 'edit';
     onViewModeChange?: (mode: 'list' | 'add' | 'edit') => void;
+    onEditProduct?: (itemId: string, step1Data: any, step2Data: any, step3Data: any) => void;
 }
 
 interface ItemAttribute {
@@ -69,6 +70,14 @@ interface Category {
 }
 
 // API response types for fetched items
+interface ApiItemVariantAttribute {
+    id: string;
+    attributeName_en: string;
+    attributeName_fr?: string;
+    attributes_en: string;
+    attributes_fr?: string;
+}
+
 interface ApiItemVariant {
     id: string;
     price: number;
@@ -80,7 +89,16 @@ interface ApiItemVariant {
     thumbnailUrl?: string;
     itemVariantName_en?: string;
     itemVariantName_fr?: string;
+    itemVariantAttributes: ApiItemVariantAttribute[];
     deleted: boolean;
+}
+
+interface ApiItemAttribute {
+    id: string;
+    attributeName_en: string;
+    attributeName_fr?: string;
+    attributes_en: string;
+    attributes_fr?: string;
 }
 
 interface ApiItem {
@@ -92,12 +110,13 @@ interface ApiItem {
     description_fr?: string;
     categoryID: string;
     variants: ApiItemVariant[];
+    itemAttributes: ApiItemAttribute[];
     createdAt: string;
     updatedAt?: string;
     deleted: boolean;
 }
 
-function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: ProductsSectionProps) {
+function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEditProduct }: ProductsSectionProps) {
     const [categories, setCategories] = useState<Category[]>([]);
     const { language, t } = useLanguage();
     const { showError, showSuccess } = useNotifications();
@@ -364,43 +383,72 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
 
     // Handle editing an item
     const handleEditItem = (item: ApiItem) => {
-        setEditingItemId(item.id);
-        
-        // Populate the form with existing item data
-        setNewItem({
+        if (!onEditProduct) {
+            return;
+        }
+
+        // Step 1: Basic item info
+        const step1Data = {
             name: item.name_en,
             name_fr: item.name_fr,
             description: item.description_en || '',
-            description_fr: item.description_fr || '',
+            description_fr: item.description_fr || ''
+        };
+
+        // Step 2: Category and item attributes
+        const step2Data = {
             categoryId: item.categoryID,
-            attributes: [], // We'll need to reconstruct these from variants
-            itemAttributes: [] // We'll need to reconstruct these from the item
+            itemAttributes: item.itemAttributes.map(attr => ({
+                name_en: attr.attributeName_en,
+                name_fr: attr.attributeName_fr || '',
+                value_en: attr.attributes_en,
+                value_fr: attr.attributes_fr || ''
+            }))
+        };
+
+        // Step 3: Variant attributes - need to reconstruct from variant data
+        // Group variant attributes by attribute name to build the ItemAttribute structure
+        const attributesMap = new Map<string, {
+            name_en: string;
+            name_fr: string;
+            values_en: Set<string>;
+            values_fr: Set<string>;
+        }>();
+
+        // Process all variants to extract unique attribute combinations
+        item.variants.filter(v => !v.deleted).forEach(variant => {
+            variant.itemVariantAttributes.forEach(attr => {
+                const key = attr.attributeName_en;
+                if (!attributesMap.has(key)) {
+                    attributesMap.set(key, {
+                        name_en: attr.attributeName_en,
+                        name_fr: attr.attributeName_fr || '',
+                        values_en: new Set(),
+                        values_fr: new Set()
+                    });
+                }
+                const attrData = attributesMap.get(key)!;
+                attrData.values_en.add(attr.attributes_en);
+                if (attr.attributes_fr) {
+                    attrData.values_fr.add(attr.attributes_fr);
+                }
+            });
         });
 
-        // Convert API variants to form variants
-        const formVariants: ItemVariant[] = item.variants
-            .filter(v => !v.deleted)
-            .map((variant) => ({
-                id: variant.id,
-                attributes_en: {}, // These would need to be parsed from itemVariantName_en
-                attributes_fr: {}, // These would need to be parsed from itemVariantName_fr
-                sku: variant.sku,
-                price: variant.price,
-                stock: variant.stockQuantity,
-                productIdentifierType: variant.productIdentifierType || '',
-                productIdentifierValue: variant.productIdentifierValue || '',
-                thumbnailUrl: variant.thumbnailUrl || '',
-                imageUrls: variant.imageUrls ? variant.imageUrls.split(',') : [],
-                thumbnailFile: undefined,
-                imageFiles: []
-            }));
+        // Convert to ItemAttribute array
+        const attributes: ItemAttribute[] = Array.from(attributesMap.values()).map(attr => ({
+            name_en: attr.name_en,
+            name_fr: attr.name_fr,
+            values_en: Array.from(attr.values_en),
+            values_fr: Array.from(attr.values_fr)
+        }));
 
-        setVariants(formVariants);
+        const step3Data = {
+            attributes
+        };
 
-        // Switch to edit mode
-        if (onViewModeChange) {
-            onViewModeChange('edit');
-        }
+        // Call the onEditProduct callback with the parsed data
+        onEditProduct(item.id, step1Data, step2Data, step3Data);
     };
 
     const addAttributeValue = () => {

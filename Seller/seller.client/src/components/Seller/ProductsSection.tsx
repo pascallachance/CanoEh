@@ -865,7 +865,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                 
             } else {
                 const errorText = await response.text();
-                showError(`Failed to ${isEditMode ? 'update' : 'create'} item: ${errorText}`);
+                showError(`Failed to create item: ${errorText}`);
             }
             
         } catch (error) {

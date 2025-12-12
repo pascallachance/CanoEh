@@ -595,6 +595,14 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     return Result.Failure("Image URL is required.", StatusCodes.Status400BadRequest);
                 }
 
+                // NOTE: This method uses a read-modify-write pattern which could be subject to race conditions
+                // if multiple concurrent requests update the same variant's images simultaneously.
+                // Consider implementing one of the following approaches for production use:
+                // 1. Optimistic concurrency control (add a RowVersion/Timestamp field to ItemVariant)
+                // 2. Database-level locking mechanisms (e.g., SELECT FOR UPDATE)
+                // 3. Application-level locking/semaphores for the same variant ID
+                // For typical usage patterns (single user editing their own products), this is acceptable.
+
                 // Get the variant from the repository
                 var variant = await _itemVariantRepository.GetByIdAsync(variantId);
                 if (variant == null)

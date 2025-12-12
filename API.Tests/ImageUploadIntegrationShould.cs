@@ -57,16 +57,11 @@ namespace API.Tests
             }
         }
 
-        [Fact]
-        public async Task UploadImage_CreateDirectoryStructure_WhenUploadingThumbnail()
+        /// <summary>
+        /// Helper method to set up mock user service with a test user entity
+        /// </summary>
+        private Infrastructure.Data.User SetupMockUserService(Guid userId, string userEmail)
         {
-            // Arrange
-            var companyId = Guid.NewGuid();
-            var variantId = Guid.NewGuid();
-            var userId = Guid.NewGuid();
-            var userEmail = "testuser@example.com";
-            
-            // Mock the user service to return a user entity
             var mockUser = new Infrastructure.Data.User
             {
                 ID = userId,
@@ -81,6 +76,21 @@ namespace API.Tests
             _mockUserService
                 .Setup(s => s.GetUserEntityAsync(userEmail))
                 .ReturnsAsync(Result.Success<Infrastructure.Data.User?>(mockUser));
+            
+            return mockUser;
+        }
+
+        [Fact]
+        public async Task UploadImage_CreateDirectoryStructure_WhenUploadingThumbnail()
+        {
+            // Arrange
+            var companyId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var userEmail = "testuser@example.com";
+            
+            // Mock the user service to return a user entity
+            SetupMockUserService(userId, userEmail);
             
             // Mock the item service to return an item
             var mockItem = new GetItemResponse
@@ -149,20 +159,7 @@ namespace API.Tests
             var userEmail = "testuser@example.com";
             
             // Mock the user service to return a user entity
-            var mockUser = new Infrastructure.Data.User
-            {
-                ID = userId,
-                Email = userEmail,
-                Firstname = "Test",
-                Lastname = "User",
-                Password = "hashedpassword",
-                Createdat = DateTime.UtcNow,
-                ValidEmail = true
-            };
-            
-            _mockUserService
-                .Setup(s => s.GetUserEntityAsync(userEmail))
-                .ReturnsAsync(Result.Success<Infrastructure.Data.User?>(mockUser));
+            SetupMockUserService(userId, userEmail);
             
             var mockItem = new GetItemResponse
             {
@@ -229,20 +226,7 @@ namespace API.Tests
             var userEmail = "testuser@example.com";
             
             // Mock the user service to return a user entity
-            var mockUser = new Infrastructure.Data.User
-            {
-                ID = userId,
-                Email = userEmail,
-                Firstname = "Test",
-                Lastname = "User",
-                Password = "hashedpassword",
-                Createdat = DateTime.UtcNow,
-                ValidEmail = true
-            };
-            
-            _mockUserService
-                .Setup(s => s.GetUserEntityAsync(userEmail))
-                .ReturnsAsync(Result.Success<Infrastructure.Data.User?>(mockUser));
+            SetupMockUserService(userId, userEmail);
             
             var mockItem = new GetItemResponse
             {
@@ -319,20 +303,7 @@ namespace API.Tests
             var userEmail = "testuser@example.com";
             
             // Mock the user service to return a user entity
-            var mockUser = new Infrastructure.Data.User
-            {
-                ID = userId,
-                Email = userEmail,
-                Firstname = "Test",
-                Lastname = "User",
-                Password = "hashedpassword",
-                Createdat = DateTime.UtcNow,
-                ValidEmail = true
-            };
-            
-            _mockUserService
-                .Setup(s => s.GetUserEntityAsync(userEmail))
-                .ReturnsAsync(Result.Success<Infrastructure.Data.User?>(mockUser));
+            SetupMockUserService(userId, userEmail);
             
             _mockItemService
                 .Setup(s => s.GetItemByVariantIdAsync(variantId, userId))

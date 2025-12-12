@@ -12,9 +12,10 @@ interface AddProductStep1Props {
     onNext: (data: AddProductStep1Data) => void;
     onCancel: () => void;
     initialData?: AddProductStep1Data;
+    editMode?: boolean;
 }
 
-function AddProductStep1({ onNext, onCancel, initialData }: AddProductStep1Props) {
+function AddProductStep1({ onNext, onCancel, initialData, editMode = false }: AddProductStep1Props) {
     const [formData, setFormData] = useState<AddProductStep1Data>(initialData || {
         name: '',
         name_fr: '',
@@ -66,7 +67,7 @@ function AddProductStep1({ onNext, onCancel, initialData }: AddProductStep1Props
         <div className="add-product-step1-container">
             <div className="add-product-step1-content">
                 <header className="step-header">
-                    <h1>Add New Product</h1>
+                    <h1>{editMode ? 'Edit Product' : 'Add New Product'}</h1>
                     <div className="step-indicator">
                         <span className="step active">1</span>
                         <span className="step-divider"></span>

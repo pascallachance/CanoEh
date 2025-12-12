@@ -12,6 +12,9 @@ import {
     formatAttributeName,
     formatVariantAttribute
 } from '../../utils/bilingualArrayUtils';
+import type { AddProductStep1Data } from '../AddProductStep1';
+import type { AddProductStep2Data } from '../AddProductStep2';
+import type { AddProductStep3Data } from '../AddProductStep3';
 
 
 interface Company {
@@ -28,6 +31,7 @@ interface ProductsSectionProps {
     companies: Company[];
     viewMode?: 'list' | 'add' | 'edit';
     onViewModeChange?: (mode: 'list' | 'add' | 'edit') => void;
+    onEditProduct?: (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, step3Data: AddProductStep3Data, existingVariants: any[]) => void;
 }
 
 interface ItemAttribute {
@@ -69,6 +73,14 @@ interface Category {
 }
 
 // API response types for fetched items
+interface ApiItemVariantAttribute {
+    id: string;
+    attributeName_en: string;
+    attributeName_fr?: string;
+    attributes_en: string;
+    attributes_fr?: string;
+}
+
 interface ApiItemVariant {
     id: string;
     price: number;
@@ -80,7 +92,16 @@ interface ApiItemVariant {
     thumbnailUrl?: string;
     itemVariantName_en?: string;
     itemVariantName_fr?: string;
+    itemVariantAttributes: ApiItemVariantAttribute[];
     deleted: boolean;
+}
+
+interface ApiItemAttribute {
+    id: string;
+    attributeName_en: string;
+    attributeName_fr?: string;
+    attributes_en: string;
+    attributes_fr?: string;
 }
 
 interface ApiItem {
@@ -92,12 +113,13 @@ interface ApiItem {
     description_fr?: string;
     categoryID: string;
     variants: ApiItemVariant[];
+    itemAttributes: ApiItemAttribute[];
     createdAt: string;
     updatedAt?: string;
     deleted: boolean;
 }
 
-function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: ProductsSectionProps) {
+function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEditProduct }: ProductsSectionProps) {
     const [categories, setCategories] = useState<Category[]>([]);
     const { language, t } = useLanguage();
     const { showError, showSuccess } = useNotifications();
@@ -364,43 +386,109 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
 
     // Handle editing an item
     const handleEditItem = (item: ApiItem) => {
-        setEditingItemId(item.id);
-        
-        // Populate the form with existing item data
-        setNewItem({
+        if (!onEditProduct) {
+            return;
+        }
+
+        // Step 1: Basic item info
+        const step1Data = {
             name: item.name_en,
             name_fr: item.name_fr,
             description: item.description_en || '',
-            description_fr: item.description_fr || '',
+            description_fr: item.description_fr || ''
+        };
+
+        // Step 2: Category and item attributes
+        const step2Data = {
             categoryId: item.categoryID,
-            attributes: [], // We'll need to reconstruct these from variants
-            itemAttributes: [] // We'll need to reconstruct these from the item
+            itemAttributes: item.itemAttributes.map(attr => ({
+                name_en: attr.attributeName_en,
+                name_fr: attr.attributeName_fr || '',
+                value_en: attr.attributes_en,
+                value_fr: attr.attributes_fr || ''
+            }))
+        };
+
+        // Step 3: Variant attributes - need to reconstruct from variant data
+        // To preserve order, we'll use the order from the first variant and build a map
+        const attributeOrderMap = new Map<string, number>();
+        const attributesMap = new Map<string, {
+            name_en: string;
+            name_fr: string;
+            values: Array<{ en: string; fr: string }>;
+        }>();
+
+        // Get active variants
+        const activeVariants = item.variants.filter(v => !v.deleted);
+
+        // Process all variants to extract unique attribute combinations
+        // Preserve the order by using first variant's attribute order
+        activeVariants.forEach((variant, variantIndex) => {
+            variant.itemVariantAttributes.forEach((attr, attrIndex) => {
+                const key = attr.attributeName_en;
+                
+                // Set order based on first variant
+                if (variantIndex === 0 && !attributeOrderMap.has(key)) {
+                    attributeOrderMap.set(key, attrIndex);
+                }
+                
+                if (!attributesMap.has(key)) {
+                    attributesMap.set(key, {
+                        name_en: attr.attributeName_en,
+                        name_fr: attr.attributeName_fr || '',
+                        values: []
+                    });
+                }
+                
+                const attrData = attributesMap.get(key)!;
+                const valuePair = {
+                    en: attr.attributes_en,
+                    fr: attr.attributes_fr || ''
+                };
+                
+                // Only add if not already present (check both en and fr)
+                const alreadyExists = attrData.values.some(
+                    v => v.en === valuePair.en && v.fr === valuePair.fr
+                );
+                if (!alreadyExists) {
+                    attrData.values.push(valuePair);
+                }
+            });
         });
 
-        // Convert API variants to form variants
-        const formVariants: ItemVariant[] = item.variants
-            .filter(v => !v.deleted)
-            .map((variant) => ({
-                id: variant.id,
-                attributes_en: {}, // These would need to be parsed from itemVariantName_en
-                attributes_fr: {}, // These would need to be parsed from itemVariantName_fr
-                sku: variant.sku,
-                price: variant.price,
-                stock: variant.stockQuantity,
-                productIdentifierType: variant.productIdentifierType || '',
-                productIdentifierValue: variant.productIdentifierValue || '',
-                thumbnailUrl: variant.thumbnailUrl || '',
-                imageUrls: variant.imageUrls ? variant.imageUrls.split(',') : [],
-                thumbnailFile: undefined,
-                imageFiles: []
+        // Convert to ItemAttribute array in the correct order
+        const attributes: ItemAttribute[] = Array.from(attributesMap.entries())
+            .sort(([keyA], [keyB]) => {
+                const orderA = attributeOrderMap.get(keyA) ?? 999;
+                const orderB = attributeOrderMap.get(keyB) ?? 999;
+                return orderA - orderB;
+            })
+            .map(([_, attr]) => ({
+                name_en: attr.name_en,
+                name_fr: attr.name_fr,
+                values_en: attr.values.map(v => v.en),
+                values_fr: attr.values.map(v => v.fr)
             }));
 
-        setVariants(formVariants);
+        const step3Data = {
+            attributes
+        };
 
-        // Switch to edit mode
-        if (onViewModeChange) {
-            onViewModeChange('edit');
-        }
+        // Prepare existing variants data to pass to Step 4
+        const existingVariants = activeVariants.map(variant => ({
+            id: variant.id,
+            sku: variant.sku,
+            price: variant.price,
+            stockQuantity: variant.stockQuantity,
+            productIdentifierType: variant.productIdentifierType,
+            productIdentifierValue: variant.productIdentifierValue,
+            thumbnailUrl: variant.thumbnailUrl,
+            imageUrls: variant.imageUrls,
+            itemVariantAttributes: variant.itemVariantAttributes
+        }));
+
+        // Call the onEditProduct callback with the parsed data
+        onEditProduct(item.id, step1Data, step2Data, step3Data, existingVariants);
     };
 
     const addAttributeValue = () => {
@@ -1370,7 +1458,9 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                     itemAttributes: []
                                 });
                                 setVariants([]);
-                                onViewModeChange && onViewModeChange('list');
+                                if (onViewModeChange) {
+                                    onViewModeChange('list');
+                                }
                             }}
                             className="products-action-button products-action-button--cancel"
                         >

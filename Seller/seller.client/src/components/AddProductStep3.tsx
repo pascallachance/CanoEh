@@ -26,9 +26,10 @@ interface AddProductStep3Props {
     step1Data: AddProductStep1Data;
     step2Data: AddProductStep2Data;
     initialData?: AddProductStep3Data;
+    editMode?: boolean;
 }
 
-function AddProductStep3({ onNext, onBack, initialData }: AddProductStep3Props) {
+function AddProductStep3({ onNext, onBack, initialData, editMode = false }: AddProductStep3Props) {
     const [formData, setFormData] = useState<AddProductStep3Data>(initialData || {
         attributes: []
     });
@@ -153,7 +154,7 @@ function AddProductStep3({ onNext, onBack, initialData }: AddProductStep3Props) 
         <div className="add-product-step3-container">
             <div className="add-product-step3-content">
                 <header className="step-header">
-                    <h1>Add New Product</h1>
+                    <h1>{editMode ? 'Edit Product' : 'Add New Product'}</h1>
                     <div className="step-indicator">
                         <span className="step completed">1</span>
                         <span className="step-divider"></span>

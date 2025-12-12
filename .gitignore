@@ -378,5 +378,8 @@ FodyWeavers.xsd
 shared/canoeh-shared-ui/package-lock.json
 
 # Uploaded files (test files)
-API/wwwroot/uploads/
-Store/Store.Server/wwwroot/uploads/
+# Keep the uploads directory structure but exclude file contents
+API/wwwroot/uploads/*
+!API/wwwroot/uploads/.gitkeep
+Store/Store.Server/wwwroot/uploads/*
+!Store/Store.Server/wwwroot/uploads/.gitkeep

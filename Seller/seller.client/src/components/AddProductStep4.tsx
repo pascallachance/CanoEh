@@ -94,20 +94,17 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                 });
                 
                 if (matchingExisting) {
-                    if (import.meta.env.DEV) {
-                        console.log('[AddProductStep4] Found matching existing variant:', {
-                            id: matchingExisting.id,
-                            thumbnailUrl: matchingExisting.thumbnailUrl,
-                            imageUrls: matchingExisting.imageUrls
-                        });
-                    }
-                    
                     // Merge existing data with generated structure
                     // Convert relative URLs to absolute URLs for display
                     const convertedThumbnailUrl = toAbsoluteUrl(matchingExisting.thumbnailUrl);
                     const convertedImageUrls = toAbsoluteUrlArray(matchingExisting.imageUrls);
                     
                     if (import.meta.env.DEV) {
+                        console.log('[AddProductStep4] Found matching existing variant:', {
+                            id: matchingExisting.id,
+                            thumbnailUrl: matchingExisting.thumbnailUrl,
+                            imageUrls: matchingExisting.imageUrls
+                        });
                         console.log('[AddProductStep4] Converted URLs - thumbnail:', convertedThumbnailUrl, 'images:', convertedImageUrls);
                     }
                     

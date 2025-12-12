@@ -7,6 +7,7 @@ using Infrastructure.Data;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace API.Tests
@@ -15,13 +16,15 @@ namespace API.Tests
     {
         private readonly Mock<IItemService> _mockItemService;
         private readonly Mock<IFileStorageService> _mockFileStorageService;
+        private readonly Mock<ILogger<ItemController>> _mockLogger;
         private readonly ItemController _controller;
 
         public ItemControllerShould()
         {
             _mockItemService = new Mock<IItemService>();
             _mockFileStorageService = new Mock<IFileStorageService>();
-            _controller = new ItemController(_mockItemService.Object, _mockFileStorageService.Object);
+            _mockLogger = new Mock<ILogger<ItemController>>();
+            _controller = new ItemController(_mockItemService.Object, _mockFileStorageService.Object, _mockLogger.Object);
         }
 
         [Fact]

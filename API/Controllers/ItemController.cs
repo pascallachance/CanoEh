@@ -10,10 +10,11 @@ namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ItemController(IItemService itemService, IFileStorageService fileStorageService) : ControllerBase
+    public class ItemController(IItemService itemService, IFileStorageService fileStorageService, ILogger<ItemController> logger) : ControllerBase
     {
         private readonly IItemService _itemService = itemService;
         private readonly IFileStorageService _fileStorageService = fileStorageService;
+        private readonly ILogger<ItemController> _logger = logger;
 
         /// <summary>
         /// Creates a new item.
@@ -251,43 +252,63 @@ namespace API.Controllers
         {
             try
             {
+                _logger.LogInformation("=== UploadImage API START ===");
+                _logger.LogInformation("Request parameters - variantId: {VariantId}, imageType: {ImageType}, imageNumber: {ImageNumber}", 
+                    variantId, imageType, imageNumber);
+                _logger.LogInformation("File info - FileName: {FileName}, Length: {Length}, ContentType: {ContentType}", 
+                    file?.FileName, file?.Length, file?.ContentType);
+                
                 // Validate imageType
                 if (imageType != "thumbnail" && imageType != "image")
                 {
+                    _logger.LogWarning("Invalid imageType: {ImageType}", imageType);
                     return BadRequest("Invalid imageType. Must be 'thumbnail' or 'image'.");
                 }
 
                 // Validate imageNumber
                 if (imageType == "image" && imageNumber < 1)
                 {
+                    _logger.LogWarning("Invalid imageNumber: {ImageNumber}", imageNumber);
                     return BadRequest("imageNumber must be greater than 0.");
                 }
 
                 if (variantId == Guid.Empty)
                 {
+                    _logger.LogWarning("Empty variantId provided");
                     return BadRequest("variantId is required.");
                 }
 
                 // Get user ID from claims
                 var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "sub" || c.Type == "userId");
+                _logger.LogInformation("User claims - Count: {ClaimCount}, Found userId claim: {HasUserId}", 
+                    User.Claims.Count(), userIdClaim != null);
+                
                 if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
                 {
+                    _logger.LogWarning("User ID not found in token or invalid. UserIdClaim: {UserIdClaim}", userIdClaim?.Value);
                     return StatusCode(StatusCodes.Status401Unauthorized, "User ID not found in token.");
                 }
+                
+                _logger.LogInformation("Authenticated user ID: {UserId}", userId);
 
                 // Get the item by variant ID and verify ownership efficiently
+                _logger.LogInformation("Retrieving item by variant ID: {VariantId} for user: {UserId}", variantId, userId);
                 var itemResult = await _itemService.GetItemByVariantIdAsync(variantId, userId);
                 if (itemResult.IsFailure)
                 {
+                    _logger.LogWarning("Failed to retrieve item by variant. ErrorCode: {ErrorCode}, Error: {Error}", 
+                        itemResult.ErrorCode, itemResult.Error);
                     if (itemResult.ErrorCode == StatusCodes.Status404NotFound)
                         return NotFound("Variant not found or you do not have permission to upload images for this variant.");
                     return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving item by variant.");
                 }
 
                 var item = itemResult.Value;
+                _logger.LogInformation("Item retrieved successfully - ItemId: {ItemId}, SellerID: {SellerId}", item.Id, item.SellerID);
 
                 // Use SellerID as the companyID
                 var companyId = item.SellerID;
+                _logger.LogInformation("Using SellerID as companyId: {CompanyId}", companyId);
                 
                 // Build the file path according to the spec
                 // Format: {companyID}/{ItemVariantID}/{ItemVariantID}_thumb.jpg or {ItemVariantID}_{imageNumber}.jpg
@@ -295,18 +316,26 @@ namespace API.Controllers
                 var fileName = imageType == "thumbnail" 
                     ? $"{variantId}_thumb" 
                     : $"{variantId}_{imageNumber}";
+                
+                _logger.LogInformation("Upload parameters - SubPath: {SubPath}, FileName: {FileName}", subPath, fileName);
 
+                _logger.LogInformation("Calling FileStorageService.UploadFileAsync...");
                 var result = await _fileStorageService.UploadFileAsync(file, fileName, subPath);
 
                 if (result.IsFailure)
                 {
+                    _logger.LogError("FileStorageService returned failure - ErrorCode: {ErrorCode}, Error: {Error}", 
+                        result.ErrorCode, result.Error);
                     return StatusCode(result.ErrorCode ?? 500, result.Error);
                 }
 
+                _logger.LogInformation("=== UploadImage API SUCCESS === Image URL: {ImageUrl}", result.Value);
                 return Ok(new { imageUrl = result.Value });
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "=== UploadImage API FAILED === Exception: {Message}", ex.Message);
+                _logger.LogError("Stack trace: {StackTrace}", ex.StackTrace);
                 Debug.WriteLine($"An error occurred: {ex.Message}");
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
             }

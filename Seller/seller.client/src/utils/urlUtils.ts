@@ -10,10 +10,14 @@
  * @returns The absolute URL, or empty string if input is falsy
  */
 export function toAbsoluteUrl(url: string | undefined): string {
-    console.log('[toAbsoluteUrl] Input URL:', url);
+    if (import.meta.env.DEV) {
+        console.log('[toAbsoluteUrl] Input URL:', url);
+    }
     
     if (!url) {
-        console.log('[toAbsoluteUrl] URL is falsy, returning empty string');
+        if (import.meta.env.DEV) {
+            console.log('[toAbsoluteUrl] URL is falsy, returning empty string');
+        }
         return '';
     }
     
@@ -22,7 +26,9 @@ export function toAbsoluteUrl(url: string | undefined): string {
         url.startsWith('https://') || 
         url.startsWith('blob:') || 
         url.startsWith('data:')) {
-        console.log('[toAbsoluteUrl] URL is already absolute or special scheme, returning as-is:', url);
+        if (import.meta.env.DEV) {
+            console.log('[toAbsoluteUrl] URL is already absolute or special scheme, returning as-is:', url);
+        }
         return url;
     }
     
@@ -30,7 +36,9 @@ export function toAbsoluteUrl(url: string | undefined): string {
     if (url.startsWith('/')) {
         const baseUrl = import.meta.env.VITE_API_SELLER_BASE_URL;
         
-        console.log('[toAbsoluteUrl] Relative URL detected, base URL:', baseUrl);
+        if (import.meta.env.DEV) {
+            console.log('[toAbsoluteUrl] Relative URL detected, base URL:', baseUrl);
+        }
         
         // Guard against missing or empty environment variable
         if (!baseUrl) {
@@ -39,12 +47,16 @@ export function toAbsoluteUrl(url: string | undefined): string {
         }
         
         const absoluteUrl = `${baseUrl}${url}`;
-        console.log('[toAbsoluteUrl] Converted to absolute URL:', absoluteUrl);
+        if (import.meta.env.DEV) {
+            console.log('[toAbsoluteUrl] Converted to absolute URL:', absoluteUrl);
+        }
         return absoluteUrl;
     }
     
     // For other cases, return as-is
-    console.log('[toAbsoluteUrl] No conversion needed, returning as-is:', url);
+    if (import.meta.env.DEV) {
+        console.log('[toAbsoluteUrl] No conversion needed, returning as-is:', url);
+    }
     return url;
 }
 
@@ -56,16 +68,22 @@ export function toAbsoluteUrl(url: string | undefined): string {
  * @returns An array of absolute URLs (empty strings are filtered out)
  */
 export function toAbsoluteUrlArray(urls: string | string[] | undefined): string[] {
-    console.log('[toAbsoluteUrlArray] Input URLs:', urls);
+    if (import.meta.env.DEV) {
+        console.log('[toAbsoluteUrlArray] Input URLs:', urls);
+    }
     
     if (!urls) {
-        console.log('[toAbsoluteUrlArray] URLs is falsy, returning empty array');
+        if (import.meta.env.DEV) {
+            console.log('[toAbsoluteUrlArray] URLs is falsy, returning empty array');
+        }
         return [];
     }
     
     // Convert string to array if needed
     const urlArray = typeof urls === 'string' ? urls.split(',') : urls;
-    console.log('[toAbsoluteUrlArray] URL array after conversion:', urlArray);
+    if (import.meta.env.DEV) {
+        console.log('[toAbsoluteUrlArray] URL array after conversion:', urlArray);
+    }
     
     // Trim whitespace, filter out empty strings, then convert each URL to absolute
     const result = urlArray
@@ -73,6 +91,8 @@ export function toAbsoluteUrlArray(urls: string | string[] | undefined): string[
         .filter(url => url.length > 0)
         .map(url => toAbsoluteUrl(url));
     
-    console.log('[toAbsoluteUrlArray] Result array:', result);
+    if (import.meta.env.DEV) {
+        console.log('[toAbsoluteUrlArray] Result array:', result);
+    }
     return result;
 }

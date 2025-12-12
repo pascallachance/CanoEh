@@ -63,13 +63,19 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
     // Generate variants on mount or when step3Data changes
     // In edit mode, merge with existing variant data
     useEffect(() => {
-        console.log('[AddProductStep4] Generating variants - editMode:', editMode, 'existingVariants:', existingVariants);
+        if (import.meta.env.DEV) {
+            console.log('[AddProductStep4] Generating variants - editMode:', editMode, 'existingVariants:', existingVariants);
+        }
         
         const generated = generateVariants();
-        console.log('[AddProductStep4] Generated variants:', generated);
+        if (import.meta.env.DEV) {
+            console.log('[AddProductStep4] Generated variants:', generated);
+        }
         
         if (editMode && existingVariants && existingVariants.length > 0) {
-            console.log('[AddProductStep4] Edit mode detected, merging with existing variants');
+            if (import.meta.env.DEV) {
+                console.log('[AddProductStep4] Edit mode detected, merging with existing variants');
+            }
             
             // Match generated variants with existing ones by attribute combination
             const mergedVariants = generated.map(genVariant => {
@@ -88,18 +94,22 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                 });
                 
                 if (matchingExisting) {
-                    console.log('[AddProductStep4] Found matching existing variant:', {
-                        id: matchingExisting.id,
-                        thumbnailUrl: matchingExisting.thumbnailUrl,
-                        imageUrls: matchingExisting.imageUrls
-                    });
+                    if (import.meta.env.DEV) {
+                        console.log('[AddProductStep4] Found matching existing variant:', {
+                            id: matchingExisting.id,
+                            thumbnailUrl: matchingExisting.thumbnailUrl,
+                            imageUrls: matchingExisting.imageUrls
+                        });
+                    }
                     
                     // Merge existing data with generated structure
                     // Convert relative URLs to absolute URLs for display
                     const convertedThumbnailUrl = toAbsoluteUrl(matchingExisting.thumbnailUrl);
                     const convertedImageUrls = toAbsoluteUrlArray(matchingExisting.imageUrls);
                     
-                    console.log('[AddProductStep4] Converted URLs - thumbnail:', convertedThumbnailUrl, 'images:', convertedImageUrls);
+                    if (import.meta.env.DEV) {
+                        console.log('[AddProductStep4] Converted URLs - thumbnail:', convertedThumbnailUrl, 'images:', convertedImageUrls);
+                    }
                     
                     return {
                         ...genVariant,
@@ -114,14 +124,20 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                     };
                 }
                 
-                console.log('[AddProductStep4] No matching existing variant found for generated variant:', genVariant);
+                if (import.meta.env.DEV) {
+                    console.log('[AddProductStep4] No matching existing variant found for generated variant:', genVariant);
+                }
                 return genVariant;
             });
             
-            console.log('[AddProductStep4] Final merged variants:', mergedVariants);
+            if (import.meta.env.DEV) {
+                console.log('[AddProductStep4] Final merged variants:', mergedVariants);
+            }
             setVariants(mergedVariants);
         } else {
-            console.log('[AddProductStep4] Not in edit mode or no existing variants, using generated variants');
+            if (import.meta.env.DEV) {
+                console.log('[AddProductStep4] Not in edit mode or no existing variants, using generated variants');
+            }
             setVariants(generated);
         }
     }, [step3Data, editMode, existingVariants]);
@@ -609,10 +625,16 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                                                             src={variant.thumbnailUrl} 
                                                             alt="Thumbnail" 
                                                             className="thumbnail-preview"
-                                                            onLoad={() => console.log('[AddProductStep4] Thumbnail loaded successfully:', variant.thumbnailUrl)}
+                                                            onLoad={() => {
+                                                                if (import.meta.env.DEV) {
+                                                                    console.log('[AddProductStep4] Thumbnail loaded successfully:', variant.thumbnailUrl);
+                                                                }
+                                                            }}
                                                             onError={(e) => {
-                                                                console.error('[AddProductStep4] Thumbnail failed to load:', variant.thumbnailUrl);
-                                                                console.error('[AddProductStep4] Image error event:', e);
+                                                                if (import.meta.env.DEV) {
+                                                                    console.error('[AddProductStep4] Thumbnail failed to load:', variant.thumbnailUrl);
+                                                                    console.error('[AddProductStep4] Image error event:', e);
+                                                                }
                                                             }}
                                                         />
                                                     </div>

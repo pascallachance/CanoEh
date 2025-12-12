@@ -861,7 +861,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                 }
                 
                 // Show success message
-                showSuccess(isEditMode ? 'Item updated successfully!' : 'Item created successfully!');
+                showSuccess('Item created successfully!');
                 
             } else {
                 const errorText = await response.text();

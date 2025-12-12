@@ -46,6 +46,22 @@ export const translations: TranslationResources = {
     en: 'Add Product',
     fr: 'Ajouter un produit'
   },
+  'products.editProduct': {
+    en: 'Edit Product',
+    fr: 'Modifier le produit'
+  },
+  'products.edit': {
+    en: 'Edit',
+    fr: 'Modifier'
+  },
+  'products.updateItem': {
+    en: 'Update Item',
+    fr: 'Mettre à jour l\'article'
+  },
+  'products.updating': {
+    en: 'Updating...',
+    fr: 'Mise à jour...'
+  },
 
   // Product Form Labels
   'products.itemName': {

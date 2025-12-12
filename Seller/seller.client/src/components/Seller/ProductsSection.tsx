@@ -26,8 +26,8 @@ interface Company {
 
 interface ProductsSectionProps {
     companies: Company[];
-    viewMode?: 'list' | 'add';
-    onViewModeChange?: (mode: 'list' | 'add') => void;
+    viewMode?: 'list' | 'add' | 'edit';
+    onViewModeChange?: (mode: 'list' | 'add' | 'edit') => void;
 }
 
 interface ItemAttribute {
@@ -102,7 +102,9 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
     const { language, t } = useLanguage();
     const { showError, showSuccess } = useNotifications();
     const showAddForm = viewMode === 'add';
+    const showEditForm = viewMode === 'edit';
     const showListSection = viewMode === 'list';
+    const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
     // State for fetched seller items from API
     const [sellerItems, setSellerItems] = useState<ApiItem[]>([]);
@@ -358,6 +360,47 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
             month: 'short',
             day: 'numeric'
         });
+    };
+
+    // Handle editing an item
+    const handleEditItem = (item: ApiItem) => {
+        setEditingItemId(item.id);
+        
+        // Populate the form with existing item data
+        setNewItem({
+            name: item.name_en,
+            name_fr: item.name_fr,
+            description: item.description_en || '',
+            description_fr: item.description_fr || '',
+            categoryId: item.categoryID,
+            attributes: [], // We'll need to reconstruct these from variants
+            itemAttributes: [] // We'll need to reconstruct these from the item
+        });
+
+        // Convert API variants to form variants
+        const formVariants: ItemVariant[] = item.variants
+            .filter(v => !v.deleted)
+            .map((variant, index) => ({
+                id: variant.id,
+                attributes_en: {}, // These would need to be parsed from itemVariantName_en
+                attributes_fr: {}, // These would need to be parsed from itemVariantName_fr
+                sku: variant.sku,
+                price: variant.price,
+                stock: variant.stockQuantity,
+                productIdentifierType: variant.productIdentifierType || '',
+                productIdentifierValue: variant.productIdentifierValue || '',
+                thumbnailUrl: variant.thumbnailUrl || '',
+                imageUrls: variant.imageUrls ? variant.imageUrls.split(',') : [],
+                thumbnailFile: undefined,
+                imageFiles: []
+            }));
+
+        setVariants(formVariants);
+
+        // Switch to edit mode
+        if (onViewModeChange) {
+            onViewModeChange('edit');
+        }
     };
 
     const addAttributeValue = () => {
@@ -671,6 +714,16 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
         setIsSaving(true);
 
         try {
+            const isEditMode = editingItemId !== null;
+            
+            // For edit mode, we'll need to call an update endpoint (if available)
+            // For now, we'll only support create mode
+            if (isEditMode) {
+                showError('Edit functionality is not yet fully implemented. Please contact support.');
+                setIsSaving(false);
+                return;
+            }
+
             // Transform frontend data to match backend CreateItemRequest format
             // Images will be uploaded after item creation
             const createItemRequest = {
@@ -800,6 +853,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                     itemAttributes: []
                 });
                 setVariants([]);
+                setEditingItemId(null);
                 
                 // Switch back to list view after saving
                 if (onViewModeChange) {
@@ -807,16 +861,16 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                 }
                 
                 // Show success message
-                showSuccess('Item created successfully!');
+                showSuccess(isEditMode ? 'Item updated successfully!' : 'Item created successfully!');
                 
             } else {
                 const errorText = await response.text();
-                showError(`Failed to create item: ${errorText}`);
+                showError(`Failed to ${isEditMode ? 'update' : 'create'} item: ${errorText}`);
             }
             
         } catch (error) {
-            console.error('Error creating item:', error);
-            showError('An unexpected error occurred while creating the item.');
+            console.error('Error saving item:', error);
+            showError('An unexpected error occurred while saving the item.');
         } finally {
             setIsSaving(false);
         }
@@ -824,9 +878,9 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
 
     return (
         <div className="section-container">
-            {showAddForm && (
+            {(showAddForm || showEditForm) && (
                 <div className="products-add-form">
-                    <h3>{t('products.addProduct')}</h3>
+                    <h3>{showEditForm ? t('products.editProduct') : t('products.addProduct')}</h3>
                     
                     <div className="products-form-group">
                         <label className="products-form-label">
@@ -1299,10 +1353,25 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                             disabled={isFormInvalid || isSaving}
                             className={`products-action-button products-action-button--save${(isFormInvalid || isSaving) ? ' products-action-button--disabled' : ''}`}
                         >
-                            {isSaving ? t('products.saving') : t('products.addItem')}
+                            {isSaving 
+                                ? (showEditForm ? t('products.updating') : t('products.saving'))
+                                : (showEditForm ? t('products.updateItem') : t('products.addItem'))}
                         </button>
                         <button
-                            onClick={() => onViewModeChange && onViewModeChange('list')}
+                            onClick={() => {
+                                setEditingItemId(null);
+                                setNewItem({ 
+                                    name: '', 
+                                    name_fr: '', 
+                                    description: '', 
+                                    description_fr: '', 
+                                    categoryId: '', 
+                                    attributes: [],
+                                    itemAttributes: []
+                                });
+                                setVariants([]);
+                                onViewModeChange && onViewModeChange('list');
+                            }}
                             className="products-action-button products-action-button--cancel"
                         >
                             Cancel
@@ -1331,6 +1400,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                             <th>{t('products.list.itemCategory')}</th>
                                             <th>{t('products.list.creationDate')}</th>
                                             <th>{t('products.list.lastUpdated')}</th>
+                                            <th className="products-actions-column">{t('products.edit')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1338,25 +1408,69 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
                                             <Fragment key={item.id}>
                                                 <tr 
                                                     className={`products-list-row ${expandedItemId === item.id ? 'expanded' : ''}`}
-                                                    onClick={() => toggleExpandedRow(item.id)}
-                                                    role="button"
-                                                    tabIndex={0}
-                                                    aria-expanded={expandedItemId === item.id}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter' || e.key === ' ') {
-                                                            e.preventDefault();
-                                                            toggleExpandedRow(item.id);
-                                                        }
-                                                    }}
                                                 >
-                                                    <td>{getItemName(item)}</td>
-                                                    <td>{getCategoryName(item.categoryID)}</td>
-                                                    <td>{formatDate(item.createdAt)}</td>
-                                                    <td>{formatDate(item.updatedAt)}</td>
+                                                    <td 
+                                                        onClick={() => toggleExpandedRow(item.id)}
+                                                        role="button"
+                                                        tabIndex={0}
+                                                        style={{ cursor: 'pointer' }}
+                                                        aria-expanded={expandedItemId === item.id}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                                e.preventDefault();
+                                                                toggleExpandedRow(item.id);
+                                                            }
+                                                        }}
+                                                    >
+                                                        {getItemName(item)}
+                                                    </td>
+                                                    <td 
+                                                        onClick={() => toggleExpandedRow(item.id)}
+                                                        style={{ cursor: 'pointer' }}
+                                                    >
+                                                        {getCategoryName(item.categoryID)}
+                                                    </td>
+                                                    <td 
+                                                        onClick={() => toggleExpandedRow(item.id)}
+                                                        style={{ cursor: 'pointer' }}
+                                                    >
+                                                        {formatDate(item.createdAt)}
+                                                    </td>
+                                                    <td 
+                                                        onClick={() => toggleExpandedRow(item.id)}
+                                                        style={{ cursor: 'pointer' }}
+                                                    >
+                                                        {formatDate(item.updatedAt)}
+                                                    </td>
+                                                    <td className="products-actions-cell">
+                                                        <button
+                                                            className="products-edit-button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleEditItem(item);
+                                                            }}
+                                                            title={t('products.edit')}
+                                                            aria-label={`${t('products.edit')} ${getItemName(item)}`}
+                                                        >
+                                                            <svg 
+                                                                className="products-edit-icon" 
+                                                                width="20" 
+                                                                height="20" 
+                                                                viewBox="0 0 24 24" 
+                                                                fill="none" 
+                                                                stroke="currentColor" 
+                                                                strokeWidth="2"
+                                                                strokeLinecap="round" 
+                                                                strokeLinejoin="round"
+                                                            >
+                                                                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                                                            </svg>
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                                 {expandedItemId === item.id && (
                                                     <tr className="products-variants-row">
-                                                        <td colSpan={4}>
+                                                        <td colSpan={5}>
                                                             {item.variants && item.variants.filter(v => !v.deleted).length > 0 ? (
                                                                 <div className="products-variants-expanded">
                                                                     <table className="products-variants-inner-table">

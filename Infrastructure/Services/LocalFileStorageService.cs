@@ -104,8 +104,8 @@ namespace Infrastructure.Services
                 if (!Directory.Exists(uploadsPath))
                 {
                     _logger.LogInformation("Directory does not exist. Creating directory at {Path}", uploadsPath);
-                    var createdDir = Directory.CreateDirectory(uploadsPath);
-                    _logger.LogInformation("Successfully created directory at {Path}. Full path: {FullPath}", uploadsPath, createdDir.FullName);
+                    Directory.CreateDirectory(uploadsPath);
+                    _logger.LogInformation("Successfully created directory at {Path}", uploadsPath);
                 }
                 else
                 {
@@ -114,18 +114,19 @@ namespace Infrastructure.Services
 
                 // Save the file
                 var filePath = Path.Combine(uploadsPath, fileName);
+                var fileDirectory = Path.GetDirectoryName(filePath);
+                var fileNameOnly = Path.GetFileName(filePath);
                 
                 _logger.LogInformation("Attempting to save file to {FilePath}", filePath);
-                _logger.LogInformation("File path details - Directory: {Directory}, FileName: {FileName}, Full path exists: {DirectoryExists}", 
-                    Path.GetDirectoryName(filePath), Path.GetFileName(filePath), Directory.Exists(Path.GetDirectoryName(filePath)));
+                _logger.LogInformation("File path details - Directory: {Directory}, FileName: {FileName}, Directory exists: {DirectoryExists}", 
+                    fileDirectory, fileNameOnly, Directory.Exists(fileDirectory));
                 
                 // Overwrite existing file if it exists (allows updating images)
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     _logger.LogInformation("FileStream created, copying file data...");
                     await file.CopyToAsync(stream);
-                    await stream.FlushAsync();
-                    _logger.LogInformation("File data copied and flushed to stream. Stream position: {Position}, length: {Length}", stream.Position, stream.Length);
+                    _logger.LogInformation("File data copied to stream. Stream position: {Position}, length: {Length}", stream.Position, stream.Length);
                 }
 
                 // Verify file was created and get file info
@@ -134,9 +135,10 @@ namespace Infrastructure.Services
                 if (!fileInfo.Exists)
                 {
                     _logger.LogError("File was not created at expected location: {FilePath}", filePath);
+                    var directoryExists = Directory.Exists(fileDirectory);
                     _logger.LogError("Directory exists: {DirectoryExists}, Directory contents: {Contents}", 
-                        Directory.Exists(Path.GetDirectoryName(filePath)),
-                        Directory.Exists(Path.GetDirectoryName(filePath)) ? string.Join(", ", Directory.GetFiles(Path.GetDirectoryName(filePath) ?? "")) : "N/A");
+                        directoryExists,
+                        directoryExists && fileDirectory != null ? string.Join(", ", Directory.GetFiles(fileDirectory)) : "N/A");
                     return Result.Failure<string>("File upload failed - file not created on disk.", StatusCodes.Status500InternalServerError);
                 }
 

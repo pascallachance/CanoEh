@@ -226,7 +226,7 @@ namespace API.Tests
             };
 
             // Act
-            var result = await _controller.UploadImage(formFile, variantId, "thumbnail", 1);
+            await _controller.UploadImage(formFile, variantId, "thumbnail", 1);
 
             // Assert - Verify logging occurred
             _mockControllerLogger.Verify(

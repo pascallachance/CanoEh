@@ -33,7 +33,7 @@ Comprehensive logging has been added to help diagnose issues:
 - Base uploads path and full path with subPath
 - Directory existence checks and creation attempts
 - File path details before writing
-- File stream operations and flush
+- File stream operations
 - File verification with directory contents
 - File attributes after creation (size, timestamps)
 - Stack traces on errors

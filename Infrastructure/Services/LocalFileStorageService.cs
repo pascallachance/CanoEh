@@ -114,12 +114,10 @@ namespace Infrastructure.Services
 
                 // Save the file
                 var filePath = Path.Combine(uploadsPath, fileName);
-                var fileDirectory = Path.GetDirectoryName(filePath);
-                var fileNameOnly = Path.GetFileName(filePath);
                 
                 _logger.LogInformation("Attempting to save file to {FilePath}", filePath);
-                _logger.LogInformation("File path details - Directory: {Directory}, FileName: {FileName}, Directory exists: {DirectoryExists}", 
-                    fileDirectory, fileNameOnly, Directory.Exists(fileDirectory));
+                _logger.LogInformation("File path details - Directory: {Directory}, FileName: {FileName}", 
+                    uploadsPath, fileName);
                 
                 // Overwrite existing file if it exists (allows updating images)
                 using (var stream = new FileStream(filePath, FileMode.Create))
@@ -135,9 +133,9 @@ namespace Infrastructure.Services
                 if (!fileInfo.Exists)
                 {
                     _logger.LogError("File was not created at expected location: {FilePath}", filePath);
-                    var directoryExists = Directory.Exists(fileDirectory);
-                    var directoryContents = directoryExists && fileDirectory != null 
-                        ? string.Join(", ", Directory.GetFiles(fileDirectory)) 
+                    var directoryExists = Directory.Exists(uploadsPath);
+                    var directoryContents = directoryExists 
+                        ? string.Join(", ", Directory.GetFiles(uploadsPath)) 
                         : "N/A";
                     _logger.LogError("Directory exists: {DirectoryExists}, Directory contents: {Contents}", 
                         directoryExists, directoryContents);

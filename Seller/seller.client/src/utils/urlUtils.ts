@@ -12,18 +12,28 @@
 export function toAbsoluteUrl(url: string | undefined): string {
     if (!url) return '';
     
-    // If URL is already absolute (starts with http:// or https://), return as-is
-    if (url.startsWith('http://') || url.startsWith('https://')) {
+    // If URL is already absolute or special scheme (blob:, data:), return as-is
+    if (url.startsWith('http://') || 
+        url.startsWith('https://') || 
+        url.startsWith('blob:') || 
+        url.startsWith('data:')) {
         return url;
     }
     
     // If URL is relative (starts with /), prepend API base URL
     if (url.startsWith('/')) {
-        return `${import.meta.env.VITE_API_SELLER_BASE_URL}${url}`;
+        const baseUrl = import.meta.env.VITE_API_SELLER_BASE_URL;
+        
+        // Guard against missing or empty environment variable
+        if (!baseUrl) {
+            console.error('VITE_API_SELLER_BASE_URL environment variable is not defined');
+            return url; // Return original URL as fallback
+        }
+        
+        return `${baseUrl}${url}`;
     }
     
-    // For other cases (e.g., blob: URLs, data: URLs), return as-is
-    // This preserves URLs created by URL.createObjectURL() used for file previews
+    // For other cases, return as-is
     return url;
 }
 

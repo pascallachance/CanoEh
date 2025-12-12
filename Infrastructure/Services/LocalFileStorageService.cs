@@ -88,20 +88,39 @@ namespace Infrastructure.Services
                 }
 
                 // Ensure the full directory path (including subdirectories) exists
+                // Directory.CreateDirectory creates all directories and subdirectories in the path
+                // It does not throw an exception if the directory already exists
                 if (!Directory.Exists(uploadsPath))
                 {
+                    _logger.LogInformation("Creating directory at {Path}", uploadsPath);
                     Directory.CreateDirectory(uploadsPath);
-                    _logger.LogInformation("Created directory at {Path}", uploadsPath);
+                    _logger.LogInformation("Successfully created directory at {Path}", uploadsPath);
+                }
+                else
+                {
+                    _logger.LogDebug("Directory already exists at {Path}", uploadsPath);
                 }
 
                 // Save the file
                 var filePath = Path.Combine(uploadsPath, fileName);
+                
+                _logger.LogInformation("Attempting to save file to {FilePath}", filePath);
                 
                 // Overwrite existing file if it exists (allows updating images)
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);
                 }
+
+                // Verify file was created
+                if (!File.Exists(filePath))
+                {
+                    _logger.LogError("File was not created at expected location: {FilePath}", filePath);
+                    return Result.Failure<string>("File upload failed - file not created on disk.", StatusCodes.Status500InternalServerError);
+                }
+
+                var fileInfo = new FileInfo(filePath);
+                _logger.LogInformation("File saved successfully: {FilePath} (Size: {Size} bytes)", filePath, fileInfo.Length);
 
                 // Build the relative path for URL
                 var relativePath = string.IsNullOrWhiteSpace(subPath) 
@@ -112,6 +131,7 @@ namespace Infrastructure.Services
 
                 // Return the URL
                 var fileUrl = GetFileUrl(relativePath);
+                _logger.LogInformation("Generated file URL: {FileUrl}", fileUrl);
                 return Result.Success(fileUrl);
             }
             catch (Exception ex)

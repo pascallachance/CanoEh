@@ -360,5 +360,36 @@ namespace API.Tests
             // Assert
             Assert.True(deleteResult.IsSuccess);
         }
+
+        [Fact]
+        public async Task UploadFile_VerifyFileExistsOnDisk_AfterSuccessfulUpload()
+        {
+            // Arrange
+            var content = "fake image content"u8.ToArray();
+            var companyId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            var subPath = $"{companyId}/{variantId}";
+            var fileName = $"{variantId}_thumb";
+            using var stream = new MemoryStream(content);
+            var formFile = new FormFile(stream, 0, content.Length, "file", "test.jpg")
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = "image/jpeg"
+            };
+
+            // Act
+            var result = await _service.UploadFileAsync(formFile, fileName, subPath);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            
+            // Verify the file actually exists on disk
+            var expectedPath = Path.Combine(_testContentRoot, "wwwroot", "uploads", subPath, $"{fileName}.jpg");
+            Assert.True(File.Exists(expectedPath), $"Expected file to exist at {expectedPath}");
+            
+            // Verify file content
+            var fileContent = await File.ReadAllBytesAsync(expectedPath);
+            Assert.Equal(content, fileContent);
+        }
     }
 }

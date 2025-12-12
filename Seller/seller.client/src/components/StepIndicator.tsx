@@ -27,7 +27,7 @@ function StepIndicator({ currentStep, totalSteps, onStepClick, completedSteps = 
     };
 
     const isClickable = (step: number): boolean => {
-        // Step is clickable if we have a handler and it's not the current step
+        // Step is clickable if we have a handler and the step is different from current step
         return !!onStepClick && step !== currentStep;
     };
 

@@ -336,16 +336,22 @@ function AppContent() {
             case 2:
                 if (editProductStep1Data) {
                     navigate('/edit-product/step2');
+                } else {
+                    console.warn('Cannot navigate to step 2: Step 1 data is missing');
                 }
                 break;
             case 3:
                 if (editProductStep1Data && editProductStep2Data) {
                     navigate('/edit-product/step3');
+                } else {
+                    console.warn('Cannot navigate to step 3: Previous step data is missing');
                 }
                 break;
             case 4:
                 if (editProductStep1Data && editProductStep2Data && editProductStep3Data) {
                     navigate('/edit-product/step4');
+                } else {
+                    console.warn('Cannot navigate to step 4: Previous step data is missing');
                 }
                 break;
         }

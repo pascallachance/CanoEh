@@ -22,7 +22,8 @@ export function toAbsoluteUrl(url: string | undefined): string {
         return `${import.meta.env.VITE_API_SELLER_BASE_URL}${url}`;
     }
     
-    // Otherwise, return as-is
+    // For other cases (e.g., blob: URLs, data: URLs), return as-is
+    // This preserves URLs created by URL.createObjectURL() used for file previews
     return url;
 }
 

@@ -85,6 +85,8 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                 if (matchingExisting) {
                     // Merge existing data with generated structure
                     // Convert relative URLs to absolute URLs for display
+                    const convertedImageUrls = toAbsoluteUrlArray(matchingExisting.imageUrls);
+                    
                     return {
                         ...genVariant,
                         id: matchingExisting.id, // Use existing ID
@@ -94,7 +96,7 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                         productIdentifierType: matchingExisting.productIdentifierType || genVariant.productIdentifierType,
                         productIdentifierValue: matchingExisting.productIdentifierValue || genVariant.productIdentifierValue,
                         thumbnailUrl: toAbsoluteUrl(matchingExisting.thumbnailUrl) || genVariant.thumbnailUrl,
-                        imageUrls: toAbsoluteUrlArray(matchingExisting.imageUrls)
+                        imageUrls: convertedImageUrls.length > 0 ? convertedImageUrls : genVariant.imageUrls
                     };
                 }
                 

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import './AddProductStep3.css';
 import type { AddProductStep1Data } from './AddProductStep1';
 import type { AddProductStep2Data } from './AddProductStep2';
+import StepIndicator from './StepIndicator';
 import {
     synchronizeBilingualArrays,
     updateBilingualArrayValue,
@@ -27,9 +28,10 @@ interface AddProductStep3Props {
     step2Data: AddProductStep2Data;
     initialData?: AddProductStep3Data;
     editMode?: boolean;
+    onStepNavigate?: (step: number) => void;
 }
 
-function AddProductStep3({ onNext, onBack, initialData, editMode = false }: AddProductStep3Props) {
+function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStepNavigate }: AddProductStep3Props) {
     const [formData, setFormData] = useState<AddProductStep3Data>(initialData || {
         attributes: []
     });
@@ -155,15 +157,12 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false }: AddP
             <div className="add-product-step3-content">
                 <header className="step-header">
                     <h1>{editMode ? 'Edit Product' : 'Add New Product'}</h1>
-                    <div className="step-indicator">
-                        <span className="step completed">1</span>
-                        <span className="step-divider"></span>
-                        <span className="step completed">2</span>
-                        <span className="step-divider"></span>
-                        <span className="step active">3</span>
-                        <span className="step-divider"></span>
-                        <span className="step">4</span>
-                    </div>
+                    <StepIndicator 
+                        currentStep={3}
+                        totalSteps={4}
+                        onStepClick={onStepNavigate}
+                        completedSteps={[1, 2]}
+                    />
                     <h2>Step 3: Variant Attributes</h2>
                     <p>Define attributes that vary between product versions (e.g., Size, Color).</p>
                 </header>

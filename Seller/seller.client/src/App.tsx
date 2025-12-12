@@ -326,6 +326,31 @@ function AppContent() {
         });
     };
 
+    // Direct step navigation for edit mode
+    const handleEditProductStepNavigate = (step: number) => {
+        // Navigate to the specified step if we have the required data
+        switch (step) {
+            case 1:
+                navigate('/edit-product');
+                break;
+            case 2:
+                if (editProductStep1Data) {
+                    navigate('/edit-product/step2');
+                }
+                break;
+            case 3:
+                if (editProductStep1Data && editProductStep2Data) {
+                    navigate('/edit-product/step3');
+                }
+                break;
+            case 4:
+                if (editProductStep1Data && editProductStep2Data && editProductStep3Data) {
+                    navigate('/edit-product/step4');
+                }
+                break;
+        }
+    };
+
     // Protected route component
     const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         if (isCheckingSession) {
@@ -487,6 +512,7 @@ function AppContent() {
                             onCancel={handleEditProductStep1Cancel}
                             initialData={editProductStep1Data}
                             editMode={true}
+                            onStepNavigate={handleEditProductStepNavigate}
                         />
                     ) : (
                         <Navigate to="/seller" replace />
@@ -502,6 +528,7 @@ function AppContent() {
                             step1Data={editProductStep1Data}
                             initialData={editProductStep2Data}
                             editMode={true}
+                            onStepNavigate={handleEditProductStepNavigate}
                         />
                     ) : (
                         <Navigate to="/edit-product" replace />
@@ -518,6 +545,7 @@ function AppContent() {
                             step2Data={editProductStep2Data}
                             initialData={editProductStep3Data}
                             editMode={true}
+                            onStepNavigate={handleEditProductStepNavigate}
                         />
                     ) : (
                         <Navigate to="/edit-product" replace />
@@ -537,6 +565,7 @@ function AppContent() {
                             editMode={true}
                             itemId={editingItemId}
                             existingVariants={editProductExistingVariants || undefined}
+                            onStepNavigate={handleEditProductStepNavigate}
                         />
                     ) : (
                         <Navigate to="/edit-product" replace />

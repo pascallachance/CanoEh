@@ -63,9 +63,20 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
     // Generate variants on mount or when step3Data changes
     // In edit mode, merge with existing variant data
     useEffect(() => {
+        if (import.meta.env.DEV) {
+            console.log('[AddProductStep4] Generating variants - editMode:', editMode, 'existingVariants:', existingVariants);
+        }
+        
         const generated = generateVariants();
+        if (import.meta.env.DEV) {
+            console.log('[AddProductStep4] Generated variants:', generated);
+        }
         
         if (editMode && existingVariants && existingVariants.length > 0) {
+            if (import.meta.env.DEV) {
+                console.log('[AddProductStep4] Edit mode detected, merging with existing variants');
+            }
+            
             // Match generated variants with existing ones by attribute combination
             const mergedVariants = generated.map(genVariant => {
                 // Find matching existing variant by comparing attributes
@@ -85,7 +96,17 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                 if (matchingExisting) {
                     // Merge existing data with generated structure
                     // Convert relative URLs to absolute URLs for display
+                    const convertedThumbnailUrl = toAbsoluteUrl(matchingExisting.thumbnailUrl);
                     const convertedImageUrls = toAbsoluteUrlArray(matchingExisting.imageUrls);
+                    
+                    if (import.meta.env.DEV) {
+                        console.log('[AddProductStep4] Found matching existing variant:', {
+                            id: matchingExisting.id,
+                            thumbnailUrl: matchingExisting.thumbnailUrl,
+                            imageUrls: matchingExisting.imageUrls
+                        });
+                        console.log('[AddProductStep4] Converted URLs - thumbnail:', convertedThumbnailUrl, 'images:', convertedImageUrls);
+                    }
                     
                     return {
                         ...genVariant,
@@ -95,16 +116,25 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                         stock: matchingExisting.stockQuantity || genVariant.stock,
                         productIdentifierType: matchingExisting.productIdentifierType || genVariant.productIdentifierType,
                         productIdentifierValue: matchingExisting.productIdentifierValue || genVariant.productIdentifierValue,
-                        thumbnailUrl: toAbsoluteUrl(matchingExisting.thumbnailUrl) || genVariant.thumbnailUrl,
+                        thumbnailUrl: convertedThumbnailUrl || genVariant.thumbnailUrl,
                         imageUrls: convertedImageUrls.length > 0 ? convertedImageUrls : genVariant.imageUrls
                     };
                 }
                 
+                if (import.meta.env.DEV) {
+                    console.log('[AddProductStep4] No matching existing variant found for generated variant:', genVariant);
+                }
                 return genVariant;
             });
             
+            if (import.meta.env.DEV) {
+                console.log('[AddProductStep4] Final merged variants:', mergedVariants);
+            }
             setVariants(mergedVariants);
         } else {
+            if (import.meta.env.DEV) {
+                console.log('[AddProductStep4] Not in edit mode or no existing variants, using generated variants');
+            }
             setVariants(generated);
         }
     }, [step3Data, editMode, existingVariants]);
@@ -588,7 +618,22 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                                                 </label>
                                                 {variant.thumbnailUrl && (
                                                     <div className="image-preview">
-                                                        <img src={variant.thumbnailUrl} alt="Thumbnail" className="thumbnail-preview" />
+                                                        <img 
+                                                            src={variant.thumbnailUrl} 
+                                                            alt="Thumbnail" 
+                                                            className="thumbnail-preview"
+                                                            onLoad={() => {
+                                                                if (import.meta.env.DEV) {
+                                                                    console.log('[AddProductStep4] Thumbnail loaded successfully:', variant.thumbnailUrl);
+                                                                }
+                                                            }}
+                                                            onError={(e) => {
+                                                                if (import.meta.env.DEV) {
+                                                                    console.error('[AddProductStep4] Thumbnail failed to load:', variant.thumbnailUrl);
+                                                                    console.error('[AddProductStep4] Image error type:', e.type);
+                                                                }
+                                                            }}
+                                                        />
                                                     </div>
                                                 )}
                                             </div>

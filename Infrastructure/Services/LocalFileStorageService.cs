@@ -136,9 +136,11 @@ namespace Infrastructure.Services
                 {
                     _logger.LogError("File was not created at expected location: {FilePath}", filePath);
                     var directoryExists = Directory.Exists(fileDirectory);
+                    var directoryContents = directoryExists && fileDirectory != null 
+                        ? string.Join(", ", Directory.GetFiles(fileDirectory)) 
+                        : "N/A";
                     _logger.LogError("Directory exists: {DirectoryExists}, Directory contents: {Contents}", 
-                        directoryExists,
-                        directoryExists && fileDirectory != null ? string.Join(", ", Directory.GetFiles(fileDirectory)) : "N/A");
+                        directoryExists, directoryContents);
                     return Result.Failure<string>("File upload failed - file not created on disk.", StatusCodes.Status500InternalServerError);
                 }
 

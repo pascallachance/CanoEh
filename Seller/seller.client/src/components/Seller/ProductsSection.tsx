@@ -380,7 +380,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange }: Pro
         // Convert API variants to form variants
         const formVariants: ItemVariant[] = item.variants
             .filter(v => !v.deleted)
-            .map((variant, index) => ({
+            .map((variant) => ({
                 id: variant.id,
                 attributes_en: {}, // These would need to be parsed from itemVariantName_en
                 attributes_fr: {}, // These would need to be parsed from itemVariantName_fr

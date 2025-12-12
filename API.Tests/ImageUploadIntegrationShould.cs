@@ -336,5 +336,158 @@ namespace API.Tests
             // Assert
             Assert.IsType<NotFoundObjectResult>(result);
         }
+
+        [Fact]
+        public async Task UploadImage_UpdateVariantThumbnailUrl_WhenUploadingThumbnail()
+        {
+            // Arrange
+            var companyId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var userEmail = "testuser@example.com";
+            
+            // Mock the user service to return a user entity
+            SetupMockUserService(userId, userEmail);
+            
+            // Mock the item service to return an item
+            var mockItem = new GetItemResponse
+            {
+                Id = Guid.NewGuid(),
+                SellerID = companyId,
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                CategoryID = Guid.NewGuid()
+            };
+            
+            _mockItemService
+                .Setup(s => s.GetItemByVariantIdAsync(variantId, userId))
+                .ReturnsAsync(Result.Success(mockItem));
+            
+            // Mock UpdateItemVariantImageAsync to return success
+            _mockItemService
+                .Setup(s => s.UpdateItemVariantImageAsync(
+                    variantId,
+                    "thumbnail",
+                    It.IsAny<string>(),
+                    1))
+                .ReturnsAsync(Result.Success());
+            
+            // Create a fake image file
+            var content = "fake image content"u8.ToArray();
+            var fileName = "test-thumbnail.jpg";
+            using var stream = new MemoryStream(content);
+            var formFile = new FormFile(stream, 0, content.Length, "file", fileName)
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = "image/jpeg"
+            };
+            
+            // Set up authentication context with email
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, userEmail)
+            };
+            var identity = new ClaimsIdentity(claims, "TestAuth");
+            var claimsPrincipal = new ClaimsPrincipal(identity);
+            
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
+
+            // Act
+            var result = await _controller.UploadImage(formFile, variantId, "thumbnail", 1);
+
+            // Assert - Check the HTTP response
+            Assert.IsType<OkObjectResult>(result);
+            
+            // Verify that UpdateItemVariantImageAsync was called with the correct parameters
+            _mockItemService.Verify(
+                s => s.UpdateItemVariantImageAsync(
+                    variantId,
+                    "thumbnail",
+                    It.Is<string>(url => url.Contains(companyId.ToString()) && 
+                                        url.Contains(variantId.ToString()) && 
+                                        url.Contains("_thumb.jpg")),
+                    1),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task UploadImage_UpdateVariantImageUrls_WhenUploadingProductImage()
+        {
+            // Arrange
+            var companyId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var userEmail = "testuser@example.com";
+            var imageNumber = 2;
+            
+            // Mock the user service to return a user entity
+            SetupMockUserService(userId, userEmail);
+            
+            // Mock the item service to return an item
+            var mockItem = new GetItemResponse
+            {
+                Id = Guid.NewGuid(),
+                SellerID = companyId,
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                CategoryID = Guid.NewGuid()
+            };
+            
+            _mockItemService
+                .Setup(s => s.GetItemByVariantIdAsync(variantId, userId))
+                .ReturnsAsync(Result.Success(mockItem));
+            
+            // Mock UpdateItemVariantImageAsync to return success
+            _mockItemService
+                .Setup(s => s.UpdateItemVariantImageAsync(
+                    variantId,
+                    "image",
+                    It.IsAny<string>(),
+                    imageNumber))
+                .ReturnsAsync(Result.Success());
+            
+            // Create a fake image file
+            var content = "fake image content"u8.ToArray();
+            var fileName = "test-image.jpg";
+            using var stream = new MemoryStream(content);
+            var formFile = new FormFile(stream, 0, content.Length, "file", fileName)
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = "image/jpeg"
+            };
+            
+            // Set up authentication context with email
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, userEmail)
+            };
+            var identity = new ClaimsIdentity(claims, "TestAuth");
+            var claimsPrincipal = new ClaimsPrincipal(identity);
+            
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
+
+            // Act
+            var result = await _controller.UploadImage(formFile, variantId, "image", imageNumber);
+
+            // Assert - Check the HTTP response
+            Assert.IsType<OkObjectResult>(result);
+            
+            // Verify that UpdateItemVariantImageAsync was called with the correct parameters
+            _mockItemService.Verify(
+                s => s.UpdateItemVariantImageAsync(
+                    variantId,
+                    "image",
+                    It.Is<string>(url => url.Contains(companyId.ToString()) && 
+                                        url.Contains(variantId.ToString()) && 
+                                        url.Contains($"_{imageNumber}.jpg")),
+                    imageNumber),
+                Times.Once);
+        }
     }
 }

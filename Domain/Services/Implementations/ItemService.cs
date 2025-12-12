@@ -561,6 +561,103 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             }
         }
 
+        public async Task<Result> UpdateItemVariantAsync(ItemVariant variant)
+        {
+            try
+            {
+                if (variant == null || variant.Id == Guid.Empty)
+                {
+                    return Result.Failure("Invalid variant data.", StatusCodes.Status400BadRequest);
+                }
+
+                // Update the variant - repository will handle if variant doesn't exist
+                await _itemVariantRepository.UpdateAsync(variant);
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"An error occurred while updating the variant: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        public async Task<Result> UpdateItemVariantImageAsync(Guid variantId, string imageType, string imageUrl, int imageNumber)
+        {
+            try
+            {
+                if (variantId == Guid.Empty)
+                {
+                    return Result.Failure("Invalid variant ID.", StatusCodes.Status400BadRequest);
+                }
+
+                if (string.IsNullOrWhiteSpace(imageUrl))
+                {
+                    return Result.Failure("Image URL is required.", StatusCodes.Status400BadRequest);
+                }
+
+                // NOTE: This method uses a read-modify-write pattern which could be subject to race conditions
+                // if multiple concurrent requests update the same variant's images simultaneously.
+                // Consider implementing one of the following approaches for production use:
+                // 1. Optimistic concurrency control (add a RowVersion/Timestamp field to ItemVariant)
+                // 2. Database-level locking mechanisms (e.g., SELECT FOR UPDATE)
+                // 3. Application-level locking/semaphores for the same variant ID
+                // For typical usage patterns (single user editing their own products), this is acceptable.
+
+                // Get the variant from the repository
+                var variant = await _itemVariantRepository.GetByIdAsync(variantId);
+                if (variant == null)
+                {
+                    return Result.Failure("Variant not found.", StatusCodes.Status404NotFound);
+                }
+
+                // Update the appropriate field based on imageType
+                if (imageType == "thumbnail")
+                {
+                    variant.ThumbnailUrl = imageUrl;
+                }
+                else if (imageType == "image")
+                {
+                    // ImageUrls is stored as comma-separated string
+                    // Parse existing URLs, preserving empty slots
+                    var existingUrls = string.IsNullOrEmpty(variant.ImageUrls)
+                        ? new List<string>()
+                        : variant.ImageUrls.Split(',').ToList();
+
+                    // Add or replace the image URL at the specified position (imageNumber - 1)
+                    var index = imageNumber - 1;
+                    if (index < 0)
+                    {
+                        return Result.Failure("Image number must be greater than 0.", StatusCodes.Status400BadRequest);
+                    }
+
+                    // Ensure the list is large enough
+                    while (existingUrls.Count <= index)
+                    {
+                        existingUrls.Add(string.Empty);
+                    }
+
+                    // Set the image URL at the correct position
+                    existingUrls[index] = imageUrl;
+
+                    // Join back to comma-separated string, keeping all positions (including empty)
+                    variant.ImageUrls = string.Join(",", existingUrls);
+                }
+                else
+                {
+                    return Result.Failure("Invalid image type. Must be 'thumbnail' or 'image'.", StatusCodes.Status400BadRequest);
+                }
+
+                // Save the updated variant
+                await _itemVariantRepository.UpdateAsync(variant);
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"An error occurred while updating the variant image: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
         // Helper methods for mapping entities to DTOs
         private static ItemVariantAttributeDto MapToItemVariantAttributeDto(ItemVariantAttribute attribute)
         {

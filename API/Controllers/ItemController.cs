@@ -340,8 +340,35 @@ namespace API.Controllers
                     return StatusCode(result.ErrorCode ?? 500, result.Error);
                 }
 
-                _logger.LogInformation("=== UploadImage API SUCCESS === Image URL: {ImageUrl}", result.Value);
-                return Ok(new { imageUrl = result.Value });
+                var imageUrl = result.Value;
+                _logger.LogInformation("File uploaded successfully. URL: {ImageUrl}", imageUrl);
+
+                // Update the ItemVariant in the database with the new image URL
+                _logger.LogInformation("Updating ItemVariant with imageUrl...");
+                try
+                {
+                    // We need to get the actual ItemVariant entity from the repository
+                    // (The item.Variants property contains DTOs, not entities)
+                    // We can use the ItemVariantRepository through ItemService
+                    var updateResult = await _itemService.UpdateItemVariantImageAsync(variantId, imageType, imageUrl, imageNumber);
+                    if (updateResult.IsFailure)
+                    {
+                        _logger.LogError("Failed to update variant in database: {Error}", updateResult.Error);
+                        // Still return success since file was uploaded
+                        return Ok(new { imageUrl = imageUrl, warning = "File uploaded but database update failed: " + updateResult.Error });
+                    }
+
+                    _logger.LogInformation("ItemVariant updated successfully in database");
+                }
+                catch (Exception updateEx)
+                {
+                    _logger.LogError(updateEx, "Error updating variant in database: {Message}", updateEx.Message);
+                    // Still return success since file was uploaded
+                    return Ok(new { imageUrl = imageUrl, warning = "File uploaded but database update failed: " + updateEx.Message });
+                }
+
+                _logger.LogInformation("=== UploadImage API SUCCESS === Image URL: {ImageUrl}", imageUrl);
+                return Ok(new { imageUrl = imageUrl });
             }
             catch (Exception ex)
             {

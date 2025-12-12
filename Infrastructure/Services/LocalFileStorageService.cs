@@ -90,6 +90,7 @@ namespace Infrastructure.Services
                 // Ensure the full directory path (including subdirectories) exists
                 // Directory.CreateDirectory creates all directories and subdirectories in the path
                 // It does not throw an exception if the directory already exists
+                // We check existence first to provide better logging (distinguish "created" vs "already exists")
                 if (!Directory.Exists(uploadsPath))
                 {
                     _logger.LogInformation("Creating directory at {Path}", uploadsPath);
@@ -112,14 +113,14 @@ namespace Infrastructure.Services
                     await file.CopyToAsync(stream);
                 }
 
-                // Verify file was created
-                if (!File.Exists(filePath))
+                // Verify file was created and get file info
+                var fileInfo = new FileInfo(filePath);
+                if (!fileInfo.Exists)
                 {
                     _logger.LogError("File was not created at expected location: {FilePath}", filePath);
                     return Result.Failure<string>("File upload failed - file not created on disk.", StatusCodes.Status500InternalServerError);
                 }
 
-                var fileInfo = new FileInfo(filePath);
                 _logger.LogInformation("File saved successfully: {FilePath} (Size: {Size} bytes)", filePath, fileInfo.Length);
 
                 // Build the relative path for URL

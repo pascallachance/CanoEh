@@ -82,6 +82,30 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                 });
                 
                 if (matchingExisting) {
+                    // Helper function to convert relative URL to absolute URL
+                    const toAbsoluteUrl = (url: string | undefined): string => {
+                        if (!url) return '';
+                        // If URL is already absolute (starts with http:// or https://), return as-is
+                        if (url.startsWith('http://') || url.startsWith('https://')) {
+                            return url;
+                        }
+                        // If URL is relative (starts with /), prepend API base URL
+                        if (url.startsWith('/')) {
+                            return `${import.meta.env.VITE_API_SELLER_BASE_URL}${url}`;
+                        }
+                        // Otherwise, return as-is
+                        return url;
+                    };
+
+                    // Convert image URLs string/array to absolute URLs
+                    let absoluteImageUrls: string[] = [];
+                    if (matchingExisting.imageUrls) {
+                        const urls = typeof matchingExisting.imageUrls === 'string' 
+                            ? matchingExisting.imageUrls.split(',') 
+                            : matchingExisting.imageUrls;
+                        absoluteImageUrls = urls.map((url: string) => toAbsoluteUrl(url));
+                    }
+
                     // Merge existing data with generated structure
                     return {
                         ...genVariant,
@@ -91,10 +115,8 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                         stock: matchingExisting.stockQuantity || genVariant.stock,
                         productIdentifierType: matchingExisting.productIdentifierType || genVariant.productIdentifierType,
                         productIdentifierValue: matchingExisting.productIdentifierValue || genVariant.productIdentifierValue,
-                        thumbnailUrl: matchingExisting.thumbnailUrl || genVariant.thumbnailUrl,
-                        imageUrls: matchingExisting.imageUrls ? 
-                            (typeof matchingExisting.imageUrls === 'string' ? matchingExisting.imageUrls.split(',') : matchingExisting.imageUrls) 
-                            : genVariant.imageUrls
+                        thumbnailUrl: toAbsoluteUrl(matchingExisting.thumbnailUrl) || genVariant.thumbnailUrl,
+                        imageUrls: absoluteImageUrls.length > 0 ? absoluteImageUrls : genVariant.imageUrls
                     };
                 }
                 

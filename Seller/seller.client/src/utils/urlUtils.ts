@@ -32,7 +32,7 @@ export function toAbsoluteUrl(url: string | undefined): string {
  * to an array of absolute URLs.
  * 
  * @param urls - The URLs to convert (can be a comma-separated string or an array)
- * @returns An array of absolute URLs
+ * @returns An array of absolute URLs (empty strings are filtered out)
  */
 export function toAbsoluteUrlArray(urls: string | string[] | undefined): string[] {
     if (!urls) return [];
@@ -40,6 +40,9 @@ export function toAbsoluteUrlArray(urls: string | string[] | undefined): string[
     // Convert string to array if needed
     const urlArray = typeof urls === 'string' ? urls.split(',') : urls;
     
-    // Convert each URL to absolute
-    return urlArray.map(url => toAbsoluteUrl(url.trim()));
+    // Trim whitespace, filter out empty strings, then convert each URL to absolute
+    return urlArray
+        .map(url => url.trim())
+        .filter(url => url.length > 0)
+        .map(url => toAbsoluteUrl(url));
 }

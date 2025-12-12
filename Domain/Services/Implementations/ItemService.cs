@@ -570,14 +570,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     return Result.Failure("Invalid variant data.", StatusCodes.Status400BadRequest);
                 }
 
-                // Check if the variant exists
-                var existingVariant = await _itemVariantRepository.GetByIdAsync(variant.Id);
-                if (existingVariant == null)
-                {
-                    return Result.Failure("Variant not found.", StatusCodes.Status404NotFound);
-                }
-
-                // Update the variant
+                // Update the variant - repository will handle if variant doesn't exist
                 await _itemVariantRepository.UpdateAsync(variant);
 
                 return Result.Success();
@@ -617,9 +610,10 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 else if (imageType == "image")
                 {
                     // ImageUrls is stored as comma-separated string
+                    // Parse existing URLs, preserving empty slots
                     var existingUrls = string.IsNullOrEmpty(variant.ImageUrls)
                         ? new List<string>()
-                        : variant.ImageUrls.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+                        : variant.ImageUrls.Split(',').ToList();
 
                     // Add or replace the image URL at the specified position (imageNumber - 1)
                     var index = imageNumber - 1;
@@ -628,21 +622,17 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                         return Result.Failure("Image number must be greater than 0.", StatusCodes.Status400BadRequest);
                     }
 
-                    if (index < existingUrls.Count)
+                    // Ensure the list is large enough
+                    while (existingUrls.Count <= index)
                     {
-                        existingUrls[index] = imageUrl;
-                    }
-                    else
-                    {
-                        // Pad with empty strings if necessary
-                        while (existingUrls.Count < index)
-                        {
-                            existingUrls.Add(string.Empty);
-                        }
-                        existingUrls.Add(imageUrl);
+                        existingUrls.Add(string.Empty);
                     }
 
-                    variant.ImageUrls = string.Join(",", existingUrls.Where(u => !string.IsNullOrEmpty(u)));
+                    // Set the image URL at the correct position
+                    existingUrls[index] = imageUrl;
+
+                    // Join back to comma-separated string, keeping all positions (including empty)
+                    variant.ImageUrls = string.Join(",", existingUrls);
                 }
                 else
                 {

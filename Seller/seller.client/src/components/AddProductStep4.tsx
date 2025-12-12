@@ -630,7 +630,7 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                                                             onError={(e) => {
                                                                 if (import.meta.env.DEV) {
                                                                     console.error('[AddProductStep4] Thumbnail failed to load:', variant.thumbnailUrl);
-                                                                    console.error('[AddProductStep4] Image error event:', e);
+                                                                    console.error('[AddProductStep4] Image error type:', e.type);
                                                                 }
                                                             }}
                                                         />

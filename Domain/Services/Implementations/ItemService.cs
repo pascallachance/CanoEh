@@ -561,6 +561,105 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             }
         }
 
+        public async Task<Result> UpdateItemVariantAsync(ItemVariant variant)
+        {
+            try
+            {
+                if (variant == null || variant.Id == Guid.Empty)
+                {
+                    return Result.Failure("Invalid variant data.", StatusCodes.Status400BadRequest);
+                }
+
+                // Check if the variant exists
+                var existingVariant = await _itemVariantRepository.GetByIdAsync(variant.Id);
+                if (existingVariant == null)
+                {
+                    return Result.Failure("Variant not found.", StatusCodes.Status404NotFound);
+                }
+
+                // Update the variant
+                await _itemVariantRepository.UpdateAsync(variant);
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"An error occurred while updating the variant: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        public async Task<Result> UpdateItemVariantImageAsync(Guid variantId, string imageType, string imageUrl, int imageNumber)
+        {
+            try
+            {
+                if (variantId == Guid.Empty)
+                {
+                    return Result.Failure("Invalid variant ID.", StatusCodes.Status400BadRequest);
+                }
+
+                if (string.IsNullOrWhiteSpace(imageUrl))
+                {
+                    return Result.Failure("Image URL is required.", StatusCodes.Status400BadRequest);
+                }
+
+                // Get the variant from the repository
+                var variant = await _itemVariantRepository.GetByIdAsync(variantId);
+                if (variant == null)
+                {
+                    return Result.Failure("Variant not found.", StatusCodes.Status404NotFound);
+                }
+
+                // Update the appropriate field based on imageType
+                if (imageType == "thumbnail")
+                {
+                    variant.ThumbnailUrl = imageUrl;
+                }
+                else if (imageType == "image")
+                {
+                    // ImageUrls is stored as comma-separated string
+                    var existingUrls = string.IsNullOrEmpty(variant.ImageUrls)
+                        ? new List<string>()
+                        : variant.ImageUrls.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+
+                    // Add or replace the image URL at the specified position (imageNumber - 1)
+                    var index = imageNumber - 1;
+                    if (index < 0)
+                    {
+                        return Result.Failure("Image number must be greater than 0.", StatusCodes.Status400BadRequest);
+                    }
+
+                    if (index < existingUrls.Count)
+                    {
+                        existingUrls[index] = imageUrl;
+                    }
+                    else
+                    {
+                        // Pad with empty strings if necessary
+                        while (existingUrls.Count < index)
+                        {
+                            existingUrls.Add(string.Empty);
+                        }
+                        existingUrls.Add(imageUrl);
+                    }
+
+                    variant.ImageUrls = string.Join(",", existingUrls.Where(u => !string.IsNullOrEmpty(u)));
+                }
+                else
+                {
+                    return Result.Failure("Invalid image type. Must be 'thumbnail' or 'image'.", StatusCodes.Status400BadRequest);
+                }
+
+                // Save the updated variant
+                await _itemVariantRepository.UpdateAsync(variant);
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"An error occurred while updating the variant image: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
         // Helper methods for mapping entities to DTOs
         private static ItemVariantAttributeDto MapToItemVariantAttributeDto(ItemVariantAttribute attribute)
         {

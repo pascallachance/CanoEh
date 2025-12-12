@@ -22,6 +22,13 @@ interface ItemVariant {
     imageFiles?: File[];
 }
 
+interface ApiResponseVariant {
+    id: string;
+    sku: string;
+    price: number;
+    stockQuantity: number;
+}
+
 interface AddProductStep4Props {
     onSubmit: () => void;
     onBack: () => void;
@@ -299,7 +306,7 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                     if (updatedItem && updatedItem.variants) {
                         for (const variant of variants) {
                             // Find the corresponding updated variant by SKU
-                            const updatedVariant = updatedItem.variants.find((v: any) => v.sku === variant.sku);
+                            const updatedVariant = updatedItem.variants.find((v: ApiResponseVariant) => v.sku === variant.sku);
 
                             if (!updatedVariant || !updatedVariant.id) {
                                 console.warn(`Updated variant with SKU "${variant.sku}" not found, skipping image upload`);
@@ -425,7 +432,7 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                 if (createdItem && createdItem.variants) {
                     for (const variant of variants) {
                         // Find the corresponding created variant by SKU
-                        const createdVariant = createdItem.variants.find((v: any) => v.sku === variant.sku);
+                        const createdVariant = createdItem.variants.find((v: ApiResponseVariant) => v.sku === variant.sku);
 
                         if (!createdVariant || !createdVariant.id) {
                             console.warn(`Created variant with SKU "${variant.sku}" not found, skipping image upload`);

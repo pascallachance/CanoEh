@@ -12,6 +12,9 @@ import {
     formatAttributeName,
     formatVariantAttribute
 } from '../../utils/bilingualArrayUtils';
+import type { AddProductStep1Data } from '../AddProductStep1';
+import type { AddProductStep2Data } from '../AddProductStep2';
+import type { AddProductStep3Data } from '../AddProductStep3';
 
 
 interface Company {
@@ -28,7 +31,7 @@ interface ProductsSectionProps {
     companies: Company[];
     viewMode?: 'list' | 'add' | 'edit';
     onViewModeChange?: (mode: 'list' | 'add' | 'edit') => void;
-    onEditProduct?: (itemId: string, step1Data: any, step2Data: any, step3Data: any) => void;
+    onEditProduct?: (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, step3Data: AddProductStep3Data) => void;
 }
 
 interface ItemAttribute {
@@ -1418,7 +1421,9 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                     itemAttributes: []
                                 });
                                 setVariants([]);
-                                onViewModeChange && onViewModeChange('list');
+                                if (onViewModeChange) {
+                                    onViewModeChange('list');
+                                }
                             }}
                             className="products-action-button products-action-button--cancel"
                         >

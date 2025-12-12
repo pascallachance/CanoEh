@@ -10,9 +10,10 @@ namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ItemController(IItemService itemService, IFileStorageService fileStorageService, ILogger<ItemController> logger) : ControllerBase
+    public class ItemController(IItemService itemService, IUserService userService, IFileStorageService fileStorageService, ILogger<ItemController> logger) : ControllerBase
     {
         private readonly IItemService _itemService = itemService;
+        private readonly IUserService _userService = userService;
         private readonly IFileStorageService _fileStorageService = fileStorageService;
         private readonly ILogger<ItemController> _logger = logger;
 
@@ -278,17 +279,27 @@ namespace API.Controllers
                     return BadRequest("variantId is required.");
                 }
 
-                // Get user ID from claims
-                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "sub" || c.Type == "userId");
-                _logger.LogInformation("User claims - Count: {ClaimCount}, Found userId claim: {HasUserId}", 
-                    User.Claims.Count(), userIdClaim != null);
+                // Get authenticated user email from claims
+                var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                _logger.LogInformation("User claims - Count: {ClaimCount}, Authenticated email: {Email}", 
+                    User.Claims.Count(), authenticatedEmail);
                 
-                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+                if (string.IsNullOrEmpty(authenticatedEmail))
                 {
-                    _logger.LogWarning("User ID not found in token or invalid. UserIdClaim: {UserIdClaim}", userIdClaim?.Value);
-                    return StatusCode(StatusCodes.Status401Unauthorized, "User ID not found in token.");
+                    _logger.LogWarning("User email not found in token");
+                    return Unauthorized("User not authenticated.");
                 }
-                
+
+                // Get the authenticated user to verify they exist and get their ID
+                var userResult = await _userService.GetUserEntityAsync(authenticatedEmail);
+                if (userResult.IsFailure || userResult.Value == null)
+                {
+                    _logger.LogWarning("Failed to retrieve user entity. Email: {Email}, Error: {Error}", 
+                        authenticatedEmail, userResult.Error);
+                    return Unauthorized("Invalid user.");
+                }
+
+                var userId = userResult.Value.ID;
                 _logger.LogInformation("Authenticated user ID: {UserId}", userId);
 
                 // Get the item by variant ID and verify ownership efficiently

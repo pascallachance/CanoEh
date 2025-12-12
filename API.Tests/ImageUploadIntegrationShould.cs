@@ -17,6 +17,7 @@ namespace API.Tests
     public class ImageUploadIntegrationShould : IDisposable
     {
         private readonly Mock<IItemService> _mockItemService;
+        private readonly Mock<IUserService> _mockUserService;
         private readonly Mock<ILogger<ItemController>> _mockControllerLogger;
         private readonly Mock<ILogger<LocalFileStorageService>> _mockStorageLogger;
         private readonly string _testContentRoot;
@@ -26,6 +27,7 @@ namespace API.Tests
         public ImageUploadIntegrationShould()
         {
             _mockItemService = new Mock<IItemService>();
+            _mockUserService = new Mock<IUserService>();
             _mockControllerLogger = new Mock<ILogger<ItemController>>();
             _mockStorageLogger = new Mock<ILogger<LocalFileStorageService>>();
             
@@ -37,7 +39,7 @@ namespace API.Tests
             _fileStorageService = new LocalFileStorageService(_testContentRoot, _mockStorageLogger.Object);
             
             // Create controller with real file storage service
-            _controller = new ItemController(_mockItemService.Object, _fileStorageService, _mockControllerLogger.Object);
+            _controller = new ItemController(_mockItemService.Object, _mockUserService.Object, _fileStorageService, _mockControllerLogger.Object);
         }
 
         public void Dispose()
@@ -61,7 +63,24 @@ namespace API.Tests
             // Arrange
             var companyId = Guid.NewGuid();
             var variantId = Guid.NewGuid();
-            var userId = companyId; // Using same ID for simplicity
+            var userId = Guid.NewGuid();
+            var userEmail = "testuser@example.com";
+            
+            // Mock the user service to return a user entity
+            var mockUser = new Infrastructure.Data.User
+            {
+                ID = userId,
+                Email = userEmail,
+                Firstname = "Test",
+                Lastname = "User",
+                Password = "hashedpassword",
+                Createdat = DateTime.UtcNow,
+                ValidEmail = true
+            };
+            
+            _mockUserService
+                .Setup(s => s.GetUserEntityAsync(userEmail))
+                .ReturnsAsync(Result.Success<Infrastructure.Data.User?>(mockUser));
             
             // Mock the item service to return an item
             var mockItem = new GetItemResponse
@@ -87,10 +106,10 @@ namespace API.Tests
                 ContentType = "image/jpeg"
             };
             
-            // Set up authentication context
+            // Set up authentication context with email
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+                new Claim(ClaimTypes.NameIdentifier, userEmail)
             };
             var identity = new ClaimsIdentity(claims, "TestAuth");
             var claimsPrincipal = new ClaimsPrincipal(identity);
@@ -126,7 +145,24 @@ namespace API.Tests
             // Arrange
             var companyId = Guid.NewGuid();
             var variantId = Guid.NewGuid();
-            var userId = companyId;
+            var userId = Guid.NewGuid();
+            var userEmail = "testuser@example.com";
+            
+            // Mock the user service to return a user entity
+            var mockUser = new Infrastructure.Data.User
+            {
+                ID = userId,
+                Email = userEmail,
+                Firstname = "Test",
+                Lastname = "User",
+                Password = "hashedpassword",
+                Createdat = DateTime.UtcNow,
+                ValidEmail = true
+            };
+            
+            _mockUserService
+                .Setup(s => s.GetUserEntityAsync(userEmail))
+                .ReturnsAsync(Result.Success<Infrastructure.Data.User?>(mockUser));
             
             var mockItem = new GetItemResponse
             {
@@ -143,7 +179,7 @@ namespace API.Tests
             
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+                new Claim(ClaimTypes.NameIdentifier, userEmail)
             };
             var identity = new ClaimsIdentity(claims, "TestAuth");
             var claimsPrincipal = new ClaimsPrincipal(identity);
@@ -189,7 +225,24 @@ namespace API.Tests
             // Arrange
             var companyId = Guid.NewGuid();
             var variantId = Guid.NewGuid();
-            var userId = companyId;
+            var userId = Guid.NewGuid();
+            var userEmail = "testuser@example.com";
+            
+            // Mock the user service to return a user entity
+            var mockUser = new Infrastructure.Data.User
+            {
+                ID = userId,
+                Email = userEmail,
+                Firstname = "Test",
+                Lastname = "User",
+                Password = "hashedpassword",
+                Createdat = DateTime.UtcNow,
+                ValidEmail = true
+            };
+            
+            _mockUserService
+                .Setup(s => s.GetUserEntityAsync(userEmail))
+                .ReturnsAsync(Result.Success<Infrastructure.Data.User?>(mockUser));
             
             var mockItem = new GetItemResponse
             {
@@ -215,7 +268,7 @@ namespace API.Tests
             
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+                new Claim(ClaimTypes.NameIdentifier, userEmail)
             };
             var identity = new ClaimsIdentity(claims, "TestAuth");
             var claimsPrincipal = new ClaimsPrincipal(identity);
@@ -263,6 +316,23 @@ namespace API.Tests
             // Arrange
             var variantId = Guid.NewGuid();
             var userId = Guid.NewGuid();
+            var userEmail = "testuser@example.com";
+            
+            // Mock the user service to return a user entity
+            var mockUser = new Infrastructure.Data.User
+            {
+                ID = userId,
+                Email = userEmail,
+                Firstname = "Test",
+                Lastname = "User",
+                Password = "hashedpassword",
+                Createdat = DateTime.UtcNow,
+                ValidEmail = true
+            };
+            
+            _mockUserService
+                .Setup(s => s.GetUserEntityAsync(userEmail))
+                .ReturnsAsync(Result.Success<Infrastructure.Data.User?>(mockUser));
             
             _mockItemService
                 .Setup(s => s.GetItemByVariantIdAsync(variantId, userId))
@@ -279,7 +349,7 @@ namespace API.Tests
             
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+                new Claim(ClaimTypes.NameIdentifier, userEmail)
             };
             var identity = new ClaimsIdentity(claims, "TestAuth");
             var claimsPrincipal = new ClaimsPrincipal(identity);

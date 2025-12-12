@@ -15,6 +15,7 @@ namespace API.Tests
     public class ItemControllerShould
     {
         private readonly Mock<IItemService> _mockItemService;
+        private readonly Mock<IUserService> _mockUserService;
         private readonly Mock<IFileStorageService> _mockFileStorageService;
         private readonly Mock<ILogger<ItemController>> _mockLogger;
         private readonly ItemController _controller;
@@ -22,9 +23,10 @@ namespace API.Tests
         public ItemControllerShould()
         {
             _mockItemService = new Mock<IItemService>();
+            _mockUserService = new Mock<IUserService>();
             _mockFileStorageService = new Mock<IFileStorageService>();
             _mockLogger = new Mock<ILogger<ItemController>>();
-            _controller = new ItemController(_mockItemService.Object, _mockFileStorageService.Object, _mockLogger.Object);
+            _controller = new ItemController(_mockItemService.Object, _mockUserService.Object, _mockFileStorageService.Object, _mockLogger.Object);
         }
 
         [Fact]

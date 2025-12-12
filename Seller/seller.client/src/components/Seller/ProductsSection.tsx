@@ -31,7 +31,7 @@ interface ProductsSectionProps {
     companies: Company[];
     viewMode?: 'list' | 'add' | 'edit';
     onViewModeChange?: (mode: 'list' | 'add' | 'edit') => void;
-    onEditProduct?: (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, step3Data: AddProductStep3Data) => void;
+    onEditProduct?: (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, step3Data: AddProductStep3Data, existingVariants: any[]) => void;
 }
 
 interface ItemAttribute {
@@ -410,48 +410,85 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         };
 
         // Step 3: Variant attributes - need to reconstruct from variant data
-        // Group variant attributes by attribute name to build the ItemAttribute structure
+        // To preserve order, we'll use the order from the first variant and build a map
+        const attributeOrderMap = new Map<string, number>();
         const attributesMap = new Map<string, {
             name_en: string;
             name_fr: string;
-            values_en: Set<string>;
-            values_fr: Set<string>;
+            values: Array<{ en: string; fr: string }>;
         }>();
 
+        // Get active variants
+        const activeVariants = item.variants.filter(v => !v.deleted);
+
         // Process all variants to extract unique attribute combinations
-        item.variants.filter(v => !v.deleted).forEach(variant => {
-            variant.itemVariantAttributes.forEach(attr => {
+        // Preserve the order by using first variant's attribute order
+        activeVariants.forEach((variant, variantIndex) => {
+            variant.itemVariantAttributes.forEach((attr, attrIndex) => {
                 const key = attr.attributeName_en;
+                
+                // Set order based on first variant
+                if (variantIndex === 0 && !attributeOrderMap.has(key)) {
+                    attributeOrderMap.set(key, attrIndex);
+                }
+                
                 if (!attributesMap.has(key)) {
                     attributesMap.set(key, {
                         name_en: attr.attributeName_en,
                         name_fr: attr.attributeName_fr || '',
-                        values_en: new Set(),
-                        values_fr: new Set()
+                        values: []
                     });
                 }
+                
                 const attrData = attributesMap.get(key)!;
-                attrData.values_en.add(attr.attributes_en);
-                if (attr.attributes_fr) {
-                    attrData.values_fr.add(attr.attributes_fr);
+                const valuePair = {
+                    en: attr.attributes_en,
+                    fr: attr.attributes_fr || ''
+                };
+                
+                // Only add if not already present (check both en and fr)
+                const alreadyExists = attrData.values.some(
+                    v => v.en === valuePair.en && v.fr === valuePair.fr
+                );
+                if (!alreadyExists) {
+                    attrData.values.push(valuePair);
                 }
             });
         });
 
-        // Convert to ItemAttribute array
-        const attributes: ItemAttribute[] = Array.from(attributesMap.values()).map(attr => ({
-            name_en: attr.name_en,
-            name_fr: attr.name_fr,
-            values_en: Array.from(attr.values_en),
-            values_fr: Array.from(attr.values_fr)
-        }));
+        // Convert to ItemAttribute array in the correct order
+        const attributes: ItemAttribute[] = Array.from(attributesMap.entries())
+            .sort(([keyA], [keyB]) => {
+                const orderA = attributeOrderMap.get(keyA) ?? 999;
+                const orderB = attributeOrderMap.get(keyB) ?? 999;
+                return orderA - orderB;
+            })
+            .map(([_, attr]) => ({
+                name_en: attr.name_en,
+                name_fr: attr.name_fr,
+                values_en: attr.values.map(v => v.en),
+                values_fr: attr.values.map(v => v.fr)
+            }));
 
         const step3Data = {
             attributes
         };
 
+        // Prepare existing variants data to pass to Step 4
+        const existingVariants = activeVariants.map(variant => ({
+            id: variant.id,
+            sku: variant.sku,
+            price: variant.price,
+            stockQuantity: variant.stockQuantity,
+            productIdentifierType: variant.productIdentifierType,
+            productIdentifierValue: variant.productIdentifierValue,
+            thumbnailUrl: variant.thumbnailUrl,
+            imageUrls: variant.imageUrls,
+            itemVariantAttributes: variant.itemVariantAttributes
+        }));
+
         // Call the onEditProduct callback with the parsed data
-        onEditProduct(item.id, step1Data, step2Data, step3Data);
+        onEditProduct(item.id, step1Data, step2Data, step3Data, existingVariants);
     };
 
     const addAttributeValue = () => {

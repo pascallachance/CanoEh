@@ -51,6 +51,7 @@ function AppContent() {
     const [editProductStep1Data, setEditProductStep1Data] = useState<AddProductStep1Data | null>(null);
     const [editProductStep2Data, setEditProductStep2Data] = useState<AddProductStep2Data | null>(null);
     const [editProductStep3Data, setEditProductStep3Data] = useState<AddProductStep3Data | null>(null);
+    const [editProductExistingVariants, setEditProductExistingVariants] = useState<any[] | null>(null);
     
     const navigate = useNavigate();
     const location = useLocation();
@@ -76,6 +77,7 @@ function AppContent() {
             setEditProductStep1Data(null);
             setEditProductStep2Data(null);
             setEditProductStep3Data(null);
+            setEditProductExistingVariants(null);
         }
     }, [location.pathname]);
 
@@ -271,11 +273,12 @@ function AppContent() {
     };
 
     // Edit product handlers
-    const handleEditProductStart = (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, step3Data: AddProductStep3Data) => {
+    const handleEditProductStart = (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, step3Data: AddProductStep3Data, existingVariants: any[]) => {
         setEditingItemId(itemId);
         setEditProductStep1Data(step1Data);
         setEditProductStep2Data(step2Data);
         setEditProductStep3Data(step3Data);
+        setEditProductExistingVariants(existingVariants);
         navigate('/edit-product');
     };
 
@@ -289,6 +292,7 @@ function AppContent() {
         setEditProductStep1Data(null);
         setEditProductStep2Data(null);
         setEditProductStep3Data(null);
+        setEditProductExistingVariants(null);
         navigate('/seller');
     };
 
@@ -532,6 +536,7 @@ function AppContent() {
                             companies={companies}
                             editMode={true}
                             itemId={editingItemId}
+                            existingVariants={editProductExistingVariants || undefined}
                         />
                     ) : (
                         <Navigate to="/edit-product" replace />

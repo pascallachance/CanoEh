@@ -21,7 +21,7 @@ interface NavigationState {
 interface SellerProps {
     companies: Company[];
     onLogout: () => void;
-    onEditProduct: (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, step3Data: AddProductStep3Data) => void;
+    onEditProduct: (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, step3Data: AddProductStep3Data, existingVariants: any[]) => void;
 }
 
 interface Company {

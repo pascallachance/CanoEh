@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import './AddProductStep4.css';
 import { ApiClient } from '../utils/apiClient';
 import { validateBilingualArraySync, formatVariantAttribute } from '../utils/bilingualArrayUtils';
+import { toAbsoluteUrl, toAbsoluteUrlArray } from '../utils/urlUtils';
 import { useNotifications } from '../contexts/useNotifications';
 import type { AddProductStep1Data } from './AddProductStep1';
 import type { AddProductStep2Data } from './AddProductStep2';
@@ -83,6 +84,9 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                 
                 if (matchingExisting) {
                     // Merge existing data with generated structure
+                    // Convert relative URLs to absolute URLs for display
+                    const convertedImageUrls = toAbsoluteUrlArray(matchingExisting.imageUrls);
+                    
                     return {
                         ...genVariant,
                         id: matchingExisting.id, // Use existing ID
@@ -91,10 +95,8 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                         stock: matchingExisting.stockQuantity || genVariant.stock,
                         productIdentifierType: matchingExisting.productIdentifierType || genVariant.productIdentifierType,
                         productIdentifierValue: matchingExisting.productIdentifierValue || genVariant.productIdentifierValue,
-                        thumbnailUrl: matchingExisting.thumbnailUrl || genVariant.thumbnailUrl,
-                        imageUrls: matchingExisting.imageUrls ? 
-                            (typeof matchingExisting.imageUrls === 'string' ? matchingExisting.imageUrls.split(',') : matchingExisting.imageUrls) 
-                            : genVariant.imageUrls
+                        thumbnailUrl: toAbsoluteUrl(matchingExisting.thumbnailUrl) || genVariant.thumbnailUrl,
+                        imageUrls: convertedImageUrls.length > 0 ? convertedImageUrls : genVariant.imageUrls
                     };
                 }
                 

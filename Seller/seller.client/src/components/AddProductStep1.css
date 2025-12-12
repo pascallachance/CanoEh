@@ -28,41 +28,6 @@
     font-size: 2.5rem;
 }
 
-.step-indicator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.step {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    color: white;
-    background: #bbb;
-    transition: all 0.3s ease;
-}
-
-.step.active {
-    background: #3498db;
-}
-
-.step.completed {
-    background: #27ae60;
-}
-
-.step-divider {
-    width: 30px;
-    height: 2px;
-    background: #bbb;
-}
-
 .step-header h2 {
     color: #2c3e50;
     margin-bottom: 0.5rem;
@@ -183,19 +148,5 @@
     
     .step-header h1 {
         font-size: 24px;
-    }
-    
-    .step-indicator {
-        gap: 0.25rem;
-    }
-    
-    .step {
-        width: 30px;
-        height: 30px;
-        font-size: 14px;
-    }
-    
-    .step-divider {
-        width: 20px;
     }
 }

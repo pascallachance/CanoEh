@@ -29,9 +29,10 @@ interface AddProductStep3Props {
     initialData?: AddProductStep3Data;
     editMode?: boolean;
     onStepNavigate?: (step: number) => void;
+    completedSteps?: number[];
 }
 
-function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStepNavigate }: AddProductStep3Props) {
+function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep3Props) {
     const [formData, setFormData] = useState<AddProductStep3Data>(initialData || {
         attributes: []
     });
@@ -161,7 +162,7 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
                         currentStep={3}
                         totalSteps={4}
                         onStepClick={onStepNavigate}
-                        completedSteps={[1, 2]}
+                        completedSteps={completedSteps || [1, 2]}
                     />
                     <h2>Step 3: Variant Attributes</h2>
                     <p>Define attributes that vary between product versions (e.g., Size, Color).</p>

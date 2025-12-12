@@ -39,13 +39,24 @@ function StepIndicator({ currentStep, totalSteps, onStepClick, completedSteps = 
                 
                 return (
                     <div key={stepNumber} style={{ display: 'flex', alignItems: 'center' }}>
-                        <span 
-                            className={`${getStepClass(stepNumber)} ${clickable ? 'clickable' : ''}`}
-                            onClick={() => clickable && handleStepClick(stepNumber)}
-                            style={{ cursor: clickable ? 'pointer' : 'default' }}
-                        >
-                            {stepNumber}
-                        </span>
+                        {clickable ? (
+                            <button
+                                type="button"
+                                className={`${getStepClass(stepNumber)} clickable`}
+                                onClick={() => handleStepClick(stepNumber)}
+                                aria-label={`Go to step ${stepNumber}`}
+                                aria-current={stepNumber === currentStep ? "step" : undefined}
+                            >
+                                {stepNumber}
+                            </button>
+                        ) : (
+                            <span
+                                className={getStepClass(stepNumber)}
+                                aria-current={stepNumber === currentStep ? "step" : undefined}
+                            >
+                                {stepNumber}
+                            </span>
+                        )}
                         {stepNumber < totalSteps && <span className="step-divider"></span>}
                     </div>
                 );

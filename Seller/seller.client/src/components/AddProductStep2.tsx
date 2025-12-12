@@ -23,6 +23,7 @@ interface AddProductStep2Props {
     initialData?: AddProductStep2Data;
     editMode?: boolean;
     onStepNavigate?: (step: number) => void;
+    completedSteps?: number[];
 }
 
 interface Category {
@@ -34,7 +35,7 @@ interface Category {
     updatedAt?: string;
 }
 
-function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStepNavigate }: AddProductStep2Props) {
+function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep2Props) {
     const [formData, setFormData] = useState<AddProductStep2Data>(initialData || {
         categoryId: '',
         itemAttributes: []
@@ -161,7 +162,7 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
                         currentStep={2}
                         totalSteps={4}
                         onStepClick={onStepNavigate}
-                        completedSteps={[1]}
+                        completedSteps={completedSteps || [1]}
                     />
                     <h2>Step 2: Category and Item Attributes</h2>
                     <p>Select a category and add item-specific attributes (optional).</p>

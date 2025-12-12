@@ -357,6 +357,16 @@ function AppContent() {
         }
     };
 
+    // Helper to compute completed steps based on existing data
+    const getEditModeCompletedSteps = (): number[] => {
+        const completed: number[] = [];
+        if (editProductStep1Data) completed.push(1);
+        if (editProductStep2Data) completed.push(2);
+        if (editProductStep3Data) completed.push(3);
+        // Step 4 doesn't have its own data, it's computed from previous steps
+        return completed;
+    };
+
     // Protected route component
     const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         if (isCheckingSession) {
@@ -519,6 +529,7 @@ function AppContent() {
                             initialData={editProductStep1Data}
                             editMode={true}
                             onStepNavigate={handleEditProductStepNavigate}
+                            completedSteps={getEditModeCompletedSteps()}
                         />
                     ) : (
                         <Navigate to="/seller" replace />
@@ -535,6 +546,7 @@ function AppContent() {
                             initialData={editProductStep2Data}
                             editMode={true}
                             onStepNavigate={handleEditProductStepNavigate}
+                            completedSteps={getEditModeCompletedSteps()}
                         />
                     ) : (
                         <Navigate to="/edit-product" replace />
@@ -552,6 +564,7 @@ function AppContent() {
                             initialData={editProductStep3Data}
                             editMode={true}
                             onStepNavigate={handleEditProductStepNavigate}
+                            completedSteps={getEditModeCompletedSteps()}
                         />
                     ) : (
                         <Navigate to="/edit-product" replace />
@@ -572,6 +585,7 @@ function AppContent() {
                             itemId={editingItemId}
                             existingVariants={editProductExistingVariants || undefined}
                             onStepNavigate={handleEditProductStepNavigate}
+                            completedSteps={getEditModeCompletedSteps()}
                         />
                     ) : (
                         <Navigate to="/edit-product" replace />

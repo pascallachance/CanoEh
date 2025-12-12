@@ -15,9 +15,10 @@ interface AddProductStep1Props {
     initialData?: AddProductStep1Data;
     editMode?: boolean;
     onStepNavigate?: (step: number) => void;
+    completedSteps?: number[];
 }
 
-function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onStepNavigate }: AddProductStep1Props) {
+function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep1Props) {
     const [formData, setFormData] = useState<AddProductStep1Data>(initialData || {
         name: '',
         name_fr: '',
@@ -74,7 +75,7 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onSt
                         currentStep={1}
                         totalSteps={4}
                         onStepClick={onStepNavigate}
-                        completedSteps={[]}
+                        completedSteps={completedSteps || []}
                     />
                     <h2>Step 1: Item Name and Description</h2>
                     <p>Provide the basic information about your product.</p>

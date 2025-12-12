@@ -17,6 +17,10 @@
     color: white;
     background: #bbb;
     transition: all 0.3s ease;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
 }
 
 .step.active {
@@ -34,6 +38,11 @@
 .step.clickable:hover {
     transform: scale(1.1);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.step.clickable:focus {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
 }
 
 .step-divider {

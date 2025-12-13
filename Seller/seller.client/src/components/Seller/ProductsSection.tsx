@@ -638,14 +638,22 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
 
     // Handle deleting an item
     const handleDeleteItem = async (item: ApiItem) => {
+        // Validate item ID
+        if (!item.id || typeof item.id !== 'string') {
+            showError('Invalid item ID');
+            return;
+        }
+
         // Show confirmation dialog
         if (!window.confirm(t('products.deleteConfirm'))) {
             return;
         }
 
         try {
+            // Encode the ID to ensure URL safety (though GUID should be safe)
+            const encodedId = encodeURIComponent(item.id);
             const response = await ApiClient.delete(
-                `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/DeleteItem/${item.id}`
+                `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/DeleteItem/${encodedId}`
             );
 
             if (response.ok) {

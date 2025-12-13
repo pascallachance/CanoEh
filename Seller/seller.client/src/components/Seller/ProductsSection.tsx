@@ -1621,14 +1621,27 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                 <label className="products-filter-label" htmlFor="filter-item-name">
                                     {t('products.filter.itemName')}
                                 </label>
-                                <input
-                                    id="filter-item-name"
-                                    type="text"
-                                    value={filters.itemName}
-                                    onChange={(e) => setFilters(prev => ({ ...prev, itemName: e.target.value }))}
-                                    className="products-filter-input"
-                                    placeholder={t('products.filter.itemNamePlaceholder')}
-                                />
+                                <div className="products-filter-input-wrapper">
+                                    <input
+                                        id="filter-item-name"
+                                        type="text"
+                                        value={filters.itemName}
+                                        onChange={(e) => setFilters(prev => ({ ...prev, itemName: e.target.value }))}
+                                        className="products-filter-input"
+                                        placeholder={t('products.filter.itemNamePlaceholder')}
+                                    />
+                                    {filters.itemName && (
+                                        <button
+                                            type="button"
+                                            className="products-filter-clear-button"
+                                            onClick={() => setFilters(prev => ({ ...prev, itemName: '' }))}
+                                            aria-label={t('products.filter.clearItemName')}
+                                            title={t('products.filter.clear')}
+                                        >
+                                            ×
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Category Dropdown */}
@@ -1656,14 +1669,27 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                 <label className="products-filter-label" htmlFor="filter-variant-name">
                                     {t('products.filter.variantName')}
                                 </label>
-                                <input
-                                    id="filter-variant-name"
-                                    type="text"
-                                    value={filters.variantName}
-                                    onChange={(e) => setFilters(prev => ({ ...prev, variantName: e.target.value }))}
-                                    className="products-filter-input"
-                                    placeholder={t('products.filter.variantNamePlaceholder')}
-                                />
+                                <div className="products-filter-input-wrapper">
+                                    <input
+                                        id="filter-variant-name"
+                                        type="text"
+                                        value={filters.variantName}
+                                        onChange={(e) => setFilters(prev => ({ ...prev, variantName: e.target.value }))}
+                                        className="products-filter-input"
+                                        placeholder={t('products.filter.variantNamePlaceholder')}
+                                    />
+                                    {filters.variantName && (
+                                        <button
+                                            type="button"
+                                            className="products-filter-clear-button"
+                                            onClick={() => setFilters(prev => ({ ...prev, variantName: '' }))}
+                                            aria-label={t('products.filter.clearVariantName')}
+                                            title={t('products.filter.clear')}
+                                        >
+                                            ×
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             {/* SKU Search */}
@@ -1671,14 +1697,27 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                 <label className="products-filter-label" htmlFor="filter-sku">
                                     {t('products.filter.sku')}
                                 </label>
-                                <input
-                                    id="filter-sku"
-                                    type="text"
-                                    value={filters.sku}
-                                    onChange={(e) => setFilters(prev => ({ ...prev, sku: e.target.value }))}
-                                    className="products-filter-input"
-                                    placeholder={t('products.filter.skuPlaceholder')}
-                                />
+                                <div className="products-filter-input-wrapper">
+                                    <input
+                                        id="filter-sku"
+                                        type="text"
+                                        value={filters.sku}
+                                        onChange={(e) => setFilters(prev => ({ ...prev, sku: e.target.value }))}
+                                        className="products-filter-input"
+                                        placeholder={t('products.filter.skuPlaceholder')}
+                                    />
+                                    {filters.sku && (
+                                        <button
+                                            type="button"
+                                            className="products-filter-clear-button"
+                                            onClick={() => setFilters(prev => ({ ...prev, sku: '' }))}
+                                            aria-label={t('products.filter.clearSku')}
+                                            title={t('products.filter.clear')}
+                                        >
+                                            ×
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Product ID Type Dropdown */}
@@ -1708,14 +1747,27 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                 <label className="products-filter-label" htmlFor="filter-product-id-value">
                                     {t('products.filter.productIdValue')}
                                 </label>
-                                <input
-                                    id="filter-product-id-value"
-                                    type="text"
-                                    value={filters.productIdValue}
-                                    onChange={(e) => setFilters(prev => ({ ...prev, productIdValue: e.target.value }))}
-                                    className="products-filter-input"
-                                    placeholder={t('products.filter.productIdValuePlaceholder')}
-                                />
+                                <div className="products-filter-input-wrapper">
+                                    <input
+                                        id="filter-product-id-value"
+                                        type="text"
+                                        value={filters.productIdValue}
+                                        onChange={(e) => setFilters(prev => ({ ...prev, productIdValue: e.target.value }))}
+                                        className="products-filter-input"
+                                        placeholder={t('products.filter.productIdValuePlaceholder')}
+                                    />
+                                    {filters.productIdValue && (
+                                        <button
+                                            type="button"
+                                            className="products-filter-clear-button"
+                                            onClick={() => setFilters(prev => ({ ...prev, productIdValue: '' }))}
+                                            aria-label={t('products.filter.clearProductIdValue')}
+                                            title={t('products.filter.clear')}
+                                        >
+                                            ×
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
 

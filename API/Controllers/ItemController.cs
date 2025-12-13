@@ -231,6 +231,65 @@ namespace API.Controllers
         }
 
         /// <summary>
+        /// Undeletes a soft-deleted item.
+        /// </summary>
+        /// <param name="id">The ID of the item to undelete.</param>
+        /// <returns>Returns a success response or an error response.</returns>
+        [HttpPut("UnDeleteItem/{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UnDeleteItem(Guid id)
+        {
+            try
+            {
+                var result = await _itemService.UnDeleteItemAsync(id);
+
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? 501, result.Error);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Undeletes a soft-deleted item variant.
+        /// </summary>
+        /// <param name="itemId">The ID of the item.</param>
+        /// <param name="variantId">The ID of the variant to undelete.</param>
+        /// <returns>Returns a success response or an error response.</returns>
+        [HttpPut("UnDeleteItemVariant/{itemId:guid}/{variantId:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UnDeleteItemVariant(Guid itemId, Guid variantId)
+        {
+            try
+            {
+                var result = await _itemService.UnDeleteItemVariantAsync(itemId, variantId);
+
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? 501, result.Error);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Uploads a product image (thumbnail or additional images).
         /// </summary>
         /// <param name="file">The image file to upload.</param>

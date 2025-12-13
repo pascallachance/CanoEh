@@ -384,6 +384,26 @@ export const translations: TranslationResources = {
     en: 'Clear Filters',
     fr: 'Effacer les filtres'
   },
+  'products.filter.clear': {
+    en: 'Clear',
+    fr: 'Effacer'
+  },
+  'products.filter.clearItemName': {
+    en: 'Clear item name filter',
+    fr: 'Effacer le filtre de nom d\'article'
+  },
+  'products.filter.clearVariantName': {
+    en: 'Clear variant name filter',
+    fr: 'Effacer le filtre de nom de variante'
+  },
+  'products.filter.clearSku': {
+    en: 'Clear SKU filter',
+    fr: 'Effacer le filtre SKU'
+  },
+  'products.filter.clearProductIdValue': {
+    en: 'Clear product ID value filter',
+    fr: 'Effacer le filtre de valeur d\'ID produit'
+  },
 
   // Product Sort Section
   'products.sort.title': {

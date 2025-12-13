@@ -1635,8 +1635,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                             type="button"
                                             className="products-filter-clear-button"
                                             onClick={() => setFilters(prev => ({ ...prev, itemName: '' }))}
-                                            aria-label="Clear item name filter"
-                                            title="Clear"
+                                            aria-label={t('products.filter.clearItemName')}
+                                            title={t('products.filter.clear')}
                                         >
                                             ×
                                         </button>
@@ -1683,8 +1683,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                             type="button"
                                             className="products-filter-clear-button"
                                             onClick={() => setFilters(prev => ({ ...prev, variantName: '' }))}
-                                            aria-label="Clear variant name filter"
-                                            title="Clear"
+                                            aria-label={t('products.filter.clearVariantName')}
+                                            title={t('products.filter.clear')}
                                         >
                                             ×
                                         </button>
@@ -1711,8 +1711,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                             type="button"
                                             className="products-filter-clear-button"
                                             onClick={() => setFilters(prev => ({ ...prev, sku: '' }))}
-                                            aria-label="Clear SKU filter"
-                                            title="Clear"
+                                            aria-label={t('products.filter.clearSku')}
+                                            title={t('products.filter.clear')}
                                         >
                                             ×
                                         </button>
@@ -1761,8 +1761,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                             type="button"
                                             className="products-filter-clear-button"
                                             onClick={() => setFilters(prev => ({ ...prev, productIdValue: '' }))}
-                                            aria-label="Clear product ID value filter"
-                                            title="Clear"
+                                            aria-label={t('products.filter.clearProductIdValue')}
+                                            title={t('products.filter.clear')}
                                         >
                                             ×
                                         </button>

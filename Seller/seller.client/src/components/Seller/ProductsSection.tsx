@@ -1881,6 +1881,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                                             }
                                                         }}
                                                     >
+                                                        {item.deleted && <span className="products-sr-only">{t('products.deleted')} - </span>}
                                                         {getItemName(item)}
                                                     </td>
                                                     <td 
@@ -1908,9 +1909,13 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                                                 e.stopPropagation();
                                                                 handleDeleteItem(item);
                                                             }}
-                                                            title={t('products.delete')}
-                                                            aria-label={`${t('products.delete')} ${getItemName(item)}`}
+                                                            title={item.deleted ? t('products.alreadyDeleted') : t('products.delete')}
+                                                            aria-label={item.deleted 
+                                                                ? `${t('products.alreadyDeleted')} - ${getItemName(item)}` 
+                                                                : `${t('products.delete')} ${getItemName(item)}`
+                                                            }
                                                             disabled={item.deleted}
+                                                            aria-disabled={item.deleted}
                                                         >
                                                             <svg 
                                                                 className="products-delete-icon" 

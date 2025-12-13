@@ -82,6 +82,14 @@ export const translations: TranslationResources = {
     en: 'Actions',
     fr: 'Actions'
   },
+  'products.alreadyDeleted': {
+    en: 'Item already deleted',
+    fr: 'Article déjà supprimé'
+  },
+  'products.deleted': {
+    en: 'Deleted',
+    fr: 'Supprimé'
+  },
 
   // Product Form Labels
   'products.itemName': {

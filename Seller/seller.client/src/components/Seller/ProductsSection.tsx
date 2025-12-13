@@ -644,6 +644,11 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
             return;
         }
 
+        // Check if item is already deleted (defense in depth)
+        if (item.deleted) {
+            showError(t('products.alreadyDeleted') || 'Item is already deleted.');
+            return;
+        }
         // Show confirmation dialog
         if (!window.confirm(t('products.deleteConfirm'))) {
             return;

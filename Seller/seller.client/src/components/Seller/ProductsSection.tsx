@@ -486,6 +486,12 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         });
     };
 
+    // Handle sort column click
+    const handleSortClick = (column: 'itemName' | 'itemCategory' | 'creationDate' | 'lastUpdated', direction: 'asc' | 'desc') => {
+        setSortBy(column);
+        setSortDirection(direction);
+    };
+
     // Handle editing an item
     const handleEditItem = (item: ApiItem) => {
         if (!onEditProduct) {
@@ -1682,42 +1688,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                             </div>
                         </div>
 
-                        {/* Sort Section */}
-                        <div className="products-sort-section">
-                            <h5>{t('products.sort.title')}</h5>
-                            <div className="products-sort-controls">
-                                <div className="products-filter-field">
-                                    <label className="products-filter-label" htmlFor="sort-order-by">
-                                        {t('products.sort.orderBy')}
-                                    </label>
-                                    <select
-                                        id="sort-order-by"
-                                        value={sortBy}
-                                        onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                                        className="products-filter-input"
-                                    >
-                                        <option value="itemName">{t('products.sort.itemName')}</option>
-                                        <option value="itemCategory">{t('products.sort.itemCategory')}</option>
-                                        <option value="creationDate">{t('products.sort.creationDate')}</option>
-                                        <option value="lastUpdated">{t('products.sort.lastUpdated')}</option>
-                                    </select>
-                                </div>
-                                <div className="products-filter-field">
-                                    <label className="products-filter-label" htmlFor="sort-direction">
-                                        {t('products.sort.direction')}
-                                    </label>
-                                    <select
-                                        id="sort-direction"
-                                        value={sortDirection}
-                                        onChange={(e) => setSortDirection(e.target.value as 'asc' | 'desc')}
-                                        className="products-filter-input"
-                                    >
-                                        <option value="asc">{t('products.sort.ascending')}</option>
-                                        <option value="desc">{t('products.sort.descending')}</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+
 
                         {/* Clear Filters Button */}
                         <div className="products-filter-actions">
@@ -1755,10 +1726,98 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                 <table className="products-list-table">
                                     <thead>
                                         <tr>
-                                            <th>{t('products.list.itemName')}</th>
-                                            <th>{t('products.list.itemCategory')}</th>
-                                            <th>{t('products.list.creationDate')}</th>
-                                            <th>{t('products.list.lastUpdated')}</th>
+                                            <th>
+                                                <div className="products-header-cell">
+                                                    <span>{t('products.list.itemName')}</span>
+                                                    <div className="products-sort-arrows">
+                                                        <button
+                                                            className={`products-sort-arrow ${sortBy === 'itemName' && sortDirection === 'asc' ? 'active' : ''}`}
+                                                            onClick={() => handleSortClick('itemName', 'asc')}
+                                                            title={t('products.sort.ascending')}
+                                                            aria-label={`${t('products.sort.itemName')} ${t('products.sort.ascending')}`}
+                                                        >
+                                                            ▲
+                                                        </button>
+                                                        <button
+                                                            className={`products-sort-arrow ${sortBy === 'itemName' && sortDirection === 'desc' ? 'active' : ''}`}
+                                                            onClick={() => handleSortClick('itemName', 'desc')}
+                                                            title={t('products.sort.descending')}
+                                                            aria-label={`${t('products.sort.itemName')} ${t('products.sort.descending')}`}
+                                                        >
+                                                            ▼
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <th>
+                                                <div className="products-header-cell">
+                                                    <span>{t('products.list.itemCategory')}</span>
+                                                    <div className="products-sort-arrows">
+                                                        <button
+                                                            className={`products-sort-arrow ${sortBy === 'itemCategory' && sortDirection === 'asc' ? 'active' : ''}`}
+                                                            onClick={() => handleSortClick('itemCategory', 'asc')}
+                                                            title={t('products.sort.ascending')}
+                                                            aria-label={`${t('products.sort.itemCategory')} ${t('products.sort.ascending')}`}
+                                                        >
+                                                            ▲
+                                                        </button>
+                                                        <button
+                                                            className={`products-sort-arrow ${sortBy === 'itemCategory' && sortDirection === 'desc' ? 'active' : ''}`}
+                                                            onClick={() => handleSortClick('itemCategory', 'desc')}
+                                                            title={t('products.sort.descending')}
+                                                            aria-label={`${t('products.sort.itemCategory')} ${t('products.sort.descending')}`}
+                                                        >
+                                                            ▼
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <th>
+                                                <div className="products-header-cell">
+                                                    <span>{t('products.list.creationDate')}</span>
+                                                    <div className="products-sort-arrows">
+                                                        <button
+                                                            className={`products-sort-arrow ${sortBy === 'creationDate' && sortDirection === 'asc' ? 'active' : ''}`}
+                                                            onClick={() => handleSortClick('creationDate', 'asc')}
+                                                            title={t('products.sort.ascending')}
+                                                            aria-label={`${t('products.sort.creationDate')} ${t('products.sort.ascending')}`}
+                                                        >
+                                                            ▲
+                                                        </button>
+                                                        <button
+                                                            className={`products-sort-arrow ${sortBy === 'creationDate' && sortDirection === 'desc' ? 'active' : ''}`}
+                                                            onClick={() => handleSortClick('creationDate', 'desc')}
+                                                            title={t('products.sort.descending')}
+                                                            aria-label={`${t('products.sort.creationDate')} ${t('products.sort.descending')}`}
+                                                        >
+                                                            ▼
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <th>
+                                                <div className="products-header-cell">
+                                                    <span>{t('products.list.lastUpdated')}</span>
+                                                    <div className="products-sort-arrows">
+                                                        <button
+                                                            className={`products-sort-arrow ${sortBy === 'lastUpdated' && sortDirection === 'asc' ? 'active' : ''}`}
+                                                            onClick={() => handleSortClick('lastUpdated', 'asc')}
+                                                            title={t('products.sort.ascending')}
+                                                            aria-label={`${t('products.sort.lastUpdated')} ${t('products.sort.ascending')}`}
+                                                        >
+                                                            ▲
+                                                        </button>
+                                                        <button
+                                                            className={`products-sort-arrow ${sortBy === 'lastUpdated' && sortDirection === 'desc' ? 'active' : ''}`}
+                                                            onClick={() => handleSortClick('lastUpdated', 'desc')}
+                                                            title={t('products.sort.descending')}
+                                                            aria-label={`${t('products.sort.lastUpdated')} ${t('products.sort.descending')}`}
+                                                        >
+                                                            ▼
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </th>
                                             <th className="products-actions-column">{t('products.edit')}</th>
                                         </tr>
                                     </thead>

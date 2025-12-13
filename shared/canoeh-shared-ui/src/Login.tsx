@@ -42,7 +42,6 @@ export function Login({
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState(false);
 
     // Add escape key handling for better accessibility
     useEffect(() => {
@@ -75,7 +74,6 @@ export function Login({
         e.preventDefault();
         setLoading(true);
         setError('');
-        setSuccess(false);
 
         try {
             const loginRequest: LoginRequest = {
@@ -94,7 +92,6 @@ export function Login({
 
             if (response.ok) {
                 const result: LoginResponse = await response.json();
-                setSuccess(true);
                 console.log('Login successful:', result);
 
                 // Store CSRF token for future requests (stored in cookie by server)
@@ -102,7 +99,7 @@ export function Login({
 
                 // Notify parent component of successful login
                 if (onLoginSuccess) {
-                    setTimeout(() => onLoginSuccess(), 1500); // Small delay to show success message
+                    onLoginSuccess();
                 }
             } else {
                 const errorText = await response.text();
@@ -115,21 +112,6 @@ export function Login({
             setLoading(false);
         }
     };
-
-    if (success) {
-        return (
-            <div className="centered-container">
-                <div className="login-container">
-                    <div className="login-form">
-                        <h2>Login Successful!</h2>
-                        <p>You have been successfully authenticated.</p>
-                        <p>Your session is now secured with HTTP-only cookies.</p>
-                        <p>Redirecting...</p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="centered-container">

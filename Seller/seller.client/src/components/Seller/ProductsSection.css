@@ -600,8 +600,7 @@
 }
 
 .products-sort-arrow:focus-visible {
-    outline: 2px solid #007bff;
-    outline-offset: 1px;
+    outline: none;
 }
 
 .products-list-row {

@@ -852,11 +852,10 @@
 /* Deleted row styles */
 .products-list-row-deleted {
     text-decoration: line-through;
-    opacity: 0.6;
 }
 
 .products-list-row-deleted td {
-    color: #6c757d;
+    color: #495057;
 }
 
 /* Screen reader only text */

@@ -821,6 +821,35 @@
     height: 20px;
 }
 
+.products-undelete-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s;
+    color: #28a745;
+    margin-right: 0.5rem;
+}
+
+.products-undelete-button:hover {
+    background: #e7f5e9;
+    color: #1e7e34;
+}
+
+.products-undelete-button:focus-visible {
+    outline: 2px solid #28a745;
+    outline-offset: 2px;
+}
+
+.products-undelete-icon {
+    width: 20px;
+    height: 20px;
+}
+
 .products-edit-button {
     display: inline-flex;
     align-items: center;

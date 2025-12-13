@@ -640,7 +640,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
     const handleDeleteItem = async (item: ApiItem) => {
         // Validate item ID
         if (!item.id || typeof item.id !== 'string') {
-            showError('Invalid item ID');
+            showError(t('products.invalidItemId'));
             return;
         }
 
@@ -672,6 +672,47 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         } catch (error) {
             console.error('Error deleting item:', error);
             showError(t('products.deleteError'));
+        }
+    };
+
+    // Handle undeleting an item
+    const handleUndeleteItem = async (item: ApiItem) => {
+        // Validate item ID
+        if (!item.id || typeof item.id !== 'string') {
+            showError(t('products.invalidItemId'));
+            return;
+        }
+
+        // Check if item is not deleted
+        if (!item.deleted) {
+            showError(t('products.itemNotDeleted'));
+            return;
+        }
+
+        // Show confirmation dialog
+        if (!window.confirm(t('products.undeleteConfirm'))) {
+            return;
+        }
+
+        try {
+            // Encode the ID to ensure URL safety (though GUID should be safe)
+            const encodedId = encodeURIComponent(item.id);
+            const response = await ApiClient.put(
+                `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/UnDeleteItem/${encodedId}`,
+                {}
+            );
+
+            if (response.ok) {
+                showSuccess(t('products.undeleteSuccess'));
+                // Refresh the seller items list
+                await fetchSellerItems();
+            } else {
+                // Do not expose backend error details to the user
+                showError(t('products.undeleteError'));
+            }
+        } catch (error) {
+            console.error('Error undeleting item:', error);
+            showError(t('products.undeleteError'));
         }
     };
 
@@ -1917,37 +1958,61 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                                         {formatDate(item.updatedAt)}
                                                     </td>
                                                     <td className="products-actions-cell">
-                                                        <button
-                                                            className="products-delete-button"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleDeleteItem(item);
-                                                            }}
-                                                            title={item.deleted ? t('products.alreadyDeleted') : t('products.delete')}
-                                                            aria-label={item.deleted 
-                                                                ? `${t('products.alreadyDeleted')} - ${getItemName(item)}` 
-                                                                : `${t('products.delete')} ${getItemName(item)}`
-                                                            }
-                                                            disabled={item.deleted}
-                                                            aria-disabled={item.deleted}
-                                                        >
-                                                            <svg 
-                                                                className="products-delete-icon" 
-                                                                width="20" 
-                                                                height="20" 
-                                                                viewBox="0 0 24 24" 
-                                                                fill="none" 
-                                                                stroke="currentColor" 
-                                                                strokeWidth="2"
-                                                                strokeLinecap="round" 
-                                                                strokeLinejoin="round"
+                                                        {item.deleted ? (
+                                                            <button
+                                                                className="products-undelete-button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleUndeleteItem(item);
+                                                                }}
+                                                                title={t('products.undelete')}
+                                                                aria-label={`${t('products.undelete')} ${getItemName(item)}`}
                                                             >
-                                                                <polyline points="3 6 5 6 21 6"></polyline>
-                                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                                                <line x1="10" y1="11" x2="10" y2="17"></line>
-                                                                <line x1="14" y1="11" x2="14" y2="17"></line>
-                                                            </svg>
-                                                        </button>
+                                                                <svg 
+                                                                    className="products-undelete-icon" 
+                                                                    width="20" 
+                                                                    height="20" 
+                                                                    viewBox="0 0 24 24" 
+                                                                    fill="none" 
+                                                                    stroke="currentColor" 
+                                                                    strokeWidth="2"
+                                                                    strokeLinecap="round" 
+                                                                    strokeLinejoin="round"
+                                                                >
+                                                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                                                                    <path d="M21 3v5h-5"></path>
+                                                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                                                                    <path d="M3 21v-5h5"></path>
+                                                                </svg>
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                className="products-delete-button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleDeleteItem(item);
+                                                                }}
+                                                                title={t('products.delete')}
+                                                                aria-label={`${t('products.delete')} ${getItemName(item)}`}
+                                                            >
+                                                                <svg 
+                                                                    className="products-delete-icon" 
+                                                                    width="20" 
+                                                                    height="20" 
+                                                                    viewBox="0 0 24 24" 
+                                                                    fill="none" 
+                                                                    stroke="currentColor" 
+                                                                    strokeWidth="2"
+                                                                    strokeLinecap="round" 
+                                                                    strokeLinejoin="round"
+                                                                >
+                                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                                </svg>
+                                                            </button>
+                                                        )}
                                                         <button
                                                             className="products-edit-button"
                                                             onClick={(e) => {

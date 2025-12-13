@@ -136,6 +136,18 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 25;
 
+    // Filter and Sort State
+    const [filters, setFilters] = useState({
+        itemName: '',
+        categoryId: '',
+        variantName: '',
+        sku: '',
+        productIdType: '',
+        productIdValue: ''
+    });
+    const [sortBy, setSortBy] = useState<'itemName' | 'itemCategory' | 'creationDate' | 'lastUpdated'>('itemName');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
     const [newItem, setNewItem] = useState({
         name: '',
         name_fr: '',
@@ -330,25 +342,115 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         setCurrentPage(1);
     }, [sellerItems.length]);
 
+    // Reset to page 1 when filters or sort options change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filters, sortBy, sortDirection]);
+
     // Reset expanded state when navigating to a different page
     useEffect(() => {
         setExpandedItemId(null);
     }, [currentPage]);
 
-    // Sort items by name based on current language
-    const sortedItems = useMemo(() => {
-        return [...sellerItems].sort((a, b) => {
-            const nameA = language === 'fr' ? a.name_fr : a.name_en;
-            const nameB = language === 'fr' ? b.name_fr : b.name_en;
-            return nameA.localeCompare(nameB, language === 'fr' ? 'fr' : 'en', { sensitivity: 'base' });
+    // Filter and sort items
+    const filteredAndSortedItems = useMemo(() => {
+        // First, filter the items
+        const filtered = sellerItems.filter(item => {
+            // Filter by item name
+            if (filters.itemName) {
+                const itemName = (language === 'fr' ? item.name_fr : item.name_en).toLowerCase();
+                if (!itemName.includes(filters.itemName.toLowerCase())) {
+                    return false;
+                }
+            }
+
+            // Filter by category
+            if (filters.categoryId && item.categoryID !== filters.categoryId) {
+                return false;
+            }
+
+            // Filter by variant name, SKU, product ID type, or product ID value
+            if (filters.variantName || filters.sku || filters.productIdType || filters.productIdValue) {
+                const hasMatchingVariant = item.variants.some(variant => {
+                    if (variant.deleted) return false;
+
+                    // Check variant name
+                    if (filters.variantName) {
+                        const variantName = (language === 'fr' ? variant.itemVariantName_fr : variant.itemVariantName_en) || '';
+                        if (!variantName.toLowerCase().includes(filters.variantName.toLowerCase())) {
+                            return false;
+                        }
+                    }
+
+                    // Check SKU
+                    if (filters.sku && !variant.sku.toLowerCase().includes(filters.sku.toLowerCase())) {
+                        return false;
+                    }
+
+                    // Check product ID type
+                    if (filters.productIdType && variant.productIdentifierType !== filters.productIdType) {
+                        return false;
+                    }
+
+                    // Check product ID value
+                    if (filters.productIdValue) {
+                        const idValue = variant.productIdentifierValue || '';
+                        if (!idValue.toLowerCase().includes(filters.productIdValue.toLowerCase())) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                });
+
+                if (!hasMatchingVariant) {
+                    return false;
+                }
+            }
+
+            return true;
         });
-    }, [sellerItems, language]);
+
+        // Then, sort the filtered items
+        const sorted = [...filtered].sort((a, b) => {
+            let compareResult = 0;
+
+            switch (sortBy) {
+                case 'itemName': {
+                    const nameA = language === 'fr' ? a.name_fr : a.name_en;
+                    const nameB = language === 'fr' ? b.name_fr : b.name_en;
+                    compareResult = nameA.localeCompare(nameB, language === 'fr' ? 'fr' : 'en', { sensitivity: 'base' });
+                    break;
+                }
+                case 'itemCategory': {
+                    const categoryA = getCategoryName(a.categoryID);
+                    const categoryB = getCategoryName(b.categoryID);
+                    compareResult = categoryA.localeCompare(categoryB, language === 'fr' ? 'fr' : 'en', { sensitivity: 'base' });
+                    break;
+                }
+                case 'creationDate': {
+                    compareResult = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                    break;
+                }
+                case 'lastUpdated': {
+                    const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : new Date(a.createdAt).getTime();
+                    const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : new Date(b.createdAt).getTime();
+                    compareResult = dateA - dateB;
+                    break;
+                }
+            }
+
+            return sortDirection === 'asc' ? compareResult : -compareResult;
+        });
+
+        return sorted;
+    }, [sellerItems, language, filters, sortBy, sortDirection, getCategoryName]);
 
     // Pagination calculations
-    const totalPages = Math.ceil(sortedItems.length / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(filteredAndSortedItems.length / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
-    const paginatedItems = sortedItems.slice(startIndex, endIndex);
+    const paginatedItems = filteredAndSortedItems.slice(startIndex, endIndex);
 
     // Toggle expanded row
     const toggleExpandedRow = (itemId: string) => {
@@ -356,11 +458,11 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
     };
 
     // Get category name by ID
-    const getCategoryName = (categoryId: string): string => {
+    const getCategoryName = useCallback((categoryId: string): string => {
         const category = categories.find(c => c.id === categoryId);
         if (!category) return t('common.unknown');
         return language === 'fr' ? category.name_fr : category.name_en;
-    };
+    }, [categories, language, t]);
 
     // Get item name based on language
     const getItemName = (item: ApiItem): string => {
@@ -1472,7 +1574,166 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
 
             {showListSection && (
                 <div className="products-list-section">
-                    <h3>{t('products.list.currentItems')} ({sellerItems.length})</h3>
+                    {/* Filter and Sort Section */}
+                    <div className="products-filter-section">
+                        <h4>{t('products.filter.title')}</h4>
+                        
+                        <div className="products-filter-grid">
+                            {/* Item Name Search */}
+                            <div className="products-filter-field">
+                                <label className="products-filter-label">
+                                    {t('products.filter.itemName')}
+                                </label>
+                                <input
+                                    type="text"
+                                    value={filters.itemName}
+                                    onChange={(e) => setFilters(prev => ({ ...prev, itemName: e.target.value }))}
+                                    className="products-filter-input"
+                                    placeholder={t('products.filter.itemNamePlaceholder')}
+                                />
+                            </div>
+
+                            {/* Category Dropdown */}
+                            <div className="products-filter-field">
+                                <label className="products-filter-label">
+                                    {t('products.filter.category')}
+                                </label>
+                                <select
+                                    value={filters.categoryId}
+                                    onChange={(e) => setFilters(prev => ({ ...prev, categoryId: e.target.value }))}
+                                    className="products-filter-input"
+                                >
+                                    <option value="">{t('products.filter.allCategories')}</option>
+                                    {categories.map(category => (
+                                        <option key={category.id} value={category.id}>
+                                            {language === 'fr' ? category.name_fr : category.name_en}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Variant Name Search */}
+                            <div className="products-filter-field">
+                                <label className="products-filter-label">
+                                    {t('products.filter.variantName')}
+                                </label>
+                                <input
+                                    type="text"
+                                    value={filters.variantName}
+                                    onChange={(e) => setFilters(prev => ({ ...prev, variantName: e.target.value }))}
+                                    className="products-filter-input"
+                                    placeholder={t('products.filter.variantNamePlaceholder')}
+                                />
+                            </div>
+
+                            {/* SKU Search */}
+                            <div className="products-filter-field">
+                                <label className="products-filter-label">
+                                    {t('products.filter.sku')}
+                                </label>
+                                <input
+                                    type="text"
+                                    value={filters.sku}
+                                    onChange={(e) => setFilters(prev => ({ ...prev, sku: e.target.value }))}
+                                    className="products-filter-input"
+                                    placeholder={t('products.filter.skuPlaceholder')}
+                                />
+                            </div>
+
+                            {/* Product ID Type Dropdown */}
+                            <div className="products-filter-field">
+                                <label className="products-filter-label">
+                                    {t('products.filter.productIdType')}
+                                </label>
+                                <select
+                                    value={filters.productIdType}
+                                    onChange={(e) => setFilters(prev => ({ ...prev, productIdType: e.target.value }))}
+                                    className="products-filter-input"
+                                >
+                                    <option value="">{t('products.filter.allIdTypes')}</option>
+                                    <option value="UPC">UPC</option>
+                                    <option value="EAN">EAN</option>
+                                    <option value="GTIN">GTIN</option>
+                                    <option value="ISBN">ISBN</option>
+                                    <option value="ASIN">ASIN</option>
+                                    <option value="SKU">SKU</option>
+                                    <option value="MPN">MPN</option>
+                                </select>
+                            </div>
+
+                            {/* Product ID Value Search */}
+                            <div className="products-filter-field">
+                                <label className="products-filter-label">
+                                    {t('products.filter.productIdValue')}
+                                </label>
+                                <input
+                                    type="text"
+                                    value={filters.productIdValue}
+                                    onChange={(e) => setFilters(prev => ({ ...prev, productIdValue: e.target.value }))}
+                                    className="products-filter-input"
+                                    placeholder={t('products.filter.productIdValuePlaceholder')}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Sort Section */}
+                        <div className="products-sort-section">
+                            <h5>{t('products.sort.title')}</h5>
+                            <div className="products-sort-controls">
+                                <div className="products-filter-field">
+                                    <label className="products-filter-label">
+                                        {t('products.sort.orderBy')}
+                                    </label>
+                                    <select
+                                        value={sortBy}
+                                        onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                                        className="products-filter-input"
+                                    >
+                                        <option value="itemName">{t('products.sort.itemName')}</option>
+                                        <option value="itemCategory">{t('products.sort.itemCategory')}</option>
+                                        <option value="creationDate">{t('products.sort.creationDate')}</option>
+                                        <option value="lastUpdated">{t('products.sort.lastUpdated')}</option>
+                                    </select>
+                                </div>
+                                <div className="products-filter-field">
+                                    <label className="products-filter-label">
+                                        {t('products.sort.direction')}
+                                    </label>
+                                    <select
+                                        value={sortDirection}
+                                        onChange={(e) => setSortDirection(e.target.value as 'asc' | 'desc')}
+                                        className="products-filter-input"
+                                    >
+                                        <option value="asc">{t('products.sort.ascending')}</option>
+                                        <option value="desc">{t('products.sort.descending')}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Clear Filters Button */}
+                        <div className="products-filter-actions">
+                            <button
+                                onClick={() => {
+                                    setFilters({
+                                        itemName: '',
+                                        categoryId: '',
+                                        variantName: '',
+                                        sku: '',
+                                        productIdType: '',
+                                        productIdValue: ''
+                                    });
+                                    setSortBy('itemName');
+                                    setSortDirection('asc');
+                                }}
+                                className="products-clear-filters-button"
+                            >
+                                {t('products.filter.clearFilters')}
+                            </button>
+                        </div>
+                    </div>
+
+                    <h3>{t('products.list.currentItems')} ({filteredAndSortedItems.length} / {sellerItems.length})</h3>
                     
                     {isLoadingItems ? (
                         <p className="products-loading">{t('products.list.loading')}</p>

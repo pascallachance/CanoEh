@@ -327,6 +327,102 @@ export const translations: TranslationResources = {
     fr: 'Valeur d\'ID produit'
   },
 
+  // Product Filter Section
+  'products.filter.title': {
+    en: 'Filter Products',
+    fr: 'Filtrer les produits'
+  },
+  'products.filter.itemName': {
+    en: 'Item Name',
+    fr: 'Nom de l\'article'
+  },
+  'products.filter.itemNamePlaceholder': {
+    en: 'Search by item name...',
+    fr: 'Rechercher par nom d\'article...'
+  },
+  'products.filter.category': {
+    en: 'Category',
+    fr: 'Catégorie'
+  },
+  'products.filter.allCategories': {
+    en: 'All Categories',
+    fr: 'Toutes les catégories'
+  },
+  'products.filter.variantName': {
+    en: 'Variant Name',
+    fr: 'Nom de variante'
+  },
+  'products.filter.variantNamePlaceholder': {
+    en: 'Search by variant name...',
+    fr: 'Rechercher par nom de variante...'
+  },
+  'products.filter.sku': {
+    en: 'SKU',
+    fr: 'SKU'
+  },
+  'products.filter.skuPlaceholder': {
+    en: 'Search by SKU...',
+    fr: 'Rechercher par SKU...'
+  },
+  'products.filter.productIdType': {
+    en: 'Product ID Type',
+    fr: 'Type d\'ID produit'
+  },
+  'products.filter.allIdTypes': {
+    en: 'All ID Types',
+    fr: 'Tous les types d\'ID'
+  },
+  'products.filter.productIdValue': {
+    en: 'Product ID Value',
+    fr: 'Valeur d\'ID produit'
+  },
+  'products.filter.productIdValuePlaceholder': {
+    en: 'Search by product ID...',
+    fr: 'Rechercher par ID produit...'
+  },
+  'products.filter.clearFilters': {
+    en: 'Clear Filters',
+    fr: 'Effacer les filtres'
+  },
+
+  // Product Sort Section
+  'products.sort.title': {
+    en: 'Sort Options',
+    fr: 'Options de tri'
+  },
+  'products.sort.orderBy': {
+    en: 'Order By',
+    fr: 'Trier par'
+  },
+  'products.sort.itemName': {
+    en: 'Item Name',
+    fr: 'Nom de l\'article'
+  },
+  'products.sort.itemCategory': {
+    en: 'Item Category',
+    fr: 'Catégorie de l\'article'
+  },
+  'products.sort.creationDate': {
+    en: 'Creation Date',
+    fr: 'Date de création'
+  },
+  'products.sort.lastUpdated': {
+    en: 'Last Updated',
+    fr: 'Dernière mise à jour'
+  },
+  'products.sort.direction': {
+    en: 'Direction',
+    fr: 'Direction'
+  },
+  'products.sort.ascending': {
+    en: 'Ascending',
+    fr: 'Croissant'
+  },
+  'products.sort.descending': {
+    en: 'Descending',
+    fr: 'Décroissant'
+  },
+
   // Pagination
   'pagination.previous': {
     en: 'Previous',

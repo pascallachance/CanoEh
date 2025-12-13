@@ -62,6 +62,26 @@ export const translations: TranslationResources = {
     en: 'Updating...',
     fr: 'Mise à jour...'
   },
+  'products.delete': {
+    en: 'Delete',
+    fr: 'Supprimer'
+  },
+  'products.deleteConfirm': {
+    en: 'Are you sure you want to delete this item? This action will soft delete the item.',
+    fr: 'Êtes-vous sûr de vouloir supprimer cet article? Cette action supprimera logiquement l\'article.'
+  },
+  'products.deleteSuccess': {
+    en: 'Item deleted successfully',
+    fr: 'Article supprimé avec succès'
+  },
+  'products.deleteError': {
+    en: 'Failed to delete item',
+    fr: 'Échec de la suppression de l\'article'
+  },
+  'products.actions': {
+    en: 'Actions',
+    fr: 'Actions'
+  },
 
   // Product Form Labels
   'products.itemName': {
@@ -403,6 +423,10 @@ export const translations: TranslationResources = {
   'products.filter.clearProductIdValue': {
     en: 'Clear product ID value filter',
     fr: 'Effacer le filtre de valeur d\'ID produit'
+  },
+  'products.filter.showDeleted': {
+    en: 'Show Deleted',
+    fr: 'Afficher les supprimés'
   },
 
   // Product Sort Section

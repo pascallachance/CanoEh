@@ -646,7 +646,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
 
         // Check if item is already deleted (defense in depth)
         if (item.deleted) {
-            showError(t('products.alreadyDeleted') || 'Item is already deleted.');
+            showError(t('products.alreadyDeleted'));
             return;
         }
         // Show confirmation dialog
@@ -1818,8 +1818,9 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
 
                         {/* Show Deleted Checkbox */}
                         <div className="products-filter-checkbox">
-                            <label className="products-filter-checkbox-label">
+                            <label className="products-filter-checkbox-label" htmlFor="filter-show-deleted">
                                 <input
+                                    id="filter-show-deleted"
                                     type="checkbox"
                                     checked={filters.showDeleted}
                                     onChange={(e) => setFilters(prev => ({ ...prev, showDeleted: e.target.checked }))}

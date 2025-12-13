@@ -848,6 +848,12 @@
     flex-direction: column;
 }
 
+.products-filter-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
 .products-filter-label {
     display: block;
     margin-bottom: 0.5rem;
@@ -859,11 +865,41 @@
 .products-filter-input {
     width: 100%;
     padding: 0.5rem;
+    padding-right: 2rem; /* Add space for clear button */
     border: 1px solid #ced4da;
     border-radius: 4px;
     font-size: 0.9rem;
     box-sizing: border-box;
     background: white;
+}
+
+.products-filter-clear-button {
+    position: absolute;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #6c757d;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.products-filter-clear-button:hover {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.products-filter-clear-button:focus-visible {
+    outline: 2px solid #007bff;
+    outline-offset: 1px;
 }
 
 .products-filter-input:focus-visible {

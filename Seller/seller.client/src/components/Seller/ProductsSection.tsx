@@ -1721,8 +1721,11 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
 
 
 
-                        {/* Clear Filters Button */}
+                        {/* Clear Filters Button and Current Items Count */}
                         <div className="products-filter-actions">
+                            <div className="products-current-items-count">
+                                {t('products.list.currentItems')}: {filteredAndSortedItems.length} / {sellerItems.length}
+                            </div>
                             <button
                                 onClick={() => {
                                     setFilters({
@@ -1743,7 +1746,6 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                         </div>
                     </div>
 
-                    <h3>{t('products.list.currentItems')} ({filteredAndSortedItems.length} / {sellerItems.length})</h3>
                     
                     {isLoadingItems ? (
                         <p className="products-loading">{t('products.list.loading')}</p>

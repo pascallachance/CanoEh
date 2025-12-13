@@ -67,8 +67,8 @@ export const translations: TranslationResources = {
     fr: 'Supprimer'
   },
   'products.deleteConfirm': {
-    en: 'Are you sure you want to delete this item? This action will soft delete the item.',
-    fr: 'Êtes-vous sûr de vouloir supprimer cet article? Cette action supprimera logiquement l\'article.'
+    en: 'Are you sure you want to delete this item? This item will be marked as deleted and can be restored later.',
+    fr: 'Êtes-vous sûr de vouloir supprimer cet article ? Cet article sera marqué comme supprimé et pourra être restauré ultérieurement.'
   },
   'products.deleteSuccess': {
     en: 'Item deleted successfully',

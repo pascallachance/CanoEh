@@ -661,8 +661,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                 // Refresh the seller items list
                 await fetchSellerItems();
             } else {
-                const errorText = await response.text();
-                showError(`${t('products.deleteError')}: ${errorText}`);
+                // Do not expose backend error details to the user
+                showError(t('products.deleteError'));
             }
         } catch (error) {
             console.error('Error deleting item:', error);

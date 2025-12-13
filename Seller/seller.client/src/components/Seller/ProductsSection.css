@@ -870,9 +870,18 @@
 
 .products-filter-actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
     padding-top: 1rem;
     border-top: 1px solid #dee2e6;
+}
+
+.products-current-items-count {
+    font-weight: 600;
+    color: #495057;
+    font-size: 1rem;
 }
 
 .products-clear-filters-button {

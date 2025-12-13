@@ -599,7 +599,7 @@
     font-weight: bold;
 }
 
-.products-sort-arrow:focus {
+.products-sort-arrow:focus-visible {
     outline: 2px solid #007bff;
     outline-offset: 1px;
 }

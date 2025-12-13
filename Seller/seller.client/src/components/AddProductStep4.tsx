@@ -7,6 +7,7 @@ import { useNotifications } from '../contexts/useNotifications';
 import type { AddProductStep1Data } from './AddProductStep1';
 import type { AddProductStep2Data } from './AddProductStep2';
 import type { AddProductStep3Data } from './AddProductStep3';
+import StepIndicator from './StepIndicator';
 
 interface ItemVariant {
     id: string;
@@ -40,9 +41,11 @@ interface AddProductStep4Props {
     editMode?: boolean;
     itemId?: string;
     existingVariants?: any[];
+    onStepNavigate?: (step: number) => void;
+    completedSteps?: number[];
 }
 
-function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, companies, editMode = false, itemId, existingVariants }: AddProductStep4Props) {
+function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, companies, editMode = false, itemId, existingVariants, onStepNavigate, completedSteps }: AddProductStep4Props) {
     const { showSuccess, showError } = useNotifications();
     const [variants, setVariants] = useState<ItemVariant[]>([]);
     const [isSaving, setIsSaving] = useState(false);
@@ -490,15 +493,12 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
             <div className="add-product-step4-content">
                 <header className="step-header">
                     <h1>{editMode ? 'Edit Product' : 'Add New Product'}</h1>
-                    <div className="step-indicator">
-                        <span className="step completed">1</span>
-                        <span className="step-divider"></span>
-                        <span className="step completed">2</span>
-                        <span className="step-divider"></span>
-                        <span className="step completed">3</span>
-                        <span className="step-divider"></span>
-                        <span className="step active">4</span>
-                    </div>
+                    <StepIndicator 
+                        currentStep={4}
+                        totalSteps={4}
+                        onStepClick={onStepNavigate}
+                        completedSteps={completedSteps || [1, 2, 3]}
+                    />
                     <h2>Step 4: Configure Variants</h2>
                     <p>Fill in SKU, price, and stock for each variant.</p>
                 </header>

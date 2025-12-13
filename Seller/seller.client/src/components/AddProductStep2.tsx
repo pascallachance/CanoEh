@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './AddProductStep2.css';
 import { ApiClient } from '../utils/apiClient';
 import type { AddProductStep1Data } from './AddProductStep1';
+import StepIndicator from './StepIndicator';
 
 export interface BilingualItemAttribute {
     name_en: string;
@@ -21,6 +22,8 @@ interface AddProductStep2Props {
     step1Data: AddProductStep1Data;
     initialData?: AddProductStep2Data;
     editMode?: boolean;
+    onStepNavigate?: (step: number) => void;
+    completedSteps?: number[];
 }
 
 interface Category {
@@ -32,7 +35,7 @@ interface Category {
     updatedAt?: string;
 }
 
-function AddProductStep2({ onNext, onBack, initialData, editMode = false }: AddProductStep2Props) {
+function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep2Props) {
     const [formData, setFormData] = useState<AddProductStep2Data>(initialData || {
         categoryId: '',
         itemAttributes: []
@@ -155,15 +158,12 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false }: AddP
             <div className="add-product-step2-content">
                 <header className="step-header">
                     <h1>{editMode ? 'Edit Product' : 'Add New Product'}</h1>
-                    <div className="step-indicator">
-                        <span className="step completed">1</span>
-                        <span className="step-divider"></span>
-                        <span className="step active">2</span>
-                        <span className="step-divider"></span>
-                        <span className="step">3</span>
-                        <span className="step-divider"></span>
-                        <span className="step">4</span>
-                    </div>
+                    <StepIndicator 
+                        currentStep={2}
+                        totalSteps={4}
+                        onStepClick={onStepNavigate}
+                        completedSteps={completedSteps || [1]}
+                    />
                     <h2>Step 2: Category and Item Attributes</h2>
                     <p>Select a category and add item-specific attributes (optional).</p>
                 </header>

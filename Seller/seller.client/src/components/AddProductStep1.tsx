@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './AddProductStep1.css';
+import StepIndicator from './StepIndicator';
 
 export interface AddProductStep1Data {
     name: string;
@@ -13,9 +14,11 @@ interface AddProductStep1Props {
     onCancel: () => void;
     initialData?: AddProductStep1Data;
     editMode?: boolean;
+    onStepNavigate?: (step: number) => void;
+    completedSteps?: number[];
 }
 
-function AddProductStep1({ onNext, onCancel, initialData, editMode = false }: AddProductStep1Props) {
+function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep1Props) {
     const [formData, setFormData] = useState<AddProductStep1Data>(initialData || {
         name: '',
         name_fr: '',
@@ -68,15 +71,12 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false }: Ad
             <div className="add-product-step1-content">
                 <header className="step-header">
                     <h1>{editMode ? 'Edit Product' : 'Add New Product'}</h1>
-                    <div className="step-indicator">
-                        <span className="step active">1</span>
-                        <span className="step-divider"></span>
-                        <span className="step">2</span>
-                        <span className="step-divider"></span>
-                        <span className="step">3</span>
-                        <span className="step-divider"></span>
-                        <span className="step">4</span>
-                    </div>
+                    <StepIndicator 
+                        currentStep={1}
+                        totalSteps={4}
+                        onStepClick={onStepNavigate}
+                        completedSteps={completedSteps || []}
+                    />
                     <h2>Step 1: Item Name and Description</h2>
                     <p>Provide the basic information about your product.</p>
                 </header>

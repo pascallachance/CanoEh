@@ -385,7 +385,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
             // Filter by variant name, SKU, product ID type, or product ID value
             if (filters.variantName || filters.sku || filters.productIdType || filters.productIdValue) {
                 const hasMatchingVariant = item.variants.some(variant => {
-                    if (variant.deleted) return false;
+                    if (!filters.showDeleted && variant.deleted) return false;
 
                     // Check variant name
                     if (filters.variantName) {
@@ -1976,7 +1976,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                                 {expandedItemId === item.id && (
                                                     <tr className="products-variants-row">
                                                         <td colSpan={5}>
-                                                            {item.variants && item.variants.filter(v => !v.deleted).length > 0 ? (
+                                                            {item.variants && item.variants.filter(v => filters.showDeleted || !v.deleted).length > 0 ? (
                                                                 <div className="products-variants-expanded">
                                                                     <table className="products-variants-inner-table">
                                                                         <thead>
@@ -1990,7 +1990,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody>
-                                                                            {item.variants.filter(v => !v.deleted).map(variant => (
+                                                                            {item.variants.filter(v => filters.showDeleted || !v.deleted).map(variant => (
                                                                                 <tr key={variant.id}>
                                                                                     <td>{getVariantName(variant)}</td>
                                                                                     <td>${variant.price.toFixed(2)}</td>

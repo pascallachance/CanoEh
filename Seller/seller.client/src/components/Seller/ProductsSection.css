@@ -778,13 +778,47 @@
 
 /* Edit button styles */
 .products-actions-column {
-    width: 80px;
+    width: 120px;
     text-align: center;
 }
 
 .products-actions-cell {
     text-align: center;
     vertical-align: middle;
+}
+
+.products-delete-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s;
+    color: #dc3545;
+    margin-right: 0.5rem;
+}
+
+.products-delete-button:hover:not(:disabled) {
+    background: #ffe5e8;
+    color: #bd2130;
+}
+
+.products-delete-button:focus-visible {
+    outline: 2px solid #dc3545;
+    outline-offset: 2px;
+}
+
+.products-delete-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.products-delete-icon {
+    width: 20px;
+    height: 20px;
 }
 
 .products-edit-button {
@@ -814,6 +848,29 @@
     width: 20px;
     height: 20px;
 }
+
+/* Deleted row styles */
+.products-list-row-deleted {
+    text-decoration: line-through;
+}
+
+.products-list-row-deleted td {
+    color: #495057;
+}
+
+/* Screen reader only text */
+.products-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
 
 /* Filter Section Styles */
 .products-filter-section {
@@ -906,6 +963,29 @@
     outline: none;
     border-color: #007bff;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.products-filter-checkbox {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.products-filter-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.95rem;
+}
+
+.products-filter-checkbox-input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    margin: 0;
 }
 
 .products-filter-actions {

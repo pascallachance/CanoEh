@@ -143,7 +143,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         variantName: '',
         sku: '',
         productIdType: '',
-        productIdValue: ''
+        productIdValue: '',
+        showDeleted: false
     });
     const [sortBy, setSortBy] = useState<'itemName' | 'itemCategory' | 'creationDate' | 'lastUpdated'>('itemName');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -363,6 +364,11 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
     const filteredAndSortedItems = useMemo(() => {
         // First, filter the items
         const filtered = sellerItems.filter(item => {
+            // Filter by deleted status
+            if (!filters.showDeleted && item.deleted) {
+                return false;
+            }
+
             // Filter by item name
             if (filters.itemName) {
                 const itemName = (language === 'fr' ? item.name_fr : item.name_en).toLowerCase();
@@ -628,6 +634,45 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
 
         // Call the onEditProduct callback with the parsed data
         onEditProduct(item.id, step1Data, step2Data, step3Data, existingVariants);
+    };
+
+    // Handle deleting an item
+    const handleDeleteItem = async (item: ApiItem) => {
+        // Validate item ID
+        if (!item.id || typeof item.id !== 'string') {
+            showError('Invalid item ID');
+            return;
+        }
+
+        // Check if item is already deleted (defense in depth)
+        if (item.deleted) {
+            showError(t('products.alreadyDeleted'));
+            return;
+        }
+        // Show confirmation dialog
+        if (!window.confirm(t('products.deleteConfirm'))) {
+            return;
+        }
+
+        try {
+            // Encode the ID to ensure URL safety (though GUID should be safe)
+            const encodedId = encodeURIComponent(item.id);
+            const response = await ApiClient.delete(
+                `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/DeleteItem/${encodedId}`
+            );
+
+            if (response.ok) {
+                showSuccess(t('products.deleteSuccess'));
+                // Refresh the seller items list
+                await fetchSellerItems();
+            } else {
+                // Do not expose backend error details to the user
+                showError(t('products.deleteError'));
+            }
+        } catch (error) {
+            console.error('Error deleting item:', error);
+            showError(t('products.deleteError'));
+        }
     };
 
     const addAttributeValue = () => {
@@ -1771,7 +1816,19 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                             </div>
                         </div>
 
-
+                        {/* Show Deleted Checkbox */}
+                        <div className="products-filter-checkbox">
+                            <label className="products-filter-checkbox-label" htmlFor="filter-show-deleted">
+                                <input
+                                    id="filter-show-deleted"
+                                    type="checkbox"
+                                    checked={filters.showDeleted}
+                                    onChange={(e) => setFilters(prev => ({ ...prev, showDeleted: e.target.checked }))}
+                                    className="products-filter-checkbox-input"
+                                />
+                                <span>{t('products.filter.showDeleted')}</span>
+                            </label>
+                        </div>
 
                         {/* Clear Filters Button and Current Items Count */}
                         <div className="products-filter-actions">
@@ -1786,7 +1843,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                         variantName: '',
                                         sku: '',
                                         productIdType: '',
-                                        productIdValue: ''
+                                        productIdValue: '',
+                                        showDeleted: false
                                     });
                                     setSortBy('itemName');
                                     setSortDirection('asc');
@@ -1815,14 +1873,14 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                             {renderSortableHeader('itemCategory', 'products.list.itemCategory')}
                                             {renderSortableHeader('creationDate', 'products.list.creationDate')}
                                             {renderSortableHeader('lastUpdated', 'products.list.lastUpdated')}
-                                            <th className="products-actions-column">{t('products.edit')}</th>
+                                            <th className="products-actions-column">{t('products.actions')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {paginatedItems.map(item => (
                                             <Fragment key={item.id}>
                                                 <tr 
-                                                    className={`products-list-row ${expandedItemId === item.id ? 'expanded' : ''}`}
+                                                    className={`products-list-row ${expandedItemId === item.id ? 'expanded' : ''} ${item.deleted ? 'products-list-row-deleted' : ''}`}
                                                 >
                                                     <td 
                                                         onClick={() => toggleExpandedRow(item.id)}
@@ -1837,6 +1895,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                                             }
                                                         }}
                                                     >
+                                                        {item.deleted && <span className="products-sr-only">{t('products.deleted')} - </span>}
                                                         {getItemName(item)}
                                                     </td>
                                                     <td 
@@ -1858,6 +1917,37 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                                         {formatDate(item.updatedAt)}
                                                     </td>
                                                     <td className="products-actions-cell">
+                                                        <button
+                                                            className="products-delete-button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDeleteItem(item);
+                                                            }}
+                                                            title={item.deleted ? t('products.alreadyDeleted') : t('products.delete')}
+                                                            aria-label={item.deleted 
+                                                                ? `${t('products.alreadyDeleted')} - ${getItemName(item)}` 
+                                                                : `${t('products.delete')} ${getItemName(item)}`
+                                                            }
+                                                            disabled={item.deleted}
+                                                            aria-disabled={item.deleted}
+                                                        >
+                                                            <svg 
+                                                                className="products-delete-icon" 
+                                                                width="20" 
+                                                                height="20" 
+                                                                viewBox="0 0 24 24" 
+                                                                fill="none" 
+                                                                stroke="currentColor" 
+                                                                strokeWidth="2"
+                                                                strokeLinecap="round" 
+                                                                strokeLinejoin="round"
+                                                            >
+                                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                                <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                                <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                            </svg>
+                                                        </button>
                                                         <button
                                                             className="products-edit-button"
                                                             onClick={(e) => {

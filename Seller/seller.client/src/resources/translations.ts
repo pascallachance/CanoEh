@@ -108,11 +108,11 @@ export const translations: TranslationResources = {
   },
   'products.invalidItemId': {
     en: 'Invalid item ID',
-    fr: 'ID d\'article invalide'
+    fr: "ID d'article invalide"
   },
   'products.itemNotDeleted': {
     en: 'Item is not deleted',
-    fr: 'L\'article n\'est pas supprimé'
+    fr: "L'article n'est pas supprimé"
   },
 
   // Product Form Labels

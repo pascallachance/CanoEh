@@ -363,7 +363,10 @@ function AppContent() {
         if (editProductStep1Data) completed.push(1);
         if (editProductStep2Data) completed.push(2);
         if (editProductStep3Data) completed.push(3);
-        // Step 4 doesn't have its own data, it's computed from previous steps
+        // In edit mode, if all previous steps exist, step 4 is also completed
+        if (editProductStep1Data && editProductStep2Data && editProductStep3Data) {
+            completed.push(4);
+        }
         return completed;
     };
 

@@ -858,6 +858,12 @@
     background: #5a6268;
 }
 
+.products-clear-filters-button:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
 @media (max-width: 768px) {
     .products-filter-grid {
         grid-template-columns: 1fr;

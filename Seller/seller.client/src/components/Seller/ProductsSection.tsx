@@ -352,6 +352,13 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         setExpandedItemId(null);
     }, [currentPage]);
 
+    // Get category name by ID
+    const getCategoryName = useCallback((categoryId: string): string => {
+        const category = categories.find(c => c.id === categoryId);
+        if (!category) return t('common.unknown');
+        return language === 'fr' ? category.name_fr : category.name_en;
+    }, [categories, language, t]);
+
     // Filter and sort items
     const filteredAndSortedItems = useMemo(() => {
         // First, filter the items
@@ -456,13 +463,6 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
     const toggleExpandedRow = (itemId: string) => {
         setExpandedItemId(prev => prev === itemId ? null : itemId);
     };
-
-    // Get category name by ID
-    const getCategoryName = useCallback((categoryId: string): string => {
-        const category = categories.find(c => c.id === categoryId);
-        if (!category) return t('common.unknown');
-        return language === 'fr' ? category.name_fr : category.name_en;
-    }, [categories, language, t]);
 
     // Get item name based on language
     const getItemName = (item: ApiItem): string => {
@@ -1581,10 +1581,11 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                         <div className="products-filter-grid">
                             {/* Item Name Search */}
                             <div className="products-filter-field">
-                                <label className="products-filter-label">
+                                <label className="products-filter-label" htmlFor="filter-item-name">
                                     {t('products.filter.itemName')}
                                 </label>
                                 <input
+                                    id="filter-item-name"
                                     type="text"
                                     value={filters.itemName}
                                     onChange={(e) => setFilters(prev => ({ ...prev, itemName: e.target.value }))}
@@ -1595,10 +1596,11 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
 
                             {/* Category Dropdown */}
                             <div className="products-filter-field">
-                                <label className="products-filter-label">
+                                <label className="products-filter-label" htmlFor="filter-category">
                                     {t('products.filter.category')}
                                 </label>
                                 <select
+                                    id="filter-category"
                                     value={filters.categoryId}
                                     onChange={(e) => setFilters(prev => ({ ...prev, categoryId: e.target.value }))}
                                     className="products-filter-input"
@@ -1614,10 +1616,11 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
 
                             {/* Variant Name Search */}
                             <div className="products-filter-field">
-                                <label className="products-filter-label">
+                                <label className="products-filter-label" htmlFor="filter-variant-name">
                                     {t('products.filter.variantName')}
                                 </label>
                                 <input
+                                    id="filter-variant-name"
                                     type="text"
                                     value={filters.variantName}
                                     onChange={(e) => setFilters(prev => ({ ...prev, variantName: e.target.value }))}
@@ -1628,10 +1631,11 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
 
                             {/* SKU Search */}
                             <div className="products-filter-field">
-                                <label className="products-filter-label">
+                                <label className="products-filter-label" htmlFor="filter-sku">
                                     {t('products.filter.sku')}
                                 </label>
                                 <input
+                                    id="filter-sku"
                                     type="text"
                                     value={filters.sku}
                                     onChange={(e) => setFilters(prev => ({ ...prev, sku: e.target.value }))}
@@ -1642,10 +1646,11 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
 
                             {/* Product ID Type Dropdown */}
                             <div className="products-filter-field">
-                                <label className="products-filter-label">
+                                <label className="products-filter-label" htmlFor="filter-product-id-type">
                                     {t('products.filter.productIdType')}
                                 </label>
                                 <select
+                                    id="filter-product-id-type"
                                     value={filters.productIdType}
                                     onChange={(e) => setFilters(prev => ({ ...prev, productIdType: e.target.value }))}
                                     className="products-filter-input"
@@ -1663,10 +1668,11 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
 
                             {/* Product ID Value Search */}
                             <div className="products-filter-field">
-                                <label className="products-filter-label">
+                                <label className="products-filter-label" htmlFor="filter-product-id-value">
                                     {t('products.filter.productIdValue')}
                                 </label>
                                 <input
+                                    id="filter-product-id-value"
                                     type="text"
                                     value={filters.productIdValue}
                                     onChange={(e) => setFilters(prev => ({ ...prev, productIdValue: e.target.value }))}
@@ -1681,10 +1687,11 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                             <h5>{t('products.sort.title')}</h5>
                             <div className="products-sort-controls">
                                 <div className="products-filter-field">
-                                    <label className="products-filter-label">
+                                    <label className="products-filter-label" htmlFor="sort-order-by">
                                         {t('products.sort.orderBy')}
                                     </label>
                                     <select
+                                        id="sort-order-by"
                                         value={sortBy}
                                         onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
                                         className="products-filter-input"
@@ -1696,10 +1703,11 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                     </select>
                                 </div>
                                 <div className="products-filter-field">
-                                    <label className="products-filter-label">
+                                    <label className="products-filter-label" htmlFor="sort-direction">
                                         {t('products.sort.direction')}
                                     </label>
                                     <select
+                                        id="sort-direction"
                                         value={sortDirection}
                                         onChange={(e) => setSortDirection(e.target.value as 'asc' | 'desc')}
                                         className="products-filter-input"

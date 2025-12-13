@@ -599,7 +599,7 @@
     font-weight: bold;
 }
 
-.products-sort-arrow:focus {
+.products-sort-arrow:focus-visible {
     outline: 2px solid #007bff;
     outline-offset: 1px;
 }
@@ -801,7 +801,7 @@
     color: #0056b3;
 }
 
-.products-edit-button:focus {
+.products-edit-button:focus-visible {
     outline: 2px solid #007bff;
     outline-offset: 2px;
 }
@@ -862,7 +862,7 @@
     background: white;
 }
 
-.products-filter-input:focus {
+.products-filter-input:focus-visible {
     outline: none;
     border-color: #007bff;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
@@ -899,7 +899,7 @@
     background: #5a6268;
 }
 
-.products-clear-filters-button:focus {
+.products-clear-filters-button:focus-visible {
     outline: none;
     border-color: #007bff;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);

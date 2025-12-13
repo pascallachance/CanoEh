@@ -185,8 +185,8 @@ WHERE Id = @Id";
                 dbConnection.Open();
             }
             
-            // Get all items for the seller
-            var itemQuery = "SELECT * FROM dbo.Item WHERE SellerID = @sellerId AND Deleted = 0";
+            // Get all items for the seller (including deleted items)
+            var itemQuery = "SELECT * FROM dbo.Item WHERE SellerID = @sellerId";
             var items = (await dbConnection.QueryAsync<Item>(itemQuery, new { sellerId })).ToList();
             
             if (!items.Any())
@@ -201,8 +201,8 @@ WHERE Id = @Id";
             var itemAttributes = (await dbConnection.QueryAsync<ItemAttribute>(itemAttributeQuery, new { itemIds })).ToList();
             var itemAttributesByItemId = itemAttributes.GroupBy(ia => ia.ItemID).ToDictionary(g => g.Key, g => g.ToList());
             
-            // Get all ItemVariants for the items (non-deleted) and group by ItemId for O(1) lookup
-            var variantQuery = "SELECT * FROM dbo.ItemVariant WHERE ItemId IN @itemIds AND Deleted = 0";
+            // Get all ItemVariants for the items (including deleted variants)
+            var variantQuery = "SELECT * FROM dbo.ItemVariant WHERE ItemId IN @itemIds";
             var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { itemIds })).ToList();
             var variantsByItemId = variants.GroupBy(v => v.ItemId).ToDictionary(g => g.Key, g => g.ToList());
             

@@ -523,10 +523,18 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
         {
             try
             {
+                // Use GetByIdAsync (not GetItemByIdAsync) to retrieve deleted items
+                // GetItemByIdAsync filters out deleted items, but we need to find them to restore them
                 var item = await _itemRepository.GetByIdAsync(id);
                 if (item == null)
                 {
                     return Result.Failure<DeleteItemResponse>("Item not found.", StatusCodes.Status404NotFound);
+                }
+
+                // Check if item is actually deleted before attempting to undelete
+                if (!item.Deleted)
+                {
+                    return Result.Failure<DeleteItemResponse>("Item is not deleted.", StatusCodes.Status400BadRequest);
                 }
 
                 // Set Deleted to false to undelete the item
@@ -553,10 +561,17 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
         {
             try
             {
+                // Use GetByIdAsync to retrieve variant regardless of deleted status
                 var variant = await _itemVariantRepository.GetByIdAsync(variantId);
                 if (variant == null || variant.ItemId != itemId)
                 {
                     return Result.Failure<DeleteItemVariantResponse>("Item or variant not found.", StatusCodes.Status404NotFound);
+                }
+
+                // Check if variant is actually deleted before attempting to undelete
+                if (!variant.Deleted)
+                {
+                    return Result.Failure<DeleteItemVariantResponse>("Variant is not deleted.", StatusCodes.Status400BadRequest);
                 }
 
                 // Set Deleted to false to undelete the variant

@@ -601,7 +601,7 @@
 
 .products-sort-arrow:focus {
     outline: 2px solid #007bff;
-    outline-offset: 2px;
+    outline-offset: 1px;
 }
 
 .products-list-row {

@@ -492,6 +492,37 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         setSortDirection(direction);
     };
 
+    // Render sortable header with arrow buttons
+    const renderSortableHeader = (column: 'itemName' | 'itemCategory' | 'creationDate' | 'lastUpdated', labelKey: string) => {
+        return (
+            <th>
+                <div className="products-header-cell">
+                    <span>{t(labelKey)}</span>
+                    <div className="products-sort-arrows">
+                        <button
+                            type="button"
+                            className={`products-sort-arrow ${sortBy === column && sortDirection === 'asc' ? 'active' : ''}`}
+                            onClick={() => handleSortClick(column, 'asc')}
+                            title={t('products.sort.ascending')}
+                            aria-label={`${t(`products.sort.${column}`)} ${t('products.sort.ascending')}`}
+                        >
+                            ▲
+                        </button>
+                        <button
+                            type="button"
+                            className={`products-sort-arrow ${sortBy === column && sortDirection === 'desc' ? 'active' : ''}`}
+                            onClick={() => handleSortClick(column, 'desc')}
+                            title={t('products.sort.descending')}
+                            aria-label={`${t(`products.sort.${column}`)} ${t('products.sort.descending')}`}
+                        >
+                            ▼
+                        </button>
+                    </div>
+                </div>
+            </th>
+        );
+    };
+
     // Handle editing an item
     const handleEditItem = (item: ApiItem) => {
         if (!onEditProduct) {
@@ -1726,98 +1757,10 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                 <table className="products-list-table">
                                     <thead>
                                         <tr>
-                                            <th>
-                                                <div className="products-header-cell">
-                                                    <span>{t('products.list.itemName')}</span>
-                                                    <div className="products-sort-arrows">
-                                                        <button
-                                                            className={`products-sort-arrow ${sortBy === 'itemName' && sortDirection === 'asc' ? 'active' : ''}`}
-                                                            onClick={() => handleSortClick('itemName', 'asc')}
-                                                            title={t('products.sort.ascending')}
-                                                            aria-label={`${t('products.sort.itemName')} ${t('products.sort.ascending')}`}
-                                                        >
-                                                            ▲
-                                                        </button>
-                                                        <button
-                                                            className={`products-sort-arrow ${sortBy === 'itemName' && sortDirection === 'desc' ? 'active' : ''}`}
-                                                            onClick={() => handleSortClick('itemName', 'desc')}
-                                                            title={t('products.sort.descending')}
-                                                            aria-label={`${t('products.sort.itemName')} ${t('products.sort.descending')}`}
-                                                        >
-                                                            ▼
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </th>
-                                            <th>
-                                                <div className="products-header-cell">
-                                                    <span>{t('products.list.itemCategory')}</span>
-                                                    <div className="products-sort-arrows">
-                                                        <button
-                                                            className={`products-sort-arrow ${sortBy === 'itemCategory' && sortDirection === 'asc' ? 'active' : ''}`}
-                                                            onClick={() => handleSortClick('itemCategory', 'asc')}
-                                                            title={t('products.sort.ascending')}
-                                                            aria-label={`${t('products.sort.itemCategory')} ${t('products.sort.ascending')}`}
-                                                        >
-                                                            ▲
-                                                        </button>
-                                                        <button
-                                                            className={`products-sort-arrow ${sortBy === 'itemCategory' && sortDirection === 'desc' ? 'active' : ''}`}
-                                                            onClick={() => handleSortClick('itemCategory', 'desc')}
-                                                            title={t('products.sort.descending')}
-                                                            aria-label={`${t('products.sort.itemCategory')} ${t('products.sort.descending')}`}
-                                                        >
-                                                            ▼
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </th>
-                                            <th>
-                                                <div className="products-header-cell">
-                                                    <span>{t('products.list.creationDate')}</span>
-                                                    <div className="products-sort-arrows">
-                                                        <button
-                                                            className={`products-sort-arrow ${sortBy === 'creationDate' && sortDirection === 'asc' ? 'active' : ''}`}
-                                                            onClick={() => handleSortClick('creationDate', 'asc')}
-                                                            title={t('products.sort.ascending')}
-                                                            aria-label={`${t('products.sort.creationDate')} ${t('products.sort.ascending')}`}
-                                                        >
-                                                            ▲
-                                                        </button>
-                                                        <button
-                                                            className={`products-sort-arrow ${sortBy === 'creationDate' && sortDirection === 'desc' ? 'active' : ''}`}
-                                                            onClick={() => handleSortClick('creationDate', 'desc')}
-                                                            title={t('products.sort.descending')}
-                                                            aria-label={`${t('products.sort.creationDate')} ${t('products.sort.descending')}`}
-                                                        >
-                                                            ▼
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </th>
-                                            <th>
-                                                <div className="products-header-cell">
-                                                    <span>{t('products.list.lastUpdated')}</span>
-                                                    <div className="products-sort-arrows">
-                                                        <button
-                                                            className={`products-sort-arrow ${sortBy === 'lastUpdated' && sortDirection === 'asc' ? 'active' : ''}`}
-                                                            onClick={() => handleSortClick('lastUpdated', 'asc')}
-                                                            title={t('products.sort.ascending')}
-                                                            aria-label={`${t('products.sort.lastUpdated')} ${t('products.sort.ascending')}`}
-                                                        >
-                                                            ▲
-                                                        </button>
-                                                        <button
-                                                            className={`products-sort-arrow ${sortBy === 'lastUpdated' && sortDirection === 'desc' ? 'active' : ''}`}
-                                                            onClick={() => handleSortClick('lastUpdated', 'desc')}
-                                                            title={t('products.sort.descending')}
-                                                            aria-label={`${t('products.sort.lastUpdated')} ${t('products.sort.descending')}`}
-                                                        >
-                                                            ▼
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </th>
+                                            {renderSortableHeader('itemName', 'products.list.itemName')}
+                                            {renderSortableHeader('itemCategory', 'products.list.itemCategory')}
+                                            {renderSortableHeader('creationDate', 'products.list.creationDate')}
+                                            {renderSortableHeader('lastUpdated', 'products.list.lastUpdated')}
                                             <th className="products-actions-column">{t('products.edit')}</th>
                                         </tr>
                                     </thead>

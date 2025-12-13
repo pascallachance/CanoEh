@@ -679,13 +679,13 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
     const handleUndeleteItem = async (item: ApiItem) => {
         // Validate item ID
         if (!item.id || typeof item.id !== 'string') {
-            showError('Invalid item ID');
+            showError(t('products.invalidItemId'));
             return;
         }
 
         // Check if item is not deleted
         if (!item.deleted) {
-            showError('Item is not deleted');
+            showError(t('products.itemNotDeleted'));
             return;
         }
 

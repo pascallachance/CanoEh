@@ -237,6 +237,7 @@ namespace API.Controllers
         /// <returns>Returns a success response or an error response.</returns>
         [HttpPut("UnDeleteItem/{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UnDeleteItem(Guid id)
@@ -267,6 +268,7 @@ namespace API.Controllers
         /// <returns>Returns a success response or an error response.</returns>
         [HttpPut("UnDeleteItemVariant/{itemId:guid}/{variantId:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UnDeleteItemVariant(Guid itemId, Guid variantId)

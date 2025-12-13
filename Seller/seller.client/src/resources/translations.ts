@@ -104,7 +104,15 @@ export const translations: TranslationResources = {
   },
   'products.undeleteError': {
     en: 'Failed to restore item',
-    fr: 'Échec de la restauration de l\'article'
+    fr: "Échec de la restauration de l'article"
+  },
+  'products.invalidItemId': {
+    en: 'Invalid item ID',
+    fr: 'ID d\'article invalide'
+  },
+  'products.itemNotDeleted': {
+    en: 'Item is not deleted',
+    fr: 'L\'article n\'est pas supprimé'
   },
 
   // Product Form Labels

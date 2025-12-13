@@ -1723,9 +1723,9 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
 
                         {/* Clear Filters Button and Current Items Count */}
                         <div className="products-filter-actions">
-                            <div className="products-current-items-count" role="status" aria-live="polite">
+                            <span className="products-current-items-count" role="status" aria-live="polite">
                                 {t('products.list.currentItems')}: {filteredAndSortedItems.length} / {sellerItems.length}
-                            </div>
+                            </span>
                             <button
                                 onClick={() => {
                                     setFilters({

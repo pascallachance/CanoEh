@@ -178,15 +178,17 @@ WHERE Id = @Id";
             return await dbConnection.QueryFirstOrDefaultAsync<Item>(query, new { id });
         }
 
-        public async Task<IEnumerable<Item>> GetBySellerIdAsync(Guid sellerId)
+        public async Task<IEnumerable<Item>> GetBySellerIdAsync(Guid sellerId, bool includeDeleted = false)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
                 dbConnection.Open();
             }
             
-            // Get all items for the seller (including deleted items)
-            var itemQuery = "SELECT * FROM dbo.Item WHERE SellerID = @sellerId";
+            // Get all items for the seller (optionally include deleted items)
+            var itemQuery = includeDeleted 
+                ? "SELECT * FROM dbo.Item WHERE SellerID = @sellerId"
+                : "SELECT * FROM dbo.Item WHERE SellerID = @sellerId AND Deleted = 0";
             var items = (await dbConnection.QueryAsync<Item>(itemQuery, new { sellerId })).ToList();
             
             if (!items.Any())
@@ -201,8 +203,10 @@ WHERE Id = @Id";
             var itemAttributes = (await dbConnection.QueryAsync<ItemAttribute>(itemAttributeQuery, new { itemIds })).ToList();
             var itemAttributesByItemId = itemAttributes.GroupBy(ia => ia.ItemID).ToDictionary(g => g.Key, g => g.ToList());
             
-            // Get all ItemVariants for the items (including deleted variants)
-            var variantQuery = "SELECT * FROM dbo.ItemVariant WHERE ItemId IN @itemIds";
+            // Get all ItemVariants for the items (optionally include deleted variants)
+            var variantQuery = includeDeleted
+                ? "SELECT * FROM dbo.ItemVariant WHERE ItemId IN @itemIds"
+                : "SELECT * FROM dbo.ItemVariant WHERE ItemId IN @itemIds AND Deleted = 0";
             var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { itemIds })).ToList();
             var variantsByItemId = variants.GroupBy(v => v.ItemId).ToDictionary(g => g.Key, g => g.ToList());
             

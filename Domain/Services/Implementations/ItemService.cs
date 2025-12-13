@@ -383,11 +383,11 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             }
         }
 
-        public async Task<Result<IEnumerable<GetItemResponse>>> GetAllItemsFromSellerAsync(Guid sellerId)
+        public async Task<Result<IEnumerable<GetItemResponse>>> GetAllItemsFromSellerAsync(Guid sellerId, bool includeDeleted = false)
         {
             try
             {
-                var items = await _itemRepository.GetBySellerIdAsync(sellerId);
+                var items = await _itemRepository.GetBySellerIdAsync(sellerId, includeDeleted);
                 var response = items.Select(item => new GetItemResponse
                 {
                     Id = item.Id,

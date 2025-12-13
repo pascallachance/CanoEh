@@ -289,8 +289,10 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         setLoadItemsError('');
 
         try {
+            // Add includeDeleted query parameter based on the checkbox state
+            const queryParams = filters.showDeleted ? '?includeDeleted=true' : '';
             const response = await ApiClient.get(
-                `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/GetSellerItems/${sellerId}`,
+                `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/GetSellerItems/${sellerId}${queryParams}`,
                 { signal }
             );
 
@@ -321,7 +323,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                 setIsLoadingItems(false);
             }
         }
-    }, [companies, t]);
+    }, [companies, t, filters.showDeleted]);
 
     // Load categories when component mounts
     useEffect(() => {
@@ -364,10 +366,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
     const filteredAndSortedItems = useMemo(() => {
         // First, filter the items
         const filtered = sellerItems.filter(item => {
-            // Filter by deleted status
-            if (!filters.showDeleted && item.deleted) {
-                return false;
-            }
+            // Note: Deleted items are now filtered at the API level based on the includeDeleted parameter
+            // No need to filter by deleted status here since the backend handles it
 
             // Filter by item name
             if (filters.itemName) {

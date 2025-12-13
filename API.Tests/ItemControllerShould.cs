@@ -370,7 +370,7 @@ namespace API.Tests
             };
 
             var result = Result.Success<IEnumerable<GetItemResponse>>(items);
-            _mockItemService.Setup(x => x.GetAllItemsFromSellerAsync(sellerId))
+            _mockItemService.Setup(x => x.GetAllItemsFromSellerAsync(sellerId, It.IsAny<bool>()))
                            .ReturnsAsync(result);
 
             // Act
@@ -389,7 +389,7 @@ namespace API.Tests
             var items = new List<GetItemResponse>();
 
             var result = Result.Success<IEnumerable<GetItemResponse>>(items);
-            _mockItemService.Setup(x => x.GetAllItemsFromSellerAsync(sellerId))
+            _mockItemService.Setup(x => x.GetAllItemsFromSellerAsync(sellerId, It.IsAny<bool>()))
                            .ReturnsAsync(result);
 
             // Act
@@ -406,7 +406,7 @@ namespace API.Tests
             // Arrange
             var sellerId = Guid.NewGuid();
             var result = Result.Failure<IEnumerable<GetItemResponse>>("An error occurred", StatusCodes.Status500InternalServerError);
-            _mockItemService.Setup(x => x.GetAllItemsFromSellerAsync(sellerId))
+            _mockItemService.Setup(x => x.GetAllItemsFromSellerAsync(sellerId, It.IsAny<bool>()))
                            .ReturnsAsync(result);
 
             // Act

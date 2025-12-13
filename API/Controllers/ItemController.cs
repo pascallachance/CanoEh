@@ -111,15 +111,16 @@ namespace API.Controllers
         /// Gets all items from a seller by seller ID.
         /// </summary>
         /// <param name="sellerId">The ID of the seller.</param>
+        /// <param name="includeDeleted">Whether to include deleted items and variants. Default is false.</param>
         /// <returns>Returns a list of items from the seller or an error response.</returns>
         [HttpGet("GetSellerItems/{sellerId:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetSellerItems(Guid sellerId)
+        public async Task<IActionResult> GetSellerItems(Guid sellerId, [FromQuery] bool includeDeleted = false)
         {
             try
             {
-                var result = await _itemService.GetAllItemsFromSellerAsync(sellerId);
+                var result = await _itemService.GetAllItemsFromSellerAsync(sellerId, includeDeleted);
 
                 if (result.IsFailure)
                 {

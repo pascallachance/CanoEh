@@ -900,9 +900,5 @@
     .products-filter-grid {
         grid-template-columns: 1fr;
     }
-
-    .products-sort-controls {
-        grid-template-columns: 1fr;
-    }
 }
 }

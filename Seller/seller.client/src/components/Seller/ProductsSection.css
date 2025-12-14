@@ -1074,7 +1074,6 @@
     border-radius: 8px;
     max-width: 400px;
     width: 90%;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     outline: none;
 }
 
@@ -1099,7 +1098,7 @@
     gap: 1rem;
 }
 
-.products-modal-btn {
+.products-modal-button {
     padding: 0.75rem 1.5rem;
     color: white;
     border: none;
@@ -1108,28 +1107,28 @@
     transition: background-color 0.2s;
 }
 
-.products-modal-btn-cancel {
+.products-modal-button--cancel {
     background: #6c757d;
 }
 
-.products-modal-btn-cancel:hover {
+.products-modal-button--cancel:hover {
     background: #5a6268;
 }
 
-.products-modal-btn-cancel:focus-visible {
+.products-modal-button--cancel:focus-visible {
     outline: 2px solid #495057;
     outline-offset: 2px;
 }
 
-.products-modal-btn-confirm {
+.products-modal-button--confirm {
     background: #28a745;
 }
 
-.products-modal-btn-confirm:hover {
+.products-modal-button--confirm:hover {
     background: #218838;
 }
 
-.products-modal-btn-confirm:focus-visible {
+.products-modal-button--confirm:focus-visible {
     outline: 2px solid #1e7e34;
     outline-offset: 2px;
 }

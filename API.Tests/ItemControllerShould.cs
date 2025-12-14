@@ -576,7 +576,7 @@ namespace API.Tests
                 CreatedAt = DateTime.UtcNow,
                 Deleted = true
             };
-            _mockItemService.Setup(x => x.GetItemByIdAsync(itemId))
+            _mockItemService.Setup(x => x.GetItemByIdIncludingDeletedAsync(itemId))
                            .ReturnsAsync(Result.Success(itemResponse));
 
             var undeleteItemResponse = new DeleteItemResponse
@@ -622,7 +622,7 @@ namespace API.Tests
                            .ReturnsAsync(Result.Success(user));
 
             // Mock item service to return 404
-            _mockItemService.Setup(x => x.GetItemByIdAsync(itemId))
+            _mockItemService.Setup(x => x.GetItemByIdIncludingDeletedAsync(itemId))
                            .ReturnsAsync(Result.Failure<GetItemResponse>("Item not found.", StatusCodes.Status404NotFound));
 
             // Act
@@ -674,7 +674,7 @@ namespace API.Tests
                 CreatedAt = DateTime.UtcNow,
                 Deleted = false // Not deleted
             };
-            _mockItemService.Setup(x => x.GetItemByIdAsync(itemId))
+            _mockItemService.Setup(x => x.GetItemByIdIncludingDeletedAsync(itemId))
                            .ReturnsAsync(Result.Success(itemResponse));
 
             var result = Result.Failure<DeleteItemResponse>("Item is not deleted.", StatusCodes.Status400BadRequest);
@@ -763,7 +763,7 @@ namespace API.Tests
                 CreatedAt = DateTime.UtcNow,
                 Deleted = false
             };
-            _mockItemService.Setup(x => x.GetItemByIdAsync(itemId))
+            _mockItemService.Setup(x => x.GetItemByIdIncludingDeletedAsync(itemId))
                            .ReturnsAsync(Result.Success(itemResponse));
 
             var undeleteItemVariantResponse = new DeleteItemVariantResponse
@@ -811,7 +811,7 @@ namespace API.Tests
                            .ReturnsAsync(Result.Success(user));
 
             // Mock item service to return 404
-            _mockItemService.Setup(x => x.GetItemByIdAsync(itemId))
+            _mockItemService.Setup(x => x.GetItemByIdIncludingDeletedAsync(itemId))
                            .ReturnsAsync(Result.Failure<GetItemResponse>("Item not found.", StatusCodes.Status404NotFound));
 
             // Act
@@ -864,7 +864,7 @@ namespace API.Tests
                 CreatedAt = DateTime.UtcNow,
                 Deleted = false
             };
-            _mockItemService.Setup(x => x.GetItemByIdAsync(itemId))
+            _mockItemService.Setup(x => x.GetItemByIdIncludingDeletedAsync(itemId))
                            .ReturnsAsync(Result.Success(itemResponse));
 
             var result = Result.Failure<DeleteItemVariantResponse>("Variant is not deleted.", StatusCodes.Status400BadRequest);

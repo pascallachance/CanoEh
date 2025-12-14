@@ -323,22 +323,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             try
             {
                 var items = await _itemRepository.GetAllAsync();
-                var response = items.Select(item => new GetItemResponse
-                {
-                    Id = item.Id,
-                    SellerID = item.SellerID,
-                    Name_en = item.Name_en,
-                    Name_fr = item.Name_fr,
-                    Description_en = item.Description_en,
-                    Description_fr = item.Description_fr,
-                    ImageUrl = item.ImageUrl,
-                    CategoryID = item.CategoryID,
-                    Variants = MapToItemVariantDtos(item.Variants),
-                    ItemAttributes = MapToItemAttributeDtos(item.ItemAttributes),
-                    CreatedAt = item.CreatedAt,
-                    UpdatedAt = item.UpdatedAt,
-                    Deleted = item.Deleted
-                });
+                var response = items.Select(item => MapItemToGetItemResponse(item));
 
                 return Result.Success(response);
             }
@@ -358,23 +343,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     return Result.Failure<GetItemResponse>("Item not found.", StatusCodes.Status404NotFound);
                 }
 
-                var response = new GetItemResponse
-                {
-                    Id = item.Id,
-                    SellerID = item.SellerID,
-                    Name_en = item.Name_en,
-                    Name_fr = item.Name_fr,
-                    Description_en = item.Description_en,
-                    Description_fr = item.Description_fr,
-                    ImageUrl = item.ImageUrl,
-                    CategoryID = item.CategoryID,
-                    Variants = MapToItemVariantDtos(item.Variants),
-                    ItemAttributes = MapToItemAttributeDtos(item.ItemAttributes),
-                    CreatedAt = item.CreatedAt,
-                    UpdatedAt = item.UpdatedAt,
-                    Deleted = item.Deleted
-                };
-
+                var response = MapItemToGetItemResponse(item);
                 return Result.Success(response);
             }
             catch (Exception ex)
@@ -383,27 +352,59 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             }
         }
 
+        public async Task<Result<GetItemResponse>> GetItemByIdIncludingDeletedAsync(Guid id)
+        {
+            try
+            {
+                // Use GetByIdAsync to retrieve items including soft-deleted ones for undelete operations
+                // This differs from GetItemByIdAsync which excludes deleted items
+                // Note: GetByIdAsync throws InvalidOperationException if item is not found (never returns null)
+                var item = await _itemRepository.GetByIdAsync(id);
+                var response = MapItemToGetItemResponse(item);
+                return Result.Success(response);
+            }
+            catch (InvalidOperationException)
+            {
+                // GetByIdAsync throws InvalidOperationException when item is not found
+                return Result.Failure<GetItemResponse>("Item not found.", StatusCodes.Status404NotFound);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<GetItemResponse>($"An error occurred while retrieving the item: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        /// <summary>
+        /// Maps an Item entity to a GetItemResponse DTO to eliminate code duplication.
+        /// </summary>
+        /// <param name="item">The Item entity to map.</param>
+        /// <returns>A GetItemResponse DTO populated with data from the Item entity.</returns>
+        private GetItemResponse MapItemToGetItemResponse(Item item)
+        {
+            return new GetItemResponse
+            {
+                Id = item.Id,
+                SellerID = item.SellerID,
+                Name_en = item.Name_en,
+                Name_fr = item.Name_fr,
+                Description_en = item.Description_en,
+                Description_fr = item.Description_fr,
+                ImageUrl = item.ImageUrl,
+                CategoryID = item.CategoryID,
+                Variants = MapToItemVariantDtos(item.Variants),
+                ItemAttributes = MapToItemAttributeDtos(item.ItemAttributes),
+                CreatedAt = item.CreatedAt,
+                UpdatedAt = item.UpdatedAt,
+                Deleted = item.Deleted
+            };
+        }
+
         public async Task<Result<IEnumerable<GetItemResponse>>> GetAllItemsFromSellerAsync(Guid sellerId, bool includeDeleted = false)
         {
             try
             {
                 var items = await _itemRepository.GetBySellerIdAsync(sellerId, includeDeleted);
-                var response = items.Select(item => new GetItemResponse
-                {
-                    Id = item.Id,
-                    SellerID = item.SellerID,
-                    Name_en = item.Name_en,
-                    Name_fr = item.Name_fr,
-                    Description_en = item.Description_en,
-                    Description_fr = item.Description_fr,
-                    ImageUrl = item.ImageUrl,
-                    CategoryID = item.CategoryID,
-                    Variants = MapToItemVariantDtos(item.Variants),
-                    ItemAttributes = MapToItemAttributeDtos(item.ItemAttributes),
-                    CreatedAt = item.CreatedAt,
-                    UpdatedAt = item.UpdatedAt,
-                    Deleted = item.Deleted
-                });
+                var response = items.Select(item => MapItemToGetItemResponse(item));
 
                 return Result.Success(response);
             }
@@ -619,22 +620,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     return Result.Failure<GetItemResponse>("Variant not found or you do not have permission to access this item.", StatusCodes.Status404NotFound);
                 }
 
-                var response = new GetItemResponse
-                {
-                    Id = item.Id,
-                    SellerID = item.SellerID,
-                    Name_en = item.Name_en,
-                    Name_fr = item.Name_fr,
-                    Description_en = item.Description_en,
-                    Description_fr = item.Description_fr,
-                    ImageUrl = item.ImageUrl,
-                    CategoryID = item.CategoryID,
-                    Variants = MapToItemVariantDtos(item.Variants),
-                    ItemAttributes = MapToItemAttributeDtos(item.ItemAttributes),
-                    CreatedAt = item.CreatedAt,
-                    UpdatedAt = item.UpdatedAt,
-                    Deleted = item.Deleted
-                };
+                var response = MapItemToGetItemResponse(item);
 
                 return Result.Success(response);
             }

@@ -62,6 +62,61 @@ namespace API.Controllers
         }
 
         /// <summary>
+        /// Helper method to validate user authentication and item ownership for undelete operations.
+        /// This method includes deleted items in the lookup.
+        /// </summary>
+        /// <param name="itemId">The ID of the item to validate ownership for.</param>
+        /// <returns>Returns a tuple with validation result and item if successful, or an error response.</returns>
+        private async Task<(IActionResult? ErrorResult, GetItemResponse? Item)> ValidateUserOwnsItemForUndeleteAsync(Guid itemId)
+        {
+            _logger.LogDebug("ValidateUserOwnsItemForUndeleteAsync called for itemId: {ItemId}", itemId);
+            
+            // Get authenticated user email from claims
+            var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(authenticatedEmail))
+            {
+                _logger.LogWarning("User not authenticated - email claim not found");
+                return (Unauthorized("User not authenticated."), null);
+            }
+
+            _logger.LogDebug("Authenticated user email: {Email}", authenticatedEmail);
+
+            // Get the authenticated user to verify they exist and get their ID
+            var userResult = await _userService.GetUserEntityAsync(authenticatedEmail);
+            if (userResult.IsFailure || userResult.Value == null)
+            {
+                _logger.LogWarning("Failed to get user entity. Error: {Error}", userResult.Error);
+                return (Unauthorized("Invalid user."), null);
+            }
+
+            var userId = userResult.Value.ID;
+            _logger.LogDebug("User ID: {UserId}", userId);
+
+            // Get the item including soft-deleted items since we need to validate ownership before restoration
+            var itemResult = await _itemService.GetItemByIdIncludingDeletedAsync(itemId);
+            if (itemResult.IsFailure)
+            {
+                _logger.LogWarning("Failed to get item. ErrorCode: {ErrorCode}, Error: {Error}", itemResult.ErrorCode, itemResult.Error);
+                if (itemResult.ErrorCode == StatusCodes.Status404NotFound)
+                    return (NotFound("Item not found."), null);
+                return (StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving item."), null);
+            }
+
+            var item = itemResult.Value;
+            _logger.LogDebug("Item found. SellerID: {SellerId}, Deleted: {Deleted}", item.SellerID, item.Deleted);
+
+            // Verify the authenticated user owns the item
+            if (item.SellerID != userId)
+            {
+                _logger.LogWarning("User {UserId} does not own item {ItemId} (owned by {SellerId})", userId, itemId, item.SellerID);
+                return (StatusCode(StatusCodes.Status403Forbidden, "You do not have permission to modify this item."), null);
+            }
+
+            _logger.LogDebug("Validation successful for user {UserId} and item {ItemId}", userId, itemId);
+            return (null, item);
+        }
+
+        /// <summary>
         /// Creates a new item.
         /// </summary>
         /// <param name="createItemRequest">The item details to create.</param>
@@ -313,25 +368,33 @@ namespace API.Controllers
         {
             try
             {
-                // Validate user authentication and ownership
-                var (errorResult, _) = await ValidateUserOwnsItemAsync(id);
+                _logger.LogInformation("UnDeleteItem called for itemId: {ItemId}", id);
+                
+                // Validate user authentication and ownership (including deleted items)
+                var (errorResult, _) = await ValidateUserOwnsItemForUndeleteAsync(id);
                 if (errorResult != null)
                 {
+                    _logger.LogWarning("Validation failed for UnDeleteItem. ItemId: {ItemId}", id);
                     return errorResult;
                 }
 
+                _logger.LogInformation("Validation passed. Calling UnDeleteItemAsync for itemId: {ItemId}", id);
+                
                 // Perform the undelete operation
                 var result = await _itemService.UnDeleteItemAsync(id);
 
                 if (result.IsFailure)
                 {
+                    _logger.LogWarning("UnDeleteItemAsync failed. ItemId: {ItemId}, Error: {Error}", id, result.Error);
                     return StatusCode(result.ErrorCode ?? 501, result.Error);
                 }
 
+                _logger.LogInformation("UnDeleteItem successful for itemId: {ItemId}", id);
                 return Ok(result);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Exception in UnDeleteItem for itemId: {ItemId}", id);
                 Debug.WriteLine($"An error occurred: {ex.Message}");
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
             }
@@ -355,25 +418,33 @@ namespace API.Controllers
         {
             try
             {
-                // Validate user authentication and ownership
-                var (errorResult, _) = await ValidateUserOwnsItemAsync(itemId);
+                _logger.LogInformation("UnDeleteItemVariant called for itemId: {ItemId}, variantId: {VariantId}", itemId, variantId);
+                
+                // Validate user authentication and ownership (including deleted items)
+                var (errorResult, _) = await ValidateUserOwnsItemForUndeleteAsync(itemId);
                 if (errorResult != null)
                 {
+                    _logger.LogWarning("Validation failed for UnDeleteItemVariant. ItemId: {ItemId}, VariantId: {VariantId}", itemId, variantId);
                     return errorResult;
                 }
 
+                _logger.LogInformation("Validation passed. Calling UnDeleteItemVariantAsync for itemId: {ItemId}, variantId: {VariantId}", itemId, variantId);
+                
                 // Perform the undelete operation
                 var result = await _itemService.UnDeleteItemVariantAsync(itemId, variantId);
 
                 if (result.IsFailure)
                 {
+                    _logger.LogWarning("UnDeleteItemVariantAsync failed. ItemId: {ItemId}, VariantId: {VariantId}, Error: {Error}", itemId, variantId, result.Error);
                     return StatusCode(result.ErrorCode ?? 501, result.Error);
                 }
 
+                _logger.LogInformation("UnDeleteItemVariant successful for itemId: {ItemId}, variantId: {VariantId}", itemId, variantId);
                 return Ok(result);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Exception in UnDeleteItemVariant for itemId: {ItemId}, variantId: {VariantId}", itemId, variantId);
                 Debug.WriteLine($"An error occurred: {ex.Message}");
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
             }

@@ -33,6 +33,9 @@ interface AddProductStep3Props {
 }
 
 function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep3Props) {
+    // Constants for validation messages
+    const REQUIRED_ATTRIBUTE_ERROR = 'Please add at least one variant attribute to continue.';
+    
     const [formData, setFormData] = useState<AddProductStep3Data>(initialData || {
         attributes: []
     });
@@ -153,7 +156,7 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
         
         // Validate that at least one variant attribute has been added
         if (formData.attributes.length === 0) {
-            setAttributeError('At least one variant attribute is required. Please add an attribute to continue.');
+            setAttributeError(REQUIRED_ATTRIBUTE_ERROR);
             return;
         }
         

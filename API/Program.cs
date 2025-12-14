@@ -287,11 +287,11 @@ public class Program
         }
 
         app.UseHttpsRedirection();
+        app.UseCors("AllowClient"); // CORS must be before Authentication/Authorization
         app.UseStaticFiles(); // Enable serving static files from wwwroot
 
         app.UseAuthentication();
         app.UseAuthorization();
-        app.UseCors("AllowClient");
 
         app.MapControllers();
 

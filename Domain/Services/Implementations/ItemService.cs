@@ -356,7 +356,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
         {
             try
             {
-                // Use GetByIdAsync to retrieve items regardless of deleted status
+                // Use GetByIdAsync to retrieve items including soft-deleted ones for undelete operations
+                // This differs from GetItemByIdAsync which excludes deleted items
                 var item = await _itemRepository.GetByIdAsync(id);
                 if (item == null)
                 {
@@ -372,6 +373,11 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             }
         }
 
+        /// <summary>
+        /// Maps an Item entity to a GetItemResponse DTO to eliminate code duplication.
+        /// </summary>
+        /// <param name="item">The Item entity to map.</param>
+        /// <returns>A GetItemResponse DTO populated with data from the Item entity.</returns>
         private GetItemResponse MapItemToGetItemResponse(Item item)
         {
             return new GetItemResponse

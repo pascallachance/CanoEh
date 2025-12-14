@@ -69,7 +69,7 @@ namespace API.Controllers
         /// <returns>Returns a tuple with validation result and item if successful, or an error response.</returns>
         private async Task<(IActionResult? ErrorResult, GetItemResponse? Item)> ValidateUserOwnsItemForUndeleteAsync(Guid itemId)
         {
-            _logger.LogInformation("ValidateUserOwnsItemForUndeleteAsync called for itemId: {ItemId}", itemId);
+            _logger.LogDebug("ValidateUserOwnsItemForUndeleteAsync called for itemId: {ItemId}", itemId);
             
             // Get authenticated user email from claims
             var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -79,7 +79,7 @@ namespace API.Controllers
                 return (Unauthorized("User not authenticated."), null);
             }
 
-            _logger.LogInformation("Authenticated user email: {Email}", authenticatedEmail);
+            _logger.LogDebug("Authenticated user email: {Email}", authenticatedEmail);
 
             // Get the authenticated user to verify they exist and get their ID
             var userResult = await _userService.GetUserEntityAsync(authenticatedEmail);
@@ -90,9 +90,9 @@ namespace API.Controllers
             }
 
             var userId = userResult.Value.ID;
-            _logger.LogInformation("User ID: {UserId}", userId);
+            _logger.LogDebug("User ID: {UserId}", userId);
 
-            // Get the item to verify ownership (including deleted items)
+            // Get the item including soft-deleted items since we need to validate ownership before restoration
             var itemResult = await _itemService.GetItemByIdIncludingDeletedAsync(itemId);
             if (itemResult.IsFailure)
             {
@@ -103,7 +103,7 @@ namespace API.Controllers
             }
 
             var item = itemResult.Value;
-            _logger.LogInformation("Item found. SellerID: {SellerId}, Deleted: {Deleted}", item.SellerID, item.Deleted);
+            _logger.LogDebug("Item found. SellerID: {SellerId}, Deleted: {Deleted}", item.SellerID, item.Deleted);
 
             // Verify the authenticated user owns the item
             if (item.SellerID != userId)
@@ -112,7 +112,7 @@ namespace API.Controllers
                 return (StatusCode(StatusCodes.Status403Forbidden, "You do not have permission to modify this item."), null);
             }
 
-            _logger.LogInformation("Validation successful for user {UserId} and item {ItemId}", userId, itemId);
+            _logger.LogDebug("Validation successful for user {UserId} and item {ItemId}", userId, itemId);
             return (null, item);
         }
 

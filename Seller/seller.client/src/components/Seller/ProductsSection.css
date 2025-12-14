@@ -1078,6 +1078,10 @@
     outline: none;
 }
 
+.products-modal-content:focus {
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
 .products-modal-content h3 {
     margin: 0 0 1rem 0;
     color: #333;
@@ -1101,7 +1105,7 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
+    transition: background-color 0.2s;
 }
 
 .products-modal-btn-cancel {

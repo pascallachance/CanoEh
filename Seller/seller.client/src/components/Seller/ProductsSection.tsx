@@ -2138,10 +2138,11 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="undelete-modal-title"
+                    aria-describedby="undelete-modal-description"
                 >
                     <div className="products-modal-content">
                         <h3 id="undelete-modal-title">{t('products.undelete')}</h3>
-                        <p className="products-modal-message">
+                        <p className="products-modal-message" id="undelete-modal-description">
                             {t('products.undeleteConfirm')}
                         </p>
                         <div className="products-modal-actions">

@@ -784,13 +784,6 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
             const focusableElements = modalRef.current.querySelectorAll(
                 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
             );
-            
-            if (focusableElements.length === 0) {
-                // Prevent focus from escaping modal even if no focusable elements
-                event.preventDefault();
-                return;
-            }
-            
             const firstElement = focusableElements[0] as HTMLElement;
             const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
 
@@ -798,13 +791,13 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                 // Shift + Tab
                 if (document.activeElement === firstElement) {
                     event.preventDefault();
-                    lastElement.focus();
+                    lastElement?.focus();
                 }
             } else {
                 // Tab
                 if (document.activeElement === lastElement) {
                     event.preventDefault();
-                    firstElement.focus();
+                    firstElement?.focus();
                 }
             }
         }

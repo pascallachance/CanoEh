@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, Fragment } from 'react';
+import { useState, useEffect, useMemo, useCallback, Fragment, useRef } from 'react';
 import './ProductsSection.css';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useNotifications } from '../../contexts/useNotifications';
@@ -175,6 +175,14 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
     });
     const [variants, setVariants] = useState<ItemVariant[]>([]);
     const [isSaving, setIsSaving] = useState(false);
+    
+    // State for undelete confirmation modal
+    const [showUndeleteModal, setShowUndeleteModal] = useState(false);
+    const [itemToUndelete, setItemToUndelete] = useState<ApiItem | null>(null);
+    
+    // Refs for accessibility
+    const modalRef = useRef<HTMLDivElement>(null);
+    const previousActiveElement = useRef<HTMLElement | null>(null);
 
     // Cleanup object URLs on component unmount
     useEffect(() => {
@@ -194,6 +202,46 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
             });
         };
     }, [variants]);
+
+    // Accessibility: Focus management for undelete modal
+    useEffect(() => {
+        if (showUndeleteModal) {
+            // Store the currently focused element
+            previousActiveElement.current = document.activeElement as HTMLElement;
+            
+            // Focus the modal content
+            const timer = setTimeout(() => {
+                modalRef.current?.focus();
+            }, 100);
+
+            // Prevent body scroll when modal is open
+            document.body.style.overflow = 'hidden';
+
+            return () => {
+                clearTimeout(timer);
+                document.body.style.overflow = '';
+            };
+        } else if (previousActiveElement.current) {
+            // Return focus to the element that opened the modal
+            previousActiveElement.current.focus();
+            previousActiveElement.current = null;
+        }
+    }, [showUndeleteModal]);
+
+    // Handle escape key for undelete modal
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && showUndeleteModal) {
+                setShowUndeleteModal(false);
+                setItemToUndelete(null);
+            }
+        };
+
+        if (showUndeleteModal) {
+            document.addEventListener('keydown', handleEscape);
+            return () => document.removeEventListener('keydown', handleEscape);
+        }
+    }, [showUndeleteModal]);
 
     // Validation logic for save button
     const isFormInvalid = useMemo(() => {
@@ -676,7 +724,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
     };
 
     // Handle undeleting an item
-    const handleUndeleteItem = async (item: ApiItem) => {
+    const handleUndeleteItem = (item: ApiItem) => {
         // Validate item ID
         if (!item.id || typeof item.id !== 'string') {
             showError(t('products.invalidItemId'));
@@ -689,14 +737,17 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
             return;
         }
 
-        // Show confirmation dialog
-        if (!window.confirm(t('products.undeleteConfirm'))) {
-            return;
-        }
+        // Show confirmation modal
+        setItemToUndelete(item);
+        setShowUndeleteModal(true);
+    };
+
+    const confirmUndeleteItem = async () => {
+        if (!itemToUndelete) return;
 
         try {
             // Encode the ID to ensure URL safety (though GUID should be safe)
-            const encodedId = encodeURIComponent(item.id);
+            const encodedId = encodeURIComponent(itemToUndelete.id);
             const response = await ApiClient.put(
                 `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/UnDeleteItem/${encodedId}`,
                 {}
@@ -713,6 +764,42 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         } catch (error) {
             console.error('Error undeleting item:', error);
             showError(t('products.undeleteError'));
+        } finally {
+            // Close modal
+            setShowUndeleteModal(false);
+            setItemToUndelete(null);
+        }
+    };
+
+    const cancelUndeleteItem = () => {
+        setShowUndeleteModal(false);
+        setItemToUndelete(null);
+    };
+
+    // Focus trapping within undelete modal
+    const handleKeyDown = (event: React.KeyboardEvent) => {
+        if (!showUndeleteModal || !modalRef.current) return;
+
+        if (event.key === 'Tab') {
+            const focusableElements = modalRef.current.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            const firstElement = focusableElements[0] as HTMLElement;
+            const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+            if (event.shiftKey) {
+                // Shift + Tab
+                if (document.activeElement === firstElement) {
+                    event.preventDefault();
+                    lastElement?.focus();
+                }
+            } else {
+                // Tab
+                if (document.activeElement === lastElement) {
+                    event.preventDefault();
+                    firstElement?.focus();
+                }
+            }
         }
     };
 
@@ -2106,6 +2193,51 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                             )}
                         </>
                     )}
+                </div>
+            )}
+            
+            {/* Undelete Confirmation Modal */}
+            {showUndeleteModal && itemToUndelete && (
+                <div 
+                    className="products-modal-overlay"
+                    onClick={(e) => {
+                        // Close modal when clicking on overlay, but not on modal content
+                        if (e.target === e.currentTarget) {
+                            cancelUndeleteItem();
+                        }
+                    }}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="undelete-modal-title"
+                    aria-describedby="undelete-modal-description"
+                >
+                    <div 
+                        className="products-modal-content"
+                        ref={modalRef}
+                        tabIndex={-1}
+                        onKeyDown={handleKeyDown}
+                    >
+                        <h3 id="undelete-modal-title">{t('products.undelete')}</h3>
+                        <p className="products-modal-message" id="undelete-modal-description">
+                            {t('products.undeleteConfirm')}
+                        </p>
+                        <div className="products-modal-actions">
+                            <button
+                                className="products-modal-button products-modal-button--cancel"
+                                onClick={cancelUndeleteItem}
+                                aria-label="Cancel restore action"
+                            >
+                                {t('common.cancel')}
+                            </button>
+                            <button
+                                className="products-modal-button products-modal-button--confirm"
+                                onClick={confirmUndeleteItem}
+                                aria-label="Confirm restore item"
+                            >
+                                {t('products.undelete')}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

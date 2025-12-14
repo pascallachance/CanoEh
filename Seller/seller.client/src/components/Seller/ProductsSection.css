@@ -1054,6 +1054,85 @@
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
+/* Undelete Confirmation Modal */
+.products-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.products-modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 90%;
+    outline: none;
+}
+
+.products-modal-content:focus {
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
+.products-modal-content h3 {
+    margin: 0 0 1rem 0;
+    color: #333;
+}
+
+.products-modal-message {
+    margin: 0 0 1.5rem 0;
+    color: #666;
+    line-height: 1.5;
+}
+
+.products-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.products-modal-button {
+    padding: 0.75rem 1.5rem;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.products-modal-button--cancel {
+    background: #6c757d;
+}
+
+.products-modal-button--cancel:hover {
+    background: #5a6268;
+}
+
+.products-modal-button--cancel:focus-visible {
+    outline: 2px solid #495057;
+    outline-offset: 2px;
+}
+
+.products-modal-button--confirm {
+    background: #28a745;
+}
+
+.products-modal-button--confirm:hover {
+    background: #218838;
+}
+
+.products-modal-button--confirm:focus-visible {
+    outline: 2px solid #1e7e34;
+    outline-offset: 2px;
+}
+
 @media (max-width: 768px) {
     .products-filter-grid {
         grid-template-columns: 1fr;

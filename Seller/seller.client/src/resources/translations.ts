@@ -90,6 +90,30 @@ export const translations: TranslationResources = {
     en: 'Deleted',
     fr: 'Supprimé'
   },
+  'products.undelete': {
+    en: 'Undelete',
+    fr: 'Restaurer'
+  },
+  'products.undeleteConfirm': {
+    en: 'Are you sure you want to restore this item?',
+    fr: 'Êtes-vous sûr de vouloir restaurer cet article?'
+  },
+  'products.undeleteSuccess': {
+    en: 'Item restored successfully',
+    fr: 'Article restauré avec succès'
+  },
+  'products.undeleteError': {
+    en: 'Failed to restore item',
+    fr: "Échec de la restauration de l'article"
+  },
+  'products.invalidItemId': {
+    en: 'Invalid item ID',
+    fr: "ID d'article invalide"
+  },
+  'products.itemNotDeleted': {
+    en: 'Item is not deleted',
+    fr: "L'article n'est pas supprimé"
+  },
 
   // Product Form Labels
   'products.itemName': {

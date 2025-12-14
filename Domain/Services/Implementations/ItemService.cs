@@ -519,6 +519,89 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             }
         }
 
+        public async Task<Result<DeleteItemResponse>> UnDeleteItemAsync(Guid id)
+        {
+            try
+            {
+                // Use GetByIdAsync (not GetItemByIdAsync) to retrieve deleted items
+                // GetItemByIdAsync filters out deleted items, but we need to find them to restore them
+                var item = await _itemRepository.GetByIdAsync(id);
+                if (item == null)
+                {
+                    return Result.Failure<DeleteItemResponse>("Item not found.", StatusCodes.Status404NotFound);
+                }
+
+                // Check if item is actually deleted before attempting to undelete
+                if (!item.Deleted)
+                {
+                    return Result.Failure<DeleteItemResponse>("Item is not deleted.", StatusCodes.Status400BadRequest);
+                }
+
+                // Set Deleted to false to undelete the item
+                item.Deleted = false;
+                item.UpdatedAt = DateTime.UtcNow;
+                await _itemRepository.UpdateAsync(item);
+
+                var response = new DeleteItemResponse
+                {
+                    Id = id,
+                    Message = "Item undeleted successfully.",
+                    Success = true
+                };
+
+                return Result.Success(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<DeleteItemResponse>($"An error occurred while undeleting the item: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        public async Task<Result<DeleteItemVariantResponse>> UnDeleteItemVariantAsync(Guid itemId, Guid variantId)
+        {
+            try
+            {
+                // Use GetByIdAsync to retrieve variant regardless of deleted status
+                var variant = await _itemVariantRepository.GetByIdAsync(variantId);
+                if (variant == null || variant.ItemId != itemId)
+                {
+                    return Result.Failure<DeleteItemVariantResponse>("Item or variant not found.", StatusCodes.Status404NotFound);
+                }
+
+                // Check if variant is actually deleted before attempting to undelete
+                if (!variant.Deleted)
+                {
+                    return Result.Failure<DeleteItemVariantResponse>("Variant is not deleted.", StatusCodes.Status400BadRequest);
+                }
+
+                // Set Deleted to false to undelete the variant
+                variant.Deleted = false;
+                await _itemVariantRepository.UpdateAsync(variant);
+
+                // Update the item's UpdatedAt timestamp
+                var item = await _itemRepository.GetByIdAsync(itemId);
+                if (item != null)
+                {
+                    item.UpdatedAt = DateTime.UtcNow;
+                    await _itemRepository.UpdateAsync(item);
+                }
+
+                var response = new DeleteItemVariantResponse
+                {
+                    ItemId = itemId,
+                    VariantId = variantId,
+                    Message = "Item variant undeleted successfully.",
+                    Success = true
+                };
+
+                return Result.Success(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<DeleteItemVariantResponse>($"An error occurred while undeleting the item variant: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
         public async Task<Result<GetItemResponse>> GetItemByVariantIdAsync(Guid variantId, Guid userId)
         {
             try

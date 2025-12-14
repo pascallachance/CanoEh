@@ -19,49 +19,6 @@ namespace API.Controllers
         private readonly ILogger<ItemController> _logger = logger;
 
         /// <summary>
-        /// Helper method to validate user authentication and item ownership.
-        /// </summary>
-        /// <param name="itemId">The ID of the item to validate ownership for.</param>
-        /// <returns>Returns a tuple with validation result and item if successful, or an error response.</returns>
-        private async Task<(IActionResult? ErrorResult, GetItemResponse? Item)> ValidateUserOwnsItemAsync(Guid itemId)
-        {
-            // Get authenticated user email from claims
-            var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(authenticatedEmail))
-            {
-                return (Unauthorized("User not authenticated."), null);
-            }
-
-            // Get the authenticated user to verify they exist and get their ID
-            var userResult = await _userService.GetUserEntityAsync(authenticatedEmail);
-            if (userResult.IsFailure || userResult.Value == null)
-            {
-                return (Unauthorized("Invalid user."), null);
-            }
-
-            var userId = userResult.Value.ID;
-
-            // Get the item to verify ownership
-            var itemResult = await _itemService.GetItemByIdAsync(itemId);
-            if (itemResult.IsFailure)
-            {
-                if (itemResult.ErrorCode == StatusCodes.Status404NotFound)
-                    return (NotFound("Item not found."), null);
-                return (StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving item."), null);
-            }
-
-            var item = itemResult.Value;
-
-            // Verify the authenticated user owns the item
-            if (item.SellerID != userId)
-            {
-                return (StatusCode(StatusCodes.Status403Forbidden, "You do not have permission to modify this item."), null);
-            }
-
-            return (null, item);
-        }
-
-        /// <summary>
         /// Creates a new item.
         /// </summary>
         /// <param name="createItemRequest">The item details to create.</param>

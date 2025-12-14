@@ -383,3 +383,4 @@ API/wwwroot/uploads/*
 !API/wwwroot/uploads/.gitkeep
 Store/Store.Server/wwwroot/uploads/*
 !Store/Store.Server/wwwroot/uploads/.gitkeep
+**/obj/**/Release/

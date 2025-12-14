@@ -221,13 +221,24 @@ namespace API.Controllers
         /// <param name="id">The ID of the item to delete.</param>
         /// <returns>Returns a success response or an error response.</returns>
         [HttpDelete("DeleteItem/{id:guid}")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteItem(Guid id)
         {
             try
             {
+                // Validate user authentication and ownership
+                var (errorResult, _) = await ValidateUserOwnsItemAsync(id);
+                if (errorResult != null)
+                {
+                    return errorResult;
+                }
+
                 var result = await _itemService.DeleteItemAsync(id);
 
                 if (result.IsFailure)
@@ -251,13 +262,24 @@ namespace API.Controllers
         /// <param name="variantId">The ID of the variant to delete.</param>
         /// <returns>Returns a success response or an error response.</returns>
         [HttpDelete("DeleteItemVariant/{itemId:guid}/{variantId:guid}")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteItemVariant(Guid itemId, Guid variantId)
         {
             try
             {
+                // Validate user authentication and ownership
+                var (errorResult, _) = await ValidateUserOwnsItemAsync(itemId);
+                if (errorResult != null)
+                {
+                    return errorResult;
+                }
+
                 var result = await _itemService.DeleteItemVariantAsync(itemId, variantId);
 
                 if (result.IsFailure)

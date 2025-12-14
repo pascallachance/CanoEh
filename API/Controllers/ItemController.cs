@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Security.Claims;
 using Domain.Models.Requests;
+using Domain.Models.Responses;
 using Domain.Services.Interfaces;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -16,6 +17,49 @@ namespace API.Controllers
         private readonly IUserService _userService = userService;
         private readonly IFileStorageService _fileStorageService = fileStorageService;
         private readonly ILogger<ItemController> _logger = logger;
+
+        /// <summary>
+        /// Helper method to validate user authentication and item ownership.
+        /// </summary>
+        /// <param name="itemId">The ID of the item to validate ownership for.</param>
+        /// <returns>Returns a tuple with validation result and item if successful, or an error response.</returns>
+        private async Task<(IActionResult? ErrorResult, GetItemResponse? Item)> ValidateUserOwnsItemAsync(Guid itemId)
+        {
+            // Get authenticated user email from claims
+            var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(authenticatedEmail))
+            {
+                return (Unauthorized("User not authenticated."), null);
+            }
+
+            // Get the authenticated user to verify they exist and get their ID
+            var userResult = await _userService.GetUserEntityAsync(authenticatedEmail);
+            if (userResult.IsFailure || userResult.Value == null)
+            {
+                return (Unauthorized("Invalid user."), null);
+            }
+
+            var userId = userResult.Value.ID;
+
+            // Get the item to verify ownership
+            var itemResult = await _itemService.GetItemByIdAsync(itemId);
+            if (itemResult.IsFailure)
+            {
+                if (itemResult.ErrorCode == StatusCodes.Status404NotFound)
+                    return (NotFound("Item not found."), null);
+                return (StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving item."), null);
+            }
+
+            var item = itemResult.Value;
+
+            // Verify the authenticated user owns the item
+            if (item.SellerID != userId)
+            {
+                return (StatusCode(StatusCodes.Status403Forbidden, "You do not have permission to modify this item."), null);
+            }
+
+            return (null, item);
+        }
 
         /// <summary>
         /// Creates a new item.
@@ -247,37 +291,11 @@ namespace API.Controllers
         {
             try
             {
-                // Get authenticated user email from claims
-                var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(authenticatedEmail))
+                // Validate user authentication and ownership
+                var (errorResult, _) = await ValidateUserOwnsItemAsync(id);
+                if (errorResult != null)
                 {
-                    return Unauthorized("User not authenticated.");
-                }
-
-                // Get the authenticated user to verify they exist and get their ID
-                var userResult = await _userService.GetUserEntityAsync(authenticatedEmail);
-                if (userResult.IsFailure || userResult.Value == null)
-                {
-                    return Unauthorized("Invalid user.");
-                }
-
-                var userId = userResult.Value.ID;
-
-                // Get the item to verify ownership
-                var itemResult = await _itemService.GetItemByIdAsync(id);
-                if (itemResult.IsFailure)
-                {
-                    if (itemResult.ErrorCode == StatusCodes.Status404NotFound)
-                        return NotFound("Item not found.");
-                    return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving item.");
-                }
-
-                var item = itemResult.Value;
-                
-                // Verify the authenticated user owns the item
-                if (item.SellerID != userId)
-                {
-                    return StatusCode(StatusCodes.Status403Forbidden, "You do not have permission to undelete this item.");
+                    return errorResult;
                 }
 
                 // Perform the undelete operation
@@ -315,37 +333,11 @@ namespace API.Controllers
         {
             try
             {
-                // Get authenticated user email from claims
-                var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(authenticatedEmail))
+                // Validate user authentication and ownership
+                var (errorResult, _) = await ValidateUserOwnsItemAsync(itemId);
+                if (errorResult != null)
                 {
-                    return Unauthorized("User not authenticated.");
-                }
-
-                // Get the authenticated user to verify they exist and get their ID
-                var userResult = await _userService.GetUserEntityAsync(authenticatedEmail);
-                if (userResult.IsFailure || userResult.Value == null)
-                {
-                    return Unauthorized("Invalid user.");
-                }
-
-                var userId = userResult.Value.ID;
-
-                // Get the item to verify ownership
-                var itemResult = await _itemService.GetItemByIdAsync(itemId);
-                if (itemResult.IsFailure)
-                {
-                    if (itemResult.ErrorCode == StatusCodes.Status404NotFound)
-                        return NotFound("Item not found.");
-                    return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving item.");
-                }
-
-                var item = itemResult.Value;
-                
-                // Verify the authenticated user owns the item
-                if (item.SellerID != userId)
-                {
-                    return StatusCode(StatusCodes.Status403Forbidden, "You do not have permission to undelete this variant.");
+                    return errorResult;
                 }
 
                 // Perform the undelete operation

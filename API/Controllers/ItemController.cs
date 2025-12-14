@@ -280,25 +280,13 @@ namespace API.Controllers
         /// <param name="id">The ID of the item to undelete.</param>
         /// <returns>Returns a success response or an error response.</returns>
         [HttpPut("UnDeleteItem/{id:guid}")]
-        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UnDeleteItem(Guid id)
         {
             try
             {
-                // Validate user authentication and ownership
-                var (errorResult, _) = await ValidateUserOwnsItemAsync(id);
-                if (errorResult != null)
-                {
-                    return errorResult;
-                }
-
-                // Perform the undelete operation
                 var result = await _itemService.UnDeleteItemAsync(id);
 
                 if (result.IsFailure)
@@ -322,25 +310,13 @@ namespace API.Controllers
         /// <param name="variantId">The ID of the variant to undelete.</param>
         /// <returns>Returns a success response or an error response.</returns>
         [HttpPut("UnDeleteItemVariant/{itemId:guid}/{variantId:guid}")]
-        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UnDeleteItemVariant(Guid itemId, Guid variantId)
         {
             try
             {
-                // Validate user authentication and ownership
-                var (errorResult, _) = await ValidateUserOwnsItemAsync(itemId);
-                if (errorResult != null)
-                {
-                    return errorResult;
-                }
-
-                // Perform the undelete operation
                 var result = await _itemService.UnDeleteItemVariantAsync(itemId, variantId);
 
                 if (result.IsFailure)

@@ -1091,35 +1091,23 @@
 .products-modal-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.75rem;
+    gap: 1rem;
 }
 
 .products-modal-btn {
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1.5rem;
+    color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 1rem;
-    font-weight: 500;
-    transition: background-color 0.2s;
 }
 
 .products-modal-btn-cancel {
     background: #6c757d;
-    color: white;
-}
-
-.products-modal-btn-cancel:hover {
-    background: #5a6268;
 }
 
 .products-modal-btn-confirm {
     background: #28a745;
-    color: white;
-}
-
-.products-modal-btn-confirm:hover {
-    background: #218838;
 }
 
 @media (max-width: 768px) {

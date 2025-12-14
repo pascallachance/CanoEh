@@ -236,14 +236,51 @@ namespace API.Controllers
         /// <param name="id">The ID of the item to undelete.</param>
         /// <returns>Returns a success response or an error response.</returns>
         [HttpPut("UnDeleteItem/{id:guid}")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UnDeleteItem(Guid id)
         {
             try
             {
+                // Get authenticated user email from claims
+                var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(authenticatedEmail))
+                {
+                    return Unauthorized("User not authenticated.");
+                }
+
+                // Get the authenticated user to verify they exist and get their ID
+                var userResult = await _userService.GetUserEntityAsync(authenticatedEmail);
+                if (userResult.IsFailure || userResult.Value == null)
+                {
+                    return Unauthorized("Invalid user.");
+                }
+
+                var userId = userResult.Value.ID;
+
+                // Get the item to verify ownership
+                var itemResult = await _itemService.GetItemByIdAsync(id);
+                if (itemResult.IsFailure)
+                {
+                    if (itemResult.ErrorCode == StatusCodes.Status404NotFound)
+                        return NotFound("Item not found.");
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving item.");
+                }
+
+                var item = itemResult.Value;
+                
+                // Verify the authenticated user owns the item
+                if (item.SellerID != userId)
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden, "You do not have permission to undelete this item.");
+                }
+
+                // Perform the undelete operation
                 var result = await _itemService.UnDeleteItemAsync(id);
 
                 if (result.IsFailure)
@@ -267,14 +304,51 @@ namespace API.Controllers
         /// <param name="variantId">The ID of the variant to undelete.</param>
         /// <returns>Returns a success response or an error response.</returns>
         [HttpPut("UnDeleteItemVariant/{itemId:guid}/{variantId:guid}")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UnDeleteItemVariant(Guid itemId, Guid variantId)
         {
             try
             {
+                // Get authenticated user email from claims
+                var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(authenticatedEmail))
+                {
+                    return Unauthorized("User not authenticated.");
+                }
+
+                // Get the authenticated user to verify they exist and get their ID
+                var userResult = await _userService.GetUserEntityAsync(authenticatedEmail);
+                if (userResult.IsFailure || userResult.Value == null)
+                {
+                    return Unauthorized("Invalid user.");
+                }
+
+                var userId = userResult.Value.ID;
+
+                // Get the item to verify ownership
+                var itemResult = await _itemService.GetItemByIdAsync(itemId);
+                if (itemResult.IsFailure)
+                {
+                    if (itemResult.ErrorCode == StatusCodes.Status404NotFound)
+                        return NotFound("Item not found.");
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving item.");
+                }
+
+                var item = itemResult.Value;
+                
+                // Verify the authenticated user owns the item
+                if (item.SellerID != userId)
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden, "You do not have permission to undelete this variant.");
+                }
+
+                // Perform the undelete operation
                 var result = await _itemService.UnDeleteItemVariantAsync(itemId, variantId);
 
                 if (result.IsFailure)

@@ -416,5 +416,382 @@ namespace API.Tests
             var errorResult = Assert.IsType<ObjectResult>(response);
             Assert.Equal(StatusCodes.Status500InternalServerError, errorResult.StatusCode);
         }
+
+        [Fact]
+        public async Task UnDeleteItem_ReturnOk_WhenItemUndeletedSuccessfully()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var sellerId = userId; // User owns the item
+            var userEmail = "test@example.com";
+
+            // Setup User claims
+            var claims = new List<System.Security.Claims.Claim>
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, userEmail)
+            };
+            var identity = new System.Security.Claims.ClaimsIdentity(claims);
+            var claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(identity);
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
+
+            // Mock user service
+            var user = new User { ID = userId, Email = userEmail, Firstname = "Test", Lastname = "User", Password = "testpass" };
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ReturnsAsync(Result.Success(user));
+
+            // Mock item service to return item with matching seller ID
+            var itemResponse = new GetItemResponse
+            {
+                Id = itemId,
+                SellerID = sellerId,
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Description_en = "Description",
+                Description_fr = "Description",
+                CategoryID = Guid.NewGuid(),
+                Variants = new List<ItemVariantDto>(),
+                ItemAttributes = new List<ItemAttributeDto>(),
+                CreatedAt = DateTime.UtcNow,
+                Deleted = true
+            };
+            _mockItemService.Setup(x => x.GetItemByIdAsync(itemId))
+                           .ReturnsAsync(Result.Success(itemResponse));
+
+            var undeleteItemResponse = new DeleteItemResponse
+            {
+                Id = itemId,
+                Message = "Item undeleted successfully.",
+                Success = true
+            };
+            _mockItemService.Setup(x => x.UnDeleteItemAsync(itemId))
+                           .ReturnsAsync(Result.Success(undeleteItemResponse));
+
+            // Act
+            var response = await _controller.UnDeleteItem(itemId);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(response);
+            Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task UnDeleteItem_ReturnNotFound_WhenItemDoesNotExist()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var userEmail = "test@example.com";
+
+            // Setup User claims
+            var claims = new List<System.Security.Claims.Claim>
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, userEmail)
+            };
+            var identity = new System.Security.Claims.ClaimsIdentity(claims);
+            var claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(identity);
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
+
+            // Mock user service
+            var user = new User { ID = userId, Email = userEmail, Firstname = "Test", Lastname = "User", Password = "testpass" };
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ReturnsAsync(Result.Success(user));
+
+            // Mock item service to return 404
+            _mockItemService.Setup(x => x.GetItemByIdAsync(itemId))
+                           .ReturnsAsync(Result.Failure<GetItemResponse>("Item not found.", StatusCodes.Status404NotFound));
+
+            // Act
+            var response = await _controller.UnDeleteItem(itemId);
+
+            // Assert
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(response);
+            Assert.Equal(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task UnDeleteItem_ReturnBadRequest_WhenItemIsNotDeleted()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var sellerId = userId;
+            var userEmail = "test@example.com";
+
+            // Setup User claims
+            var claims = new List<System.Security.Claims.Claim>
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, userEmail)
+            };
+            var identity = new System.Security.Claims.ClaimsIdentity(claims);
+            var claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(identity);
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
+
+            // Mock user service
+            var user = new User { ID = userId, Email = userEmail, Firstname = "Test", Lastname = "User", Password = "testpass" };
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ReturnsAsync(Result.Success(user));
+
+            // Mock item service
+            var itemResponse = new GetItemResponse
+            {
+                Id = itemId,
+                SellerID = sellerId,
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Description_en = "Description",
+                Description_fr = "Description",
+                CategoryID = Guid.NewGuid(),
+                Variants = new List<ItemVariantDto>(),
+                ItemAttributes = new List<ItemAttributeDto>(),
+                CreatedAt = DateTime.UtcNow,
+                Deleted = false // Not deleted
+            };
+            _mockItemService.Setup(x => x.GetItemByIdAsync(itemId))
+                           .ReturnsAsync(Result.Success(itemResponse));
+
+            var result = Result.Failure<DeleteItemResponse>("Item is not deleted.", StatusCodes.Status400BadRequest);
+            _mockItemService.Setup(x => x.UnDeleteItemAsync(itemId))
+                           .ReturnsAsync(result);
+
+            // Act
+            var response = await _controller.UnDeleteItem(itemId);
+
+            // Assert
+            var badRequestResult = Assert.IsType<ObjectResult>(response);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task UnDeleteItem_ReturnInternalServerError_WhenExceptionOccurs()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var userEmail = "test@example.com";
+
+            // Setup User claims
+            var claims = new List<System.Security.Claims.Claim>
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, userEmail)
+            };
+            var identity = new System.Security.Claims.ClaimsIdentity(claims);
+            var claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(identity);
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
+
+            // Mock user service to throw exception
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var response = await _controller.UnDeleteItem(itemId);
+
+            // Assert
+            var errorResult = Assert.IsType<ObjectResult>(response);
+            Assert.Equal(StatusCodes.Status500InternalServerError, errorResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task UnDeleteItemVariant_ReturnOk_WhenVariantUndeletedSuccessfully()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var sellerId = userId;
+            var userEmail = "test@example.com";
+
+            // Setup User claims
+            var claims = new List<System.Security.Claims.Claim>
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, userEmail)
+            };
+            var identity = new System.Security.Claims.ClaimsIdentity(claims);
+            var claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(identity);
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
+
+            // Mock user service
+            var user = new User { ID = userId, Email = userEmail, Firstname = "Test", Lastname = "User", Password = "testpass" };
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ReturnsAsync(Result.Success(user));
+
+            // Mock item service
+            var itemResponse = new GetItemResponse
+            {
+                Id = itemId,
+                SellerID = sellerId,
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Description_en = "Description",
+                Description_fr = "Description",
+                CategoryID = Guid.NewGuid(),
+                Variants = new List<ItemVariantDto>(),
+                ItemAttributes = new List<ItemAttributeDto>(),
+                CreatedAt = DateTime.UtcNow,
+                Deleted = false
+            };
+            _mockItemService.Setup(x => x.GetItemByIdAsync(itemId))
+                           .ReturnsAsync(Result.Success(itemResponse));
+
+            var undeleteItemVariantResponse = new DeleteItemVariantResponse
+            {
+                ItemId = itemId,
+                VariantId = variantId,
+                Message = "Item variant undeleted successfully.",
+                Success = true
+            };
+            _mockItemService.Setup(x => x.UnDeleteItemVariantAsync(itemId, variantId))
+                           .ReturnsAsync(Result.Success(undeleteItemVariantResponse));
+
+            // Act
+            var response = await _controller.UnDeleteItemVariant(itemId, variantId);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(response);
+            Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task UnDeleteItemVariant_ReturnNotFound_WhenItemOrVariantDoesNotExist()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var userEmail = "test@example.com";
+
+            // Setup User claims
+            var claims = new List<System.Security.Claims.Claim>
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, userEmail)
+            };
+            var identity = new System.Security.Claims.ClaimsIdentity(claims);
+            var claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(identity);
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
+
+            // Mock user service
+            var user = new User { ID = userId, Email = userEmail, Firstname = "Test", Lastname = "User", Password = "testpass" };
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ReturnsAsync(Result.Success(user));
+
+            // Mock item service to return 404
+            _mockItemService.Setup(x => x.GetItemByIdAsync(itemId))
+                           .ReturnsAsync(Result.Failure<GetItemResponse>("Item not found.", StatusCodes.Status404NotFound));
+
+            // Act
+            var response = await _controller.UnDeleteItemVariant(itemId, variantId);
+
+            // Assert
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(response);
+            Assert.Equal(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task UnDeleteItemVariant_ReturnBadRequest_WhenVariantIsNotDeleted()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var sellerId = userId;
+            var userEmail = "test@example.com";
+
+            // Setup User claims
+            var claims = new List<System.Security.Claims.Claim>
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, userEmail)
+            };
+            var identity = new System.Security.Claims.ClaimsIdentity(claims);
+            var claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(identity);
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
+
+            // Mock user service
+            var user = new User { ID = userId, Email = userEmail, Firstname = "Test", Lastname = "User", Password = "testpass" };
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ReturnsAsync(Result.Success(user));
+
+            // Mock item service
+            var itemResponse = new GetItemResponse
+            {
+                Id = itemId,
+                SellerID = sellerId,
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Description_en = "Description",
+                Description_fr = "Description",
+                CategoryID = Guid.NewGuid(),
+                Variants = new List<ItemVariantDto>(),
+                ItemAttributes = new List<ItemAttributeDto>(),
+                CreatedAt = DateTime.UtcNow,
+                Deleted = false
+            };
+            _mockItemService.Setup(x => x.GetItemByIdAsync(itemId))
+                           .ReturnsAsync(Result.Success(itemResponse));
+
+            var result = Result.Failure<DeleteItemVariantResponse>("Variant is not deleted.", StatusCodes.Status400BadRequest);
+            _mockItemService.Setup(x => x.UnDeleteItemVariantAsync(itemId, variantId))
+                           .ReturnsAsync(result);
+
+            // Act
+            var response = await _controller.UnDeleteItemVariant(itemId, variantId);
+
+            // Assert
+            var badRequestResult = Assert.IsType<ObjectResult>(response);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task UnDeleteItemVariant_ReturnInternalServerError_WhenExceptionOccurs()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var userEmail = "test@example.com";
+
+            // Setup User claims
+            var claims = new List<System.Security.Claims.Claim>
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, userEmail)
+            };
+            var identity = new System.Security.Claims.ClaimsIdentity(claims);
+            var claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(identity);
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
+
+            // Mock user service to throw exception
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var response = await _controller.UnDeleteItemVariant(itemId, variantId);
+
+            // Assert
+            var errorResult = Assert.IsType<ObjectResult>(response);
+            Assert.Equal(StatusCodes.Status500InternalServerError, errorResult.StatusCode);
+        }
     }
 }

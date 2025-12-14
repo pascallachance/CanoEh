@@ -952,5 +952,219 @@ namespace API.Tests
             Assert.Equal(StatusCodes.Status500InternalServerError, result.ErrorCode);
             Assert.Contains("An error occurred while updating the variant image", result.Error);
         }
+
+        [Fact]
+        public async Task UnDeleteItemAsync_ReturnSuccess_WhenItemIsDeleted()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            var item = new Item
+            {
+                Id = itemId,
+                SellerID = Guid.NewGuid(),
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Description_en = "Test item description EN",
+                Description_fr = "Test item description FR",
+                CategoryID = Guid.NewGuid(),
+                Variants = new List<ItemVariant>(),
+                ItemAttributes = new List<ItemAttribute>(),
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = null,
+                Deleted = true // Item is deleted
+            };
+
+            _mockItemRepository.Setup(x => x.GetByIdAsync(itemId))
+                              .ReturnsAsync(item);
+            _mockItemRepository.Setup(x => x.UpdateAsync(It.IsAny<Item>()))
+                              .ReturnsAsync(item);
+
+            // Act
+            var result = await _itemService.UnDeleteItemAsync(itemId);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Equal(itemId, result.Value.Id);
+            Assert.True(result.Value.Success);
+            Assert.Equal("Item undeleted successfully.", result.Value.Message);
+        }
+
+        [Fact]
+        public async Task UnDeleteItemAsync_ReturnFailure_WhenItemDoesNotExist()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            _mockItemRepository.Setup(x => x.GetByIdAsync(itemId))
+                              .ThrowsAsync(new InvalidOperationException($"Item with id {itemId} not found"));
+
+            // Act
+            var result = await _itemService.UnDeleteItemAsync(itemId);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.ErrorCode);
+            Assert.Contains("An error occurred while undeleting the item", result.Error);
+        }
+
+        [Fact]
+        public async Task UnDeleteItemAsync_ReturnFailure_WhenItemIsNotDeleted()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            var item = new Item
+            {
+                Id = itemId,
+                SellerID = Guid.NewGuid(),
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Description_en = "Test item description EN",
+                Description_fr = "Test item description FR",
+                CategoryID = Guid.NewGuid(),
+                Variants = new List<ItemVariant>(),
+                ItemAttributes = new List<ItemAttribute>(),
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = null,
+                Deleted = false // Item is not deleted
+            };
+
+            _mockItemRepository.Setup(x => x.GetByIdAsync(itemId))
+                              .ReturnsAsync(item);
+
+            // Act
+            var result = await _itemService.UnDeleteItemAsync(itemId);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+            Assert.Equal("Item is not deleted.", result.Error);
+        }
+
+        [Fact]
+        public async Task UnDeleteItemVariantAsync_ReturnSuccess_WhenVariantIsDeleted()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            var variant = new ItemVariant
+            {
+                Id = variantId,
+                ItemId = itemId,
+                Price = 19.99m,
+                StockQuantity = 100,
+                Sku = "TEST-SKU-001",
+                Deleted = true // Variant is deleted
+            };
+            var item = new Item
+            {
+                Id = itemId,
+                SellerID = Guid.NewGuid(),
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Description_en = "Test item description EN",
+                Description_fr = "Test item description FR",
+                CategoryID = Guid.NewGuid(),
+                Variants = new List<ItemVariant>(),
+                ItemAttributes = new List<ItemAttribute>(),
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = null,
+                Deleted = false
+            };
+
+            _mockItemVariantRepository.Setup(x => x.GetByIdAsync(variantId))
+                                     .ReturnsAsync(variant);
+            _mockItemVariantRepository.Setup(x => x.UpdateAsync(It.IsAny<ItemVariant>()))
+                                     .ReturnsAsync(variant);
+            _mockItemRepository.Setup(x => x.GetByIdAsync(itemId))
+                              .ReturnsAsync(item);
+            _mockItemRepository.Setup(x => x.UpdateAsync(It.IsAny<Item>()))
+                              .ReturnsAsync(item);
+
+            // Act
+            var result = await _itemService.UnDeleteItemVariantAsync(itemId, variantId);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Equal(itemId, result.Value.ItemId);
+            Assert.Equal(variantId, result.Value.VariantId);
+            Assert.True(result.Value.Success);
+            Assert.Equal("Item variant undeleted successfully.", result.Value.Message);
+        }
+
+        [Fact]
+        public async Task UnDeleteItemVariantAsync_ReturnFailure_WhenVariantDoesNotExist()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            _mockItemVariantRepository.Setup(x => x.GetByIdAsync(variantId))
+                                     .ThrowsAsync(new InvalidOperationException($"ItemVariant with id {variantId} not found"));
+
+            // Act
+            var result = await _itemService.UnDeleteItemVariantAsync(itemId, variantId);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.ErrorCode);
+            Assert.Contains("An error occurred while undeleting the item variant", result.Error);
+        }
+
+        [Fact]
+        public async Task UnDeleteItemVariantAsync_ReturnFailure_WhenVariantIsNotDeleted()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            var variant = new ItemVariant
+            {
+                Id = variantId,
+                ItemId = itemId,
+                Price = 19.99m,
+                StockQuantity = 100,
+                Sku = "TEST-SKU-001",
+                Deleted = false // Variant is not deleted
+            };
+
+            _mockItemVariantRepository.Setup(x => x.GetByIdAsync(variantId))
+                                     .ReturnsAsync(variant);
+
+            // Act
+            var result = await _itemService.UnDeleteItemVariantAsync(itemId, variantId);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+            Assert.Equal("Variant is not deleted.", result.Error);
+        }
+
+        [Fact]
+        public async Task UnDeleteItemVariantAsync_ReturnFailure_WhenVariantBelongsToDifferentItem()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            var differentItemId = Guid.NewGuid();
+            var variant = new ItemVariant
+            {
+                Id = variantId,
+                ItemId = differentItemId, // Different item ID
+                Price = 19.99m,
+                StockQuantity = 100,
+                Sku = "TEST-SKU-001",
+                Deleted = true
+            };
+
+            _mockItemVariantRepository.Setup(x => x.GetByIdAsync(variantId))
+                                     .ReturnsAsync(variant);
+
+            // Act
+            var result = await _itemService.UnDeleteItemVariantAsync(itemId, variantId);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status404NotFound, result.ErrorCode);
+            Assert.Equal("Item or variant not found.", result.Error);
+        }
     }
 }

@@ -383,6 +383,42 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             }
         }
 
+        public async Task<Result<GetItemResponse>> GetItemByIdIncludingDeletedAsync(Guid id)
+        {
+            try
+            {
+                // Use GetByIdAsync to retrieve items regardless of deleted status
+                var item = await _itemRepository.GetByIdAsync(id);
+                if (item == null)
+                {
+                    return Result.Failure<GetItemResponse>("Item not found.", StatusCodes.Status404NotFound);
+                }
+
+                var response = new GetItemResponse
+                {
+                    Id = item.Id,
+                    SellerID = item.SellerID,
+                    Name_en = item.Name_en,
+                    Name_fr = item.Name_fr,
+                    Description_en = item.Description_en,
+                    Description_fr = item.Description_fr,
+                    ImageUrl = item.ImageUrl,
+                    CategoryID = item.CategoryID,
+                    Variants = MapToItemVariantDtos(item.Variants),
+                    ItemAttributes = MapToItemAttributeDtos(item.ItemAttributes),
+                    CreatedAt = item.CreatedAt,
+                    UpdatedAt = item.UpdatedAt,
+                    Deleted = item.Deleted
+                };
+
+                return Result.Success(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<GetItemResponse>($"An error occurred while retrieving the item: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
         public async Task<Result<IEnumerable<GetItemResponse>>> GetAllItemsFromSellerAsync(Guid sellerId, bool includeDeleted = false)
         {
             try

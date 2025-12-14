@@ -10,6 +10,7 @@ namespace Domain.Services.Interfaces
         Task<Result<CreateItemResponse>> CreateItemAsync(CreateItemRequest createItemRequest);
         Task<Result<IEnumerable<GetItemResponse>>> GetAllItemsAsync();
         Task<Result<GetItemResponse>> GetItemByIdAsync(Guid id);
+        Task<Result<GetItemResponse>> GetItemByIdIncludingDeletedAsync(Guid id);
         Task<Result<IEnumerable<GetItemResponse>>> GetAllItemsFromSellerAsync(Guid sellerId, bool includeDeleted = false);
         Task<Result<UpdateItemResponse>> UpdateItemAsync(UpdateItemRequest updateItemRequest);
         Task<Result<DeleteItemResponse>> DeleteItemAsync(Guid id);

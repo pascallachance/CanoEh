@@ -2149,7 +2149,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                 className="products-modal-btn products-modal-btn-cancel"
                                 onClick={cancelUndeleteItem}
                             >
-                                Cancel
+                                {t('common.cancel')}
                             </button>
                             <button
                                 className="products-modal-btn products-modal-btn-confirm"

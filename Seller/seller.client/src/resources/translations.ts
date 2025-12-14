@@ -300,6 +300,10 @@ export const translations: TranslationResources = {
     en: 'Unknown',
     fr: 'Inconnu'
   },
+  'common.cancel': {
+    en: 'Cancel',
+    fr: 'Annuler'
+  },
 
   // Error Messages
   'error.bilingualValuesMismatch': {

@@ -358,6 +358,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             {
                 // Use GetByIdAsync to retrieve items including soft-deleted ones for undelete operations
                 // This differs from GetItemByIdAsync which excludes deleted items
+                // Note: GetByIdAsync throws InvalidOperationException if item is not found (never returns null)
                 var item = await _itemRepository.GetByIdAsync(id);
                 var response = MapItemToGetItemResponse(item);
                 return Result.Success(response);

@@ -163,8 +163,8 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
 
     // Helper function to migrate old format to new format
     const migrateAttributeToNewFormat = (attr: ItemAttribute): ItemAttribute => {
-        // If already in new format, return as is
-        if (attr.values && attr.values.length > 0) {
+        // If already in new format (has values property defined), return as is
+        if (attr.values !== undefined) {
             return attr;
         }
         
@@ -352,7 +352,8 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                 ItemVariantName_en: variant.attributes_en ? Object.entries(variant.attributes_en).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
                 ItemVariantName_fr: variant.attributes_fr ? Object.entries(variant.attributes_fr).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
                 ItemVariantAttributes: variant.attributes_en ? Object.entries(variant.attributes_en).map(([attrNameEn, attrValueEn]) => {
-                    const itemAttribute = migrateAttributeToNewFormat(step3Data.attributes.find(attr => attr.name_en === attrNameEn)!);
+                    const foundAttribute = step3Data.attributes.find(attr => attr.name_en === attrNameEn);
+                    const itemAttribute = foundAttribute ? migrateAttributeToNewFormat(foundAttribute) : null;
                     const attrNameFr = itemAttribute?.name_fr || null;
                     const attrValueFr = attrNameFr && variant.attributes_fr ? variant.attributes_fr[attrNameFr] : null;
                     return {

@@ -65,14 +65,19 @@ function BilingualTagInput({
         setError('');
     };
 
+    const handleRemoveLastValue = () => {
+        if (!inputValueEn && !inputValueFr && values.length > 0) {
+            onValuesChange(values.slice(0, -1));
+        }
+    };
+
     const handleKeyDownEn = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             e.preventDefault();
             addValue();
-        } else if (e.key === 'Backspace' && !inputValueEn && !inputValueFr && values.length > 0) {
-            // Remove the last value if backspace is pressed on empty inputs
+        } else if (e.key === 'Backspace') {
             e.preventDefault();
-            onValuesChange(values.slice(0, -1));
+            handleRemoveLastValue();
         } else if (e.key === 'Tab') {
             // Allow tab to move to French input
             return;
@@ -83,10 +88,9 @@ function BilingualTagInput({
         if (e.key === 'Enter') {
             e.preventDefault();
             addValue();
-        } else if (e.key === 'Backspace' && !inputValueEn && !inputValueFr && values.length > 0) {
-            // Remove the last value if backspace is pressed on empty inputs
+        } else if (e.key === 'Backspace') {
             e.preventDefault();
-            onValuesChange(values.slice(0, -1));
+            handleRemoveLastValue();
         }
     };
 

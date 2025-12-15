@@ -135,3 +135,10 @@
 .bilingual-tag-input-help strong {
     color: #333;
 }
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .bilingual-tag-input-columns {
+        grid-template-columns: 1fr;
+    }
+}

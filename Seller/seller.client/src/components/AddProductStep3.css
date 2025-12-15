@@ -120,9 +120,6 @@
 }
 
 .attribute-values {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
     margin-bottom: 1rem;
 }
 
@@ -318,8 +315,7 @@
         font-size: 24px;
     }
 
-    .attribute-names,
-    .attribute-values {
+    .attribute-names {
         grid-template-columns: 1fr;
     }
 }

@@ -1,0 +1,137 @@
+.bilingual-tag-input-container {
+    width: 100%;
+}
+
+.bilingual-tag-input-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.bilingual-tag-input-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.bilingual-tag-input-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.bilingual-tag-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 0.5rem;
+    background-color: #fff;
+    min-height: 100px;
+}
+
+.bilingual-tags-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.bilingual-tag-pair {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bilingual-tag {
+    display: inline-flex;
+    align-items: center;
+    background-color: #e3f2fd;
+    border: 1px solid #90caf9;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.9rem;
+    color: #1976d2;
+    flex: 1;
+}
+
+.bilingual-tag-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.bilingual-tag-move-btn,
+.bilingual-tag-remove-btn {
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0.15rem 0.4rem;
+    font-size: 1rem;
+    line-height: 1;
+    color: #666;
+    transition: all 0.2s ease;
+}
+
+.bilingual-tag-move-btn:hover:not(:disabled),
+.bilingual-tag-remove-btn:hover {
+    background-color: #f5f5f5;
+    color: #333;
+    border-color: #999;
+}
+
+.bilingual-tag-move-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.bilingual-tag-remove-btn {
+    color: #d32f2f;
+    font-size: 1.2rem;
+}
+
+.bilingual-tag-remove-btn:hover {
+    background-color: #ffebee;
+    border-color: #ef5350;
+}
+
+.bilingual-tag-input-field {
+    border: none;
+    outline: none;
+    padding: 0.5rem;
+    font-size: 0.95rem;
+    background-color: transparent;
+}
+
+.bilingual-tag-input-field::placeholder {
+    color: #999;
+}
+
+.bilingual-tag-input-error {
+    color: #d32f2f;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    padding: 0.5rem;
+    background-color: #ffebee;
+    border-radius: 4px;
+    border: 1px solid #ef5350;
+}
+
+.bilingual-tag-input-help {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.bilingual-tag-input-help p {
+    margin: 0;
+}
+
+.bilingual-tag-input-help strong {
+    color: #333;
+}

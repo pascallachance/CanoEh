@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import './AddProductStep4.css';
 import { ApiClient } from '../utils/apiClient';
-import { validateBilingualArraySync, formatVariantAttribute } from '../utils/bilingualArrayUtils';
+import { formatVariantAttribute } from '../utils/bilingualArrayUtils';
 import { toAbsoluteUrl, toAbsoluteUrlArray } from '../utils/urlUtils';
 import { useNotifications } from '../contexts/useNotifications';
 import type { AddProductStep1Data } from './AddProductStep1';
 import type { AddProductStep2Data } from './AddProductStep2';
-import type { AddProductStep3Data } from './AddProductStep3';
+import type { AddProductStep3Data, ItemAttribute } from './AddProductStep3';
+import type { BilingualValue } from './BilingualTagInput';
 import StepIndicator from './StepIndicator';
 
 interface ItemVariant {
@@ -160,6 +161,40 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
         };
     }, [variants]);
 
+    // Helper function to migrate old format to new format
+    const migrateAttributeToNewFormat = (attr: ItemAttribute): ItemAttribute => {
+        // If already in new format (has values property defined), return as is
+        if (attr.values !== undefined) {
+            return attr;
+        }
+        
+        // If in old format, convert
+        if (attr.values_en && attr.values_fr) {
+            const maxLength = Math.max(attr.values_en.length, attr.values_fr.length);
+            const values: BilingualValue[] = [];
+            
+            for (let i = 0; i < maxLength; i++) {
+                values.push({
+                    en: attr.values_en[i] || '',
+                    fr: attr.values_fr[i] || ''
+                });
+            }
+            
+            return {
+                name_en: attr.name_en,
+                name_fr: attr.name_fr,
+                values
+            };
+        }
+        
+        // Return empty structure if neither format
+        return {
+            name_en: attr.name_en,
+            name_fr: attr.name_fr,
+            values: []
+        };
+    };
+
     const generateVariants = (): ItemVariant[] => {
         if (step3Data.attributes.length === 0) {
             return [{
@@ -186,25 +221,21 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                 return;
             }
 
-            const attribute = step3Data.attributes[attrIndex];
+            const attribute = migrateAttributeToNewFormat(step3Data.attributes[attrIndex]);
 
-            // Ensure synchronized arrays
-            const validation = validateBilingualArraySync(
-                attribute.values_en,
-                attribute.values_fr,
-                { attributeName: attribute.name_en, errorType: 'console' }
-            );
-            if (!validation.isValid) {
+            // Skip if no values
+            if (attribute.values.length === 0) {
+                console.warn(`Attribute "${attribute.name_en}" has no values, skipping variant generation`);
                 return;
             }
 
-            for (let i = 0; i < attribute.values_en.length; i++) {
-                const valueEn = attribute.values_en[i];
-                const valueFr = attribute.values_fr[i];
+            // Use paired values
+            for (let i = 0; i < attribute.values.length; i++) {
+                const value = attribute.values[i];
                 generateCombinations(
                     attrIndex + 1,
-                    { ...currentEn, [attribute.name_en]: valueEn },
-                    { ...currentFr, [attribute.name_fr]: valueFr }
+                    { ...currentEn, [attribute.name_en]: value.en },
+                    { ...currentFr, [attribute.name_fr]: value.fr }
                 );
             }
         };
@@ -321,7 +352,8 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
                 ItemVariantName_en: variant.attributes_en ? Object.entries(variant.attributes_en).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
                 ItemVariantName_fr: variant.attributes_fr ? Object.entries(variant.attributes_fr).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
                 ItemVariantAttributes: variant.attributes_en ? Object.entries(variant.attributes_en).map(([attrNameEn, attrValueEn]) => {
-                    const itemAttribute = step3Data.attributes.find(attr => attr.name_en === attrNameEn);
+                    const foundAttribute = step3Data.attributes.find(attr => attr.name_en === attrNameEn);
+                    const itemAttribute = foundAttribute ? migrateAttributeToNewFormat(foundAttribute) : null;
                     const attrNameFr = itemAttribute?.name_fr || null;
                     const attrValueFr = attrNameFr && variant.attributes_fr ? variant.attributes_fr[attrNameFr] : null;
                     return {

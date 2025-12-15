@@ -4,17 +4,13 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useNotifications } from '../../contexts/useNotifications';
 import { ApiClient } from '../../utils/apiClient';
 import { 
-    synchronizeBilingualArrays, 
-    updateBilingualArrayValue, 
-    removeBilingualArrayValue,
-    validateBilingualArraySync,
-    formatAttributeDisplay,
     formatAttributeName,
     formatVariantAttribute
 } from '../../utils/bilingualArrayUtils';
 import type { AddProductStep1Data } from '../AddProductStep1';
 import type { AddProductStep2Data } from '../AddProductStep2';
 import type { AddProductStep3Data, ItemAttribute } from '../AddProductStep3';
+import BilingualTagInput from '../BilingualTagInput';
 
 
 interface Company {
@@ -37,8 +33,12 @@ interface ProductsSectionProps {
 interface QuickProductAttribute {
     name_en: string;
     name_fr: string;
-    values_en: string[];
-    values_fr: string[];
+    values: BilingualValue[];
+}
+
+interface BilingualValue {
+    en: string;
+    fr: string;
 }
 
 interface BilingualItemAttribute {
@@ -161,8 +161,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
     const [newAttribute, setNewAttribute] = useState({ 
         name_en: '', 
         name_fr: '', 
-        values_en: [''], 
-        values_fr: [''] 
+        values: [] as BilingualValue[]
     });
     const [attributeError, setAttributeError] = useState('');
     
@@ -260,22 +259,11 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         return false;
     }, [newItem.name, newItem.name_fr, newItem.description, newItem.description_fr, newItem.categoryId, variants]);
 
-    // Memoized synchronized attribute values to avoid redundant computation
-    const synchronizedAttributeValues = useMemo(() => {
-        return synchronizeBilingualArrays(newAttribute.values_en, newAttribute.values_fr);
-    }, [newAttribute.values_en, newAttribute.values_fr]);
-
     // Memoized disabled state for "Add Attribute" button to avoid re-computation on every render
     const isAddAttributeDisabled = useMemo(() => {
         return !newItemAttribute.name_en || !newItemAttribute.name_fr || 
                !newItemAttribute.value_en || !newItemAttribute.value_fr;
     }, [newItemAttribute.name_en, newItemAttribute.name_fr, newItemAttribute.value_en, newItemAttribute.value_fr]);
-
-    // Memoized disabled state for "Add Value" button to avoid array iterations on every render
-    const isAddValueDisabled = useMemo(() => {
-        return synchronizedAttributeValues.values_en.some(value => value.trim() === '') || 
-               synchronizedAttributeValues.values_fr.some(value => value.trim() === '');
-    }, [synchronizedAttributeValues.values_en, synchronizedAttributeValues.values_fr]);
 
     // Fetch categories on component mount
     const fetchCategories = async () => {
@@ -802,36 +790,6 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         }
     };
 
-    const addAttributeValue = () => {
-        setNewAttribute(prev => ({
-            ...prev,
-            values_en: [...prev.values_en, ''],
-            values_fr: [...prev.values_fr, '']
-        }));
-    };
-
-    const removeAttributeValue = (index: number) => {
-        setNewAttribute(prev => {
-            const { values_en, values_fr } = removeBilingualArrayValue(prev.values_en, prev.values_fr, index);
-            return {
-                ...prev,
-                values_en,
-                values_fr
-            };
-        });
-    };
-
-    const updateAttributeValue = (index: number, value: string, language: 'en' | 'fr') => {
-        setNewAttribute(prev => {
-            const { values_en, values_fr } = updateBilingualArrayValue(prev.values_en, prev.values_fr, index, value, language);
-            return {
-                ...prev,
-                values_en,
-                values_fr
-            };
-        });
-    };
-
     const addItemAttribute = () => {
         if (!newItemAttribute.name_en || !newItemAttribute.name_fr || 
             !newItemAttribute.value_en || !newItemAttribute.value_fr) {
@@ -866,20 +824,23 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
             return;
         }
 
-        // Validate synchronized arrays for non-empty values
-        const validation = validateBilingualArraySync(
-            newAttribute.values_en,
-            newAttribute.values_fr,
-            { 
-                filterEmpty: true, 
-                errorType: 'user',
-                customUserErrorMessage: t('error.bilingualValuesMismatch'),
-                allowEmpty: false
-            }
-        );
-        
-        if (!validation.isValid) {
-            setAttributeError(validation.errorMessage || "Array synchronization failed.");
+        // Clear any previous error
+        setAttributeError('');
+
+        if (!newAttribute.name_en || !newAttribute.name_fr) {
+            setAttributeError('Attribute names in both languages are required');
+            return;
+        }
+
+        if (newAttribute.values.length === 0) {
+            setAttributeError('At least one value pair is required');
+            return;
+        }
+
+        // Validate all values have both en and fr
+        const hasIncompleteValues = newAttribute.values.some(v => !v.en || !v.fr);
+        if (hasIncompleteValues) {
+            setAttributeError('All value pairs must have both English and French values');
             return;
         }
 
@@ -899,15 +860,13 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
             attributes: [...prev.attributes, {
                 name_en: newAttribute.name_en,
                 name_fr: newAttribute.name_fr,
-                values_en: validation.values_en!,
-                values_fr: validation.values_fr!
+                values: newAttribute.values
             }]
         }));
         setNewAttribute({ 
             name_en: '', 
             name_fr: '', 
-            values_en: [''], 
-            values_fr: [''] 
+            values: []
         });
     };
 
@@ -946,23 +905,18 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
             
             const attribute = newItem.attributes[attrIndex];
             
-            // Ensure synchronized arrays - validate that lengths match for safety
-            const validation = validateBilingualArraySync(
-                attribute.values_en, 
-                attribute.values_fr, 
-                { attributeName: attribute.name_en, errorType: 'console' }
-            );
-            if (!validation.isValid) {
-                return; // Skip this attribute to prevent silent data loss
+            // Skip if no values
+            if (!attribute.values || attribute.values.length === 0) {
+                console.warn(`Attribute "${attribute.name_en}" has no values, skipping variant generation`);
+                return;
             }
             
-            for (let i = 0; i < attribute.values_en.length; i++) {
-                const valueEn = attribute.values_en[i];
-                const valueFr = attribute.values_fr[i];
+            // Use paired values - this automatically maintains synchronization
+            for (const value of attribute.values) {
                 generateCombinations(
                     attrIndex + 1, 
-                    { ...currentEn, [attribute.name_en]: valueEn },
-                    { ...currentFr, [attribute.name_fr]: valueFr }
+                    { ...currentEn, [attribute.name_en]: value.en },
+                    { ...currentFr, [attribute.name_fr]: value.fr }
                 );
             }
         };
@@ -1498,63 +1452,15 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                 )}
                             </div>
                             <div className="products-variant-values">
-                                <>
-                                    <div className="attribute-input-group">
-                                        <label className="products-form-label">
-                                            {t('products.attributeValues')}
-                                        </label>
-                                        {synchronizedAttributeValues.values_en.map((value, index) => (
-                                            <div key={index} className="products-attribute-value-row">
-                                                <input
-                                                    type="text"
-                                                    value={value}
-                                                    onChange={(e) => updateAttributeValue(index, e.target.value, 'en')}
-                                                    className="products-attribute-value-input"
-                                                    placeholder={t('placeholder.attributeValue')}
-                                                />
-                                                {synchronizedAttributeValues.length > 1 && (
-                                                    <button
-                                                        onClick={() => removeAttributeValue(index)}
-                                                        className="products-remove-value-button"
-                                                    >
-                                                        {t('products.deleteItem')}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="attribute-input-group">
-                                        <label className="products-form-label">
-                                            {t('products.attributeValuesFr')}
-                                        </label>
-                                        {synchronizedAttributeValues.values_fr.map((value, index) => (
-                                            <div key={index} className="products-attribute-value-row">
-                                                <input
-                                                    type="text"
-                                                    value={value}
-                                                    onChange={(e) => updateAttributeValue(index, e.target.value, 'fr')}
-                                                    className="products-attribute-value-input"
-                                                    placeholder={t('placeholder.attributeValueFrVariant')}
-                                                />
-                                                {synchronizedAttributeValues.length > 1 && (
-                                                    <button
-                                                        onClick={() => removeAttributeValue(index)}
-                                                        className="products-remove-value-button"
-                                                    >
-                                                        {t('products.deleteItem')}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </>
-                                <button
-                                    onClick={addAttributeValue}
-                                    className="products-add-value-button"
-                                    disabled={isAddValueDisabled}
-                                >
-                                    {t('products.addValue')}
-                                </button>
+                                <BilingualTagInput
+                                    values={newAttribute.values}
+                                    onValuesChange={(values) => setNewAttribute(prev => ({ ...prev, values }))}
+                                    placeholderEn={t('placeholder.attributeValue')}
+                                    placeholderFr={t('placeholder.attributeValueFrVariant')}
+                                    labelEn={t('products.attributeValues')}
+                                    labelFr={t('products.attributeValuesFr')}
+                                    id="quick_add_attribute_values"
+                                />
                             </div>
                             <div className="products-variant-actions">
                                 <button
@@ -1569,23 +1475,20 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                         {newItem.attributes.length > 0 && (
                             <div className="products-added-attributes">
                                 <h5>{t('products.attributes')}</h5>
-                                {newItem.attributes.map((attr, index) => {
-                                    const formatted = formatAttributeDisplay(attr.name_en, attr.name_fr, attr.values_en, attr.values_fr);
-                                    return (
-                                        <div key={index} className="products-attribute-item">
-                                            <span>
-                                                <div><strong>EN:</strong> {formatted.en}</div>
-                                                <div><strong>FR:</strong> {formatted.fr}</div>
-                                            </span>
-                                            <button
-                                                onClick={() => removeAttribute(index)}
-                                                className="products-remove-attribute-button"
-                                            >
-                                                {t('products.deleteItem')}
-                                            </button>
-                                        </div>
-                                    );
-                                })}
+                                {newItem.attributes.map((attr, index) => (
+                                    <div key={index} className="products-attribute-item">
+                                        <span>
+                                            <div><strong>EN:</strong> {attr.name_en}: {attr.values?.map(v => v?.en).filter(Boolean).join(', ')}</div>
+                                            <div><strong>FR:</strong> {attr.name_fr}: {attr.values?.map(v => v?.fr).filter(Boolean).join(', ')}</div>
+                                        </span>
+                                        <button
+                                            onClick={() => removeAttribute(index)}
+                                            className="products-remove-attribute-button"
+                                        >
+                                            {t('products.deleteItem')}
+                                        </button>
+                                    </div>
+                                ))}
                                 <button
                                     onClick={handleGenerateVariants}
                                     className="products-generate-variants-button"

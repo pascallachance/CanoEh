@@ -915,8 +915,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
             }
             
             // Use paired values - this automatically maintains synchronization
-            for (let i = 0; i < attribute.values.length; i++) {
-                const value = attribute.values[i];
+            for (const value of attribute.values) {
                 generateCombinations(
                     attrIndex + 1, 
                     { ...currentEn, [attribute.name_en]: value.en },

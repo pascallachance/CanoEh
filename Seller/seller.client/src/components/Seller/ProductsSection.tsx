@@ -14,7 +14,7 @@ import {
 } from '../../utils/bilingualArrayUtils';
 import type { AddProductStep1Data } from '../AddProductStep1';
 import type { AddProductStep2Data } from '../AddProductStep2';
-import type { AddProductStep3Data } from '../AddProductStep3';
+import type { AddProductStep3Data, ItemAttribute } from '../AddProductStep3';
 
 
 interface Company {
@@ -34,7 +34,7 @@ interface ProductsSectionProps {
     onEditProduct?: (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, step3Data: AddProductStep3Data, existingVariants: any[]) => void;
 }
 
-interface ItemAttribute {
+interface QuickProductAttribute {
     name_en: string;
     name_fr: string;
     values_en: string[];
@@ -155,7 +155,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         description: '',
         description_fr: '',
         categoryId: '',
-        attributes: [] as ItemAttribute[],
+        attributes: [] as QuickProductAttribute[],
         itemAttributes: [] as BilingualItemAttribute[]
     });
     const [newAttribute, setNewAttribute] = useState({ 
@@ -656,11 +656,10 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                 const orderB = attributeOrderMap.get(keyB) ?? 999;
                 return orderA - orderB;
             })
-            .map(([_, attr]) => ({
+            .map(([, attr]) => ({
                 name_en: attr.name_en,
                 name_fr: attr.name_fr,
-                values_en: attr.values.map(v => v.en),
-                values_fr: attr.values.map(v => v.fr)
+                values: attr.values  // Keep the new format with paired values
             }));
 
         const step3Data = {

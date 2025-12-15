@@ -3,13 +3,15 @@ import './AddProductStep3.css';
 import type { AddProductStep1Data } from './AddProductStep1';
 import type { AddProductStep2Data } from './AddProductStep2';
 import StepIndicator from './StepIndicator';
-import TagInput from './TagInput';
+import BilingualTagInput, { type BilingualValue } from './BilingualTagInput';
 
 export interface ItemAttribute {
     name_en: string;
     name_fr: string;
-    values_en: string[];
-    values_fr: string[];
+    values: BilingualValue[];
+    // Legacy support for old data structure
+    values_en?: string[];
+    values_fr?: string[];
 }
 
 export interface AddProductStep3Data {
@@ -38,8 +40,7 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
     const [newAttribute, setNewAttribute] = useState({
         name_en: '',
         name_fr: '',
-        values_en: [] as string[],
-        values_fr: [] as string[]
+        values: [] as BilingualValue[]
     });
 
     const [attributeError, setAttributeError] = useState('');
@@ -53,14 +54,15 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
             return;
         }
 
-        if (newAttribute.values_en.length === 0 || newAttribute.values_fr.length === 0) {
-            setAttributeError('At least one value is required in both languages');
+        if (newAttribute.values.length === 0) {
+            setAttributeError('At least one value pair is required');
             return;
         }
 
-        // Check that we have the same number of values in both languages
-        if (newAttribute.values_en.length !== newAttribute.values_fr.length) {
-            setAttributeError('The number of values must be the same in both languages');
+        // Validate all values have both en and fr
+        const hasIncompleteValues = newAttribute.values.some(v => !v.en || !v.fr);
+        if (hasIncompleteValues) {
+            setAttributeError('All value pairs must have both English and French values');
             return;
         }
 
@@ -80,15 +82,13 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
             attributes: [...prev.attributes, {
                 name_en: newAttribute.name_en,
                 name_fr: newAttribute.name_fr,
-                values_en: newAttribute.values_en,
-                values_fr: newAttribute.values_fr
+                values: newAttribute.values
             }]
         }));
         setNewAttribute({
             name_en: '',
             name_fr: '',
-            values_en: [],
-            values_fr: []
+            values: []
         });
     };
 
@@ -172,24 +172,15 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
                             )}
 
                             <div className="attribute-values">
-                                <div className="values-column">
-                                    <TagInput
-                                        tags={newAttribute.values_en}
-                                        onTagsChange={(tags) => setNewAttribute(prev => ({ ...prev, values_en: tags }))}
-                                        placeholder="Type value and press Enter (e.g., Small, Medium, Large)"
-                                        label="Values (English)"
-                                        id="values_en"
-                                    />
-                                </div>
-                                <div className="values-column">
-                                    <TagInput
-                                        tags={newAttribute.values_fr}
-                                        onTagsChange={(tags) => setNewAttribute(prev => ({ ...prev, values_fr: tags }))}
-                                        placeholder="Type value and press Enter (e.g., Petit, Moyen, Grand)"
-                                        label="Values (French)"
-                                        id="values_fr"
-                                    />
-                                </div>
+                                <BilingualTagInput
+                                    values={newAttribute.values}
+                                    onValuesChange={(values) => setNewAttribute(prev => ({ ...prev, values }))}
+                                    placeholderEn="e.g., Small, Medium, Large"
+                                    placeholderFr="e.g., Petit, Moyen, Grand"
+                                    labelEn="Values (English)"
+                                    labelFr="Values (French)"
+                                    id="attribute_values"
+                                />
                             </div>
 
                             <div className="attribute-actions">
@@ -213,8 +204,8 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
                                                 <strong>EN:</strong> {attr.name_en} | <strong>FR:</strong> {attr.name_fr}
                                             </div>
                                             <div className="attribute-values-display">
-                                                <div><strong>EN values:</strong> {attr.values_en.join(', ')}</div>
-                                                <div><strong>FR values:</strong> {attr.values_fr.join(', ')}</div>
+                                                <div><strong>EN values:</strong> {attr.values.map(v => v.en).join(', ')}</div>
+                                                <div><strong>FR values:</strong> {attr.values.map(v => v.fr).join(', ')}</div>
                                             </div>
                                         </div>
                                         <button

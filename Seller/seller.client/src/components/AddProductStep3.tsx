@@ -33,6 +33,9 @@ interface AddProductStep3Props {
 }
 
 function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep3Props) {
+    // Constants for validation messages
+    const REQUIRED_ATTRIBUTE_ERROR = 'Please add at least one variant attribute to continue.';
+    
     const [formData, setFormData] = useState<AddProductStep3Data>(initialData || {
         attributes: []
     });
@@ -150,6 +153,13 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Validate that at least one variant attribute has been added (only in add mode)
+        if (formData.attributes.length === 0 && !editMode) {
+            setAttributeError(REQUIRED_ATTRIBUTE_ERROR);
+            return;
+        }
+        
         onNext(formData);
     };
 
@@ -164,14 +174,14 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
                         onStepClick={onStepNavigate}
                         completedSteps={completedSteps || [1, 2]}
                     />
-                    <h2>Step 3: Variant Attributes</h2>
-                    <p>Define attributes that vary between product versions (e.g., Size, Color).</p>
+                    <h2>Step 3: Variant Attributes *</h2>
+                    <p>Define attributes that vary between product versions (e.g., Size, Color). At least one attribute is required.</p>
                 </header>
 
                 <form className="product-form" onSubmit={handleSubmit}>
                     <div className="variant-attributes-section">
                         <div className="section-info">
-                            <p>Add attributes that create different variants of your product. Each combination of values will generate a unique variant in the next step.</p>
+                            <p><strong>At least one variant attribute is required.</strong> Add attributes that create different variants of your product. Each combination of values will generate a unique variant in the next step.</p>
                             <p className="example-text">Example: Add "Size" with values "S, M, L" and "Color" with values "Red, Blue" to create 6 variants.</p>
                         </div>
 
@@ -311,7 +321,7 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
                             Back
                         </button>
                         <button type="submit" className="next-btn">
-                            {formData.attributes.length > 0 ? 'Generate Variants' : 'Skip to Final Step'}
+                            {formData.attributes.length > 0 ? 'Generate Variants' : 'Add Attribute to Continue'}
                         </button>
                     </div>
                 </form>

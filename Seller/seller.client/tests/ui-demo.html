@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilingual Attribute Fix - UI Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .panel.old {
+            border-left: 4px solid #f44336;
+        }
+        
+        .panel.new {
+            border-left: 4px solid #4CAF50;
+        }
+        
+        h2 {
+            margin-top: 0;
+            color: #555;
+        }
+        
+        .old h2::before {
+            content: "❌ ";
+        }
+        
+        .new h2::before {
+            content: "✅ ";
+        }
+        
+        .attribute-input {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .column {
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 10px;
+            background: white;
+        }
+        
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 4px;
+            padding: 4px 8px;
+            margin: 4px;
+            font-size: 14px;
+            color: #1976d2;
+        }
+        
+        .tag-pair {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0;
+            padding: 4px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .tag-pair .tag {
+            flex: 1;
+            margin: 0;
+        }
+        
+        .tag-actions {
+            display: flex;
+            gap: 4px;
+        }
+        
+        button {
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #f5f5f5;
+        }
+        
+        .remove-btn {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+        
+        .problem-demo {
+            background: #fff3e0;
+            border: 2px solid #ff9800;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .problem-demo h3 {
+            color: #e65100;
+            margin-top: 0;
+        }
+        
+        .step {
+            margin: 15px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+        }
+        
+        .value-list {
+            font-family: monospace;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        
+        .incorrect {
+            color: #d32f2f;
+        }
+        
+        .correct {
+            color: #4CAF50;
+        }
+        
+        .help-text {
+            background: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .help-text strong {
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Bilingual Attribute Synchronization Fix</h1>
+    
+    <div class="problem-demo">
+        <h3>📋 Problem Scenario</h3>
+        <p><strong>Original Values:</strong></p>
+        <div class="step">
+            <div class="value-list">EN: [Black, White, Red]</div>
+            <div class="value-list">FR: [Noir, Blanc, Rouge]</div>
+        </div>
+        
+        <p><strong>User deletes "Blanc" from French list:</strong></p>
+        <div class="step">
+            <div class="value-list">EN: [Black, White, Red]</div>
+            <div class="value-list">FR: [Noir, Rouge] <span class="incorrect">← Out of sync!</span></div>
+        </div>
+        
+        <p><strong>User re-adds "Blanc" at the end:</strong></p>
+        <div class="step">
+            <div class="value-list">EN: [Black, White, Red]</div>
+            <div class="value-list">FR: [Noir, Rouge, Blanc] <span class="incorrect">← Wrong order!</span></div>
+        </div>
+        
+        <p><strong class="incorrect">Result: Incorrect pairings in variants:</strong></p>
+        <div class="step">
+            <div class="value-list incorrect">
+                Black → Noir ✓<br>
+                White → Rouge ✗ (should be Blanc)<br>
+                Red → Blanc ✗ (should be Rouge)
+            </div>
+        </div>
+    </div>
+    
+    <div class="comparison">
+        <div class="panel old">
+            <h2>Old Approach (Separate Arrays)</h2>
+            
+            <div class="attribute-input">
+                <strong>Color / Couleur</strong>
+                
+                <div class="columns">
+                    <div class="column">
+                        <label><strong>English Values:</strong></label>
+                        <div>
+                            <span class="tag">Black <button class="remove-btn">×</button></span>
+                            <span class="tag">White <button class="remove-btn">×</button></span>
+                            <span class="tag">Red <button class="remove-btn">×</button></span>
+                        </div>
+                        <input type="text" placeholder="Add English value..." style="width: 100%; margin-top: 10px; padding: 8px;">
+                    </div>
+                    
+                    <div class="column">
+                        <label><strong>French Values:</strong></label>
+                        <div>
+                            <span class="tag">Noir <button class="remove-btn">×</button></span>
+                            <span class="tag">Blanc <button class="remove-btn">×</button></span>
+                            <span class="tag">Rouge <button class="remove-btn">×</button></span>
+                        </div>
+                        <input type="text" placeholder="Add French value..." style="width: 100%; margin-top: 10px; padding: 8px;">
+                    </div>
+                </div>
+            </div>
+            
+            <p style="color: #d32f2f; font-size: 14px;">
+                ⚠️ <strong>Problem:</strong> Values can be added/removed independently, causing misalignment.
+            </p>
+        </div>
+        
+        <div class="panel new">
+            <h2>New Approach (Paired Values)</h2>
+            
+            <div class="attribute-input">
+                <strong>Color / Couleur</strong>
+                
+                <div class="columns">
+                    <div class="column">
+                        <label><strong>English Values:</strong></label>
+                        <div>
+                            <div class="tag-pair">
+                                <span class="tag">Black</span>
+                                <div class="tag-actions">
+                                    <button>↑</button>
+                                    <button>↓</button>
+                                    <button class="remove-btn">×</button>
+                                </div>
+                            </div>
+                            <div class="tag-pair">
+                                <span class="tag">White</span>
+                                <div class="tag-actions">
+                                    <button>↑</button>
+                                    <button>↓</button>
+                                    <button class="remove-btn">×</button>
+                                </div>
+                            </div>
+                            <div class="tag-pair">
+                                <span class="tag">Red</span>
+                                <div class="tag-actions">
+                                    <button>↑</button>
+                                    <button>↓</button>
+                                    <button class="remove-btn">×</button>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="text" placeholder="English value..." style="width: 100%; margin-top: 10px; padding: 8px;">
+                    </div>
+                    
+                    <div class="column">
+                        <label><strong>French Values:</strong></label>
+                        <div>
+                            <div class="tag-pair">
+                                <span class="tag">Noir</span>
+                                <div class="tag-actions">
+                                    <button>↑</button>
+                                    <button>↓</button>
+                                    <button class="remove-btn">×</button>
+                                </div>
+                            </div>
+                            <div class="tag-pair">
+                                <span class="tag">Blanc</span>
+                                <div class="tag-actions">
+                                    <button>↑</button>
+                                    <button>↓</button>
+                                    <button class="remove-btn">×</button>
+                                </div>
+                            </div>
+                            <div class="tag-pair">
+                                <span class="tag">Rouge</span>
+                                <div class="tag-actions">
+                                    <button>↑</button>
+                                    <button>↓</button>
+                                    <button class="remove-btn">×</button>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="text" placeholder="French value..." style="width: 100%; margin-top: 10px; padding: 8px;">
+                    </div>
+                </div>
+            </div>
+            
+            <p style="color: #4CAF50; font-size: 14px;">
+                ✅ <strong>Solution:</strong> Values are paired together. All operations (add, remove, reorder) affect both languages simultaneously.
+            </p>
+        </div>
+    </div>
+    
+    <div class="help-text">
+        <strong>✨ Key Features of the New Approach:</strong>
+        <ul>
+            <li><strong>Paired Structure:</strong> Each value is stored as <code>{ en: string, fr: string }</code></li>
+            <li><strong>Synchronized Operations:</strong> Deleting, reordering, or editing always affects both languages together</li>
+            <li><strong>Move Controls:</strong> Up/Down arrows let you reorder pairs without breaking synchronization</li>
+            <li><strong>Validation:</strong> Both English and French values must be provided before adding</li>
+            <li><strong>Backward Compatible:</strong> Old data format is automatically migrated to new format</li>
+        </ul>
+    </div>
+    
+    <div class="panel" style="background: #e3f2fd; border-left: 4px solid #2196F3;">
+        <h2 style="color: #1565c0;">📊 Data Structure Comparison</h2>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <h3>Old Structure</h3>
+                <pre style="background: white; padding: 15px; border-radius: 4px; overflow-x: auto;">
+{
+  name_en: "Color",
+  name_fr: "Couleur",
+  values_en: ["Black", "White", "Red"],
+  values_fr: ["Noir", "Blanc", "Rouge"]
+}</pre>
+            </div>
+            
+            <div>
+                <h3>New Structure</h3>
+                <pre style="background: white; padding: 15px; border-radius: 4px; overflow-x: auto;">
+{
+  name_en: "Color",
+  name_fr: "Couleur",
+  values: [
+    { en: "Black", fr: "Noir" },
+    { en: "White", fr: "Blanc" },
+    { en: "Red", fr: "Rouge" }
+  ]
+}</pre>
+            </div>
+        </div>
+    </div>
+    
+    <div class="panel" style="background: #f3e5f5; border-left: 4px solid #9c27b0; margin-top: 20px;">
+        <h2 style="color: #6a1b9a;">🔄 Variant Generation Example</h2>
+        
+        <p>With two attributes:</p>
+        <ul>
+            <li><strong>Color:</strong> { en: "Black", fr: "Noir" }, { en: "White", fr: "Blanc" }</li>
+            <li><strong>Size:</strong> { en: "Small", fr: "Petit" }, { en: "Large", fr: "Grand" }</li>
+        </ul>
+        
+        <p><strong>Generated Variants (4 total):</strong></p>
+        <div style="background: white; padding: 15px; border-radius: 4px;">
+            <ol>
+                <li>EN: Color=Black, Size=Small | FR: Couleur=Noir, Taille=Petit</li>
+                <li>EN: Color=Black, Size=Large | FR: Couleur=Noir, Taille=Grand</li>
+                <li>EN: Color=White, Size=Small | FR: Couleur=Blanc, Taille=Petit</li>
+                <li>EN: Color=White, Size=Large | FR: Couleur=Blanc, Taille=Grand</li>
+            </ol>
+        </div>
+        
+        <p class="correct" style="margin-top: 15px;">
+            <strong>✅ All variants maintain correct English-French pairings!</strong>
+        </p>
+    </div>
+</body>
+</html>

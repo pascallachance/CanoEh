@@ -75,7 +75,8 @@ function BilingualTagInput({
         if (e.key === 'Enter') {
             e.preventDefault();
             addValue();
-        } else if (e.key === 'Backspace') {
+        } else if (e.key === 'Backspace' && !inputValueEn) {
+            // Only prevent default and remove last value when input is empty
             e.preventDefault();
             handleRemoveLastValue();
         } else if (e.key === 'Tab') {
@@ -88,7 +89,8 @@ function BilingualTagInput({
         if (e.key === 'Enter') {
             e.preventDefault();
             addValue();
-        } else if (e.key === 'Backspace') {
+        } else if (e.key === 'Backspace' && !inputValueFr) {
+            // Only prevent default and remove last value when input is empty
             e.preventDefault();
             handleRemoveLastValue();
         }

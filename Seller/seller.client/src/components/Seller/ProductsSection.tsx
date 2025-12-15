@@ -34,9 +34,6 @@ interface QuickProductAttribute {
     name_en: string;
     name_fr: string;
     values: BilingualValue[];
-    // Legacy support for backward compatibility
-    values_en?: string[];
-    values_fr?: string[];
 }
 
 interface BilingualValue {
@@ -1481,8 +1478,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                 {newItem.attributes.map((attr, index) => (
                                     <div key={index} className="products-attribute-item">
                                         <span>
-                                            <div><strong>EN:</strong> {attr.name_en}: {attr.values.map(v => v.en).join(', ')}</div>
-                                            <div><strong>FR:</strong> {attr.name_fr}: {attr.values.map(v => v.fr).join(', ')}</div>
+                                            <div><strong>EN:</strong> {attr.name_en}: {attr.values?.map(v => v?.en).filter(Boolean).join(', ')}</div>
+                                            <div><strong>FR:</strong> {attr.name_fr}: {attr.values?.map(v => v?.fr).filter(Boolean).join(', ')}</div>
                                         </span>
                                         <button
                                             onClick={() => removeAttribute(index)}

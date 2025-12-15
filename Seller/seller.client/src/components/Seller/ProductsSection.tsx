@@ -597,8 +597,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
             itemAttributes: item.itemAttributes.map(attr => ({
                 name_en: attr.attributeName_en,
                 name_fr: attr.attributeName_fr || '',
-                value_en: attr.attributes_en,
-                value_fr: attr.attributes_fr || ''
+                value_en: attr.attributes_en ? attr.attributes_en.split(',').map(v => v.trim()) : [],
+                value_fr: attr.attributes_fr ? attr.attributes_fr.split(',').map(v => v.trim()) : []
             }))
         };
 

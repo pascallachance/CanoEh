@@ -336,8 +336,8 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
             ItemAttributes: step2Data.itemAttributes.map(attr => ({
                 AttributeName_en: attr.name_en,
                 AttributeName_fr: attr.name_fr,
-                Attributes_en: attr.value_en,
-                Attributes_fr: attr.value_fr
+                Attributes_en: Array.isArray(attr.value_en) ? attr.value_en.join(', ') : attr.value_en,
+                Attributes_fr: Array.isArray(attr.value_fr) ? attr.value_fr.join(', ') : attr.value_fr
             }))
         };
 

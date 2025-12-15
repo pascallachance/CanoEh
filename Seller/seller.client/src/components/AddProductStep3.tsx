@@ -1,14 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import './AddProductStep3.css';
 import type { AddProductStep1Data } from './AddProductStep1';
 import type { AddProductStep2Data } from './AddProductStep2';
 import StepIndicator from './StepIndicator';
-import {
-    synchronizeBilingualArrays,
-    updateBilingualArrayValue,
-    removeBilingualArrayValue,
-    validateBilingualArraySync
-} from '../utils/bilingualArrayUtils';
+import TagInput from './TagInput';
 
 export interface ItemAttribute {
     name_en: string;
@@ -43,52 +38,11 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
     const [newAttribute, setNewAttribute] = useState({
         name_en: '',
         name_fr: '',
-        values_en: [''],
-        values_fr: ['']
+        values_en: [] as string[],
+        values_fr: [] as string[]
     });
 
     const [attributeError, setAttributeError] = useState('');
-
-    // Memoized synchronized attribute values to avoid redundant computation
-    const synchronizedAttributeValues = useMemo(() => {
-        return synchronizeBilingualArrays(newAttribute.values_en, newAttribute.values_fr);
-    }, [newAttribute.values_en, newAttribute.values_fr]);
-
-    // Memoized disabled state for "Add Value" button
-    const isAddValueDisabled = useMemo(() => {
-        return synchronizedAttributeValues.values_en.some(value => value.trim() === '') ||
-            synchronizedAttributeValues.values_fr.some(value => value.trim() === '');
-    }, [synchronizedAttributeValues.values_en, synchronizedAttributeValues.values_fr]);
-
-    const addAttributeValue = () => {
-        setNewAttribute(prev => ({
-            ...prev,
-            values_en: [...prev.values_en, ''],
-            values_fr: [...prev.values_fr, '']
-        }));
-    };
-
-    const removeAttributeValue = (index: number) => {
-        setNewAttribute(prev => {
-            const { values_en, values_fr } = removeBilingualArrayValue(prev.values_en, prev.values_fr, index);
-            return {
-                ...prev,
-                values_en,
-                values_fr
-            };
-        });
-    };
-
-    const updateAttributeValue = (index: number, value: string, language: 'en' | 'fr') => {
-        setNewAttribute(prev => {
-            const { values_en, values_fr } = updateBilingualArrayValue(prev.values_en, prev.values_fr, index, value, language);
-            return {
-                ...prev,
-                values_en,
-                values_fr
-            };
-        });
-    };
 
     const addAttribute = () => {
         // Clear any previous error
@@ -99,20 +53,14 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
             return;
         }
 
-        // Validate synchronized arrays for non-empty values
-        const validation = validateBilingualArraySync(
-            newAttribute.values_en,
-            newAttribute.values_fr,
-            {
-                filterEmpty: true,
-                errorType: 'user',
-                customUserErrorMessage: 'Bilingual values must match in both languages',
-                allowEmpty: false
-            }
-        );
+        if (newAttribute.values_en.length === 0 || newAttribute.values_fr.length === 0) {
+            setAttributeError('At least one value is required in both languages');
+            return;
+        }
 
-        if (!validation.isValid) {
-            setAttributeError(validation.errorMessage || "Array synchronization failed.");
+        // Check that we have the same number of values in both languages
+        if (newAttribute.values_en.length !== newAttribute.values_fr.length) {
+            setAttributeError('The number of values must be the same in both languages');
             return;
         }
 
@@ -132,15 +80,15 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
             attributes: [...prev.attributes, {
                 name_en: newAttribute.name_en,
                 name_fr: newAttribute.name_fr,
-                values_en: validation.values_en!,
-                values_fr: validation.values_fr!
+                values_en: newAttribute.values_en,
+                values_fr: newAttribute.values_fr
             }]
         }));
         setNewAttribute({
             name_en: '',
             name_fr: '',
-            values_en: [''],
-            values_fr: ['']
+            values_en: [],
+            values_fr: []
         });
     };
 
@@ -225,60 +173,26 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
 
                             <div className="attribute-values">
                                 <div className="values-column">
-                                    <label>Values (English)</label>
-                                    {synchronizedAttributeValues.values_en.map((value, index) => (
-                                        <div key={index} className="value-input-row">
-                                            <input
-                                                type="text"
-                                                value={value}
-                                                onChange={(e) => updateAttributeValue(index, e.target.value, 'en')}
-                                                placeholder="e.g., Small"
-                                            />
-                                            {synchronizedAttributeValues.values_en.length > 1 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeAttributeValue(index)}
-                                                    className="remove-value-btn"
-                                                >
-                                                    Remove
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
+                                    <TagInput
+                                        tags={newAttribute.values_en}
+                                        onTagsChange={(tags) => setNewAttribute(prev => ({ ...prev, values_en: tags }))}
+                                        placeholder="Type value and press Enter (e.g., Small, Medium, Large)"
+                                        label="Values (English)"
+                                        id="values_en"
+                                    />
                                 </div>
                                 <div className="values-column">
-                                    <label>Values (French)</label>
-                                    {synchronizedAttributeValues.values_fr.map((value, index) => (
-                                        <div key={index} className="value-input-row">
-                                            <input
-                                                type="text"
-                                                value={value}
-                                                onChange={(e) => updateAttributeValue(index, e.target.value, 'fr')}
-                                                placeholder="e.g., Petit"
-                                            />
-                                            {synchronizedAttributeValues.values_fr.length > 1 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeAttributeValue(index)}
-                                                    className="remove-value-btn"
-                                                >
-                                                    Remove
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
+                                    <TagInput
+                                        tags={newAttribute.values_fr}
+                                        onTagsChange={(tags) => setNewAttribute(prev => ({ ...prev, values_fr: tags }))}
+                                        placeholder="Type value and press Enter (e.g., Petit, Moyen, Grand)"
+                                        label="Values (French)"
+                                        id="values_fr"
+                                    />
                                 </div>
                             </div>
 
                             <div className="attribute-actions">
-                                <button
-                                    type="button"
-                                    onClick={addAttributeValue}
-                                    className="add-value-btn"
-                                    disabled={isAddValueDisabled}
-                                >
-                                    Add Value
-                                </button>
                                 <button
                                     type="button"
                                     onClick={addAttribute}

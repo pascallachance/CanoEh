@@ -154,8 +154,8 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         
-        // Validate that at least one variant attribute has been added
-        if (formData.attributes.length === 0) {
+        // Validate that at least one variant attribute has been added (only in add mode)
+        if (formData.attributes.length === 0 && !editMode) {
             setAttributeError(REQUIRED_ATTRIBUTE_ERROR);
             return;
         }

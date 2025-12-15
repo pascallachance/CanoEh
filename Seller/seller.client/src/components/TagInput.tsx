@@ -19,8 +19,8 @@ function TagInput({ tags, onTagsChange, placeholder = 'Type and press Enter to a
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && inputValue.trim()) {
             e.preventDefault();
-            // Add the new tag if it's not already in the list
-            if (!tags.includes(inputValue.trim())) {
+            // Add the new tag if it's not already in the list (case-insensitive)
+            if (!tags.some(tag => tag.toLowerCase() === inputValue.trim().toLowerCase())) {
                 onTagsChange([...tags, inputValue.trim()]);
             }
             setInputValue('');

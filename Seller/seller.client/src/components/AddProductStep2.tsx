@@ -3,12 +3,13 @@ import './AddProductStep2.css';
 import { ApiClient } from '../utils/apiClient';
 import type { AddProductStep1Data } from './AddProductStep1';
 import StepIndicator from './StepIndicator';
+import TagInput from './TagInput';
 
 export interface BilingualItemAttribute {
     name_en: string;
     name_fr: string;
-    value_en: string;
-    value_fr: string;
+    value_en: string[];
+    value_fr: string[];
 }
 
 export interface AddProductStep2Data {
@@ -48,8 +49,8 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
     const [newItemAttribute, setNewItemAttribute] = useState({
         name_en: '',
         name_fr: '',
-        value_en: '',
-        value_fr: ''
+        value_en: [] as string[],
+        value_fr: [] as string[]
     });
 
     // Fetch categories on component mount
@@ -120,7 +121,7 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
 
     const addItemAttribute = () => {
         if (!newItemAttribute.name_en || !newItemAttribute.name_fr || 
-            !newItemAttribute.value_en || !newItemAttribute.value_fr) {
+            newItemAttribute.value_en.length === 0 || newItemAttribute.value_fr.length === 0) {
             return;
         }
 
@@ -131,8 +132,8 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
         setNewItemAttribute({
             name_en: '',
             name_fr: '',
-            value_en: '',
-            value_fr: ''
+            value_en: [],
+            value_fr: []
         });
     };
 
@@ -151,7 +152,7 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
     };
 
     const isAddAttributeDisabled = !newItemAttribute.name_en || !newItemAttribute.name_fr || 
-                                    !newItemAttribute.value_en || !newItemAttribute.value_fr;
+                                    newItemAttribute.value_en.length === 0 || newItemAttribute.value_fr.length === 0;
 
     return (
         <div className="add-product-step2-container">
@@ -207,12 +208,12 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
                                     />
                                 </div>
                                 <div className="attribute-input-group">
-                                    <label>Attribute Value (English)</label>
-                                    <input
-                                        type="text"
-                                        value={newItemAttribute.value_en}
-                                        onChange={(e) => setNewItemAttribute(prev => ({ ...prev, value_en: e.target.value }))}
-                                        placeholder="e.g., Nike"
+                                    <TagInput
+                                        tags={newItemAttribute.value_en}
+                                        onTagsChange={(tags) => setNewItemAttribute(prev => ({ ...prev, value_en: tags }))}
+                                        placeholder="Type value and press Enter (e.g., Nike)"
+                                        label="Attribute Values (English)"
+                                        id="value_en"
                                     />
                                 </div>
                                 <div className="attribute-input-group">
@@ -225,12 +226,12 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
                                     />
                                 </div>
                                 <div className="attribute-input-group">
-                                    <label>Attribute Value (French)</label>
-                                    <input
-                                        type="text"
-                                        value={newItemAttribute.value_fr}
-                                        onChange={(e) => setNewItemAttribute(prev => ({ ...prev, value_fr: e.target.value }))}
-                                        placeholder="e.g., Nike"
+                                    <TagInput
+                                        tags={newItemAttribute.value_fr}
+                                        onTagsChange={(tags) => setNewItemAttribute(prev => ({ ...prev, value_fr: tags }))}
+                                        placeholder="Type value and press Enter (e.g., Nike)"
+                                        label="Attribute Values (French)"
+                                        id="value_fr"
                                     />
                                 </div>
                             </div>
@@ -253,10 +254,10 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
                                         <div key={index} className="item-attribute-display">
                                             <div className="attribute-display-content">
                                                 <div className="attribute-lang-pair">
-                                                    <strong>EN:</strong> {attr.name_en} = {attr.value_en}
+                                                    <strong>EN:</strong> {attr.name_en} = {attr.value_en.join(', ')}
                                                 </div>
                                                 <div className="attribute-lang-pair">
-                                                    <strong>FR:</strong> {attr.name_fr} = {attr.value_fr}
+                                                    <strong>FR:</strong> {attr.name_fr} = {attr.value_fr.join(', ')}
                                                 </div>
                                             </div>
                                             <button

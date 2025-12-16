@@ -44,6 +44,9 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
     });
 
     const [attributeError, setAttributeError] = useState('');
+    
+    // State to track if we're editing an existing attribute
+    const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
     const addAttribute = () => {
         // Clear any previous error
@@ -66,10 +69,12 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
             return;
         }
 
-        // Check for duplicate attribute names (case-insensitive)
-        const isDuplicate = formData.attributes.some(attr =>
-            attr.name_en.toLowerCase() === newAttribute.name_en.toLowerCase() ||
-            attr.name_fr.toLowerCase() === newAttribute.name_fr.toLowerCase()
+        // Check for duplicate attribute names (case-insensitive), excluding the attribute being edited
+        const isDuplicate = formData.attributes.some((attr, index) =>
+            index !== editingIndex && (
+                attr.name_en.toLowerCase() === newAttribute.name_en.toLowerCase() ||
+                attr.name_fr.toLowerCase() === newAttribute.name_fr.toLowerCase()
+            )
         );
 
         if (isDuplicate) {
@@ -77,14 +82,31 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
             return;
         }
 
-        setFormData(prev => ({
-            ...prev,
-            attributes: [...prev.attributes, {
-                name_en: newAttribute.name_en,
-                name_fr: newAttribute.name_fr,
-                values: newAttribute.values
-            }]
-        }));
+        if (editingIndex !== null) {
+            // Update existing attribute
+            setFormData(prev => ({
+                ...prev,
+                attributes: prev.attributes.map((attr, i) =>
+                    i === editingIndex ? {
+                        name_en: newAttribute.name_en,
+                        name_fr: newAttribute.name_fr,
+                        values: newAttribute.values
+                    } : attr
+                )
+            }));
+            setEditingIndex(null);
+        } else {
+            // Add new attribute
+            setFormData(prev => ({
+                ...prev,
+                attributes: [...prev.attributes, {
+                    name_en: newAttribute.name_en,
+                    name_fr: newAttribute.name_fr,
+                    values: newAttribute.values
+                }]
+            }));
+        }
+        
         setNewAttribute({
             name_en: '',
             name_fr: '',
@@ -93,10 +115,49 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
     };
 
     const removeAttribute = (index: number) => {
+        // If we're editing this attribute, cancel the edit
+        if (editingIndex === index) {
+            setEditingIndex(null);
+            setNewAttribute({
+                name_en: '',
+                name_fr: '',
+                values: []
+            });
+            setAttributeError('');
+        } else if (editingIndex !== null && index < editingIndex) {
+            // Adjust editingIndex if removing an attribute before the one being edited
+            setEditingIndex(editingIndex - 1);
+        }
+        
         setFormData(prev => ({
             ...prev,
             attributes: prev.attributes.filter((_, i) => i !== index)
         }));
+    };
+    
+    const editAttribute = (index: number) => {
+        // If already editing a different attribute, confirm before switching
+        if (editingIndex !== null && editingIndex !== index) {
+            const confirmSwitch = window.confirm(
+                'You are currently editing another attribute. Switching will discard any unsaved changes to that attribute. Do you want to continue?'
+            );
+            if (!confirmSwitch) {
+                return;
+            }
+        }
+        
+        const attr = formData.attributes[index];
+        
+        // Clear any existing error messages
+        setAttributeError('');
+        
+        setNewAttribute({
+            name_en: attr.name_en,
+            name_fr: attr.name_fr,
+            values: attr.values
+        });
+        
+        setEditingIndex(index);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -189,8 +250,25 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
                                     onClick={addAttribute}
                                     className="add-attribute-btn"
                                 >
-                                    Add Attribute
+                                    {editingIndex !== null ? 'Update Attribute' : 'Add Attribute'}
                                 </button>
+                                {editingIndex !== null && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setEditingIndex(null);
+                                            setNewAttribute({
+                                                name_en: '',
+                                                name_fr: '',
+                                                values: []
+                                            });
+                                            setAttributeError('');
+                                        }}
+                                        className="cancel-edit-btn"
+                                    >
+                                        Cancel
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -200,21 +278,30 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
                                 {formData.attributes.map((attr, index) => (
                                     <div key={index} className="attribute-display">
                                         <div className="attribute-info">
-                                            <div className="attribute-name">
-                                                <strong>EN:</strong> {attr.name_en} | <strong>FR:</strong> {attr.name_fr}
+                                            <div className="attribute-lang-pair">
+                                                (en) {attr.name_en}: {attr.values.map(v => v.en).join(',')}
                                             </div>
-                                            <div className="attribute-values-display">
-                                                <div><strong>EN values:</strong> {attr.values.map(v => v.en).join(', ')}</div>
-                                                <div><strong>FR values:</strong> {attr.values.map(v => v.fr).join(', ')}</div>
+                                            <div className="attribute-lang-pair">
+                                                (fr) {attr.name_fr}: {attr.values.map(v => v.fr).join(',')}
                                             </div>
                                         </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => removeAttribute(index)}
-                                            className="remove-attribute-btn"
-                                        >
-                                            Remove
-                                        </button>
+                                        <div className="attribute-action-buttons">
+                                            <button
+                                                type="button"
+                                                onClick={() => editAttribute(index)}
+                                                className="edit-attribute-btn"
+                                                disabled={editingIndex === index}
+                                            >
+                                                {editingIndex === index ? 'Editing...' : 'Edit'}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeAttribute(index)}
+                                                className="remove-attribute-btn"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

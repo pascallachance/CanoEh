@@ -211,6 +211,22 @@
     background: #2980b9;
 }
 
+.cancel-edit-btn {
+    padding: 10px 20px;
+    background: #95a5a6;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.cancel-edit-btn:hover {
+    background: #7f8c8d;
+}
+
 .added-attributes {
     margin-top: 1.5rem;
     padding-top: 1.5rem;
@@ -235,6 +251,7 @@
 
 .attribute-info {
     flex: 1;
+    text-align: left;
 }
 
 .attribute-name {
@@ -250,6 +267,40 @@
 
 .attribute-values-display div {
     margin-bottom: 0.25rem;
+}
+
+.attribute-lang-pair {
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+    color: #495057;
+    text-align: left;
+}
+
+.attribute-action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.edit-attribute-btn {
+    padding: 6px 12px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    white-space: nowrap;
+}
+
+.edit-attribute-btn:hover:not(:disabled) {
+    background: #2980b9;
+}
+
+.edit-attribute-btn:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
 }
 
 .remove-attribute-btn {

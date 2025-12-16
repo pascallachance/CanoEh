@@ -101,15 +101,19 @@ function BilingualTagInput({
             const trimmedEn = inputValueEn.trim();
             const trimmedFr = inputValueFr.trim();
             
+            // If both inputs have values, add the pair (like Enter does)
+            if (trimmedEn && trimmedFr) {
+                e.preventDefault();
+                addValue();
+            }
             // If EN has value but FR is empty, move focus to FR input
-            if (trimmedEn && !trimmedFr) {
+            else if (trimmedEn && !trimmedFr) {
                 e.preventDefault();
                 if (inputRefFr.current) {
                     inputRefFr.current.focus();
                 }
             }
             // If both inputs are empty, allow default Tab behavior to navigate away
-            // If both have values, allow default Tab to move to FR input naturally
         } else if (e.key === 'Backspace' && !inputValueEn) {
             // Only prevent default and remove last value when input is empty
             e.preventDefault();

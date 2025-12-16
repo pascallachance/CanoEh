@@ -3,7 +3,7 @@ import './AddProductStep2.css';
 import { ApiClient } from '../utils/apiClient';
 import type { AddProductStep1Data } from './AddProductStep1';
 import StepIndicator from './StepIndicator';
-import TagInput from './TagInput';
+import BilingualTagInput, { type BilingualValue } from './BilingualTagInput';
 
 export interface BilingualItemAttribute {
     name_en: string;
@@ -49,8 +49,7 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
     const [newItemAttribute, setNewItemAttribute] = useState({
         name_en: '',
         name_fr: '',
-        value_en: [] as string[],
-        value_fr: [] as string[]
+        values: [] as BilingualValue[]
     });
 
     // Fetch categories on component mount
@@ -121,19 +120,27 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
 
     const addItemAttribute = () => {
         if (!newItemAttribute.name_en || !newItemAttribute.name_fr || 
-            newItemAttribute.value_en.length === 0 || newItemAttribute.value_fr.length === 0) {
+            newItemAttribute.values.length === 0) {
             return;
         }
 
+        // Convert BilingualValue[] to separate arrays for storage
+        const value_en = newItemAttribute.values.map(v => v.en);
+        const value_fr = newItemAttribute.values.map(v => v.fr);
+
         setFormData(prev => ({
             ...prev,
-            itemAttributes: [...prev.itemAttributes, { ...newItemAttribute }]
+            itemAttributes: [...prev.itemAttributes, {
+                name_en: newItemAttribute.name_en,
+                name_fr: newItemAttribute.name_fr,
+                value_en,
+                value_fr
+            }]
         }));
         setNewItemAttribute({
             name_en: '',
             name_fr: '',
-            value_en: [],
-            value_fr: []
+            values: []
         });
     };
 
@@ -152,7 +159,7 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
     };
 
     const isAddAttributeDisabled = !newItemAttribute.name_en || !newItemAttribute.name_fr || 
-                                    newItemAttribute.value_en.length === 0 || newItemAttribute.value_fr.length === 0;
+                                    newItemAttribute.values.length === 0;
 
     return (
         <div className="add-product-step2-container">
@@ -197,54 +204,50 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
                                 Add attributes that apply to all variants of this item (e.g., Brand, Material, Warranty).
                             </p>
                             
-                            <div className="attribute-input-grid">
-                                <div className="attribute-input-group">
-                                    <label>Attribute Name (English)</label>
-                                    <input
-                                        type="text"
-                                        value={newItemAttribute.name_en}
-                                        onChange={(e) => setNewItemAttribute(prev => ({ ...prev, name_en: e.target.value }))}
-                                        placeholder="e.g., Brand"
+                            <div className="attribute-input-container">
+                                <div className="attribute-names">
+                                    <div className="attribute-input-group">
+                                        <label>Attribute Name (English)</label>
+                                        <input
+                                            type="text"
+                                            value={newItemAttribute.name_en}
+                                            onChange={(e) => setNewItemAttribute(prev => ({ ...prev, name_en: e.target.value }))}
+                                            placeholder="e.g., Brand"
+                                        />
+                                    </div>
+                                    <div className="attribute-input-group">
+                                        <label>Attribute Name (French)</label>
+                                        <input
+                                            type="text"
+                                            value={newItemAttribute.name_fr}
+                                            onChange={(e) => setNewItemAttribute(prev => ({ ...prev, name_fr: e.target.value }))}
+                                            placeholder="e.g., Marque"
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div className="attribute-values">
+                                    <BilingualTagInput
+                                        values={newItemAttribute.values}
+                                        onValuesChange={(values) => setNewItemAttribute(prev => ({ ...prev, values }))}
+                                        placeholderEn="e.g., Nike"
+                                        placeholderFr="e.g., Nike"
+                                        labelEn="Values (English)"
+                                        labelFr="Values (French)"
+                                        id="attribute_values"
                                     />
                                 </div>
-                                <div className="attribute-input-group">
-                                    <TagInput
-                                        tags={newItemAttribute.value_en}
-                                        onTagsChange={(tags) => setNewItemAttribute(prev => ({ ...prev, value_en: tags }))}
-                                        placeholder="Type value and press Enter (e.g., Nike)"
-                                        label="Attribute Values (English)"
-                                        id="value_en"
-                                    />
+                                
+                                <div className="attribute-actions">
+                                    <button
+                                        type="button"
+                                        onClick={addItemAttribute}
+                                        className="add-attribute-btn"
+                                        disabled={isAddAttributeDisabled}
+                                    >
+                                        Add Attribute
+                                    </button>
                                 </div>
-                                <div className="attribute-input-group">
-                                    <label>Attribute Name (French)</label>
-                                    <input
-                                        type="text"
-                                        value={newItemAttribute.name_fr}
-                                        onChange={(e) => setNewItemAttribute(prev => ({ ...prev, name_fr: e.target.value }))}
-                                        placeholder="e.g., Marque"
-                                    />
-                                </div>
-                                <div className="attribute-input-group">
-                                    <TagInput
-                                        tags={newItemAttribute.value_fr}
-                                        onTagsChange={(tags) => setNewItemAttribute(prev => ({ ...prev, value_fr: tags }))}
-                                        placeholder="Type value and press Enter (e.g., Nike)"
-                                        label="Attribute Values (French)"
-                                        id="value_fr"
-                                    />
-                                </div>
-                            </div>
-                            
-                            <div className="attribute-actions">
-                                <button
-                                    type="button"
-                                    onClick={addItemAttribute}
-                                    className="add-attribute-btn"
-                                    disabled={isAddAttributeDisabled}
-                                >
-                                    Add Attribute
-                                </button>
                             </div>
 
                             {formData.itemAttributes.length > 0 && (

@@ -111,10 +111,18 @@
     margin-bottom: 1.5rem;
 }
 
-.attribute-input-grid {
+.attribute-input-container {
+    margin-bottom: 1rem;
+}
+
+.attribute-names {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr 1fr;
     gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.attribute-values {
     margin-bottom: 1rem;
 }
 
@@ -282,7 +290,7 @@
         font-size: 24px;
     }
     
-    .attribute-input-grid {
+    .attribute-names {
         grid-template-columns: 1fr;
     }
 }

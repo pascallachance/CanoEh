@@ -136,6 +136,12 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
     };
     
     const editAttribute = (index: number) => {
+        // Prevent switching to edit a different attribute while already editing another
+        if (editingIndex !== null && editingIndex !== index) {
+            setAttributeError('Please complete or cancel the current edit before editing another attribute.');
+            return;
+        }
+        
         const attr = formData.attributes[index];
         
         // Clear any existing error messages

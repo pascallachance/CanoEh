@@ -82,12 +82,7 @@ function BilingualTagInput({
     };
 
     const handleKeyDownEn = (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' || e.key === 'Tab') {
-            // Note: We prevent Tab's default behavior here to provide smart navigation
-            // between bilingual inputs. This is a specialized input for paired EN/FR values,
-            // where maintaining value synchronization is critical. Users can still navigate
-            // away from the component using mouse/click or by leaving both inputs empty and
-            // pressing Tab to move to the next form element.
+        if (e.key === 'Enter') {
             e.preventDefault();
             const trimmedEn = inputValueEn.trim();
             const trimmedFr = inputValueFr.trim();
@@ -101,6 +96,20 @@ function BilingualTagInput({
                 // If both have values or both are empty, try to add the value
                 addValue();
             }
+        } else if (e.key === 'Tab' && !e.shiftKey) {
+            // Handle Tab key for smart navigation while preserving accessibility
+            const trimmedEn = inputValueEn.trim();
+            const trimmedFr = inputValueFr.trim();
+            
+            // If EN has value but FR is empty, move focus to FR input
+            if (trimmedEn && !trimmedFr) {
+                e.preventDefault();
+                if (inputRefFr.current) {
+                    inputRefFr.current.focus();
+                }
+            }
+            // If both inputs are empty, allow default Tab behavior to navigate away
+            // If both have values, allow default Tab to move to FR input naturally
         } else if (e.key === 'Backspace' && !inputValueEn) {
             // Only prevent default and remove last value when input is empty
             e.preventDefault();
@@ -109,11 +118,7 @@ function BilingualTagInput({
     };
 
     const handleKeyDownFr = (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' || e.key === 'Tab') {
-            // Note: We prevent Tab's default behavior to implement smart navigation that
-            // adds the paired value and returns focus to EN input for rapid data entry.
-            // This matches the requirement for bilingual value pairs where Tab should
-            // behave like Enter for efficient keyboard-only workflows.
+        if (e.key === 'Enter') {
             e.preventDefault();
             const trimmedEn = inputValueEn.trim();
             const trimmedFr = inputValueFr.trim();
@@ -127,6 +132,18 @@ function BilingualTagInput({
                 // If both have values or both are empty, try to add the value
                 addValue();
             }
+        } else if (e.key === 'Tab' && !e.shiftKey) {
+            // Handle Tab key to add paired value and return to EN input for rapid entry
+            const trimmedEn = inputValueEn.trim();
+            const trimmedFr = inputValueFr.trim();
+            
+            // If both inputs have values, add the pair and return to EN input
+            if (trimmedEn && trimmedFr) {
+                e.preventDefault();
+                addValue();
+            }
+            // If both inputs are empty, allow default Tab to navigate to next form element
+            // If FR has value but EN is empty, allow default Tab to move forward
         } else if (e.key === 'Backspace' && !inputValueFr) {
             // Only prevent default and remove last value when input is empty
             e.preventDefault();

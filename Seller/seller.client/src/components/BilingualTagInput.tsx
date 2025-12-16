@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent, type ChangeEvent } from 'react';
+import { useState, useRef, type KeyboardEvent, type ChangeEvent } from 'react';
 import './BilingualTagInput.css';
 
 export interface BilingualValue {
@@ -28,6 +28,7 @@ function BilingualTagInput({
     const [inputValueEn, setInputValueEn] = useState('');
     const [inputValueFr, setInputValueFr] = useState('');
     const [error, setError] = useState('');
+    const inputRefEn = useRef<HTMLInputElement>(null);
 
     const handleInputChangeEn = (e: ChangeEvent<HTMLInputElement>) => {
         setInputValueEn(e.target.value);
@@ -63,6 +64,14 @@ function BilingualTagInput({
         setInputValueEn('');
         setInputValueFr('');
         setError('');
+        
+        // Focus the English input field to be ready for the next value
+        // Use setTimeout to ensure the focus occurs after the DOM has been updated
+        setTimeout(() => {
+            if (inputRefEn.current) {
+                inputRefEn.current.focus();
+            }
+        }, 0);
     };
 
     const handleRemoveLastValue = () => {
@@ -168,6 +177,7 @@ function BilingualTagInput({
                             onKeyDown={handleKeyDownEn}
                             placeholder={placeholderEn}
                             className="bilingual-tag-input-field"
+                            ref={inputRefEn}
                         />
                     </div>
                 </div>

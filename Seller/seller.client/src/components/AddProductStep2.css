@@ -130,7 +130,7 @@
     font-size: 0.9rem;
 }
 
-.attribute-input-group input {
+.attribute-input-group input[type="text"] {
     padding: 10px 12px;
     border: 2px solid #e1e1e1;
     border-radius: 5px;
@@ -139,10 +139,21 @@
     box-sizing: border-box;
 }
 
-.attribute-input-group input:focus {
+/* Tag input field should have no border - the wrapper provides the border */
+.attribute-input-group input[type="text"].tag-input-field {
+    border: none;
+}
+
+.attribute-input-group input[type="text"]:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.attribute-input-group input[type="text"].tag-input-field:focus {
+    outline: none;
+    border: none;
+    box-shadow: none;
 }
 
 .attribute-actions {

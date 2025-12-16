@@ -137,7 +137,7 @@ function BilingualTagInput({
                 addValue();
             }
         } else if (e.key === 'Tab' && !e.shiftKey) {
-            // Handle Tab key to add paired value and return to EN input for rapid entry
+            // Handle Tab key to match Enter behavior for consistency
             const trimmedEn = inputValueEn.trim();
             const trimmedFr = inputValueFr.trim();
             
@@ -146,8 +146,14 @@ function BilingualTagInput({
                 e.preventDefault();
                 addValue();
             }
+            // If FR has value but EN is empty, move focus to EN input
+            else if (trimmedFr && !trimmedEn) {
+                e.preventDefault();
+                if (inputRefEn.current) {
+                    inputRefEn.current.focus();
+                }
+            }
             // If both inputs are empty, allow default Tab to navigate to next form element
-            // If FR has value but EN is empty, allow default Tab to move forward
         } else if (e.key === 'Backspace' && !inputValueFr) {
             // Only prevent default and remove last value when input is empty
             e.preventDefault();

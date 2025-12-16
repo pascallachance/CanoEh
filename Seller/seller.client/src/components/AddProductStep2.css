@@ -139,6 +139,7 @@
     box-sizing: border-box;
 }
 
+/* Tag input field should have no border - the wrapper provides the border */
 .attribute-input-group .tag-input-field {
     border: none;
 }

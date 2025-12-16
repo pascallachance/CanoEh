@@ -19,8 +19,7 @@
     border: 2px solid #e1e1e1;
     border-radius: 5px;
     background: white;
-    min-height: 42px;
-    max-height: 42px;
+    height: 42px;
     transition: border-color 0.3s ease;
     box-sizing: border-box;
     overflow: hidden;

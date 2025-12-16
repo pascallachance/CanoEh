@@ -174,6 +174,9 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
                 name_fr: '',
                 values: []
             });
+        } else if (editingIndex !== null && index < editingIndex) {
+            // Adjust editingIndex if removing an attribute before the one being edited
+            setEditingIndex(editingIndex - 1);
         }
         
         setFormData(prev => ({

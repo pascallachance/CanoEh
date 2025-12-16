@@ -123,6 +123,10 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
                 name_fr: '',
                 values: []
             });
+            setAttributeError('');
+        } else if (editingIndex !== null && index < editingIndex) {
+            // Adjust editingIndex if removing an attribute before the one being edited
+            setEditingIndex(editingIndex - 1);
         }
         
         setFormData(prev => ({
@@ -133,6 +137,9 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
     
     const editAttribute = (index: number) => {
         const attr = formData.attributes[index];
+        
+        // Clear any existing error messages
+        setAttributeError('');
         
         setNewAttribute({
             name_en: attr.name_en,
@@ -245,6 +252,7 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
                                                 name_fr: '',
                                                 values: []
                                             });
+                                            setAttributeError('');
                                         }}
                                         className="cancel-edit-btn"
                                     >

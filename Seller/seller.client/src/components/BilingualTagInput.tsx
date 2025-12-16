@@ -19,8 +19,8 @@ interface BilingualTagInputProps {
 function BilingualTagInput({ 
     values, 
     onValuesChange, 
-    placeholderEn = 'Type English value and press Enter',
-    placeholderFr = 'Type French value and press Enter',
+    placeholderEn = 'Type English value and press Enter or Tab',
+    placeholderFr = 'Type French value and press Enter or Tab',
     labelEn = 'Values (English)',
     labelFr = 'Values (French)',
     id 
@@ -96,13 +96,28 @@ function BilingualTagInput({
                 // If both have values or both are empty, try to add the value
                 addValue();
             }
+        } else if (e.key === 'Tab' && !e.shiftKey) {
+            // Handle Tab key for smart navigation while preserving accessibility
+            const trimmedEn = inputValueEn.trim();
+            const trimmedFr = inputValueFr.trim();
+            
+            // If both inputs have values, add the pair (like Enter does)
+            if (trimmedEn && trimmedFr) {
+                e.preventDefault();
+                addValue();
+            }
+            // If EN has value but FR is empty, move focus to FR input
+            else if (trimmedEn && !trimmedFr) {
+                e.preventDefault();
+                if (inputRefFr.current) {
+                    inputRefFr.current.focus();
+                }
+            }
+            // If both inputs are empty, allow default Tab behavior to navigate away
         } else if (e.key === 'Backspace' && !inputValueEn) {
             // Only prevent default and remove last value when input is empty
             e.preventDefault();
             handleRemoveLastValue();
-        } else if (e.key === 'Tab') {
-            // Allow tab to move to French input
-            return;
         }
     };
 
@@ -121,6 +136,24 @@ function BilingualTagInput({
                 // If both have values or both are empty, try to add the value
                 addValue();
             }
+        } else if (e.key === 'Tab' && !e.shiftKey) {
+            // Handle Tab key to match Enter behavior for consistency
+            const trimmedEn = inputValueEn.trim();
+            const trimmedFr = inputValueFr.trim();
+            
+            // If both inputs have values, add the pair and return to EN input
+            if (trimmedEn && trimmedFr) {
+                e.preventDefault();
+                addValue();
+            }
+            // If FR has value but EN is empty, move focus to EN input
+            else if (trimmedFr && !trimmedEn) {
+                e.preventDefault();
+                if (inputRefEn.current) {
+                    inputRefEn.current.focus();
+                }
+            }
+            // If both inputs are empty, allow default Tab to navigate to next form element
         } else if (e.key === 'Backspace' && !inputValueFr) {
             // Only prevent default and remove last value when input is empty
             e.preventDefault();
@@ -266,7 +299,7 @@ function BilingualTagInput({
                 </div>
             )}
             <div className="bilingual-tag-input-help">
-                <p><strong>Note:</strong> Fill both English and French inputs, then press Enter to add a paired value. Both values are always added, edited, or removed together to maintain synchronization.</p>
+                <p><strong>Note:</strong> Fill both English and French inputs, then press Enter or Tab to add a paired value. Both values are always added, edited, or removed together to maintain synchronization.</p>
             </div>
         </div>
     );

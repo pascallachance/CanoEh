@@ -140,7 +140,7 @@
 }
 
 /* Tag input field should have no border - the wrapper provides the border */
-.attribute-input-group .tag-input-field {
+.attribute-input-group input[type="text"].tag-input-field {
     border: none;
 }
 
@@ -150,7 +150,7 @@
     box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
 }
 
-.attribute-input-group .tag-input-field:focus {
+.attribute-input-group input[type="text"].tag-input-field:focus {
     outline: none;
     border: none;
     box-shadow: none;

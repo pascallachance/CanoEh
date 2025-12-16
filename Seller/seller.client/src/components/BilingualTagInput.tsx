@@ -66,9 +66,12 @@ function BilingualTagInput({
         setError('');
         
         // Focus the English input field to be ready for the next value
-        if (inputRefEn.current) {
-            inputRefEn.current.focus();
-        }
+        // Use setTimeout to ensure the focus occurs after the DOM has been updated
+        setTimeout(() => {
+            if (inputRefEn.current) {
+                inputRefEn.current.focus();
+            }
+        }, 0);
     };
 
     const handleRemoveLastValue = () => {

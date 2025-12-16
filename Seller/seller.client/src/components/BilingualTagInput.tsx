@@ -29,6 +29,7 @@ function BilingualTagInput({
     const [inputValueFr, setInputValueFr] = useState('');
     const [error, setError] = useState('');
     const inputRefEn = useRef<HTMLInputElement>(null);
+    const inputRefFr = useRef<HTMLInputElement>(null);
 
     const handleInputChangeEn = (e: ChangeEvent<HTMLInputElement>) => {
         setInputValueEn(e.target.value);
@@ -83,7 +84,18 @@ function BilingualTagInput({
     const handleKeyDownEn = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            addValue();
+            const trimmedEn = inputValueEn.trim();
+            const trimmedFr = inputValueFr.trim();
+            
+            // If EN has value but FR is empty, move focus to FR input
+            if (trimmedEn && !trimmedFr) {
+                if (inputRefFr.current) {
+                    inputRefFr.current.focus();
+                }
+            } else {
+                // If both have values or both are empty, try to add the value
+                addValue();
+            }
         } else if (e.key === 'Backspace' && !inputValueEn) {
             // Only prevent default and remove last value when input is empty
             e.preventDefault();
@@ -97,7 +109,18 @@ function BilingualTagInput({
     const handleKeyDownFr = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            addValue();
+            const trimmedEn = inputValueEn.trim();
+            const trimmedFr = inputValueFr.trim();
+            
+            // If FR has value but EN is empty, move focus to EN input
+            if (trimmedFr && !trimmedEn) {
+                if (inputRefEn.current) {
+                    inputRefEn.current.focus();
+                }
+            } else {
+                // If both have values or both are empty, try to add the value
+                addValue();
+            }
         } else if (e.key === 'Backspace' && !inputValueFr) {
             // Only prevent default and remove last value when input is empty
             e.preventDefault();
@@ -232,6 +255,7 @@ function BilingualTagInput({
                             onKeyDown={handleKeyDownFr}
                             placeholder={placeholderFr}
                             className="bilingual-tag-input-field"
+                            ref={inputRefFr}
                         />
                     </div>
                 </div>

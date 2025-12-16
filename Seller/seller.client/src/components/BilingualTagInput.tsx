@@ -19,8 +19,8 @@ interface BilingualTagInputProps {
 function BilingualTagInput({ 
     values, 
     onValuesChange, 
-    placeholderEn = 'Type English value and press Enter',
-    placeholderFr = 'Type French value and press Enter',
+    placeholderEn = 'Type English value and press Enter or Tab',
+    placeholderFr = 'Type French value and press Enter or Tab',
     labelEn = 'Values (English)',
     labelFr = 'Values (French)',
     id 
@@ -263,7 +263,7 @@ function BilingualTagInput({
                 </div>
             )}
             <div className="bilingual-tag-input-help">
-                <p><strong>Note:</strong> Fill both English and French inputs, then press Enter to add a paired value. Both values are always added, edited, or removed together to maintain synchronization.</p>
+                <p><strong>Note:</strong> Fill both English and French inputs, then press Enter or Tab to add a paired value. Both values are always added, edited, or removed together to maintain synchronization.</p>
             </div>
         </div>
     );

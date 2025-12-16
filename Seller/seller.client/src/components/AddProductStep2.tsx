@@ -186,11 +186,14 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
     };
     
     const editItemAttribute = (index: number) => {
-        // Prevent switching to edit a different attribute while already editing another
+        // If already editing a different attribute, confirm before switching
         if (editingIndex !== null && editingIndex !== index) {
-            // For Step 2, we don't have an error state, so we'll just silently prevent the switch
-            // The UI will show the current attribute as "Editing..." to indicate it's locked
-            return;
+            const confirmSwitch = window.confirm(
+                'You are currently editing another attribute. Switching will discard any unsaved changes to that attribute. Do you want to continue?'
+            );
+            if (!confirmSwitch) {
+                return;
+            }
         }
         
         const attr = formData.itemAttributes[index];

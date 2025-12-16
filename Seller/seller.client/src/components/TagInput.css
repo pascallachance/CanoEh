@@ -22,6 +22,7 @@
     height: 42px;
     transition: border-color 0.3s ease;
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 .tag-input-wrapper:focus-within {
@@ -80,8 +81,8 @@
     font-size: 14px;
     background: transparent;
     line-height: 1.5;
+    height: 100%;
 }
-
 .tag-input-field::placeholder {
     color: #999;
 }

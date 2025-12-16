@@ -15,11 +15,11 @@
     flex-wrap: nowrap;
     align-items: center;
     gap: 0.5rem;
-    padding: 10px 12px;
+    padding: 6px 12px;
     border: 2px solid #e1e1e1;
     border-radius: 5px;
     background: white;
-    min-height: 42px;
+    min-height: 40px;
     transition: border-color 0.3s ease;
     box-sizing: border-box;
     overflow: hidden;

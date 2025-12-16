@@ -82,7 +82,7 @@ function BilingualTagInput({
     };
 
     const handleKeyDownEn = (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' || e.key === 'Tab') {
             e.preventDefault();
             const trimmedEn = inputValueEn.trim();
             const trimmedFr = inputValueFr.trim();
@@ -100,14 +100,11 @@ function BilingualTagInput({
             // Only prevent default and remove last value when input is empty
             e.preventDefault();
             handleRemoveLastValue();
-        } else if (e.key === 'Tab') {
-            // Allow tab to move to French input
-            return;
         }
     };
 
     const handleKeyDownFr = (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' || e.key === 'Tab') {
             e.preventDefault();
             const trimmedEn = inputValueEn.trim();
             const trimmedFr = inputValueFr.trim();

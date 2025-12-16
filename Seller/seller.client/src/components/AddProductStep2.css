@@ -46,7 +46,7 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.5rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 .form-group {
@@ -97,7 +97,7 @@
     background: #f8f9fa;
     padding: 1.5rem;
     border-radius: 8px;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
 }
 
 .item-attributes-section h4 {
@@ -112,7 +112,7 @@
 }
 
 .attribute-input-container {
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .attribute-names {
@@ -209,8 +209,8 @@
 }
 
 .added-item-attributes {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
     border-top: 1px solid #dee2e6;
 }
 
@@ -294,7 +294,7 @@
     justify-content: center;
     padding-top: 20px;
     border-top: 1px solid #e1e1e1;
-    margin-top: 25px;
+    margin-top: 15px;
 }
 
 .back-btn,

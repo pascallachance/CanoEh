@@ -20,8 +20,8 @@ The component includes inline SVG fallbacks that will only show if the files fai
 ## File Verification
 
 To verify the file contents:
-- Canadian flag has red (#f00) and white (#fff) colors with a maple leaf shape
-- Quebec flag has blue (#003F87) background with white cross and fleur-de-lis symbols
+- Canadian flag has red (#FF0000) and white (#FFFFFF) colors with a maple leaf shape
+- Quebec flag has blue (#003F87) background with white (#FFFFFF) cross and fleur-de-lis symbols
 
 ## Troubleshooting
 

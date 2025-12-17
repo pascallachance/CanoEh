@@ -21,6 +21,7 @@ export interface AddProductStep3Data {
 interface AddProductStep3Props {
     onNext: (data: AddProductStep3Data) => void;
     onBack: () => void;
+    onCancel: () => void;
     step1Data: AddProductStep1Data;
     step2Data: AddProductStep2Data;
     initialData?: AddProductStep3Data;
@@ -29,7 +30,7 @@ interface AddProductStep3Props {
     completedSteps?: number[];
 }
 
-function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep3Props) {
+function AddProductStep3({ onNext, onBack, onCancel, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep3Props) {
     // Constants for validation messages
     const REQUIRED_ATTRIBUTE_ERROR = 'Please add at least one variant attribute to continue.';
     
@@ -52,13 +53,13 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
     useEffect(() => {
         const handleEscape = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
-                onBack();
+                onCancel();
             }
         };
 
         document.addEventListener('keydown', handleEscape);
         return () => document.removeEventListener('keydown', handleEscape);
-    }, [onBack]);
+    }, [onCancel]);
 
     const addAttribute = () => {
         // Clear any previous error

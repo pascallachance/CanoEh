@@ -20,6 +20,7 @@ export interface AddProductStep2Data {
 interface AddProductStep2Props {
     onNext: (data: AddProductStep2Data) => void;
     onBack: () => void;
+    onCancel: () => void;
     step1Data: AddProductStep1Data;
     initialData?: AddProductStep2Data;
     editMode?: boolean;
@@ -36,7 +37,7 @@ interface Category {
     updatedAt?: string;
 }
 
-function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep2Props) {
+function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep2Props) {
     const [formData, setFormData] = useState<AddProductStep2Data>(initialData || {
         categoryId: '',
         itemAttributes: []
@@ -107,13 +108,13 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
     useEffect(() => {
         const handleEscape = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
-                onBack();
+                onCancel();
             }
         };
 
         document.addEventListener('keydown', handleEscape);
         return () => document.removeEventListener('keydown', handleEscape);
-    }, [onBack]);
+    }, [onCancel]);
 
     const validateForm = (): boolean => {
         const newErrors: { categoryId?: string } = {};

@@ -484,6 +484,7 @@ function AppContent() {
                         <AddProductStep2
                             onNext={handleProductStep2Next}
                             onBack={handleProductStep2Back}
+                            onCancel={handleProductStep1Cancel}
                             step1Data={productStep1Data}
                             initialData={productStep2Data || undefined}
                         />
@@ -498,6 +499,7 @@ function AppContent() {
                         <AddProductStep3
                             onNext={handleProductStep3Next}
                             onBack={handleProductStep3Back}
+                            onCancel={handleProductStep1Cancel}
                             step1Data={productStep1Data}
                             step2Data={productStep2Data}
                             initialData={productStep3Data || undefined}
@@ -513,6 +515,7 @@ function AppContent() {
                         <AddProductStep4
                             onSubmit={handleProductSubmit}
                             onBack={handleProductStep4Back}
+                            onCancel={handleProductStep1Cancel}
                             step1Data={productStep1Data}
                             step2Data={productStep2Data}
                             step3Data={productStep3Data}
@@ -545,6 +548,7 @@ function AppContent() {
                         <AddProductStep2
                             onNext={handleEditProductStep2Next}
                             onBack={handleEditProductStep2Back}
+                            onCancel={handleEditProductStep1Cancel}
                             step1Data={editProductStep1Data}
                             initialData={editProductStep2Data}
                             editMode={true}
@@ -562,6 +566,7 @@ function AppContent() {
                         <AddProductStep3
                             onNext={handleEditProductStep3Next}
                             onBack={handleEditProductStep3Back}
+                            onCancel={handleEditProductStep1Cancel}
                             step1Data={editProductStep1Data}
                             step2Data={editProductStep2Data}
                             initialData={editProductStep3Data}
@@ -580,6 +585,7 @@ function AppContent() {
                         <AddProductStep4
                             onSubmit={handleEditProductSubmit}
                             onBack={handleEditProductStep4Back}
+                            onCancel={handleEditProductStep1Cancel}
                             step1Data={editProductStep1Data}
                             step2Data={editProductStep2Data}
                             step3Data={editProductStep3Data}

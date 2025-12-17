@@ -15,7 +15,7 @@ function FlagIcon({ language, className = '' }: FlagIconProps) {
     const ariaLabel = language === 'en' ? 'English' : 'French';
     
     if (language === 'en') {
-        // UK Flag (simplified)
+        // Canadian Flag (simplified)
         return (
             <svg
                 className={className}
@@ -27,11 +27,14 @@ function FlagIcon({ language, className = '' }: FlagIconProps) {
                 role="img"
                 aria-label={ariaLabel}
             >
-                <rect width="20" height="15" fill="#012169" />
-                <path d="M 0,0 L 20,15 M 20,0 L 0,15" stroke="#fff" strokeWidth="3" />
-                <path d="M 0,0 L 20,15 M 20,0 L 0,15" stroke="#C8102E" strokeWidth="2" />
-                <path d="M 10,0 L 10,15 M 0,7.5 L 20,7.5" stroke="#fff" strokeWidth="5" />
-                <path d="M 10,0 L 10,15 M 0,7.5 L 20,7.5" stroke="#C8102E" strokeWidth="3" />
+                {/* Red bars on left and right */}
+                <rect width="5" height="15" x="0" fill="#FF0000" />
+                <rect width="5" height="15" x="15" fill="#FF0000" />
+                {/* White center */}
+                <rect width="10" height="15" x="5" fill="#FFFFFF" />
+                {/* Simplified maple leaf in center */}
+                <path d="M 10,4 L 10.5,6 L 12,6.5 L 10.5,7 L 10.8,8.5 L 10,7.5 L 9.2,8.5 L 9.5,7 L 8,6.5 L 9.5,6 Z" fill="#FF0000" />
+                <rect width="0.8" height="3" x="9.6" y="8" fill="#FF0000" />
             </svg>
         );
     } else {

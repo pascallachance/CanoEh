@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './AddProductStep3.css';
 import type { AddProductStep1Data } from './AddProductStep1';
 import type { AddProductStep2Data } from './AddProductStep2';
@@ -21,6 +21,7 @@ export interface AddProductStep3Data {
 interface AddProductStep3Props {
     onNext: (data: AddProductStep3Data) => void;
     onBack: () => void;
+    onCancel: () => void;
     step1Data: AddProductStep1Data;
     step2Data: AddProductStep2Data;
     initialData?: AddProductStep3Data;
@@ -29,7 +30,7 @@ interface AddProductStep3Props {
     completedSteps?: number[];
 }
 
-function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep3Props) {
+function AddProductStep3({ onNext, onBack, onCancel, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep3Props) {
     // Constants for validation messages
     const REQUIRED_ATTRIBUTE_ERROR = 'Please add at least one variant attribute to continue.';
     
@@ -47,6 +48,20 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
     
     // State to track if we're editing an existing attribute
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
+    // Handle escape key to cancel
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            const target = event.target as HTMLElement;
+            const isInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+            if (event.key === 'Escape' && !isInputField) {
+                onCancel();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+        return () => document.removeEventListener('keydown', handleEscape);
+    }, [onCancel]);
 
     const addAttribute = () => {
         // Clear any previous error
@@ -313,7 +328,7 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
                             Back
                         </button>
                         <button type="submit" className="next-btn">
-                            {formData.attributes.length > 0 ? 'Generate Variants' : 'Add Attribute to Continue'}
+                            Next Step
                         </button>
                     </div>
                 </form>

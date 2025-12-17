@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './AddProductStep1.css';
 import StepIndicator from './StepIndicator';
 
@@ -27,6 +27,20 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onSt
     });
 
     const [errors, setErrors] = useState<Partial<AddProductStep1Data>>({});
+
+    // Handle escape key to cancel
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            const target = event.target as HTMLElement;
+            const isInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+            if (event.key === 'Escape' && !isInputField) {
+                onCancel();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+        return () => document.removeEventListener('keydown', handleEscape);
+    }, [onCancel]);
 
     const validateForm = (): boolean => {
         const newErrors: Partial<AddProductStep1Data> = {};

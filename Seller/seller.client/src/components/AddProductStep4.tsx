@@ -35,6 +35,7 @@ interface ApiResponseVariant {
 interface AddProductStep4Props {
     onSubmit: () => void;
     onBack: () => void;
+    onCancel: () => void;
     step1Data: AddProductStep1Data;
     step2Data: AddProductStep2Data;
     step3Data: AddProductStep3Data;
@@ -46,11 +47,25 @@ interface AddProductStep4Props {
     completedSteps?: number[];
 }
 
-function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, companies, editMode = false, itemId, existingVariants, onStepNavigate, completedSteps }: AddProductStep4Props) {
+function AddProductStep4({ onSubmit, onBack, onCancel, step1Data, step2Data, step3Data, companies, editMode = false, itemId, existingVariants, onStepNavigate, completedSteps }: AddProductStep4Props) {
     const { showSuccess, showError } = useNotifications();
     const [variants, setVariants] = useState<ItemVariant[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string>('');
+
+    // Handle escape key to cancel
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            const target = event.target as HTMLElement;
+            const isInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+            if (event.key === 'Escape' && !isInputField) {
+                onCancel();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+        return () => document.removeEventListener('keydown', handleEscape);
+    }, [onCancel]);
 
     // Product identifier types
     const identifierTypes = [

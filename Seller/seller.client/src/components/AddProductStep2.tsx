@@ -335,10 +335,10 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
                                         <div key={index} className="item-attribute-display">
                                             <div className="attribute-display-content">
                                                 <div className="attribute-lang-pair">
-                                                    (en) {attr.name_en}: {attr.value_en.join(',')}
+                                                    <span aria-label="English">🇨🇦<strong>EN</strong></span> {attr.name_en}: {attr.value_en.join(',')}
                                                 </div>
                                                 <div className="attribute-lang-pair">
-                                                    (fr) {attr.name_fr}: {attr.value_fr.join(',')}
+                                                    <span aria-label="French">🇫🇷<strong>FR</strong></span> {attr.name_fr}: {attr.value_fr.join(',')}
                                                 </div>
                                             </div>
                                             <div className="attribute-action-buttons">

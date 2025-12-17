@@ -243,6 +243,8 @@
 }
 
 .attribute-lang-pair strong {
+    margin-left: 0.25rem;
+    margin-right: 0.25rem;
     color: #2c3e50;
 }
 

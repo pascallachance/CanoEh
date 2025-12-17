@@ -52,6 +52,18 @@ function AddProductStep4({ onSubmit, onBack, step1Data, step2Data, step3Data, co
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string>('');
 
+    // Handle escape key to cancel
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                onBack();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+        return () => document.removeEventListener('keydown', handleEscape);
+    }, [onBack]);
+
     // Product identifier types
     const identifierTypes = [
         { value: '', label: 'Select ID Type' },

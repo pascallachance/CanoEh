@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './AddProductStep3.css';
 import type { AddProductStep1Data } from './AddProductStep1';
 import type { AddProductStep2Data } from './AddProductStep2';
@@ -47,6 +47,18 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
     
     // State to track if we're editing an existing attribute
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
+    // Handle escape key to cancel
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                onBack();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+        return () => document.removeEventListener('keydown', handleEscape);
+    }, [onBack]);
 
     const addAttribute = () => {
         // Clear any previous error
@@ -313,7 +325,7 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
                             Back
                         </button>
                         <button type="submit" className="next-btn">
-                            {formData.attributes.length > 0 ? 'Generate Variants' : 'Add Attribute to Continue'}
+                            Next Step
                         </button>
                     </div>
                 </form>

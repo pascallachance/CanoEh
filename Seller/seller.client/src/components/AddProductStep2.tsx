@@ -103,6 +103,18 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
         fetchCategories();
     }, []);
 
+    // Handle escape key to cancel
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                onBack();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+        return () => document.removeEventListener('keydown', handleEscape);
+    }, [onBack]);
+
     const validateForm = (): boolean => {
         const newErrors: { categoryId?: string } = {};
 

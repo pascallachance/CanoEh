@@ -1,9 +1,19 @@
+import React from 'react';
+
 interface FlagIconProps {
     language: 'en' | 'fr';
     className?: string;
 }
 
+const flagStyles: React.CSSProperties = {
+    display: 'inline-block',
+    verticalAlign: 'middle',
+    marginRight: '4px'
+};
+
 function FlagIcon({ language, className = '' }: FlagIconProps) {
+    const ariaLabel = language === 'en' ? 'English' : 'French';
+    
     if (language === 'en') {
         // UK Flag (simplified)
         return (
@@ -13,7 +23,9 @@ function FlagIcon({ language, className = '' }: FlagIconProps) {
                 height="15"
                 viewBox="0 0 20 15"
                 xmlns="http://www.w3.org/2000/svg"
-                style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }}
+                style={flagStyles}
+                role="img"
+                aria-label={ariaLabel}
             >
                 <rect width="20" height="15" fill="#012169" />
                 <path d="M 0,0 L 20,15 M 20,0 L 0,15" stroke="#fff" strokeWidth="3" />
@@ -31,7 +43,9 @@ function FlagIcon({ language, className = '' }: FlagIconProps) {
                 height="15"
                 viewBox="0 0 20 15"
                 xmlns="http://www.w3.org/2000/svg"
-                style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }}
+                style={flagStyles}
+                role="img"
+                aria-label={ariaLabel}
             >
                 <rect width="6.67" height="15" x="0" fill="#002395" />
                 <rect width="6.67" height="15" x="6.67" fill="#FFFFFF" />

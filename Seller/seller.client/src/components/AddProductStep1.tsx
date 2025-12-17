@@ -31,7 +31,9 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onSt
     // Handle escape key to cancel
     useEffect(() => {
         const handleEscape = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
+            const target = event.target as HTMLElement;
+            const isInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+            if (event.key === 'Escape' && !isInputField) {
                 onCancel();
             }
         };

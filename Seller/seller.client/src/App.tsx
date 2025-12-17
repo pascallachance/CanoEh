@@ -239,7 +239,7 @@ function AppContent() {
 
     const handleProductStep1Cancel = () => {
         setProductStep1Data(null);
-        navigate('/seller');
+        navigate('/seller', { state: { section: 'products' } });
     };
 
     const handleProductStep2Next = (data: AddProductStep2Data) => {
@@ -293,7 +293,7 @@ function AppContent() {
         setEditProductStep2Data(null);
         setEditProductStep3Data(null);
         setEditProductExistingVariants(null);
-        navigate('/seller');
+        navigate('/seller', { state: { section: 'products' } });
     };
 
     const handleEditProductStep2Next = (data: AddProductStep2Data) => {

@@ -248,6 +248,12 @@
     color: #2c3e50;
 }
 
+.flag-emoji {
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+    font-style: normal;
+    font-weight: normal;
+}
+
 .attribute-action-buttons {
     display: flex;
     flex-direction: column;

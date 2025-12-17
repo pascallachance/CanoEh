@@ -4,7 +4,6 @@ import { ApiClient } from '../utils/apiClient';
 import type { AddProductStep1Data } from './AddProductStep1';
 import StepIndicator from './StepIndicator';
 import BilingualTagInput, { type BilingualValue } from './BilingualTagInput';
-import FlagIcon from './FlagIcon';
 
 export interface BilingualItemAttribute {
     name_en: string;
@@ -336,10 +335,10 @@ function AddProductStep2({ onNext, onBack, initialData, editMode = false, onStep
                                         <div key={index} className="item-attribute-display">
                                             <div className="attribute-display-content">
                                                 <div className="attribute-lang-pair">
-                                                    <FlagIcon language="en" /> <strong>EN</strong> {attr.name_en}: {attr.value_en.join(',')}
+                                                    <strong>EN</strong> {attr.name_en}: {attr.value_en.join(',')}
                                                 </div>
                                                 <div className="attribute-lang-pair">
-                                                    <FlagIcon language="fr" /> <strong>FR</strong> {attr.name_fr}: {attr.value_fr.join(',')}
+                                                    <strong>FR</strong> {attr.name_fr}: {attr.value_fr.join(',')}
                                                 </div>
                                             </div>
                                             <div className="attribute-action-buttons">

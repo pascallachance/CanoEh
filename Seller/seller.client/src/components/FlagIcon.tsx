@@ -8,7 +8,7 @@ interface FlagIconProps {
 const flagStyles: React.CSSProperties = {
     display: 'inline-block',
     verticalAlign: 'middle',
-    marginRight: '4px'
+    marginRight: '6px'
 };
 
 // Fleur-de-lis path for Quebec flag
@@ -22,8 +22,8 @@ function FlagIcon({ language, className = '' }: FlagIconProps) {
         return (
             <svg
                 className={className}
-                width="20"
-                height="15"
+                width="24"
+                height="18"
                 viewBox="0 0 20 15"
                 xmlns="http://www.w3.org/2000/svg"
                 style={flagStyles}
@@ -45,8 +45,8 @@ function FlagIcon({ language, className = '' }: FlagIconProps) {
         return (
             <svg
                 className={className}
-                width="20"
-                height="15"
+                width="24"
+                height="18"
                 viewBox="0 0 20 15"
                 xmlns="http://www.w3.org/2000/svg"
                 style={flagStyles}

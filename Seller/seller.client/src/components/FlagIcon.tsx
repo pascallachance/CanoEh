@@ -14,8 +14,20 @@ const flagStyles: React.CSSProperties = {
 // Fleur-de-lis path for Quebec flag
 const fleurDeLisPath = "M 5,0 L 6,4 L 8,3 L 7,6 L 10,7 L 7,8 L 8,11 L 6,10 L 5,14 L 4,10 L 2,11 L 3,8 L 0,7 L 3,6 L 2,3 L 4,4 Z";
 
-// Maple leaf path for Canadian flag - more recognizable 11-point design
-const mapleLeafPath = "M 10,3.5 L 10.3,5 L 11.5,4.8 L 10.8,6 L 12,6.8 L 10.7,7.2 L 11.2,8.5 L 10,7.8 L 10.2,9.5 L 10,8.5 L 9.8,9.5 L 10,7.8 L 8.8,8.5 L 9.3,7.2 L 8,6.8 L 9.2,6 L 8.5,4.8 L 9.7,5 Z";
+// Maple leaf path for Canadian flag - realistic maple leaf shape with 3 main lobes
+// Carefully crafted to resemble the actual Canadian flag maple leaf
+const mapleLeafPath = `
+  M 10,4
+  L 10.1,5.2 L 11,5 L 10.5,5.8
+  L 11.5,6.5 L 10.6,6.7
+  L 11,8 L 10.3,7.5
+  L 10.5,8.5 L 10,8 L 10,9
+  L 10,8 L 9.5,8.5
+  L 9.7,7.5 L 9,8
+  L 9.4,6.7 L 8.5,6.5
+  L 9.5,5.8 L 9,5 L 9.9,5.2
+  Z
+`.replace(/\s+/g, ' ').trim();
 
 function FlagIcon({ language, className = '' }: FlagIconProps) {
     const ariaLabel = language === 'en' ? 'English' : 'Quebec French';
@@ -40,7 +52,7 @@ function FlagIcon({ language, className = '' }: FlagIconProps) {
                 <rect width="10" height="15" x="5" fill="#FFFFFF" />
                 {/* Maple leaf in center with stem */}
                 <path d={mapleLeafPath} fill="#FF0000" />
-                <rect width="0.6" height="2.5" x="9.7" y="9.5" fill="#FF0000" />
+                <rect width="0.5" height="3" x="9.75" y="9" fill="#FF0000" />
             </svg>
         );
     } else {

@@ -8,11 +8,28 @@ Due to network restrictions in the build environment, the original PNG images fr
 - Quebec flag: https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Flag_of_Quebec.svg/960px-Flag_of_Quebec.svg.png?20250902230651
 - Canada flag: https://upload.wikimedia.org/wikipedia/en/thumb/c/cf/Flag_of_Canada.svg/960px-Flag_of_Canada.svg.png?20190402205958
 
-## Temporary SVG Files
+## Current SVG Files
 
-Currently using SVG versions:
-- `flag-canada.svg` - Canadian flag (red maple leaf on white with red borders)
-- `flag-quebec.svg` - Quebec flag (white cross on blue with fleur-de-lis)
+SVG versions are now available and correctly named:
+- `flag-canada.svg` - Canadian flag (red maple leaf on white with red borders) - Used for English (EN)
+- `flag-quebec.svg` - Quebec flag (white cross on blue with fleur-de-lis) - Used for French (FR)
+
+These files are referenced in `src/components/FlagIcon.tsx` and will be displayed automatically. 
+The component includes inline SVG fallbacks that will only show if the files fail to load.
+
+## File Verification
+
+To verify the file contents:
+- Canadian flag has red (#FF0000) and white (#FFFFFF) colors with a maple leaf shape
+- Quebec flag has blue (#003F87) background with white (#FFFFFF) cross and fleur-de-lis symbols
+
+## Troubleshooting
+
+If the old inline SVG icons are still showing:
+1. Hard refresh your browser (Ctrl+F5 or Cmd+Shift+R) to clear cache
+2. Verify files exist in the `public/` directory
+3. Check browser console for any 404 errors
+4. Restart the dev server: `npm run dev -- --force`
 
 ## To Use Original PNG Files
 

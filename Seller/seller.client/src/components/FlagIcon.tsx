@@ -81,10 +81,11 @@ function FlagIcon({ language, className = '' }: FlagIconProps) {
     }
     
     if (language === 'en') {
-        // Canadian Flag - using local flag file with SVG fallback
+        // Canadian Flag - using local PNG flag file with SVG fallback
+        // Note: The Canadian flag image is stored in flag-quebec.png due to a naming swap
         return (
             <img
-                src="/flag-canada.svg"
+                src="/flag-quebec.png"
                 alt={ariaLabel}
                 className={className}
                 width="24"
@@ -96,10 +97,11 @@ function FlagIcon({ language, className = '' }: FlagIconProps) {
             />
         );
     } else {
-        // Quebec Flag - using local flag file with SVG fallback
+        // Quebec Flag - using local PNG flag file with SVG fallback
+        // Note: The Quebec flag image is stored in flag-canada.png due to a naming swap
         return (
             <img
-                src="/flag-quebec.svg"
+                src="/flag-canada.png"
                 alt={ariaLabel}
                 className={className}
                 width="24"

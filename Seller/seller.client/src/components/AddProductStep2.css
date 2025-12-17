@@ -249,9 +249,11 @@
 }
 
 .flag-emoji {
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+    font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Symbol", sans-serif;
     font-style: normal;
     font-weight: normal;
+    font-size: 1.2em;
+    line-height: 1;
 }
 
 .attribute-action-buttons {

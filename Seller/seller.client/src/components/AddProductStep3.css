@@ -274,6 +274,8 @@
     font-size: 0.9rem;
     color: #495057;
     text-align: left;
+    display: flex;
+    align-items: center;
 }
 
 .attribute-lang-pair strong {

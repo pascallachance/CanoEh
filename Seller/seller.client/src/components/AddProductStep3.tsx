@@ -279,10 +279,10 @@ function AddProductStep3({ onNext, onBack, initialData, editMode = false, onStep
                                     <div key={index} className="attribute-display">
                                         <div className="attribute-info">
                                             <div className="attribute-lang-pair">
-                                                <span aria-label="English">🇨🇦<strong>EN</strong></span> {attr.name_en}: {attr.values.map(v => v.en).join(',')}
+                                                <span aria-label="English"><span className="flag-emoji">🇨🇦</span> <strong>EN</strong></span> {attr.name_en}: {attr.values.map(v => v.en).join(',')}
                                             </div>
                                             <div className="attribute-lang-pair">
-                                                <span aria-label="French">🇫🇷<strong>FR</strong></span> {attr.name_fr}: {attr.values.map(v => v.fr).join(',')}
+                                                <span aria-label="French"><span className="flag-emoji">🇫🇷</span> <strong>FR</strong></span> {attr.name_fr}: {attr.values.map(v => v.fr).join(',')}
                                             </div>
                                         </div>
                                         <div className="attribute-action-buttons">

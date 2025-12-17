@@ -73,7 +73,7 @@ function FlagIcon({ language, className = '' }: FlagIconProps) {
     const [imageError, setImageError] = useState(false);
     const ariaLabel = language === 'en' ? 'English' : 'Quebec French';
     
-    // If image failed to load, use SVG fallback
+    // If image failed to load, use inline SVG fallback
     if (imageError) {
         return language === 'en' 
             ? <CanadaFlagSVG className={className} ariaLabel={ariaLabel} />
@@ -81,10 +81,10 @@ function FlagIcon({ language, className = '' }: FlagIconProps) {
     }
     
     if (language === 'en') {
-        // Canadian Flag - using official flag image from Wikipedia with SVG fallback
+        // Canadian Flag - using local flag file with SVG fallback
         return (
             <img
-                src="https://upload.wikimedia.org/wikipedia/en/thumb/c/cf/Flag_of_Canada.svg/960px-Flag_of_Canada.svg.png"
+                src="/flag-canada.svg"
                 alt={ariaLabel}
                 className={className}
                 width="24"
@@ -96,10 +96,10 @@ function FlagIcon({ language, className = '' }: FlagIconProps) {
             />
         );
     } else {
-        // Quebec Flag - using official flag image from Wikipedia with SVG fallback
+        // Quebec Flag - using local flag file with SVG fallback
         return (
             <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Flag_of_Quebec.svg/960px-Flag_of_Quebec.svg.png"
+                src="/flag-quebec.svg"
                 alt={ariaLabel}
                 className={className}
                 width="24"

@@ -16,18 +16,7 @@ const fleurDeLisPath = "M 5,0 L 6,4 L 8,3 L 7,6 L 10,7 L 7,8 L 8,11 L 6,10 L 5,1
 
 // Maple leaf path for Canadian flag - realistic maple leaf shape with 3 main lobes
 // Carefully crafted to resemble the actual Canadian flag maple leaf
-const mapleLeafPath = `
-  M 10,4
-  L 10.1,5.2 L 11,5 L 10.5,5.8
-  L 11.5,6.5 L 10.6,6.7
-  L 11,8 L 10.3,7.5
-  L 10.5,8.5 L 10,8 L 10,9
-  L 10,8 L 9.5,8.5
-  L 9.7,7.5 L 9,8
-  L 9.4,6.7 L 8.5,6.5
-  L 9.5,5.8 L 9,5 L 9.9,5.2
-  Z
-`.replace(/\s+/g, ' ').trim();
+const mapleLeafPath = "M 10,4 L 10.1,5.2 L 11,5 L 10.5,5.8 L 11.5,6.5 L 10.6,6.7 L 11,8 L 10.3,7.5 L 10.5,8.5 L 10,8 L 10,9 L 9.5,8.5 L 9.7,7.5 L 9,8 L 9.4,6.7 L 8.5,6.5 L 9.5,5.8 L 9,5 L 9.9,5.2 Z";
 
 function FlagIcon({ language, className = '' }: FlagIconProps) {
     const ariaLabel = language === 'en' ? 'English' : 'Quebec French';

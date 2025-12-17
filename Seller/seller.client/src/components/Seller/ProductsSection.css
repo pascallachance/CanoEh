@@ -996,7 +996,7 @@
 
 .products-filter-checkbox {
     margin-top: 1rem;
-    margin-bottom: 8px;
+    margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
 }

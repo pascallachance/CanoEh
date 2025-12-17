@@ -11,6 +11,9 @@ const flagStyles: React.CSSProperties = {
     marginRight: '4px'
 };
 
+// Fleur-de-lis path for Quebec flag
+const fleurDeLisPath = "M 5,0 L 6,4 L 8,3 L 7,6 L 10,7 L 7,8 L 8,11 L 6,10 L 5,14 L 4,10 L 2,11 L 3,8 L 0,7 L 3,6 L 2,3 L 4,4 Z";
+
 function FlagIcon({ language, className = '' }: FlagIconProps) {
     const ariaLabel = language === 'en' ? 'English' : 'Quebec French';
     
@@ -58,19 +61,19 @@ function FlagIcon({ language, className = '' }: FlagIconProps) {
                 {/* Four white fleur-de-lis in corners */}
                 {/* Top-left fleur-de-lis */}
                 <g transform="translate(3, 2) scale(0.35)">
-                    <path d="M 5,0 L 6,4 L 8,3 L 7,6 L 10,7 L 7,8 L 8,11 L 6,10 L 5,14 L 4,10 L 2,11 L 3,8 L 0,7 L 3,6 L 2,3 L 4,4 Z" fill="#FFFFFF" />
+                    <path d={fleurDeLisPath} fill="#FFFFFF" />
                 </g>
                 {/* Top-right fleur-de-lis */}
                 <g transform="translate(14, 2) scale(0.35)">
-                    <path d="M 5,0 L 6,4 L 8,3 L 7,6 L 10,7 L 7,8 L 8,11 L 6,10 L 5,14 L 4,10 L 2,11 L 3,8 L 0,7 L 3,6 L 2,3 L 4,4 Z" fill="#FFFFFF" />
+                    <path d={fleurDeLisPath} fill="#FFFFFF" />
                 </g>
                 {/* Bottom-left fleur-de-lis */}
                 <g transform="translate(3, 10) scale(0.35)">
-                    <path d="M 5,0 L 6,4 L 8,3 L 7,6 L 10,7 L 7,8 L 8,11 L 6,10 L 5,14 L 4,10 L 2,11 L 3,8 L 0,7 L 3,6 L 2,3 L 4,4 Z" fill="#FFFFFF" />
+                    <path d={fleurDeLisPath} fill="#FFFFFF" />
                 </g>
                 {/* Bottom-right fleur-de-lis */}
                 <g transform="translate(14, 10) scale(0.35)">
-                    <path d="M 5,0 L 6,4 L 8,3 L 7,6 L 10,7 L 7,8 L 8,11 L 6,10 L 5,14 L 4,10 L 2,11 L 3,8 L 0,7 L 3,6 L 2,3 L 4,4 Z" fill="#FFFFFF" />
+                    <path d={fleurDeLisPath} fill="#FFFFFF" />
                 </g>
             </svg>
         );

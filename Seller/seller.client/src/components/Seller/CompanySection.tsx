@@ -247,6 +247,8 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
 
     return (
         <div className="section-container">
+            {expandedCard && <div className="company-backdrop" onClick={handleCancel}></div>}
+            
             {companies.length > 1 && (
                 <div className="company-selector">
                     <label className="company-selector-label">

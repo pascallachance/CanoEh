@@ -35,9 +35,13 @@
 }
 
 .company-cards-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .company-card {
@@ -46,6 +50,9 @@
     border-radius: 8px;
     overflow: hidden;
     transition: all 0.3s ease;
+    width: calc(50% - 0.5rem);
+    min-width: 350px;
+    position: relative;
 }
 
 .company-card:hover {
@@ -54,10 +61,14 @@
 
 .company-card.expanded {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    position: absolute;
+    z-index: 1000;
+    width: calc(50% - 0.5rem);
+    min-width: 350px;
 }
 
 .company-card-header {
-    padding: 1.5rem;
+    padding: 1rem;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
@@ -114,7 +125,7 @@
 }
 
 .company-card-content {
-    padding: 2rem;
+    padding: 1.5rem;
     animation: slideDown 0.3s ease;
 }
 
@@ -130,7 +141,7 @@
 }
 
 .company-form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .company-form-label {
@@ -162,8 +173,8 @@
 }
 
 .company-card-actions {
-    margin-top: 2rem;
-    padding-top: 2rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
     border-top: 1px solid #e1e5e9;
     display: flex;
     gap: 1rem;
@@ -207,7 +218,17 @@
 /* Responsive Design */
 @media (max-width: 768px) {
     .company-cards-container {
-        grid-template-columns: 1fr;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .company-card {
+        width: 100%;
+    }
+
+    .company-card.expanded {
+        width: 100%;
+        position: relative;
     }
 
     .company-header h2 {

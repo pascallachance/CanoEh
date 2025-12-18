@@ -22,6 +22,7 @@ interface SellerProps {
     companies: Company[];
     onLogout: () => void;
     onEditProduct: (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, step3Data: AddProductStep3Data, existingVariants: any[]) => void;
+    onCompanyUpdate?: (updatedCompany: Company) => void;
 }
 
 interface Company {
@@ -34,7 +35,7 @@ interface Company {
     updatedAt?: string;
 }
 
-function Seller({ companies, onLogout, onEditProduct }: SellerProps) {
+function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerProps) {
     const location = useLocation();
     const [activeSection, setActiveSection] = useState<SellerSection>('analytics');
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
@@ -73,7 +74,7 @@ function Seller({ companies, onLogout, onEditProduct }: SellerProps) {
             case 'orders':
                 return <OrdersSection companies={companies} />;
             case 'company':
-                return <CompanySection companies={companies} />;
+                return <CompanySection companies={companies} onCompanyUpdate={onCompanyUpdate} />;
             default:
                 return <AnalyticsSection companies={companies} />;
         }

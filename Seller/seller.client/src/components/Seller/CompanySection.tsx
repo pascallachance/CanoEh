@@ -14,6 +14,7 @@ interface Company {
 
 interface CompanySectionProps {
     companies: Company[];
+    onCompanyUpdate?: (updatedCompany: Company) => void;
 }
 
 interface CompanyFormData {
@@ -34,7 +35,7 @@ interface CompanyFormData {
 
 type CardSection = 'basic' | 'contact' | 'address' | 'owner' | null;
 
-function CompanySection({ companies }: CompanySectionProps) {
+function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
     const { showSuccess, showError } = useNotifications();
     const [selectedCompany, setSelectedCompany] = useState<Company | null>(
         companies.length > 0 ? companies[0] : null
@@ -127,17 +128,61 @@ function CompanySection({ companies }: CompanySectionProps) {
         }
     };
 
-    const handleSave = () => {
-        // TODO: Implement actual file upload to server
-        // Currently stores blob URL temporarily for preview purposes
-        // In production, should upload selectedFile to server and update with permanent URL
-        console.log('Saving company data:', formData);
-        if (selectedFile) {
-            console.log('File to upload:', selectedFile.name, selectedFile.type, selectedFile.size);
+    const handleSave = async () => {
+        // Upload logo file if selected
+        if (selectedFile && selectedCompany) {
+            try {
+                const logoUploadFormData = new FormData();
+                logoUploadFormData.append('file', selectedFile);
+
+                const uploadResponse = await fetch(
+                    `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/UploadLogo?companyId=${selectedCompany.id}`,
+                    {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: logoUploadFormData,
+                    }
+                );
+
+                if (!uploadResponse.ok) {
+                    const errorText = await uploadResponse.text();
+                    console.error(`Failed to upload logo for company ${selectedCompany.id}: ${uploadResponse.status} ${uploadResponse.statusText}`, errorText);
+                    showError(`Failed to upload logo: ${errorText || uploadResponse.statusText}`);
+                    return;
+                }
+
+                const uploadResult = await uploadResponse.json();
+                const logoUrl = uploadResult.logoUrl;
+                console.log('Logo uploaded successfully:', logoUrl);
+
+                // Update the company state with the new logo URL immutably
+                const updatedCompany = { ...selectedCompany, logo: logoUrl };
+                setSelectedCompany(updatedCompany);
+
+                // Notify parent component of the update
+                if (onCompanyUpdate) {
+                    onCompanyUpdate(updatedCompany);
+                }
+
+                // Update form data with the permanent URL
+                setFormData(prev => ({ ...prev, logo: logoUrl }));
+
+                // Clear the selected file and blob URL
+                setSelectedFile(null);
+                if (previewUrl && previewUrl.startsWith('blob:')) {
+                    URL.revokeObjectURL(previewUrl);
+                }
+                setPreviewUrl(logoUrl);
+
+                showSuccess('Company logo updated successfully!');
+            } catch (error) {
+                console.error('Error uploading logo:', error);
+                showError('An error occurred while uploading the logo');
+                return;
+            }
         }
+        
         setExpandedCard(null);
-        // Show success message with toast notification
-        showSuccess('Company information updated successfully!');
     };
 
     const handleCancel = () => {

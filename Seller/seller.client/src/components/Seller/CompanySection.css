@@ -63,8 +63,6 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     position: absolute;
     z-index: 1000;
-    width: calc(50% - 0.5rem);
-    min-width: 350px;
 }
 
 .company-card-header {

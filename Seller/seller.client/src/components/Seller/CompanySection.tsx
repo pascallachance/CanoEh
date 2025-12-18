@@ -35,7 +35,7 @@ interface CompanyFormData {
 type CardSection = 'basic' | 'contact' | 'address' | 'owner' | null;
 
 function CompanySection({ companies }: CompanySectionProps) {
-    const { showSuccess } = useNotifications();
+    const { showSuccess, showError } = useNotifications();
     const [selectedCompany, setSelectedCompany] = useState<Company | null>(
         companies.length > 0 ? companies[0] : null
     );
@@ -107,13 +107,13 @@ function CompanySection({ companies }: CompanySectionProps) {
         if (file) {
             // Validate file type
             if (!file.type.startsWith('image/')) {
-                alert('Please select an image file');
+                showError('Please select an image file');
                 return;
             }
             
             // Validate file size (limit to 5MB)
             if (file.size > 5 * 1024 * 1024) {
-                alert('File size must be less than 5MB');
+                showError('File size must be less than 5MB');
                 return;
             }
 
@@ -128,9 +128,8 @@ function CompanySection({ companies }: CompanySectionProps) {
             const objectUrl = URL.createObjectURL(file);
             setPreviewUrl(objectUrl);
             
-            // For now, we'll store the file name in the logo field
-            // In a real app, you'd upload the file and get a URL back
-            setFormData(prev => ({ ...prev, logo: file.name }));
+            // Store the blob URL temporarily until actual upload is implemented
+            setFormData(prev => ({ ...prev, logo: objectUrl }));
         }
     };
 

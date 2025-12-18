@@ -88,6 +88,35 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
         });
     }, [selectedCompany]);
 
+    // Cancel handler - defined before use in useEffect
+    const handleCancel = useCallback(() => {
+        if (selectedCompany) {
+            setFormData({
+                name: selectedCompany.name,
+                logo: selectedCompany.logo || '',
+                phone: '',
+                email: '',
+                website: '',
+                address1: '',
+                address2: '',
+                city: '',
+                provinceState: '',
+                country: '',
+                postalCode: '',
+                bankDocument: '',
+                facturationDocument: ''
+            });
+            // Revoke any existing blob URL used for preview to avoid memory leaks
+            if (previewUrl && previewUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(previewUrl);
+            }
+            setSelectedFile(null);
+            // Construct logo path based on company ID
+            setPreviewUrl(toAbsoluteUrl(getCompanyLogoPath(selectedCompany.id)));
+        }
+        setExpandedCard(null);
+    }, [selectedCompany, previewUrl]);
+
     // Handle Escape key to close expanded card for keyboard accessibility
     useEffect(() => {
         const handleEscape = (event: KeyboardEvent) => {
@@ -98,10 +127,14 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
 
         if (expandedCard) {
             document.addEventListener('keydown', handleEscape);
+            // Prevent body scroll when modal is open
+            document.body.style.overflow = 'hidden';
         }
 
         return () => {
             document.removeEventListener('keydown', handleEscape);
+            // Restore body scroll when modal closes
+            document.body.style.overflow = '';
         };
     }, [expandedCard, handleCancel]);
 
@@ -222,34 +255,6 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
         setExpandedCard(null);
     };
 
-    const handleCancel = useCallback(() => {
-        if (selectedCompany) {
-            setFormData({
-                name: selectedCompany.name,
-                logo: selectedCompany.logo || '',
-                phone: '',
-                email: '',
-                website: '',
-                address1: '',
-                address2: '',
-                city: '',
-                provinceState: '',
-                country: '',
-                postalCode: '',
-                bankDocument: '',
-                facturationDocument: ''
-            });
-            // Revoke any existing blob URL used for preview to avoid memory leaks
-            if (previewUrl && previewUrl.startsWith('blob:')) {
-                URL.revokeObjectURL(previewUrl);
-            }
-            setSelectedFile(null);
-            // Construct logo path based on company ID
-            setPreviewUrl(toAbsoluteUrl(getCompanyLogoPath(selectedCompany.id)));
-        }
-        setExpandedCard(null);
-    }, [selectedCompany, previewUrl]);
-
     const toggleCard = (card: CardSection) => {
         setExpandedCard(expandedCard === card ? null : card);
     };
@@ -264,8 +269,6 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
 
     return (
         <div className="section-container">
-            {expandedCard && <div className="company-backdrop" onClick={handleCancel}></div>}
-            
             {companies.length > 1 && (
                 <div className="company-selector">
                     <label className="company-selector-label">
@@ -297,10 +300,15 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
 
             <div className="company-cards-container">
                 {/* Basic Information Card */}
-                <div className={`company-card ${expandedCard === 'basic' ? 'expanded' : ''}`}>
+                <div 
+                    className={`company-card ${expandedCard === 'basic' ? 'expanded' : ''}`}
+                    role={expandedCard === 'basic' ? 'dialog' : undefined}
+                    aria-modal={expandedCard === 'basic' ? 'true' : undefined}
+                    aria-labelledby={expandedCard === 'basic' ? 'basic-info-title' : undefined}
+                >
                     <div className="company-card-header" onClick={() => toggleCard('basic')}>
                         <div className="company-card-title">
-                            <h3>Basic Information</h3>
+                            <h3 id="basic-info-title">Basic Information</h3>
                             <p className="company-card-description">
                                 Company name and branding details
                             </p>
@@ -370,10 +378,15 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
                 </div>
 
                 {/* Contact Information Card */}
-                <div className={`company-card ${expandedCard === 'contact' ? 'expanded' : ''}`}>
+                <div 
+                    className={`company-card ${expandedCard === 'contact' ? 'expanded' : ''}`}
+                    role={expandedCard === 'contact' ? 'dialog' : undefined}
+                    aria-modal={expandedCard === 'contact' ? 'true' : undefined}
+                    aria-labelledby={expandedCard === 'contact' ? 'contact-info-title' : undefined}
+                >
                     <div className="company-card-header" onClick={() => toggleCard('contact')}>
                         <div className="company-card-title">
-                            <h3>Contact Information</h3>
+                            <h3 id="contact-info-title">Contact Information</h3>
                             <p className="company-card-description">
                                 Phone, email, and website details
                             </p>
@@ -442,10 +455,15 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
                 </div>
 
                 {/* Business Address Card */}
-                <div className={`company-card ${expandedCard === 'address' ? 'expanded' : ''}`}>
+                <div 
+                    className={`company-card ${expandedCard === 'address' ? 'expanded' : ''}`}
+                    role={expandedCard === 'address' ? 'dialog' : undefined}
+                    aria-modal={expandedCard === 'address' ? 'true' : undefined}
+                    aria-labelledby={expandedCard === 'address' ? 'address-info-title' : undefined}
+                >
                     <div className="company-card-header" onClick={() => toggleCard('address')}>
                         <div className="company-card-title">
-                            <h3>Business Address</h3>
+                            <h3 id="address-info-title">Business Address</h3>
                             <p className="company-card-description">
                                 Physical location and mailing address
                             </p>
@@ -555,10 +573,15 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
                 </div>
 
                 {/* Owner Information Card */}
-                <div className={`company-card ${expandedCard === 'owner' ? 'expanded' : ''}`}>
+                <div 
+                    className={`company-card ${expandedCard === 'owner' ? 'expanded' : ''}`}
+                    role={expandedCard === 'owner' ? 'dialog' : undefined}
+                    aria-modal={expandedCard === 'owner' ? 'true' : undefined}
+                    aria-labelledby={expandedCard === 'owner' ? 'owner-info-title' : undefined}
+                >
                     <div className="company-card-header" onClick={() => toggleCard('owner')}>
                         <div className="company-card-title">
-                            <h3>Owner Information</h3>
+                            <h3 id="owner-info-title">Owner Information</h3>
                             <p className="company-card-description">
                                 Bank and facturation documents
                             </p>
@@ -613,6 +636,16 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
                     )}
                 </div>
             </div>
+            
+            {/* Modal backdrop - rendered last for proper z-index layering */}
+            {expandedCard && (
+                <div 
+                    className="company-backdrop" 
+                    onClick={handleCancel}
+                    role="presentation"
+                    aria-hidden="true"
+                />
+            )}
         </div>
     );
 }

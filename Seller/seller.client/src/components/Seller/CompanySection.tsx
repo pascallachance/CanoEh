@@ -58,15 +58,6 @@ function CompanySection({ companies }: CompanySectionProps) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string>(selectedCompany?.logo || '');
 
-    // Cleanup preview URL when component unmounts or file changes
-    useEffect(() => {
-        return () => {
-            if (previewUrl && previewUrl.startsWith('blob:')) {
-                URL.revokeObjectURL(previewUrl);
-            }
-        };
-    }, [previewUrl]);
-
     // Update preview URL when selected company changes
     useEffect(() => {
         setPreviewUrl(prev => {

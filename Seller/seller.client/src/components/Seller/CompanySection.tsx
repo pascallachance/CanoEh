@@ -36,6 +36,21 @@ interface CompanyFormData {
 
 type CardSection = 'basic' | 'contact' | 'address' | 'owner' | null;
 
+/**
+ * Constructs the logo path for a company based on its ID.
+ * According to IMAGE_STORAGE_STRUCTURE.md, company logos are stored at:
+ * /uploads/{CompanyID}/{CompanyID}_logo.jpg
+ * 
+ * @param companyId - The company ID
+ * @returns The relative path to the logo, or empty string if companyId is falsy
+ */
+function getCompanyLogoPath(companyId: string | undefined): string {
+    if (!companyId) {
+        return '';
+    }
+    return `/uploads/${companyId}/${companyId}_logo.jpg`;
+}
+
 function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
     const { showSuccess, showError } = useNotifications();
     const [selectedCompany, setSelectedCompany] = useState<Company | null>(
@@ -58,15 +73,18 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
         facturationDocument: ''
     });
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string>(toAbsoluteUrl(selectedCompany?.logo));
+    const [previewUrl, setPreviewUrl] = useState<string>(
+        toAbsoluteUrl(getCompanyLogoPath(selectedCompany?.id))
+    );
 
     // Update preview URL when selected company changes
+    // Always construct the logo path based on company ID to check for stored logo
     useEffect(() => {
         setPreviewUrl(prev => {
             if (prev && prev.startsWith('blob:')) {
                 URL.revokeObjectURL(prev);
             }
-            return toAbsoluteUrl(selectedCompany?.logo);
+            return toAbsoluteUrl(getCompanyLogoPath(selectedCompany?.id));
         });
     }, [selectedCompany]);
 
@@ -91,7 +109,8 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
         if (previewUrl && previewUrl.startsWith('blob:')) {
             URL.revokeObjectURL(previewUrl);
         }
-        setPreviewUrl(toAbsoluteUrl(company.logo));
+        // Construct logo path based on company ID
+        setPreviewUrl(toAbsoluteUrl(getCompanyLogoPath(company.id)));
         setExpandedCard(null);
     };
 
@@ -208,7 +227,8 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
                 URL.revokeObjectURL(previewUrl);
             }
             setSelectedFile(null);
-            setPreviewUrl(toAbsoluteUrl(selectedCompany.logo));
+            // Construct logo path based on company ID
+            setPreviewUrl(toAbsoluteUrl(getCompanyLogoPath(selectedCompany.id)));
         }
         setExpandedCard(null);
     };

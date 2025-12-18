@@ -131,15 +131,15 @@ function CompanySection({ companies }: CompanySectionProps) {
         // Upload logo file if selected
         if (selectedFile && selectedCompany) {
             try {
-                const formData = new FormData();
-                formData.append('file', selectedFile);
+                const logoUploadFormData = new FormData();
+                logoUploadFormData.append('file', selectedFile);
 
                 const uploadResponse = await fetch(
                     `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/UploadLogo?companyId=${selectedCompany.id}`,
                     {
                         method: 'POST',
                         credentials: 'include',
-                        body: formData,
+                        body: logoUploadFormData,
                     }
                 );
 

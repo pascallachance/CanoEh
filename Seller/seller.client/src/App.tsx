@@ -139,6 +139,14 @@ function AppContent() {
         navigate('/login', { replace: true });
     };
 
+    const handleCompanyUpdate = (updatedCompany: Company) => {
+        setCompanies(prevCompanies => 
+            prevCompanies.map(company => 
+                company.id === updatedCompany.id ? updatedCompany : company
+            )
+        );
+    };
+
     const handleCreateCompany = () => {
         navigate('/create-company');
     };
@@ -399,7 +407,7 @@ function AppContent() {
     const SellerRoute = () => (
         <ProtectedRoute>
             {companies.length > 0 ? (
-                <Seller companies={companies} onLogout={handleBackToLogin} onEditProduct={handleEditProductStart} />
+                <Seller companies={companies} onLogout={handleBackToLogin} onEditProduct={handleEditProductStart} onCompanyUpdate={handleCompanyUpdate} />
             ) : (
                 <NoCompanyPage
                     onCreateCompany={handleCreateCompany}

@@ -14,6 +14,7 @@ interface Company {
 
 interface CompanySectionProps {
     companies: Company[];
+    onCompanyUpdate?: (updatedCompany: Company) => void;
 }
 
 interface CompanyFormData {
@@ -34,7 +35,7 @@ interface CompanyFormData {
 
 type CardSection = 'basic' | 'contact' | 'address' | 'owner' | null;
 
-function CompanySection({ companies }: CompanySectionProps) {
+function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
     const { showSuccess, showError } = useNotifications();
     const [selectedCompany, setSelectedCompany] = useState<Company | null>(
         companies.length > 0 ? companies[0] : null
@@ -155,7 +156,13 @@ function CompanySection({ companies }: CompanySectionProps) {
                 console.log('Logo uploaded successfully:', logoUrl);
 
                 // Update the company state with the new logo URL immutably
-                setSelectedCompany(prev => prev ? { ...prev, logo: logoUrl } : prev);
+                const updatedCompany = { ...selectedCompany, logo: logoUrl };
+                setSelectedCompany(updatedCompany);
+
+                // Notify parent component of the update
+                if (onCompanyUpdate) {
+                    onCompanyUpdate(updatedCompany);
+                }
 
                 // Update form data with the permanent URL
                 setFormData(prev => ({ ...prev, logo: logoUrl }));

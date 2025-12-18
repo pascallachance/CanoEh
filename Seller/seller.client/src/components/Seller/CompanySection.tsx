@@ -109,12 +109,14 @@ function CompanySection({ companies }: CompanySectionProps) {
             // Validate file type
             if (!file.type.startsWith('image/')) {
                 showError('Please select an image file');
+                e.target.value = '';
                 return;
             }
             
             // Validate file size (limit to 5MB)
             if (file.size > 5 * 1024 * 1024) {
                 showError('File size must be less than 5MB');
+                e.target.value = '';
                 return;
             }
 

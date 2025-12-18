@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNotifications } from '../../contexts/useNotifications';
 import { toAbsoluteUrl } from '../../utils/urlUtils';
 import './CompanySection.css';
@@ -87,6 +87,23 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
             return toAbsoluteUrl(getCompanyLogoPath(selectedCompany?.id));
         });
     }, [selectedCompany]);
+
+    // Handle Escape key to close expanded card for keyboard accessibility
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && expandedCard) {
+                handleCancel();
+            }
+        };
+
+        if (expandedCard) {
+            document.addEventListener('keydown', handleEscape);
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, [expandedCard, handleCancel]);
 
     const handleCompanySelect = (company: Company) => {
         setSelectedCompany(company);
@@ -205,7 +222,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
         setExpandedCard(null);
     };
 
-    const handleCancel = () => {
+    const handleCancel = useCallback(() => {
         if (selectedCompany) {
             setFormData({
                 name: selectedCompany.name,
@@ -231,7 +248,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
             setPreviewUrl(toAbsoluteUrl(getCompanyLogoPath(selectedCompany.id)));
         }
         setExpandedCard(null);
-    };
+    }, [selectedCompany, previewUrl]);
 
     const toggleCard = (card: CardSection) => {
         setExpandedCard(expandedCard === card ? null : card);

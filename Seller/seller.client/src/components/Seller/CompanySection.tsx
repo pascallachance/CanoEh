@@ -69,11 +69,12 @@ function CompanySection({ companies }: CompanySectionProps) {
 
     // Update preview URL when selected company changes
     useEffect(() => {
-        if (selectedCompany?.logo) {
-            setPreviewUrl(selectedCompany.logo);
-        } else {
-            setPreviewUrl('');
-        }
+        setPreviewUrl(prev => {
+            if (prev && prev.startsWith('blob:')) {
+                URL.revokeObjectURL(prev);
+            }
+            return selectedCompany?.logo || '';
+        });
     }, [selectedCompany]);
 
     const handleCompanySelect = (company: Company) => {

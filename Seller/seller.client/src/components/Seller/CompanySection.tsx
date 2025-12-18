@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNotifications } from '../../contexts/useNotifications';
 import './CompanySection.css';
 
@@ -55,6 +55,26 @@ function CompanySection({ companies }: CompanySectionProps) {
         bankDocument: '',
         facturationDocument: ''
     });
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string>(selectedCompany?.logo || '');
+
+    // Cleanup preview URL when component unmounts or file changes
+    useEffect(() => {
+        return () => {
+            if (previewUrl && previewUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(previewUrl);
+            }
+        };
+    }, [previewUrl]);
+
+    // Update preview URL when selected company changes
+    useEffect(() => {
+        if (selectedCompany?.logo) {
+            setPreviewUrl(selectedCompany.logo);
+        } else {
+            setPreviewUrl('');
+        }
+    }, [selectedCompany]);
 
     const handleCompanySelect = (company: Company) => {
         setSelectedCompany(company);
@@ -73,11 +93,45 @@ function CompanySection({ companies }: CompanySectionProps) {
             bankDocument: '',
             facturationDocument: ''
         });
+        setSelectedFile(null);
+        setPreviewUrl(company.logo || '');
         setExpandedCard(null);
     };
 
     const handleInputChange = (field: keyof CompanyFormData, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+            
+            // Validate file size (limit to 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
+                return;
+            }
+
+            // Revoke previous object URL before creating a new one
+            if (previewUrl && previewUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(previewUrl);
+            }
+
+            setSelectedFile(file);
+            
+            // Create preview URL
+            const objectUrl = URL.createObjectURL(file);
+            setPreviewUrl(objectUrl);
+            
+            // For now, we'll store the file name in the logo field
+            // In a real app, you'd upload the file and get a URL back
+            setFormData(prev => ({ ...prev, logo: file.name }));
+        }
     };
 
     const handleSave = () => {
@@ -105,6 +159,8 @@ function CompanySection({ companies }: CompanySectionProps) {
                 bankDocument: '',
                 facturationDocument: ''
             });
+            setSelectedFile(null);
+            setPreviewUrl(selectedCompany.logo || '');
         }
         setExpandedCard(null);
     };
@@ -182,15 +238,30 @@ function CompanySection({ companies }: CompanySectionProps) {
 
                             <div className="company-form-group">
                                 <label className="company-form-label">
-                                    Logo URL
+                                    Company Logo
                                 </label>
-                                <input
-                                    type="url"
-                                    value={formData.logo}
-                                    onChange={(e) => handleInputChange('logo', e.target.value)}
-                                    className="company-form-input"
-                                    placeholder="https://example.com/logo.png"
-                                />
+                                <div className="company-logo-upload-container">
+                                    <input
+                                        type="file"
+                                        id="logo-file"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                        className="company-file-input"
+                                    />
+                                    <label htmlFor="logo-file" className="company-file-input-label">
+                                        {selectedFile ? selectedFile.name : 'Choose logo image'}
+                                    </label>
+                                    
+                                    {previewUrl ? (
+                                        <div className="company-logo-preview">
+                                            <img src={previewUrl} alt="Company logo preview" className="company-preview-image" />
+                                        </div>
+                                    ) : (
+                                        <div className="company-no-logo-message">
+                                            No logo uploaded. Click "Choose logo image" to select an image from your device.
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="company-card-actions">

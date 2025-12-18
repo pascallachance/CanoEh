@@ -124,12 +124,9 @@ function CompanySection({ companies }: CompanySectionProps) {
 
             setSelectedFile(file);
             
-            // Create preview URL
+            // Create preview URL (do not store blob URL in form data)
             const objectUrl = URL.createObjectURL(file);
             setPreviewUrl(objectUrl);
-            
-            // Store the blob URL temporarily until actual upload is implemented
-            setFormData(prev => ({ ...prev, logo: objectUrl }));
         }
     };
 

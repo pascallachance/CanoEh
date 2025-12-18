@@ -157,6 +157,10 @@ function CompanySection({ companies }: CompanySectionProps) {
                 bankDocument: '',
                 facturationDocument: ''
             });
+            // Revoke any existing blob URL used for preview to avoid memory leaks
+            if (previewUrl && previewUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(previewUrl);
+            }
             setSelectedFile(null);
             setPreviewUrl(selectedCompany.logo || '');
         }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNotifications } from '../../contexts/useNotifications';
+import { toAbsoluteUrl } from '../../utils/urlUtils';
 import './CompanySection.css';
 
 interface Company {
@@ -57,7 +58,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
         facturationDocument: ''
     });
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string>(selectedCompany?.logo || '');
+    const [previewUrl, setPreviewUrl] = useState<string>(toAbsoluteUrl(selectedCompany?.logo) || '');
 
     // Update preview URL when selected company changes
     useEffect(() => {
@@ -65,7 +66,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
             if (prev && prev.startsWith('blob:')) {
                 URL.revokeObjectURL(prev);
             }
-            return selectedCompany?.logo || '';
+            return toAbsoluteUrl(selectedCompany?.logo) || '';
         });
     }, [selectedCompany]);
 
@@ -90,7 +91,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
         if (previewUrl && previewUrl.startsWith('blob:')) {
             URL.revokeObjectURL(previewUrl);
         }
-        setPreviewUrl(company.logo || '');
+        setPreviewUrl(toAbsoluteUrl(company.logo) || '');
         setExpandedCard(null);
     };
 
@@ -207,7 +208,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
                 URL.revokeObjectURL(previewUrl);
             }
             setSelectedFile(null);
-            setPreviewUrl(selectedCompany.logo || '');
+            setPreviewUrl(toAbsoluteUrl(selectedCompany.logo) || '');
         }
         setExpandedCard(null);
     };

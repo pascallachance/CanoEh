@@ -173,10 +173,6 @@ function CompanySection({ companies }: CompanySectionProps) {
                 showError('An error occurred while uploading the logo');
                 return;
             }
-        } else {
-            // Save other company data (when logo is not changed)
-            console.log('Saving company data:', formData);
-            showSuccess('Company information updated successfully!');
         }
         
         setExpandedCard(null);

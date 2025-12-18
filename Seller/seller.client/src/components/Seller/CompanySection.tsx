@@ -86,6 +86,9 @@ function CompanySection({ companies }: CompanySectionProps) {
             facturationDocument: ''
         });
         setSelectedFile(null);
+        if (previewUrl && previewUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(previewUrl);
+        }
         setPreviewUrl(company.logo || '');
         setExpandedCard(null);
     };

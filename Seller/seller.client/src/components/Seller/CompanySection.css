@@ -35,8 +35,8 @@
 }
 
 .company-cards-container {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
 }
 
@@ -206,6 +206,10 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .company-cards-container {
+        grid-template-columns: 1fr;
+    }
+
     .company-header h2 {
         font-size: 1.5rem;
     }

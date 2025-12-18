@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNotifications } from '../../contexts/useNotifications';
 import './CompanySection.css';
 
@@ -35,7 +35,7 @@ interface CompanyFormData {
 type CardSection = 'basic' | 'contact' | 'address' | 'owner' | null;
 
 function CompanySection({ companies }: CompanySectionProps) {
-    const { showSuccess } = useNotifications();
+    const { showSuccess, showError } = useNotifications();
     const [selectedCompany, setSelectedCompany] = useState<Company | null>(
         companies.length > 0 ? companies[0] : null
     );
@@ -55,6 +55,18 @@ function CompanySection({ companies }: CompanySectionProps) {
         bankDocument: '',
         facturationDocument: ''
     });
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string>(selectedCompany?.logo || '');
+
+    // Update preview URL when selected company changes
+    useEffect(() => {
+        setPreviewUrl(prev => {
+            if (prev && prev.startsWith('blob:')) {
+                URL.revokeObjectURL(prev);
+            }
+            return selectedCompany?.logo || '';
+        });
+    }, [selectedCompany]);
 
     const handleCompanySelect = (company: Company) => {
         setSelectedCompany(company);
@@ -73,6 +85,11 @@ function CompanySection({ companies }: CompanySectionProps) {
             bankDocument: '',
             facturationDocument: ''
         });
+        setSelectedFile(null);
+        if (previewUrl && previewUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(previewUrl);
+        }
+        setPreviewUrl(company.logo || '');
         setExpandedCard(null);
     };
 
@@ -80,9 +97,44 @@ function CompanySection({ companies }: CompanySectionProps) {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showError('Please select an image file');
+                e.target.value = '';
+                return;
+            }
+            
+            // Validate file size (limit to 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showError('File size must be less than 5MB');
+                e.target.value = '';
+                return;
+            }
+
+            // Revoke previous object URL before creating a new one
+            if (previewUrl && previewUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(previewUrl);
+            }
+
+            setSelectedFile(file);
+            
+            // Create preview URL (do not store blob URL in form data)
+            const objectUrl = URL.createObjectURL(file);
+            setPreviewUrl(objectUrl);
+        }
+    };
+
     const handleSave = () => {
-        // Here you would typically make an API call to update the company
+        // TODO: Implement actual file upload to server
+        // Currently stores blob URL temporarily for preview purposes
+        // In production, should upload selectedFile to server and update with permanent URL
         console.log('Saving company data:', formData);
+        if (selectedFile) {
+            console.log('File to upload:', selectedFile.name, selectedFile.type, selectedFile.size);
+        }
         setExpandedCard(null);
         // Show success message with toast notification
         showSuccess('Company information updated successfully!');
@@ -105,6 +157,12 @@ function CompanySection({ companies }: CompanySectionProps) {
                 bankDocument: '',
                 facturationDocument: ''
             });
+            // Revoke any existing blob URL used for preview to avoid memory leaks
+            if (previewUrl && previewUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(previewUrl);
+            }
+            setSelectedFile(null);
+            setPreviewUrl(selectedCompany.logo || '');
         }
         setExpandedCard(null);
     };
@@ -182,15 +240,30 @@ function CompanySection({ companies }: CompanySectionProps) {
 
                             <div className="company-form-group">
                                 <label className="company-form-label">
-                                    Logo URL
+                                    Company Logo
                                 </label>
-                                <input
-                                    type="url"
-                                    value={formData.logo}
-                                    onChange={(e) => handleInputChange('logo', e.target.value)}
-                                    className="company-form-input"
-                                    placeholder="https://example.com/logo.png"
-                                />
+                                <div className="company-logo-upload-container">
+                                    <input
+                                        type="file"
+                                        id="logo-file"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                        className="company-file-input"
+                                    />
+                                    <label htmlFor="logo-file" className="company-file-input-label">
+                                        {selectedFile ? selectedFile.name : 'Choose logo image'}
+                                    </label>
+                                    
+                                    {previewUrl ? (
+                                        <div className="company-logo-preview">
+                                            <img src={previewUrl} alt="Company logo preview" className="company-preview-image" />
+                                        </div>
+                                    ) : (
+                                        <div className="company-no-logo-message">
+                                            No logo uploaded. Click "Choose logo image" to select an image from your device.
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="company-card-actions">

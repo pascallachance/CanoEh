@@ -134,8 +134,13 @@ function CompanySection({ companies }: CompanySectionProps) {
     };
 
     const handleSave = () => {
-        // Here you would typically make an API call to update the company
+        // TODO: Implement actual file upload to server
+        // Currently stores blob URL temporarily for preview purposes
+        // In production, should upload selectedFile to server and update with permanent URL
         console.log('Saving company data:', formData);
+        if (selectedFile) {
+            console.log('File to upload:', selectedFile.name, selectedFile.type, selectedFile.size);
+        }
         setExpandedCard(null);
         // Show success message with toast notification
         showSuccess('Company information updated successfully!');

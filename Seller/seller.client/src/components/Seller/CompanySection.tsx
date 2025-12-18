@@ -154,10 +154,8 @@ function CompanySection({ companies }: CompanySectionProps) {
                 const logoUrl = uploadResult.logoUrl;
                 console.log('Logo uploaded successfully:', logoUrl);
 
-                // Update the company state with the new logo URL
-                if (selectedCompany) {
-                    selectedCompany.logo = logoUrl;
-                }
+                // Update the company state with the new logo URL immutably
+                setSelectedCompany(prev => prev ? { ...prev, logo: logoUrl } : prev);
 
                 // Update form data with the permanent URL
                 setFormData(prev => ({ ...prev, logo: logoUrl }));

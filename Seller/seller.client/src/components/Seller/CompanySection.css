@@ -289,7 +289,6 @@
 
 /* Logo upload styles */
 .company-logo-upload-container {
-    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;

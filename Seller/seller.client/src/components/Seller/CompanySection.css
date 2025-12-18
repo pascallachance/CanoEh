@@ -50,8 +50,9 @@
     border-radius: 8px;
     overflow: hidden;
     transition: all 0.3s ease;
-    width: calc(50% - 0.5rem);
-    min-width: 350px;
+    flex: 1 1 calc(50% - 0.5rem);
+    max-width: calc(50% - 0.5rem);
+    min-width: 300px;
     position: relative;
 }
 
@@ -61,8 +62,13 @@
 
 .company-card.expanded {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    position: absolute;
+    position: fixed;
     z-index: 1000;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 600px;
+    width: 90%;
 }
 
 .company-card-header {
@@ -222,11 +228,12 @@
 
     .company-card {
         width: 100%;
+        max-width: 100%;
     }
 
     .company-card.expanded {
-        width: 100%;
-        position: relative;
+        width: 95%;
+        max-width: 95%;
     }
 
     .company-header h2 {

@@ -21,7 +21,7 @@ namespace Infrastructure.Data
         public string? FacturationDocument { get; set; } // Facturable credit card or debit card
         public string? CompanyPhone { get; set; }
         public string? CompanyType { get; set; } // public company, listed company, private company, charity organization, particular
-        public required string Email { get; set; }
+        public string? Email { get; set; }
         public string? WebSite { get; set; }
         public string? Address1 { get; set; }
         public string? Address2 { get; set; }

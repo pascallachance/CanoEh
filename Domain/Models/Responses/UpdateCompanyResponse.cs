@@ -21,7 +21,7 @@ namespace Domain.Models.Responses
         public string? FacturationDocument { get; set; }
         public string? CompanyPhone { get; set; }
         public string? CompanyType { get; set; }
-        public required string Email { get; set; }
+        public string? Email { get; set; }
         public string? WebSite { get; set; }
         public string? Address1 { get; set; }
         public string? Address2 { get; set; }

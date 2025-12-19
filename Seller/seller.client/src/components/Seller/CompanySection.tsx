@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNotifications } from '../../contexts/useNotifications';
 import { toAbsoluteUrl } from '../../utils/urlUtils';
+import { ApiClient } from '../../utils/apiClient';
 import './CompanySection.css';
 
 interface Company {
@@ -113,15 +114,8 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
         if (!selectedCompany) return;
         
         try {
-            const response = await fetch(
-                `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/GetMyCompany`,
-                {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                }
+            const response = await ApiClient.get(
+                `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/GetMyCompany`
             );
 
             if (!response.ok) {
@@ -343,16 +337,9 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
             };
 
             // Call UpdateMyCompany API
-            const updateResponse = await fetch(
+            const updateResponse = await ApiClient.put(
                 `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/UpdateMyCompany`,
-                {
-                    method: 'PUT',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(updateRequest),
-                }
+                updateRequest
             );
 
             if (!updateResponse.ok) {

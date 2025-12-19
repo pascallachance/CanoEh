@@ -37,6 +37,7 @@ namespace API.Tests
             var newCompany = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 Description = "A test company",
                 Logo = "test-logo.png"
             };
@@ -60,6 +61,7 @@ namespace API.Tests
                 Name = newCompany.Name,
                 Description = newCompany.Description,
                 Logo = newCompany.Logo,
+                Email = newCompany.Email,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null
             });
@@ -96,6 +98,7 @@ namespace API.Tests
             var newCompany = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 Description = "A test company",
                 Logo = "test-logo.png"
             };
@@ -123,6 +126,7 @@ namespace API.Tests
             var newCompany = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 Description = "A test company",
                 Logo = "test-logo.png"
             };
@@ -162,6 +166,7 @@ namespace API.Tests
                 Name = "Test Company",
                 Description = "A test company",
                 Logo = "test-logo.png",
+                Email = "test@company.com",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null
             });
@@ -199,6 +204,7 @@ namespace API.Tests
             var newCompany = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 Description = "A test company",
                 Logo = "test-logo.png"
             };
@@ -222,6 +228,7 @@ namespace API.Tests
                 Name = newCompany.Name,
                 Description = newCompany.Description,
                 Logo = newCompany.Logo,
+                Email = newCompany.Email,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null
             });
@@ -283,6 +290,7 @@ namespace API.Tests
                     Name = "Company 1",
                     Description = "First company",
                     Logo = "logo1.png",
+                    Email = "company1@example.com",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null
                 },
@@ -293,6 +301,7 @@ namespace API.Tests
                     Name = "Company 2",
                     Description = "Second company",
                     Logo = "logo2.png",
+                    Email = "company2@example.com",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null
                 }

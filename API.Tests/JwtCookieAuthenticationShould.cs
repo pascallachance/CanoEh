@@ -53,6 +53,7 @@ namespace API.Tests
                     Id = Guid.NewGuid(),
                     OwnerID = userId,
                     Name = "Test Company",
+                    Email = "test@company.com",
                     Description = "A test company",
                     Logo = "logo.png",
                     CreatedAt = DateTime.UtcNow,

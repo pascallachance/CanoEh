@@ -12,6 +12,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 Description = "A test company",
                 Logo = "logo.png",
                 IdentityDocumentType = "passport",
@@ -35,6 +36,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 IdentityDocumentType = identityDocumentType
             };
 
@@ -52,6 +54,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 IdentityDocumentType = "invalid document type"
             };
 
@@ -76,6 +79,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 CompanyType = companyType
             };
 
@@ -93,6 +97,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 CompanyType = "invalid company type"
             };
 
@@ -112,6 +117,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 Description = null,
                 Logo = null,
                 CountryOfCitizenship = null,
@@ -148,6 +154,7 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 Name = "Test Company",
+                Email = "test@company.com",
                 Description = "A test company",
                 Logo = "logo.png",
                 IdentityDocumentType = "passport",
@@ -172,6 +179,7 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 Name = "Test Company",
+                Email = "test@company.com",
                 IdentityDocumentType = identityDocumentType
             };
 
@@ -190,6 +198,7 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 Name = "Test Company",
+                Email = "test@company.com",
                 IdentityDocumentType = "invalid document type"
             };
 
@@ -215,6 +224,7 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 Name = "Test Company",
+                Email = "test@company.com",
                 CompanyType = companyType
             };
 
@@ -233,6 +243,7 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 Name = "Test Company",
+                Email = "test@company.com",
                 CompanyType = "invalid company type"
             };
 
@@ -242,6 +253,145 @@ namespace API.Tests
             // Assert
             Assert.True(result.IsFailure);
             Assert.Equal("CompanyType must be 'public company', 'listed company', 'private company', 'charity organization', or 'particular'.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public void CreateCompanyRequest_ReturnFailure_WhenEmailIsEmpty()
+        {
+            // Arrange
+            var request = new CreateCompanyRequest
+            {
+                Name = "Test Company",
+                Email = ""
+            };
+
+            // Act
+            var result = request.Validate();
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal("Email is required.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public void CreateCompanyRequest_ReturnFailure_WhenEmailIsInvalid()
+        {
+            // Arrange
+            var request = new CreateCompanyRequest
+            {
+                Name = "Test Company",
+                Email = "not-an-email"
+            };
+
+            // Act
+            var result = request.Validate();
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal("Email is not valid.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Theory]
+        [InlineData("test@company.com")]
+        [InlineData("user.name@example.co.uk")]
+        [InlineData("test+tag@domain.com")]
+        public void CreateCompanyRequest_ReturnSuccess_WhenEmailIsValid(string email)
+        {
+            // Arrange
+            var request = new CreateCompanyRequest
+            {
+                Name = "Test Company",
+                Email = email
+            };
+
+            // Act
+            var result = request.Validate();
+
+            // Assert
+            Assert.True(result.IsSuccess);
+        }
+
+        [Fact]
+        public void CreateCompanyRequest_ReturnFailure_WhenEmailIsTooLong()
+        {
+            // Arrange
+            var longEmail = new string('a', 247) + "@test.com"; // 256 characters total
+            var request = new CreateCompanyRequest
+            {
+                Name = "Test Company",
+                Email = longEmail
+            };
+
+            // Act
+            var result = request.Validate();
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal("Email must be 255 characters or less.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public void UpdateCompanyRequest_ReturnFailure_WhenEmailIsEmpty()
+        {
+            // Arrange
+            var request = new UpdateCompanyRequest
+            {
+                Id = Guid.NewGuid(),
+                Name = "Test Company",
+                Email = ""
+            };
+
+            // Act
+            var result = request.Validate();
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal("Email is required.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public void UpdateCompanyRequest_ReturnFailure_WhenEmailIsInvalid()
+        {
+            // Arrange
+            var request = new UpdateCompanyRequest
+            {
+                Id = Guid.NewGuid(),
+                Name = "Test Company",
+                Email = "invalid-email"
+            };
+
+            // Act
+            var result = request.Validate();
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal("Email is not valid.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public void UpdateCompanyRequest_ReturnFailure_WhenEmailIsTooLong()
+        {
+            // Arrange
+            var longEmail = new string('a', 247) + "@test.com"; // 256 characters total
+            var request = new UpdateCompanyRequest
+            {
+                Id = Guid.NewGuid(),
+                Name = "Test Company",
+                Email = longEmail
+            };
+
+            // Act
+            var result = request.Validate();
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal("Email must be 255 characters or less.", result.Error);
             Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
         }
     }

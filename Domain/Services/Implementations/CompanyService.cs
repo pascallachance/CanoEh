@@ -68,6 +68,8 @@ namespace Domain.Services.Implementations
                     FacturationDocument = newCompany.FacturationDocument,
                     CompanyPhone = newCompany.CompanyPhone,
                     CompanyType = newCompany.CompanyType,
+                    Email = newCompany.Email,
+                    WebSite = newCompany.WebSite,
                     Address1 = newCompany.Address1,
                     Address2 = newCompany.Address2,
                     Address3 = newCompany.Address3,
@@ -194,6 +196,8 @@ namespace Domain.Services.Implementations
                 companyToUpdate.FacturationDocument = updateRequest.FacturationDocument;
                 companyToUpdate.CompanyPhone = updateRequest.CompanyPhone;
                 companyToUpdate.CompanyType = updateRequest.CompanyType;
+                companyToUpdate.Email = updateRequest.Email;
+                companyToUpdate.WebSite = updateRequest.WebSite;
                 companyToUpdate.Address1 = updateRequest.Address1;
                 companyToUpdate.Address2 = updateRequest.Address2;
                 companyToUpdate.Address3 = updateRequest.Address3;

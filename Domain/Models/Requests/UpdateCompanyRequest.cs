@@ -21,6 +21,8 @@ namespace Domain.Models.Requests
         public string? FacturationDocument { get; set; } // Facturable credit card or debit card
         public string? CompanyPhone { get; set; }
         public string? CompanyType { get; set; } // public company, listed company, private company, charity organization, particular
+        public required string Email { get; set; }
+        public string? WebSite { get; set; }
         public string? Address1 { get; set; }
         public string? Address2 { get; set; }
         public string? Address3 { get; set; }
@@ -46,6 +48,20 @@ namespace Domain.Models.Requests
             if (Name.Length > 255)
             {
                 return Result.Failure("Name must be 255 characters or less.", StatusCodes.Status400BadRequest);
+            }
+            
+            // Validate Email
+            if (string.IsNullOrWhiteSpace(Email))
+            {
+                return Result.Failure("Email is required.", StatusCodes.Status400BadRequest);
+            }
+            if (Email.Length > 255)
+            {
+                return Result.Failure("Email must be 255 characters or less.", StatusCodes.Status400BadRequest);
+            }
+            if (!ValidationHelper.IsValidEmail(Email))
+            {
+                return Result.Failure("Email is not valid.", StatusCodes.Status400BadRequest);
             }
             
             // Validate IdentityDocumentType

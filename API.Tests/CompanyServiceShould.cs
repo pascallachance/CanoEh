@@ -28,6 +28,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 Description = "A test company",
                 Logo = "test-logo.png"
             };
@@ -37,6 +38,7 @@ namespace API.Tests
                 Id = Guid.NewGuid(),
                 OwnerID = ownerId,
                 Name = request.Name,
+                Email = request.Email,
                 Description = request.Description,
                 Logo = request.Logo,
                 CreatedAt = DateTime.UtcNow,
@@ -67,6 +69,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 Description = "A test company",
                 Logo = "test-logo.png"
             };
@@ -90,6 +93,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 Description = "A test company",
                 Logo = "test-logo.png"
             };
@@ -99,6 +103,7 @@ namespace API.Tests
                 Id = Guid.NewGuid(),
                 OwnerID = Guid.NewGuid(),
                 Name = request.Name,
+                Email = "existing@company.com",
                 Description = "Different description",
                 Logo = "different-logo.png",
                 CreatedAt = DateTime.UtcNow,
@@ -125,6 +130,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "  Test Company  ", // Name with leading and trailing whitespace
+                Email = "test@company.com",
                 Description = "A test company",
                 Logo = "test-logo.png"
             };
@@ -134,6 +140,7 @@ namespace API.Tests
                 Id = Guid.NewGuid(),
                 OwnerID = Guid.NewGuid(),
                 Name = "Test Company", // Existing company with trimmed name
+                Email = "existing@company.com",
                 Description = "Different description",
                 Logo = "different-logo.png",
                 CreatedAt = DateTime.UtcNow,
@@ -160,6 +167,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "  Test Company  ", // Name with leading and trailing whitespace
+                Email = "test@company.com",
                 Description = "A test company",
                 Logo = "test-logo.png"
             };
@@ -169,6 +177,7 @@ namespace API.Tests
                 Id = Guid.NewGuid(),
                 OwnerID = ownerId,
                 Name = "Test Company", // Expected trimmed name
+                Email = "test@company.com",
                 Description = request.Description,
                 Logo = request.Logo,
                 CreatedAt = DateTime.UtcNow,
@@ -196,6 +205,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 Description = "A test company",
                 Logo = "test-logo.png"
             };
@@ -219,6 +229,7 @@ namespace API.Tests
                 Id = companyId,
                 OwnerID = Guid.NewGuid(),
                 Name = "Test Company",
+                Email = "test@company.com",
                 Description = "A test company",
                 Logo = "test-logo.png",
                 CreatedAt = DateTime.UtcNow,
@@ -261,6 +272,7 @@ namespace API.Tests
             var request = new UpdateCompanyRequest
             {
                 Id = companyId,
+                Email = "test@company.com",
                 Name = "Updated Company Name",
                 Description = "Updated description",
                 Logo = "updated-logo.png"
@@ -271,6 +283,7 @@ namespace API.Tests
                 Id = companyId,
                 OwnerID = ownerId,
                 Name = "Original Company Name",
+                Email = "test@company.com",
                 Description = "Original description",
                 Logo = "original-logo.png",
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
@@ -303,6 +316,7 @@ namespace API.Tests
             var request = new UpdateCompanyRequest
             {
                 Id = companyId,
+                Email = "test@company.com",
                 Name = "  Existing Company  ", // Name with whitespace that matches another company after trim
                 Description = "Updated description",
                 Logo = "updated-logo.png"
@@ -313,6 +327,7 @@ namespace API.Tests
                 Id = companyId,
                 OwnerID = ownerId,
                 Name = "Original Company Name",
+                Email = "test@company.com",
                 Description = "Original description",
                 Logo = "original-logo.png",
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
@@ -324,6 +339,7 @@ namespace API.Tests
                 Id = otherCompanyId,
                 OwnerID = Guid.NewGuid(),
                 Name = "Existing Company", // This company already has the trimmed name
+                Email = "other@company.com",
                 Description = "Other description",
                 Logo = "other-logo.png",
                 CreatedAt = DateTime.UtcNow.AddDays(-2),
@@ -351,6 +367,7 @@ namespace API.Tests
             var request = new UpdateCompanyRequest
             {
                 Id = companyId,
+                Email = "test@company.com",
                 Name = "  Updated Company Name  ", // Name with leading and trailing whitespace
                 Description = "Updated description",
                 Logo = "updated-logo.png"
@@ -361,6 +378,7 @@ namespace API.Tests
                 Id = companyId,
                 OwnerID = ownerId,
                 Name = "Original Company Name",
+                Email = "test@company.com",
                 Description = "Original description",
                 Logo = "original-logo.png",
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
@@ -391,6 +409,7 @@ namespace API.Tests
             var request = new UpdateCompanyRequest
             {
                 Id = companyId,
+                Email = "test@company.com",
                 Name = "Updated Company Name",
                 Description = "Updated description",
                 Logo = "updated-logo.png"
@@ -401,6 +420,7 @@ namespace API.Tests
                 Id = companyId,
                 OwnerID = ownerId, // Actual owner is different
                 Name = "Original Company Name",
+                Email = "test@company.com",
                 Description = "Original description",
                 Logo = "original-logo.png",
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
@@ -425,6 +445,7 @@ namespace API.Tests
             var request = new UpdateCompanyRequest
             {
                 Id = Guid.NewGuid(),
+                Email = "test@company.com",
                 Name = "Updated Company Name",
                 Description = "Updated description",
                 Logo = "updated-logo.png"
@@ -451,6 +472,7 @@ namespace API.Tests
                 Id = companyId,
                 OwnerID = ownerId,
                 Name = "Company to Delete",
+                Email = "test@company.com",
                 Description = "This company will be deleted",
                 Logo = "logo.png",
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
@@ -484,6 +506,7 @@ namespace API.Tests
                 Id = companyId,
                 OwnerID = ownerId, // Actual owner
                 Name = "Company to Delete",
+                Email = "test@company.com",
                 Description = "This company will be deleted",
                 Logo = "logo.png",
                 CreatedAt = DateTime.UtcNow.AddDays(-1),

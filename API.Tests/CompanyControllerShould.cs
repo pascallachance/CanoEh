@@ -100,7 +100,7 @@ namespace API.Tests
                 Name = "Test Company",
                 Email = "test@company.com",
                 Description = "A test company",
-                Logo = "test-logo.png",
+                Logo = "test-logo.png"
             };
 
             // Set up controller context with no authenticated user (empty claims)
@@ -128,7 +128,7 @@ namespace API.Tests
                 Name = "Test Company",
                 Email = "test@company.com",
                 Description = "A test company",
-                Logo = "test-logo.png",
+                Logo = "test-logo.png"
             };
 
             _mockUserService.Setup(s => s.GetUserEntityAsync("test@example.com"))
@@ -206,7 +206,7 @@ namespace API.Tests
                 Name = "Test Company",
                 Email = "test@company.com",
                 Description = "A test company",
-                Logo = "test-logo.png",
+                Logo = "test-logo.png"
             };
 
             var user = new User

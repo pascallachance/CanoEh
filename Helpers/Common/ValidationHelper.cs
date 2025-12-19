@@ -1,3 +1,5 @@
+using System.Net.Mail;
+
 namespace Helpers.Common
 {
     public static class ValidationHelper
@@ -16,7 +18,7 @@ namespace Helpers.Common
 
             try
             {
-                var addr = new System.Net.Mail.MailAddress(email);
+                var addr = new MailAddress(email);
                 return addr.Address == email;
             }
             catch

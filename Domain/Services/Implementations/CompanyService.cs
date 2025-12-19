@@ -135,7 +135,7 @@ namespace Domain.Services.Implementations
             }
         }
 
-        public async Task<Result<UpdateCompanyResponse>> UpdateCompanyAsync(UpdateCompanyRequest updateRequest)
+        public async Task<Result<UpdateCompanyResponse>> UpdateMyCompanyAsync(UpdateCompanyRequest updateRequest, Guid ownerId)
         {
             try
             {
@@ -148,6 +148,11 @@ namespace Domain.Services.Implementations
                     );
                 }
 
+                if (ownerId == Guid.Empty)
+                {
+                    return Result.Failure<UpdateCompanyResponse>("Owner ID is required.", StatusCodes.Status400BadRequest);
+                }
+
                 // Find the company to update
                 var companyToUpdate = await _companyRepository.GetByIdAsync(updateRequest.Id);
                 if (companyToUpdate == null)
@@ -156,7 +161,7 @@ namespace Domain.Services.Implementations
                 }
 
                 // Check if the user is the owner
-                if (companyToUpdate.OwnerID != updateRequest.OwnerID)
+                if (companyToUpdate.OwnerID != ownerId)
                 {
                     return Result.Failure<UpdateCompanyResponse>("You are not authorized to update this company.", StatusCodes.Status403Forbidden);
                 }

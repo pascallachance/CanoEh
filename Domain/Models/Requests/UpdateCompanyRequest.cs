@@ -6,7 +6,6 @@ namespace Domain.Models.Requests
     public class UpdateCompanyRequest
     {
         public Guid Id { get; set; }
-        public Guid OwnerID { get; set; }
         public required string Name { get; set; }
         public string? Description { get; set; }
         public string? Logo { get; set; }
@@ -39,10 +38,6 @@ namespace Domain.Models.Requests
             if (Id == Guid.Empty)
             {
                 return Result.Failure("Company ID is required.", StatusCodes.Status400BadRequest);
-            }
-            if (OwnerID == Guid.Empty)
-            {
-                return Result.Failure("Owner ID is required.", StatusCodes.Status400BadRequest);
             }
             if (string.IsNullOrWhiteSpace(Name))
             {

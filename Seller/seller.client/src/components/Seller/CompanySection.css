@@ -351,7 +351,7 @@
     width: 100%;
     /* Ensure padding and border are included in width */
     box-sizing: border-box;
-    /* Prevent overflow */
+    /* Prevent overflow so logo content stays clipped within the container and respects border-radius */
     overflow: hidden;
 }
 

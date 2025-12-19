@@ -1,7 +1,7 @@
 # JWT Cookie Authentication Fix
 
 ## Problem
-The frontend login was successful and received a JWT token, but subsequent API calls (like `GetMyCompanies`) were failing with:
+The frontend login was successful and received a JWT token, but subsequent API calls (like `GetMyCompany`) were failing with:
 - CORS error: "No 'Access-Control-Allow-Origin' header is present on the requested resource"
 - 401 Unauthorized error
 

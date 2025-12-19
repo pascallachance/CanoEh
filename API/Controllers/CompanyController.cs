@@ -141,18 +141,18 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Updates the details of a company.
-        /// The user must be authenticated and must be the owner of the company.
+        /// Updates the details of the authenticated user's company.
+        /// The user must be authenticated and can only update their own company data.
         /// </summary>
         [Authorize]
-        [HttpPut("UpdateCompany")]
+        [HttpPut("UpdateMyCompany")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UpdateCompanyResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateCompany([FromBody] UpdateCompanyRequest updateRequest)
+        public async Task<IActionResult> UpdateMyCompany([FromBody] UpdateCompanyRequest updateRequest)
         {
             try
             {
@@ -174,13 +174,7 @@ namespace API.Controllers
                     return Unauthorized("Invalid user.");
                 }
 
-                // Ensure the OwnerID in the request matches the authenticated user
-                if (updateRequest.OwnerID != userResult.Value.ID)
-                {
-                    return StatusCode(StatusCodes.Status403Forbidden, "You can only update your own companies.");
-                }
-
-                var result = await _companyService.UpdateCompanyAsync(updateRequest);
+                var result = await _companyService.UpdateMyCompanyAsync(updateRequest, userResult.Value.ID);
                 if (result.IsFailure)
                 {
                     return StatusCode(result.ErrorCode ?? 500, result.Error);

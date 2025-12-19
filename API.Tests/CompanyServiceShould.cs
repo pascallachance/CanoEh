@@ -261,7 +261,6 @@ namespace API.Tests
             var request = new UpdateCompanyRequest
             {
                 Id = companyId,
-                OwnerID = ownerId,
                 Name = "Updated Company Name",
                 Description = "Updated description",
                 Logo = "updated-logo.png"
@@ -283,7 +282,7 @@ namespace API.Tests
             _mockCompanyRepository.Setup(r => r.UpdateAsync(It.IsAny<Company>())).ReturnsAsync((Company c) => c);
 
             // Act
-            var result = await _companyService.UpdateCompanyAsync(request);
+            var result = await _companyService.UpdateMyCompanyAsync(request, ownerId);
 
             // Assert
             Assert.True(result.IsSuccess);
@@ -304,7 +303,6 @@ namespace API.Tests
             var request = new UpdateCompanyRequest
             {
                 Id = companyId,
-                OwnerID = ownerId,
                 Name = "  Existing Company  ", // Name with whitespace that matches another company after trim
                 Description = "Updated description",
                 Logo = "updated-logo.png"
@@ -336,7 +334,7 @@ namespace API.Tests
             _mockCompanyRepository.Setup(r => r.FindByNameAsync("Existing Company")).ReturnsAsync(otherCompany);
 
             // Act
-            var result = await _companyService.UpdateCompanyAsync(request);
+            var result = await _companyService.UpdateMyCompanyAsync(request, ownerId);
 
             // Assert
             Assert.True(result.IsFailure);
@@ -353,7 +351,6 @@ namespace API.Tests
             var request = new UpdateCompanyRequest
             {
                 Id = companyId,
-                OwnerID = ownerId,
                 Name = "  Updated Company Name  ", // Name with leading and trailing whitespace
                 Description = "Updated description",
                 Logo = "updated-logo.png"
@@ -375,7 +372,7 @@ namespace API.Tests
             _mockCompanyRepository.Setup(r => r.UpdateAsync(It.Is<Company>(c => c.Name == "Updated Company Name"))).ReturnsAsync((Company c) => c);
 
             // Act
-            var result = await _companyService.UpdateCompanyAsync(request);
+            var result = await _companyService.UpdateMyCompanyAsync(request, ownerId);
 
             // Assert
             Assert.True(result.IsSuccess);
@@ -394,7 +391,6 @@ namespace API.Tests
             var request = new UpdateCompanyRequest
             {
                 Id = companyId,
-                OwnerID = differentOwnerId, // Different from actual owner
                 Name = "Updated Company Name",
                 Description = "Updated description",
                 Logo = "updated-logo.png"
@@ -414,12 +410,33 @@ namespace API.Tests
             _mockCompanyRepository.Setup(r => r.GetByIdAsync(companyId)).ReturnsAsync(existingCompany);
 
             // Act
-            var result = await _companyService.UpdateCompanyAsync(request);
+            var result = await _companyService.UpdateMyCompanyAsync(request, differentOwnerId);
 
             // Assert
             Assert.True(result.IsFailure);
             Assert.Equal("You are not authorized to update this company.", result.Error);
             Assert.Equal(StatusCodes.Status403Forbidden, result.ErrorCode);
+        }
+
+        [Fact]
+        public async Task UpdateMyCompanyAsync_ReturnFailure_WhenOwnerIdIsEmpty()
+        {
+            // Arrange
+            var request = new UpdateCompanyRequest
+            {
+                Id = Guid.NewGuid(),
+                Name = "Updated Company Name",
+                Description = "Updated description",
+                Logo = "updated-logo.png"
+            };
+
+            // Act
+            var result = await _companyService.UpdateMyCompanyAsync(request, Guid.Empty);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal("Owner ID is required.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
         }
 
         [Fact]

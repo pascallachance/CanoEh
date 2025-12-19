@@ -147,7 +147,6 @@ namespace API.Tests
             var request = new UpdateCompanyRequest
             {
                 Id = Guid.NewGuid(),
-                OwnerID = Guid.NewGuid(),
                 Name = "Test Company",
                 Description = "A test company",
                 Logo = "logo.png",
@@ -172,7 +171,6 @@ namespace API.Tests
             var request = new UpdateCompanyRequest
             {
                 Id = Guid.NewGuid(),
-                OwnerID = Guid.NewGuid(),
                 Name = "Test Company",
                 IdentityDocumentType = identityDocumentType
             };
@@ -191,7 +189,6 @@ namespace API.Tests
             var request = new UpdateCompanyRequest
             {
                 Id = Guid.NewGuid(),
-                OwnerID = Guid.NewGuid(),
                 Name = "Test Company",
                 IdentityDocumentType = "invalid document type"
             };
@@ -217,7 +214,6 @@ namespace API.Tests
             var request = new UpdateCompanyRequest
             {
                 Id = Guid.NewGuid(),
-                OwnerID = Guid.NewGuid(),
                 Name = "Test Company",
                 CompanyType = companyType
             };
@@ -236,7 +232,6 @@ namespace API.Tests
             var request = new UpdateCompanyRequest
             {
                 Id = Guid.NewGuid(),
-                OwnerID = Guid.NewGuid(),
                 Name = "Test Company",
                 CompanyType = "invalid company type"
             };

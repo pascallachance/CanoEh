@@ -124,7 +124,10 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
                 return;
             }
 
+            // GetMyCompany returns an array of companies owned by the user
+            // According to the API, a user can have multiple companies
             const companies: CompanyDetailsResponse[] = await response.json();
+            
             // Find the currently selected company in the response
             const currentCompanyData = companies.find(c => c.id === selectedCompany.id);
             
@@ -146,6 +149,8 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
                     bankDocument: currentCompanyData.bankDocument || '',
                     facturationDocument: currentCompanyData.facturationDocument || ''
                 });
+            } else {
+                console.warn('Selected company not found in API response');
             }
         } catch (error) {
             console.error('Error fetching company data:', error);
@@ -171,22 +176,42 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
 
     // Cancel handler - defined before use in useEffect
     const handleCancel = useCallback(() => {
-        if (selectedCompany && companyDetails) {
-            setFormData({
-                name: companyDetails.name || '',
-                logo: companyDetails.logo || '',
-                phone: companyDetails.companyPhone || '',
-                email: companyDetails.email || '',
-                website: companyDetails.webSite || '',
-                address1: companyDetails.address1 || '',
-                address2: companyDetails.address2 || '',
-                city: companyDetails.city || '',
-                provinceState: companyDetails.provinceState || '',
-                country: companyDetails.country || '',
-                postalCode: companyDetails.postalCode || '',
-                bankDocument: companyDetails.bankDocument || '',
-                facturationDocument: companyDetails.facturationDocument || ''
-            });
+        if (selectedCompany) {
+            if (companyDetails) {
+                // Restore from fetched company details if available
+                setFormData({
+                    name: companyDetails.name || '',
+                    logo: companyDetails.logo || '',
+                    phone: companyDetails.companyPhone || '',
+                    email: companyDetails.email || '',
+                    website: companyDetails.webSite || '',
+                    address1: companyDetails.address1 || '',
+                    address2: companyDetails.address2 || '',
+                    city: companyDetails.city || '',
+                    provinceState: companyDetails.provinceState || '',
+                    country: companyDetails.country || '',
+                    postalCode: companyDetails.postalCode || '',
+                    bankDocument: companyDetails.bankDocument || '',
+                    facturationDocument: companyDetails.facturationDocument || ''
+                });
+            } else {
+                // Fallback to basic company data if details haven't loaded
+                setFormData({
+                    name: selectedCompany.name || '',
+                    logo: selectedCompany.logo || '',
+                    phone: '',
+                    email: '',
+                    website: '',
+                    address1: '',
+                    address2: '',
+                    city: '',
+                    provinceState: '',
+                    country: '',
+                    postalCode: '',
+                    bankDocument: '',
+                    facturationDocument: ''
+                });
+            }
             // Revoke any existing blob URL used for preview to avoid memory leaks
             if (previewUrl && previewUrl.startsWith('blob:')) {
                 URL.revokeObjectURL(previewUrl);
@@ -266,11 +291,14 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
     };
 
     const handleSave = async () => {
-        if (!selectedCompany || !companyDetails) {
-            showError('Company data is not loaded');
+        if (!selectedCompany) {
+            showError('No company selected');
             return;
         }
 
+        // Allow save even if companyDetails is not loaded (e.g., for logo-only updates)
+        // For fields not in companyDetails, we'll use empty strings or preserve what's in the form
+        
         try {
             // Upload logo file if selected
             if (selectedFile) {
@@ -309,31 +337,32 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
             }
 
             // Prepare update request with all form data
+            // Use companyDetails if available, otherwise use minimal data
             const updateRequest = {
                 id: selectedCompany.id,
                 name: formData.name,
-                description: companyDetails.description,
+                description: companyDetails?.description,
                 logo: formData.logo,
                 email: formData.email,
                 companyPhone: formData.phone,
                 webSite: formData.website,
                 address1: formData.address1,
                 address2: formData.address2,
-                address3: companyDetails.address3,
+                address3: companyDetails?.address3,
                 city: formData.city,
                 provinceState: formData.provinceState,
                 country: formData.country,
                 postalCode: formData.postalCode,
                 bankDocument: formData.bankDocument,
                 facturationDocument: formData.facturationDocument,
-                // Preserve existing fields that are not in the form
-                countryOfCitizenship: companyDetails.countryOfCitizenship,
-                fullBirthName: companyDetails.fullBirthName,
-                countryOfBirth: companyDetails.countryOfBirth,
-                birthDate: companyDetails.birthDate,
-                identityDocumentType: companyDetails.identityDocumentType,
-                identityDocument: companyDetails.identityDocument,
-                companyType: companyDetails.companyType
+                // Preserve existing fields that are not in the form (only if companyDetails is loaded)
+                countryOfCitizenship: companyDetails?.countryOfCitizenship,
+                fullBirthName: companyDetails?.fullBirthName,
+                countryOfBirth: companyDetails?.countryOfBirth,
+                birthDate: companyDetails?.birthDate,
+                identityDocumentType: companyDetails?.identityDocumentType,
+                identityDocument: companyDetails?.identityDocument,
+                companyType: companyDetails?.companyType
             };
 
             // Call UpdateMyCompany API
@@ -361,7 +390,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
                 onCompanyUpdate(updatedCompany);
             }
 
-            // Refresh company data from server
+            // Refresh company data from server to get latest state
             await fetchCompanyData();
 
             showSuccess('Company information updated successfully!');

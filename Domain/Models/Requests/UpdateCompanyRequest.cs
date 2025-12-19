@@ -55,7 +55,7 @@ namespace Domain.Models.Requests
             {
                 return Result.Failure("Email is required.", StatusCodes.Status400BadRequest);
             }
-            if (!IsValidEmail(Email))
+            if (!ValidationHelper.IsValidEmail(Email))
             {
                 return Result.Failure("Email is not valid.", StatusCodes.Status400BadRequest);
             }
@@ -81,19 +81,6 @@ namespace Domain.Models.Requests
             }
             
             return Result.Success();
-        }
-
-        private static bool IsValidEmail(string email)
-        {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
-            }
         }
     }
 }

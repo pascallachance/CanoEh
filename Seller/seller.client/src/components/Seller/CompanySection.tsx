@@ -33,6 +33,14 @@ interface CompanyDetailsResponse {
     postalCode?: string;
     bankDocument?: string;
     facturationDocument?: string;
+    // Additional fields from the Company entity
+    countryOfCitizenship?: string;
+    fullBirthName?: string;
+    countryOfBirth?: string;
+    birthDate?: string;
+    identityDocumentType?: string;
+    identityDocument?: string;
+    companyType?: string;
 }
 
 interface CompanySectionProps {

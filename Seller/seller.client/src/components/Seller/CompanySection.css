@@ -372,6 +372,7 @@
     font-size: 0.95rem;
     line-height: 1.5;
     width: 100%;
+    width: 100%;
     /* Ensure padding and border are included in width */
     box-sizing: border-box;
 }

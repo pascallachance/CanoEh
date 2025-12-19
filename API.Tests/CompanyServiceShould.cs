@@ -419,6 +419,27 @@ namespace API.Tests
         }
 
         [Fact]
+        public async Task UpdateMyCompanyAsync_ReturnFailure_WhenOwnerIdIsEmpty()
+        {
+            // Arrange
+            var request = new UpdateCompanyRequest
+            {
+                Id = Guid.NewGuid(),
+                Name = "Updated Company Name",
+                Description = "Updated description",
+                Logo = "updated-logo.png"
+            };
+
+            // Act
+            var result = await _companyService.UpdateMyCompanyAsync(request, Guid.Empty);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal("Owner ID is required.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
         public async Task DeleteCompanyAsync_ReturnSuccess_WhenValidRequestAndUserIsOwner()
         {
             // Arrange

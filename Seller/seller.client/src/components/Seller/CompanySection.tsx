@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNotifications } from '../../contexts/useNotifications';
 import { toAbsoluteUrl } from '../../utils/urlUtils';
+import { ApiClient } from '../../utils/apiClient';
 import './CompanySection.css';
 
 interface Company {
@@ -11,6 +12,36 @@ interface Company {
     logo?: string;
     createdAt: string;
     updatedAt?: string;
+}
+
+interface CompanyDetailsResponse {
+    id: string;
+    ownerID: string;
+    name: string;
+    description?: string;
+    logo?: string;
+    createdAt: string;
+    updatedAt?: string;
+    CompanyPhone?: string;
+    email: string;
+    WebSite?: string;
+    Address1?: string;
+    Address2?: string;
+    Address3?: string;
+    City?: string;
+    ProvinceState?: string;
+    Country?: string;
+    PostalCode?: string;
+    BankDocument?: string;
+    FacturationDocument?: string;
+    // Additional fields from the Company entity
+    CountryOfCitizenship?: string;
+    FullBirthName?: string;
+    CountryOfBirth?: string;
+    BirthDate?: string;
+    IdentityDocumentType?: string;
+    IdentityDocument?: string;
+    CompanyType?: string;
 }
 
 interface CompanySectionProps {
@@ -57,6 +88,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
         companies.length > 0 ? companies[0] : null
     );
     const [expandedCard, setExpandedCard] = useState<CardSection>(null);
+    const [companyDetails, setCompanyDetails] = useState<CompanyDetailsResponse | null>(null);
     const [formData, setFormData] = useState<CompanyFormData>({
         name: selectedCompany?.name || '',
         logo: selectedCompany?.logo || '',
@@ -77,6 +109,60 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
         toAbsoluteUrl(getCompanyLogoPath(selectedCompany?.id))
     );
 
+    // Fetch complete company data from API
+    const fetchCompanyData = useCallback(async () => {
+        if (!selectedCompany) return;
+        
+        try {
+            const response = await ApiClient.get(
+                `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/GetMyCompany`
+            );
+
+            if (!response.ok) {
+                console.error('Failed to fetch company data:', response.status, response.statusText);
+                showError('Failed to load company data');
+                return;
+            }
+
+            // GetMyCompany returns an array of companies owned by the user
+            // According to the API, a user can have multiple companies
+            const companies: CompanyDetailsResponse[] = await response.json();
+            
+            // Find the currently selected company in the response
+            const currentCompanyData = companies.find(c => c.id === selectedCompany.id);
+            
+            if (currentCompanyData) {
+                setCompanyDetails(currentCompanyData);
+                // Update form data with fetched values
+                setFormData({
+                    name: currentCompanyData.name || '',
+                    logo: currentCompanyData.logo || '',
+                    phone: currentCompanyData.companyPhone || '',
+                    email: currentCompanyData.email || '',
+                    website: currentCompanyData.webSite || '',
+                    address1: currentCompanyData.address1 || '',
+                    address2: currentCompanyData.address2 || '',
+                    city: currentCompanyData.city || '',
+                    provinceState: currentCompanyData.provinceState || '',
+                    country: currentCompanyData.country || '',
+                    postalCode: currentCompanyData.postalCode || '',
+                    bankDocument: currentCompanyData.bankDocument || '',
+                    facturationDocument: currentCompanyData.facturationDocument || ''
+                });
+            } else {
+                console.warn('Selected company not found in API response');
+            }
+        } catch (error) {
+            console.error('Error fetching company data:', error);
+            showError('An error occurred while loading company data');
+        }
+    }, [selectedCompany, showError]);
+
+    // Fetch company data when component mounts or selected company changes
+    useEffect(() => {
+        fetchCompanyData();
+    }, [fetchCompanyData]);
+
     // Update preview URL when selected company changes
     // Always construct the logo path based on company ID to check for stored logo
     useEffect(() => {
@@ -91,21 +177,41 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
     // Cancel handler - defined before use in useEffect
     const handleCancel = useCallback(() => {
         if (selectedCompany) {
-            setFormData({
-                name: selectedCompany.name,
-                logo: selectedCompany.logo || '',
-                phone: '',
-                email: '',
-                website: '',
-                address1: '',
-                address2: '',
-                city: '',
-                provinceState: '',
-                country: '',
-                postalCode: '',
-                bankDocument: '',
-                facturationDocument: ''
-            });
+            if (companyDetails) {
+                // Restore from fetched company details if available
+                setFormData({
+                    name: companyDetails.name || '',
+                    logo: companyDetails.logo || '',
+                    phone: companyDetails.companyPhone || '',
+                    email: companyDetails.email || '',
+                    website: companyDetails.webSite || '',
+                    address1: companyDetails.address1 || '',
+                    address2: companyDetails.address2 || '',
+                    city: companyDetails.city || '',
+                    provinceState: companyDetails.provinceState || '',
+                    country: companyDetails.country || '',
+                    postalCode: companyDetails.postalCode || '',
+                    bankDocument: companyDetails.bankDocument || '',
+                    facturationDocument: companyDetails.facturationDocument || ''
+                });
+            } else {
+                // Fallback to basic company data if details haven't loaded
+                setFormData({
+                    name: selectedCompany.name || '',
+                    logo: selectedCompany.logo || '',
+                    phone: '',
+                    email: '',
+                    website: '',
+                    address1: '',
+                    address2: '',
+                    city: '',
+                    provinceState: '',
+                    country: '',
+                    postalCode: '',
+                    bankDocument: '',
+                    facturationDocument: ''
+                });
+            }
             // Revoke any existing blob URL used for preview to avoid memory leaks
             if (previewUrl && previewUrl.startsWith('blob:')) {
                 URL.revokeObjectURL(previewUrl);
@@ -115,7 +221,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
             setPreviewUrl(toAbsoluteUrl(getCompanyLogoPath(selectedCompany.id)));
         }
         setExpandedCard(null);
-    }, [selectedCompany, previewUrl]);
+    }, [selectedCompany, companyDetails, previewUrl]);
 
     // Handle Escape key to close expanded card for keyboard accessibility
     useEffect(() => {
@@ -140,21 +246,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
 
     const handleCompanySelect = (company: Company) => {
         setSelectedCompany(company);
-        setFormData({
-            name: company.name,
-            logo: company.logo || '',
-            phone: '',
-            email: '',
-            website: '',
-            address1: '',
-            address2: '',
-            city: '',
-            provinceState: '',
-            country: '',
-            postalCode: '',
-            bankDocument: '',
-            facturationDocument: ''
-        });
+        // Form data will be populated by fetchCompanyData useEffect
         setSelectedFile(null);
         if (previewUrl && previewUrl.startsWith('blob:')) {
             URL.revokeObjectURL(previewUrl);
@@ -199,9 +291,45 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
     };
 
     const handleSave = async () => {
-        // Upload logo file if selected
-        if (selectedFile && selectedCompany) {
-            try {
+        if (!selectedCompany) {
+            showError('No company selected');
+            return;
+        }
+
+        // Validate required fields before making API call
+        if (!formData.name || formData.name.trim() === '') {
+            showError('Company name is required');
+            return;
+        }
+
+        if (formData.name.length > 255) {
+            showError('Company name must be 255 characters or less');
+            return;
+        }
+
+        if (!formData.email || formData.email.trim() === '') {
+            showError('Email is required');
+            return;
+        }
+
+        if (formData.email.length > 255) {
+            showError('Email must be 255 characters or less');
+            return;
+        }
+
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            showError('Please enter a valid email address');
+            return;
+        }
+
+        // Allow save even if companyDetails is not loaded (e.g., for logo-only updates)
+        // For fields not in companyDetails, we'll use empty strings or preserve what's in the form
+        
+        try {
+            // Upload logo file if selected
+            if (selectedFile) {
                 const logoUploadFormData = new FormData();
                 logoUploadFormData.append('file', selectedFile);
 
@@ -225,15 +353,6 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
                 const logoUrl = uploadResult.logoUrl;
                 console.log('Logo uploaded successfully:', logoUrl);
 
-                // Update the company state with the new logo URL immutably
-                const updatedCompany = { ...selectedCompany, logo: logoUrl };
-                setSelectedCompany(updatedCompany);
-
-                // Notify parent component of the update
-                if (onCompanyUpdate) {
-                    onCompanyUpdate(updatedCompany);
-                }
-
                 // Update form data with the permanent URL
                 setFormData(prev => ({ ...prev, logo: logoUrl }));
 
@@ -243,16 +362,82 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
                     URL.revokeObjectURL(previewUrl);
                 }
                 setPreviewUrl(logoUrl);
+            }
 
-                showSuccess('Company logo updated successfully!');
-            } catch (error) {
-                console.error('Error uploading logo:', error);
-                showError('An error occurred while uploading the logo');
+            // Prepare update request with all form data
+            // Use companyDetails if available, otherwise use minimal data
+            const updateRequest = {
+                id: selectedCompany.id,
+                name: formData.name,
+                description: companyDetails?.description,
+                logo: formData.logo,
+                email: formData.email,
+                CompanyPhone: formData.phone,
+                WebSite: formData.website,
+                Address1: formData.address1,
+                Address2: formData.address2,
+                Address3: companyDetails?.address3,
+                city: formData.city,
+                ProvinceState: formData.provinceState,
+                country: formData.country,
+                PostalCode: formData.postalCode,
+                BankDocument: formData.bankDocument,
+                FacturationDocument: formData.facturationDocument,
+                // Preserve existing fields that are not in the form (only if companyDetails is loaded)
+                CountryOfCitizenship: companyDetails?.countryOfCitizenship,
+                FullBirthName: companyDetails?.fullBirthName,
+                CountryOfBirth: companyDetails?.countryOfBirth,
+                BirthDate: companyDetails?.birthDate,
+                IdentityDocumentType: companyDetails?.identityDocumentType,
+                IdentityDocument: companyDetails?.identityDocument,
+                CompanyType: companyDetails?.companyType
+            };
+
+            // Call UpdateMyCompany API
+            const updateResponse = await ApiClient.put(
+                `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/UpdateMyCompany`,
+                updateRequest
+            );
+
+            if (!updateResponse.ok) {
+                const errorText = await updateResponse.text();
+                console.error(`Failed to update company ${selectedCompany.id}: ${updateResponse.status} ${updateResponse.statusText}`, errorText);
+                showError(`Failed to update company: ${errorText || updateResponse.statusText}`);
+
+                // Roll back logo-related client state so UI matches persisted company data
+                setFormData(prev => ({
+                    ...prev,
+                    logo: selectedCompany.logo
+                }));
+                setPreviewUrl(
+                    selectedCompany.logo
+                        ? toAbsoluteUrl(selectedCompany.logo)
+                        : null
+                );
                 return;
             }
+
+            const updateResult = await updateResponse.json();
+            console.log('Company updated successfully:', updateResult);
+
+            // Update the company state with the new data
+            const updatedCompany = { ...selectedCompany, name: formData.name, logo: formData.logo };
+            setSelectedCompany(updatedCompany);
+
+            // Notify parent component of the update
+            if (onCompanyUpdate) {
+                onCompanyUpdate(updatedCompany);
+            }
+
+            // Refresh company data from server to get latest state
+            await fetchCompanyData();
+
+            showSuccess('Company information updated successfully!');
+            setExpandedCard(null);
+        } catch (error) {
+            console.error('Error saving company data:', error);
+            showError('An error occurred while saving company data');
         }
-        
-        setExpandedCard(null);
     };
 
     const toggleCard = (card: CardSection) => {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../contexts/useNotifications';
 import { toAbsoluteUrl } from '../../utils/urlUtils';
@@ -110,6 +110,14 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
     const [previewUrl, setPreviewUrl] = useState<string>(
         toAbsoluteUrl(getCompanyLogoPath(selectedCompany?.id))
     );
+    
+    // Use ref to track preview URL for cleanup without causing handleCancel to recreate
+    const previewUrlRef = useRef<string>(previewUrl);
+    
+    // Keep ref in sync with state
+    useEffect(() => {
+        previewUrlRef.current = previewUrl;
+    }, [previewUrl]);
 
     // Fetch complete company data from API
     const fetchCompanyData = useCallback(async () => {
@@ -215,8 +223,9 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
                 });
             }
             // Revoke any existing blob URL used for preview to avoid memory leaks
-            if (previewUrl && previewUrl.startsWith('blob:')) {
-                URL.revokeObjectURL(previewUrl);
+            const currentPreviewUrl = previewUrlRef.current;
+            if (currentPreviewUrl && currentPreviewUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(currentPreviewUrl);
             }
             setSelectedFile(null);
             // Construct logo path based on company ID
@@ -226,7 +235,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
         
         // Navigate to company section to ensure we stay on this page
         navigate('/seller', { state: { section: 'company' }, replace: true });
-    }, [selectedCompany, companyDetails, previewUrl, navigate]);
+    }, [selectedCompany, companyDetails, navigate]);
 
     // Handle Escape key to close expanded card for keyboard accessibility
     useEffect(() => {

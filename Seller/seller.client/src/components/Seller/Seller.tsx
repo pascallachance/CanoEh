@@ -37,7 +37,10 @@ interface Company {
 
 function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerProps) {
     const location = useLocation();
-    const [activeSection, setActiveSection] = useState<SellerSection>('analytics');
+    // Initialize activeSection from navigation state if available, otherwise default to 'analytics'
+    // This prevents flash of wrong section when navigating with state
+    const initialSection = (location.state as NavigationState | null)?.section || 'analytics';
+    const [activeSection, setActiveSection] = useState<SellerSection>(initialSection);
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
     const { language, setLanguage, t } = useLanguage();
     const navigate = useNavigate();

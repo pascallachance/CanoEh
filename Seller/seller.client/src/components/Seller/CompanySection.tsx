@@ -22,26 +22,26 @@ interface CompanyDetailsResponse {
     logo?: string;
     createdAt: string;
     updatedAt?: string;
-    companyPhone?: string;
+    CompanyPhone?: string;
     email: string;
-    webSite?: string;
-    address1?: string;
-    address2?: string;
-    address3?: string;
-    city?: string;
-    provinceState?: string;
-    country?: string;
-    postalCode?: string;
-    bankDocument?: string;
-    facturationDocument?: string;
+    WebSite?: string;
+    Address1?: string;
+    Address2?: string;
+    Address3?: string;
+    City?: string;
+    ProvinceState?: string;
+    Country?: string;
+    PostalCode?: string;
+    BankDocument?: string;
+    FacturationDocument?: string;
     // Additional fields from the Company entity
-    countryOfCitizenship?: string;
-    fullBirthName?: string;
-    countryOfBirth?: string;
-    birthDate?: string;
-    identityDocumentType?: string;
-    identityDocument?: string;
-    companyType?: string;
+    CountryOfCitizenship?: string;
+    FullBirthName?: string;
+    CountryOfBirth?: string;
+    BirthDate?: string;
+    IdentityDocumentType?: string;
+    IdentityDocument?: string;
+    CompanyType?: string;
 }
 
 interface CompanySectionProps {

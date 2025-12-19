@@ -30,7 +30,7 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task GetMyCompanies_ReturnOk_WhenAuthenticatedViaCookie()
+        public async Task GetMyCompany_ReturnOk_WhenAuthenticatedViaCookie()
         {
             // Arrange
             var userId = Guid.NewGuid();
@@ -78,7 +78,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.GetMyCompanies();
+            var response = await _controller.GetMyCompany();
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(response);
@@ -87,7 +87,7 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task GetMyCompanies_ReturnUnauthorized_WhenNotAuthenticated()
+        public async Task GetMyCompany_ReturnUnauthorized_WhenNotAuthenticated()
         {
             // Arrange - set up empty authentication context
             _controller.ControllerContext = new ControllerContext
@@ -96,7 +96,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.GetMyCompanies();
+            var response = await _controller.GetMyCompany();
 
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(response);
@@ -105,7 +105,7 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task GetMyCompanies_ReturnUnauthorized_WhenInvalidUser()
+        public async Task GetMyCompany_ReturnUnauthorized_WhenInvalidUser()
         {
             // Arrange
             _mockUserService.Setup(s => s.GetUserEntityAsync("invalid@example.com"))
@@ -124,7 +124,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.GetMyCompanies();
+            var response = await _controller.GetMyCompany();
 
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(response);

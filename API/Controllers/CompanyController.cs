@@ -103,11 +103,11 @@ namespace API.Controllers
         /// The user must be authenticated.
         /// </summary>
         [Authorize]
-        [HttpGet("GetMyCompanies")]
+        [HttpGet("GetMyCompany")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<GetCompanyResponse>))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMyCompanies()
+        public async Task<IActionResult> GetMyCompany()
         {
             try
             {

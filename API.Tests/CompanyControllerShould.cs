@@ -258,7 +258,7 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task GetMyCompanies_ReturnOk_WhenUserAuthenticated()
+        public async Task GetMyCompany_ReturnOk_WhenUserAuthenticated()
         {
             // Arrange
             var userId = Guid.NewGuid();
@@ -316,7 +316,7 @@ namespace API.Tests
             };
 
             // Act
-            var response = await _controller.GetMyCompanies();
+            var response = await _controller.GetMyCompany();
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(response);

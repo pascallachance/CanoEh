@@ -53,17 +53,17 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task GetMyCompanies_ReturnUnauthorized_WithoutCookie()
+        public async Task GetMyCompany_ReturnUnauthorized_WithoutCookie()
         {
             // Act
-            var response = await _client.GetAsync("/api/Company/GetMyCompanies");
+            var response = await _client.GetAsync("/api/Company/GetMyCompany");
 
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
         [Fact]
-        public async Task GetMyCompanies_ProcessCookieAuthentication_WithValidJwtCookie()
+        public async Task GetMyCompany_ProcessCookieAuthentication_WithValidJwtCookie()
         {
             // Arrange
             var jwtToken = GenerateTestJwtToken();
@@ -72,7 +72,7 @@ namespace API.Tests
             _client.DefaultRequestHeaders.Add("Cookie", $"AuthToken={jwtToken}");
 
             // Act
-            var response = await _client.GetAsync("/api/Company/GetMyCompanies");
+            var response = await _client.GetAsync("/api/Company/GetMyCompany");
 
             // Assert
             // We expect either Unauthorized (due to missing services) or InternalServerError (due to missing DB)

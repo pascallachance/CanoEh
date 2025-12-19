@@ -99,15 +99,16 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Retrieves all companies owned by the authenticated user.
+        /// Retrieves the company owned by the authenticated user.
+        /// A user can only have one company.
         /// The user must be authenticated.
         /// </summary>
         [Authorize]
-        [HttpGet("GetMyCompanies")]
+        [HttpGet("GetMyCompany")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<GetCompanyResponse>))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMyCompanies()
+        public async Task<IActionResult> GetMyCompany()
         {
             try
             {

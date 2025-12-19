@@ -84,7 +84,7 @@ function AppContent() {
     const checkExistingSession = async () => {
         try {
             setIsCheckingSession(true);
-            const response = await ApiClient.get(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/GetMyCompanies`);
+            const response = await ApiClient.get(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/GetMyCompany`);
 
             if (response.ok) {
                 const companies = await response.json();

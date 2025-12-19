@@ -34,7 +34,7 @@ function CompanyStatusCheck({ onHasCompany, onNoCompany, onError }: CompanyStatu
     useEffect(() => {
         const checkCompanyStatus = async () => {
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/GetMyCompanies`, {
+                const response = await fetch(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/GetMyCompany`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

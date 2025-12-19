@@ -315,6 +315,26 @@ namespace API.Tests
         }
 
         [Fact]
+        public void CreateCompanyRequest_ReturnFailure_WhenEmailIsTooLong()
+        {
+            // Arrange
+            var longEmail = new string('a', 247) + "@test.com"; // 256 characters total
+            var request = new CreateCompanyRequest
+            {
+                Name = "Test Company",
+                Email = longEmail
+            };
+
+            // Act
+            var result = request.Validate();
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal("Email must be 255 characters or less.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
         public void UpdateCompanyRequest_ReturnFailure_WhenEmailIsEmpty()
         {
             // Arrange
@@ -351,6 +371,27 @@ namespace API.Tests
             // Assert
             Assert.True(result.IsFailure);
             Assert.Equal("Email is not valid.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public void UpdateCompanyRequest_ReturnFailure_WhenEmailIsTooLong()
+        {
+            // Arrange
+            var longEmail = new string('a', 247) + "@test.com"; // 256 characters total
+            var request = new UpdateCompanyRequest
+            {
+                Id = Guid.NewGuid(),
+                Name = "Test Company",
+                Email = longEmail
+            };
+
+            // Act
+            var result = request.Validate();
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal("Email must be 255 characters or less.", result.Error);
             Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
         }
     }

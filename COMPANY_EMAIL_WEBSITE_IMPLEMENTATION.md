@@ -69,7 +69,7 @@ sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Migrations/002_Add_Email
 {
   "name": "My Company",
   "email": "contact@mycompany.com",
-  "website": "https://mycompany.com",
+  "webSite": "https://mycompany.com",
   "description": "Company description",
   "logo": "logo.png"
 }
@@ -82,7 +82,7 @@ sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Migrations/002_Add_Email
   "id": "guid",
   "name": "My Company",
   "email": "contact@mycompany.com",
-  "website": "https://mycompany.com",
+  "webSite": "https://mycompany.com",
   "description": "Updated description"
 }
 ```

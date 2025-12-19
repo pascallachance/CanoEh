@@ -12,6 +12,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 Description = "A test company",
                 Logo = "logo.png",
                 IdentityDocumentType = "passport",
@@ -35,6 +36,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 IdentityDocumentType = identityDocumentType
             };
 
@@ -52,6 +54,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 IdentityDocumentType = "invalid document type"
             };
 
@@ -76,6 +79,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 CompanyType = companyType
             };
 
@@ -93,6 +97,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 CompanyType = "invalid company type"
             };
 
@@ -112,6 +117,7 @@ namespace API.Tests
             var request = new CreateCompanyRequest
             {
                 Name = "Test Company",
+                Email = "test@company.com",
                 Description = null,
                 Logo = null,
                 CountryOfCitizenship = null,
@@ -148,6 +154,7 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 Name = "Test Company",
+                Email = "test@company.com",
                 Description = "A test company",
                 Logo = "logo.png",
                 IdentityDocumentType = "passport",
@@ -172,6 +179,7 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 Name = "Test Company",
+                Email = "test@company.com",
                 IdentityDocumentType = identityDocumentType
             };
 
@@ -190,6 +198,7 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 Name = "Test Company",
+                Email = "test@company.com",
                 IdentityDocumentType = "invalid document type"
             };
 
@@ -215,6 +224,7 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 Name = "Test Company",
+                Email = "test@company.com",
                 CompanyType = companyType
             };
 
@@ -233,6 +243,7 @@ namespace API.Tests
             {
                 Id = Guid.NewGuid(),
                 Name = "Test Company",
+                Email = "test@company.com",
                 CompanyType = "invalid company type"
             };
 

@@ -21,6 +21,7 @@ sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Migrations/001_Add_Langu
 | ID | File | Description | Date |
 |----|------|-------------|------|
 | 001 | 001_Add_Language_Column_To_User.sql | Adds Language column to User table for multilingual email support | 2025-12-09 |
+| 002 | 002_Add_Email_Website_Columns_To_Company.sql | Adds Email (required) and WebSite (optional) columns to Company table | 2025-12-19 |
 
 ## Notes
 

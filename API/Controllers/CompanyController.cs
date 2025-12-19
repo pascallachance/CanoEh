@@ -99,7 +99,8 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Retrieves all companies owned by the authenticated user.
+        /// Retrieves the company owned by the authenticated user.
+        /// A user can only have one company.
         /// The user must be authenticated.
         /// </summary>
         [Authorize]

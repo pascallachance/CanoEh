@@ -54,6 +54,10 @@ namespace Domain.Models.Requests
             {
                 return Result.Failure("Email is not valid.", StatusCodes.Status400BadRequest);
             }
+            if (Email.Length > 255)
+            {
+                return Result.Failure("Email must be 255 characters or less.", StatusCodes.Status400BadRequest);
+            }
             
             // Validate IdentityDocumentType
             if (!string.IsNullOrEmpty(IdentityDocumentType))

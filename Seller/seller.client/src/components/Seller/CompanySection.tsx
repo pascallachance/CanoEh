@@ -296,6 +296,34 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
             return;
         }
 
+        // Validate required fields before making API call
+        if (!formData.name || formData.name.trim() === '') {
+            showError('Company name is required');
+            return;
+        }
+
+        if (formData.name.length > 255) {
+            showError('Company name must be 255 characters or less');
+            return;
+        }
+
+        if (!formData.email || formData.email.trim() === '') {
+            showError('Email is required');
+            return;
+        }
+
+        if (formData.email.length > 255) {
+            showError('Email must be 255 characters or less');
+            return;
+        }
+
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            showError('Please enter a valid email address');
+            return;
+        }
+
         // Allow save even if companyDetails is not loaded (e.g., for logo-only updates)
         // For fields not in companyDetails, we'll use empty strings or preserve what's in the form
         

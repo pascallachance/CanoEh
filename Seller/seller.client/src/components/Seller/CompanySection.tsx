@@ -375,6 +375,17 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
                 const errorText = await updateResponse.text();
                 console.error(`Failed to update company ${selectedCompany.id}: ${updateResponse.status} ${updateResponse.statusText}`, errorText);
                 showError(`Failed to update company: ${errorText || updateResponse.statusText}`);
+
+                // Roll back logo-related client state so UI matches persisted company data
+                setFormData(prev => ({
+                    ...prev,
+                    logo: selectedCompany.logo
+                }));
+                setPreviewUrl(
+                    selectedCompany.logo
+                        ? toAbsoluteUrl(selectedCompany.logo)
+                        : null
+                );
                 return;
             }
 

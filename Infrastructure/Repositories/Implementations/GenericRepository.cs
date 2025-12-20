@@ -4,9 +4,10 @@ using Microsoft.Data.SqlClient;
 
 namespace Infrastructure.Repositories.Implementations
 {
-    public abstract class GenericRepository<T>(string connectionString) : IRepository<T> where T : class
+    public abstract class GenericRepository<T>(string connectionString) : IRepository<T>, IDisposable where T : class
     {
         protected IDbConnection dbConnection = new SqlConnection(connectionString);
+        private bool disposed = false;
 
         public abstract Task<T> AddAsync(T entity);
 
@@ -23,5 +24,31 @@ namespace Infrastructure.Repositories.Implementations
         public abstract Task<int> CountAsync(Func<T, bool> predicate);
 
         public abstract Task<bool> ExistsAsync(Guid id);
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    // Dispose managed resources
+                    if (dbConnection != null)
+                    {
+                        if (dbConnection.State != ConnectionState.Closed)
+                        {
+                            dbConnection.Close();
+                        }
+                        dbConnection.Dispose();
+                    }
+                }
+                disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

@@ -25,8 +25,11 @@ const SECTION_STORAGE_KEY = 'seller_active_section';
  * Priority: navigation state > sessionStorage > default 'analytics'
  */
 function getInitialSection(location: ReturnType<typeof useLocation>): SellerSection {
+    // Check navigation state first (validate to ensure it's a valid section)
     const stateSection = (location.state as NavigationState | null)?.section;
-    if (stateSection) return stateSection;
+    if (stateSection && VALID_SECTIONS.includes(stateSection)) {
+        return stateSection;
+    }
     
     // Try to restore from sessionStorage
     const storedSection = sessionStorage.getItem(SECTION_STORAGE_KEY);

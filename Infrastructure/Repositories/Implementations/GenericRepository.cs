@@ -6,7 +6,7 @@ namespace Infrastructure.Repositories.Implementations
 {
     public abstract class GenericRepository<T>(string connectionString) : IRepository<T>, IDisposable where T : class
     {
-        protected IDbConnection dbConnection = new SqlConnection(connectionString);
+        protected readonly IDbConnection dbConnection = new SqlConnection(connectionString);
         private bool disposed = false;
 
         public abstract Task<T> AddAsync(T entity);
@@ -31,15 +31,8 @@ namespace Infrastructure.Repositories.Implementations
             {
                 if (disposing)
                 {
-                    // Dispose managed resources
-                    if (dbConnection != null)
-                    {
-                        if (dbConnection.State != ConnectionState.Closed)
-                        {
-                            dbConnection.Close();
-                        }
-                        dbConnection.Dispose();
-                    }
+                    // Dispose managed resources - Dispose() on IDbConnection handles closing automatically
+                    dbConnection?.Dispose();
                 }
                 disposed = true;
             }

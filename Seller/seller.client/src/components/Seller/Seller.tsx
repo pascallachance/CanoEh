@@ -14,6 +14,12 @@ import type { AddProductStep3Data } from '../AddProductStep3';
 
 type SellerSection = 'analytics' | 'products' | 'orders' | 'company';
 
+// Valid section values for type checking
+const VALID_SECTIONS: readonly SellerSection[] = ['analytics', 'products', 'orders', 'company'] as const;
+
+// Storage key for persisting active section
+const SECTION_STORAGE_KEY = 'seller_active_section';
+
 interface NavigationState {
     section?: SellerSection;
 }
@@ -37,7 +43,6 @@ interface Company {
 
 function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerProps) {
     const location = useLocation();
-    const SECTION_STORAGE_KEY = 'seller_active_section';
     
     // Initialize activeSection from navigation state, sessionStorage, or default to 'analytics'
     // Priority: navigation state > sessionStorage > default
@@ -48,7 +53,7 @@ function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerP
         
         // Try to restore from sessionStorage
         const storedSection = sessionStorage.getItem(SECTION_STORAGE_KEY);
-        if (storedSection && ['analytics', 'products', 'orders', 'company'].includes(storedSection)) {
+        if (storedSection && VALID_SECTIONS.includes(storedSection as SellerSection)) {
             return storedSection as SellerSection;
         }
         

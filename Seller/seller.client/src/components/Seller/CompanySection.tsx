@@ -421,12 +421,12 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
                 // Roll back logo-related client state so UI matches persisted company data
                 setFormData(prev => ({
                     ...prev,
-                    logo: selectedCompany.logo
+                    logo: selectedCompany.logo || ''
                 }));
                 setPreviewUrl(
                     selectedCompany.logo
                         ? toAbsoluteUrl(selectedCompany.logo)
-                        : null
+                        : ''
                 );
                 return;
             }

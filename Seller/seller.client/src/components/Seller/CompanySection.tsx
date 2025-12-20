@@ -434,9 +434,20 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
             const updateResult = await updateResponse.json();
             console.log('Company updated successfully:', updateResult);
 
-            // Update the company state with the new data
-            const updatedCompany = { ...selectedCompany, name: formData.name, logo: formData.logo };
+            // Update the company state with the new data from the server response
+            const updatedCompany = {
+                id: updateResult.id,
+                ownerID: updateResult.ownerID,
+                name: updateResult.name,
+                description: updateResult.description,
+                logo: updateResult.logo,
+                createdAt: updateResult.createdAt,
+                updatedAt: updateResult.updatedAt
+            };
             setSelectedCompany(updatedCompany);
+
+            // Update company details with the full response
+            setCompanyDetails(updateResult);
 
             // Notify parent component of the update
             if (onCompanyUpdate) {

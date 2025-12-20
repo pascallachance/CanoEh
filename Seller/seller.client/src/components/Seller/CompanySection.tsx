@@ -431,7 +431,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
                 return;
             }
 
-            const updateResult = await updateResponse.json();
+            const updateResult: CompanyDetailsResponse = await updateResponse.json();
             console.log('Company updated successfully:', updateResult);
 
             // Update the company state with the new data from the server response

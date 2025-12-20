@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../contexts/useNotifications';
 import { toAbsoluteUrl } from '../../utils/urlUtils';
 import { ApiClient } from '../../utils/apiClient';
@@ -85,7 +84,6 @@ function getCompanyLogoPath(companyId: string | undefined): string {
 
 function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
     const { showSuccess, showError } = useNotifications();
-    const navigate = useNavigate();
     const [selectedCompany, setSelectedCompany] = useState<Company | null>(
         companies.length > 0 ? companies[0] : null
     );
@@ -232,10 +230,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
             setPreviewUrl(toAbsoluteUrl(getCompanyLogoPath(selectedCompany.id)));
         }
         setExpandedCard(null);
-        
-        // Navigate to company section to ensure we stay on this page
-        navigate('/seller', { state: { section: 'company' }, replace: true });
-    }, [selectedCompany, companyDetails, navigate]);
+    }, [selectedCompany, companyDetails]);
 
     // Handle Escape key to close expanded card for keyboard accessibility
     useEffect(() => {
@@ -456,9 +451,6 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
 
             showSuccess('Company information updated successfully!');
             setExpandedCard(null);
-            
-            // Navigate to company section to ensure we stay on this page
-            navigate('/seller', { state: { section: 'company' }, replace: true });
         } catch (error) {
             console.error('Error saving company data:', error);
             showError('An error occurred while saving company data');

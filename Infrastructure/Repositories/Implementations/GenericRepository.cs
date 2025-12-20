@@ -31,7 +31,7 @@ namespace Infrastructure.Repositories.Implementations
             {
                 if (disposing)
                 {
-                    // Dispose managed resources - Dispose() on IDbConnection handles closing automatically
+                    // Dispose managed resources - calling Dispose() on IDbConnection automatically closes the connection if open and returns it to the pool
                     dbConnection?.Dispose();
                 }
                 disposed = true;

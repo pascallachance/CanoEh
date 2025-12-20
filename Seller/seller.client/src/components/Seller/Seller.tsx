@@ -14,6 +14,32 @@ import type { AddProductStep3Data } from '../AddProductStep3';
 
 type SellerSection = 'analytics' | 'products' | 'orders' | 'company';
 
+// Valid section values for type checking
+const VALID_SECTIONS: readonly SellerSection[] = ['analytics', 'products', 'orders', 'company'] as const;
+
+// Storage key for persisting active section
+const SECTION_STORAGE_KEY = 'seller_active_section';
+
+/**
+ * Get the initial active section from navigation state, sessionStorage, or default
+ * Priority: navigation state > sessionStorage > default 'analytics'
+ */
+function getInitialSection(location: ReturnType<typeof useLocation>): SellerSection {
+    // Check navigation state first (validate to ensure it's a valid section)
+    const stateSection = (location.state as NavigationState | null)?.section;
+    if (stateSection && VALID_SECTIONS.includes(stateSection)) {
+        return stateSection;
+    }
+    
+    // Try to restore from sessionStorage
+    const storedSection = sessionStorage.getItem(SECTION_STORAGE_KEY);
+    if (storedSection && VALID_SECTIONS.includes(storedSection as SellerSection)) {
+        return storedSection as SellerSection;
+    }
+    
+    return 'analytics';
+}
+
 interface NavigationState {
     section?: SellerSection;
 }
@@ -37,16 +63,26 @@ interface Company {
 
 function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerProps) {
     const location = useLocation();
-    // Initialize activeSection from navigation state if available, otherwise default to 'analytics'
-    // This prevents flash of wrong section when navigating with state
-    const initialSection = (location.state as NavigationState | null)?.section || 'analytics';
-    const [activeSection, setActiveSection] = useState<SellerSection>(initialSection);
+    
+    const [activeSection, setActiveSection] = useState<SellerSection>(() => getInitialSection(location));
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
     const { language, setLanguage, t } = useLanguage();
     const navigate = useNavigate();
     // Track the last navigation key we processed to avoid reprocessing
     // Empty string ensures first real navigation will always be different
     const lastProcessedKeyRef = useRef<string>('');
+    
+    // Persist the active section to sessionStorage whenever it changes
+    // This ensures the section persists even if the component remounts
+    useEffect(() => {
+        sessionStorage.setItem(SECTION_STORAGE_KEY, activeSection);
+
+        // Cleanup: clear stored section when this component unmounts
+        // This prevents cross-user or cross-session leakage of the last active section
+        return () => {
+            sessionStorage.removeItem(SECTION_STORAGE_KEY);
+        };
+    }, [activeSection]);
 
     // Process navigation state to update active section when specified
     // Use location.key to detect and handle unique navigations

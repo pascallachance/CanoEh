@@ -120,9 +120,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
     }, [previewUrl]);
 
     // Fetch complete company data from API
-    const fetchCompanyData = useCallback(async () => {
-        if (!selectedCompany) return;
-        
+    const fetchCompanyData = useCallback(async (companyId: string) => {
         try {
             const response = await ApiClient.get(
                 `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Company/GetMyCompany`
@@ -139,7 +137,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
             const companies: CompanyDetailsResponse[] = await response.json();
             
             // Find the currently selected company in the response
-            const currentCompanyData = companies.find(c => c.id === selectedCompany.id);
+            const currentCompanyData = companies.find(c => c.id === companyId);
             
             if (currentCompanyData) {
                 setCompanyDetails(currentCompanyData);
@@ -166,12 +164,14 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
             console.error('Error fetching company data:', error);
             showError('An error occurred while loading company data');
         }
-    }, [selectedCompany, showError]);
+    }, [showError]);
 
-    // Fetch company data when component mounts or selected company changes
+    // Fetch company data when component mounts or selected company ID changes
     useEffect(() => {
-        fetchCompanyData();
-    }, [fetchCompanyData]);
+        if (selectedCompany?.id) {
+            fetchCompanyData(selectedCompany.id);
+        }
+    }, [selectedCompany?.id, fetchCompanyData]);
 
     // Update preview URL when selected company changes
     // Always construct the logo path based on company ID to check for stored logo
@@ -444,7 +444,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
             }
 
             // Refresh company data from server to get latest state
-            await fetchCompanyData();
+            await fetchCompanyData(selectedCompany.id);
 
             showSuccess('Company information updated successfully!');
             setExpandedCard(null);

@@ -76,6 +76,12 @@ function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerP
     // This ensures the section persists even if the component remounts
     useEffect(() => {
         sessionStorage.setItem(SECTION_STORAGE_KEY, activeSection);
+
+        // Cleanup: clear stored section when this component unmounts
+        // This prevents cross-user or cross-session leakage of the last active section
+        return () => {
+            sessionStorage.removeItem(SECTION_STORAGE_KEY);
+        };
     }, [activeSection]);
 
     // Process navigation state to update active section when specified

@@ -20,6 +20,23 @@ const VALID_SECTIONS: readonly SellerSection[] = ['analytics', 'products', 'orde
 // Storage key for persisting active section
 const SECTION_STORAGE_KEY = 'seller_active_section';
 
+/**
+ * Get the initial active section from navigation state, sessionStorage, or default
+ * Priority: navigation state > sessionStorage > default 'analytics'
+ */
+function getInitialSection(location: ReturnType<typeof useLocation>): SellerSection {
+    const stateSection = (location.state as NavigationState | null)?.section;
+    if (stateSection) return stateSection;
+    
+    // Try to restore from sessionStorage
+    const storedSection = sessionStorage.getItem(SECTION_STORAGE_KEY);
+    if (storedSection && VALID_SECTIONS.includes(storedSection as SellerSection)) {
+        return storedSection as SellerSection;
+    }
+    
+    return 'analytics';
+}
+
 interface NavigationState {
     section?: SellerSection;
 }
@@ -44,23 +61,7 @@ interface Company {
 function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerProps) {
     const location = useLocation();
     
-    // Initialize activeSection from navigation state, sessionStorage, or default to 'analytics'
-    // Priority: navigation state > sessionStorage > default
-    // This prevents losing the section state if the component re-renders or remounts
-    const getInitialSection = (): SellerSection => {
-        const stateSection = (location.state as NavigationState | null)?.section;
-        if (stateSection) return stateSection;
-        
-        // Try to restore from sessionStorage
-        const storedSection = sessionStorage.getItem(SECTION_STORAGE_KEY);
-        if (storedSection && VALID_SECTIONS.includes(storedSection as SellerSection)) {
-            return storedSection as SellerSection;
-        }
-        
-        return 'analytics';
-    };
-    
-    const [activeSection, setActiveSection] = useState<SellerSection>(getInitialSection);
+    const [activeSection, setActiveSection] = useState<SellerSection>(() => getInitialSection(location));
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
     const { language, setLanguage, t } = useLanguage();
     const navigate = useNavigate();

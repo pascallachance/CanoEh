@@ -37,16 +37,37 @@ interface Company {
 
 function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerProps) {
     const location = useLocation();
-    // Initialize activeSection from navigation state if available, otherwise default to 'analytics'
-    // This prevents flash of wrong section when navigating with state
-    const initialSection = (location.state as NavigationState | null)?.section || 'analytics';
-    const [activeSection, setActiveSection] = useState<SellerSection>(initialSection);
+    const SECTION_STORAGE_KEY = 'seller_active_section';
+    
+    // Initialize activeSection from navigation state, sessionStorage, or default to 'analytics'
+    // Priority: navigation state > sessionStorage > default
+    // This prevents losing the section state if the component re-renders or remounts
+    const getInitialSection = (): SellerSection => {
+        const stateSection = (location.state as NavigationState | null)?.section;
+        if (stateSection) return stateSection;
+        
+        // Try to restore from sessionStorage
+        const storedSection = sessionStorage.getItem(SECTION_STORAGE_KEY);
+        if (storedSection && ['analytics', 'products', 'orders', 'company'].includes(storedSection)) {
+            return storedSection as SellerSection;
+        }
+        
+        return 'analytics';
+    };
+    
+    const [activeSection, setActiveSection] = useState<SellerSection>(getInitialSection);
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
     const { language, setLanguage, t } = useLanguage();
     const navigate = useNavigate();
     // Track the last navigation key we processed to avoid reprocessing
     // Empty string ensures first real navigation will always be different
     const lastProcessedKeyRef = useRef<string>('');
+    
+    // Persist the active section to sessionStorage whenever it changes
+    // This ensures the section persists even if the component remounts
+    useEffect(() => {
+        sessionStorage.setItem(SECTION_STORAGE_KEY, activeSection);
+    }, [activeSection]);
 
     // Process navigation state to update active section when specified
     // Use location.key to detect and handle unique navigations

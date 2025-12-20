@@ -171,7 +171,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
         if (selectedCompany?.id) {
             fetchCompanyData(selectedCompany.id);
         }
-    }, [selectedCompany?.id, fetchCompanyData]);
+    }, [selectedCompany?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Update preview URL when selected company changes
     // Always construct the logo path based on company ID to check for stored logo
@@ -431,20 +431,28 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
                 return;
             }
 
-            const updateResult = await updateResponse.json();
+            const updateResult: CompanyDetailsResponse = await updateResponse.json();
             console.log('Company updated successfully:', updateResult);
 
-            // Update the company state with the new data
-            const updatedCompany = { ...selectedCompany, name: formData.name, logo: formData.logo };
+            // Update the company state with the new data from the server response
+            const updatedCompany = {
+                id: updateResult.id,
+                ownerID: updateResult.ownerID,
+                name: updateResult.name,
+                description: updateResult.description,
+                logo: updateResult.logo,
+                createdAt: updateResult.createdAt,
+                updatedAt: updateResult.updatedAt
+            };
             setSelectedCompany(updatedCompany);
+
+            // Update company details with the full response
+            setCompanyDetails(updateResult);
 
             // Notify parent component of the update
             if (onCompanyUpdate) {
                 onCompanyUpdate(updatedCompany);
             }
-
-            // Refresh company data from server to get latest state
-            await fetchCompanyData(selectedCompany.id);
 
             showSuccess('Company information updated successfully!');
             setExpandedCard(null);

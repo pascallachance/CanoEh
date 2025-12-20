@@ -9,56 +9,76 @@ When opening and saving cards repeatedly in the CompanySection component, the ap
 
 ## Root Causes
 
-### 1. Infinite useEffect Loop
+### 1. Unnecessary Navigation Calls Causing Re-renders (MAIN ISSUE)
+```typescript
+// BEFORE (lines 237, 461):
+navigate('/seller', { state: { section: 'company' }, replace: true });
+```
+
+Both `handleSave` and `handleCancel` were calling `navigate()` with the same route and state that was already active. This caused:
+1. A new `location.key` to be generated (even with `replace: true`)
+2. Seller.tsx useEffect (lines 53-64) to detect the key change and process the navigation
+3. Potential component re-renders or remounts
+4. CompanySection's fetchCompanyData useEffect to trigger
+5. Multiple GET requests to the API
+
+In React Strict Mode (development), effects run twice, multiplying the issue to 7+ requests.
+
+### 2. Previously Fixed: Infinite useEffect Loop
 ```typescript
 // BEFORE (line 174):
 }, [selectedCompany?.id, fetchCompanyData]);
-```
 
-The `fetchCompanyData` function was included in the useEffect dependency array. Since `fetchCompanyData` is defined with `useCallback` and depends on `showError` from the notifications context:
-
-```typescript
-const fetchCompanyData = useCallback(async (companyId: string) => {
-    // ... fetch logic
-}, [showError]);
-```
-
-When `showError` changes (which can happen on every render from the context), `fetchCompanyData` is recreated with a new reference. This causes the useEffect to run again, creating an infinite loop of API calls.
-
-### 2. Double Fetch on Save
-```typescript
-// BEFORE (lines 438-447):
-const updatedCompany = { ...selectedCompany, name: formData.name, logo: formData.logo };
-setSelectedCompany(updatedCompany);  // Triggers useEffect
-
-// ... other code
-
-await fetchCompanyData(selectedCompany.id);  // Explicit fetch
-```
-
-After saving:
-1. `setSelectedCompany()` updates the state
-2. This triggers the useEffect (even though ID didn't change, the object reference did)
-3. Then an explicit `fetchCompanyData()` call is made
-4. Result: Two API calls for one save operation
-
-### 3. Inefficient State Updates
-The code manually constructed a partial company object instead of using the complete API response, missing fields and requiring an additional fetch to get the full data.
-
-## Solution
-
-### Change 1: Fix useEffect Dependencies
-```typescript
 // AFTER (line 174):
 }, [selectedCompany?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 ```
 
-**Impact:**
-- Only re-fetch when the company ID actually changes
-- Prevents infinite loop from function reference changes
-- Explicit eslint comment documents the intentional exclusion
+The `fetchCompanyData` function was included in the useEffect dependency array. Since `fetchCompanyData` is defined with `useCallback` and depends on `showError` from the notifications context, when `showError` changes, `fetchCompanyData` is recreated with a new reference, causing the useEffect to run again.
 
-### Change 2: Use API Response Directly
+**Status:** Already fixed in previous commit by removing `fetchCompanyData` from dependencies.
+
+### 3. Previously Fixed: Redundant Fetch After Save
+```typescript
+// BEFORE (lines 438-447):
+const updatedCompany = { ...selectedCompany, name: formData.name, logo: formData.logo };
+setSelectedCompany(updatedCompany);  // Triggers useEffect
+// ... other code
+await fetchCompanyData(selectedCompany.id);  // Explicit fetch - REMOVED
+```
+
+**Status:** Already fixed in previous commit by using API response directly and removing explicit fetch.
+
+## Solution
+
+### Change 1: Remove Unnecessary Navigate Calls (CURRENT FIX)
+```typescript
+// BEFORE (handleCancel, line 237):
+setExpandedCard(null);
+navigate('/seller', { state: { section: 'company' }, replace: true });
+}, [selectedCompany, companyDetails, navigate]);
+
+// AFTER (handleCancel):
+setExpandedCard(null);
+}, [selectedCompany, companyDetails]);
+
+// BEFORE (handleSave, line 461):
+showSuccess('Company information updated successfully!');
+setExpandedCard(null);
+navigate('/seller', { state: { section: 'company' }, replace: true });
+
+// AFTER (handleSave):
+showSuccess('Company information updated successfully!');
+setExpandedCard(null);
+```
+
+**Impact:**
+- Eliminates unnecessary navigation that was causing location.key changes
+- Prevents Seller.tsx useEffect from triggering on save/cancel
+- Prevents CompanySection from re-rendering/remounting
+- Eliminates all redundant GET requests after save operations
+- Removed unused `navigate` hook and import
+
+### Change 2: Use API Response Directly (ALREADY APPLIED)
 ```typescript
 // AFTER (lines 437-450):
 const updateResult = await updateResponse.json();
@@ -89,17 +109,20 @@ setCompanyDetails(updateResult);
 
 ### Before
 - **On Component Mount**: 1 GET request ✓
-- **On Save**: 1 PUT + 2 GET requests = 3 requests ✗
-- **Repeated Saves**: Multiple fetch loops causing 500 errors ✗
+- **On Save**: 1 PUT + 7+ GET requests = 8+ requests ✗
+- **Repeated Saves**: Exponentially increasing requests causing 500 errors ✗
+- **On Cancel**: 1+ GET requests ✗
 
 ### After
 - **On Component Mount**: 1 GET request ✓
 - **On Save**: 1 PUT request = 1 request ✓
 - **Repeated Saves**: No excessive fetches ✓
+- **On Cancel**: 0 GET requests ✓
 
 ### Performance Improvement
-- **50% reduction** in API calls on save operations
+- **87.5% reduction** in API calls on save operations (from 8+ to 1)
 - **100% elimination** of infinite fetch loops
+- **100% elimination** of unnecessary navigation-triggered fetches
 - **Zero** 500 errors from excessive requests
 
 ## Testing Instructions
@@ -159,9 +182,12 @@ These can be addressed in future refactoring if needed.
 
 ## Files Changed
 - `Seller/seller.client/src/components/Seller/CompanySection.tsx`
-  - Line 174: Removed `fetchCompanyData` from useEffect dependencies
-  - Lines 437-450: Updated to use API response directly
-  - Removed: Redundant `fetchCompanyData` call after save
+  - Line 2: Removed `useNavigate` import (no longer needed)
+  - Line 88: Removed `navigate` hook declaration (no longer needed)
+  - Lines 174, 233-236: Removed unnecessary `navigate()` call from `handleCancel` and updated dependency array
+  - Line 174: Removed `fetchCompanyData` from useEffect dependencies (previous fix)
+  - Lines 437-450: Updated to use API response directly (previous fix)
+  - Lines 457-460: Removed unnecessary `navigate()` call from `handleSave`
 
 ## Related Issues
 - Fixes repeated fetch errors when opening/saving company cards

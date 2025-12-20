@@ -171,7 +171,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
         if (selectedCompany?.id) {
             fetchCompanyData(selectedCompany.id);
         }
-    }, [selectedCompany?.id, fetchCompanyData]);
+    }, [selectedCompany?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Update preview URL when selected company changes
     // Always construct the logo path based on company ID to check for stored logo
@@ -442,9 +442,6 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
             if (onCompanyUpdate) {
                 onCompanyUpdate(updatedCompany);
             }
-
-            // Refresh company data from server to get latest state
-            await fetchCompanyData(selectedCompany.id);
 
             showSuccess('Company information updated successfully!');
             setExpandedCard(null);

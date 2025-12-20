@@ -7,7 +7,7 @@ namespace Infrastructure.Repositories.Implementations
     public abstract class GenericRepository<T>(string connectionString) : IRepository<T>, IDisposable where T : class
     {
         protected readonly IDbConnection dbConnection = new SqlConnection(connectionString);
-        private bool disposed = false;
+        protected bool disposed = false;
 
         public abstract Task<T> AddAsync(T entity);
 

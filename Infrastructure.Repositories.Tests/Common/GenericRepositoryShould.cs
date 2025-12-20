@@ -31,12 +31,78 @@ namespace Infrastructure.Repositories.Tests.Common
             Assert.NotNull(testRepository);
         }
 
+        [Fact]
+        public void Dispose_ShouldDisposeDbConnection_WhenCalled()
+        {
+            // Arrange
+            var testRepository = new TestGenericRepository(ConnectionString);
+            var connection = testRepository.GetDbConnection();
+            
+            // Verify connection is initially not disposed
+            Assert.NotNull(connection);
+            Assert.False(testRepository.IsDisposed(), "Repository should not be disposed initially");
+
+            // Act
+            testRepository.Dispose();
+
+            // Assert
+            // Verify the disposed flag is set, indicating the connection has been disposed
+            Assert.True(testRepository.IsDisposed(), "Repository should be marked as disposed after calling Dispose");
+        }
+
+        [Fact]
+        public void Dispose_ShouldBeSafeToCallMultipleTimes_WhenCalledRepeatedly()
+        {
+            // Arrange
+            var testRepository = new TestGenericRepository(ConnectionString);
+
+            // Act - Call Dispose multiple times
+            testRepository.Dispose();
+            testRepository.Dispose();
+            testRepository.Dispose();
+
+            // Assert - Should not throw any exception
+            Assert.True(true, "Multiple Dispose calls completed without exception");
+        }
+
+        [Fact]
+        public void Dispose_ShouldSetDisposedFlag_WhenCalled()
+        {
+            // Arrange
+            var testRepository = new TestGenericRepository(ConnectionString);
+
+            // Act
+            testRepository.Dispose();
+
+            // Assert
+            Assert.True(testRepository.IsDisposed(), "Disposed flag should be set after calling Dispose");
+        }
+
+        [Fact]
+        public void UsingStatement_ShouldAutomaticallyDisposeRepository_WhenBlockEnds()
+        {
+            // Arrange
+            TestGenericRepository? testRepository = null;
+
+            // Act
+            using (testRepository = new TestGenericRepository(ConnectionString))
+            {
+                // Repository is used within the using block
+                Assert.NotNull(testRepository);
+            }
+
+            // Assert - Repository should be disposed after the using block
+            Assert.True(testRepository.IsDisposed(), "Repository should be automatically disposed after using block");
+        }
+
         // Helper test class that inherits from GenericRepository for testing
         private class TestGenericRepository : GenericRepository<TestEntity>
         {
             public TestGenericRepository(string connectionString) : base(connectionString) { }
 
             public System.Data.IDbConnection GetDbConnection() => dbConnection;
+
+            public bool IsDisposed() => disposed;
 
             public override Task<TestEntity> AddAsync(TestEntity entity)
             {

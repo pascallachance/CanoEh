@@ -241,12 +241,11 @@ namespace API.Tests
             // Assert
             Assert.True(result.IsSuccess);
             
-            // Verify that UpdateAsync was called twice:
-            // 1. To reset failed login attempts when lockout expired
-            // 2. To reset again on successful login
+            // Verify that UpdateAsync was called once to reset failed login attempts
+            // (optimization: consolidates lockout expiry reset and successful login reset)
             mockUserRepository.Verify(r => r.UpdateAsync(It.Is<User>(u => 
                 u.FailedLoginAttempts == 0 && 
-                u.LastFailedLoginAttempt == null)), Times.Exactly(2));
+                u.LastFailedLoginAttempt == null)), Times.Once);
         }
 
         [Fact]

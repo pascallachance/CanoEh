@@ -34,6 +34,7 @@ namespace Domain.Services.Implementations
             }
             
             // Check if account is locked due to failed login attempts
+            bool lockoutExpired = false;
             if (foundUser.FailedLoginAttempts >= 3 && foundUser.LastFailedLoginAttempt.HasValue)
             {
                 var lockoutExpiry = foundUser.LastFailedLoginAttempt.Value.AddMinutes(10);
@@ -44,10 +45,8 @@ namespace Domain.Services.Implementations
                         $"Account is locked due to too many failed login attempts. Please try again in {Math.Ceiling(remainingMinutes)} minute(s).", 
                         StatusCodes.Status429TooManyRequests);
                 }
-                // Lockout period has expired, reset failed attempts
-                foundUser.FailedLoginAttempts = 0;
-                foundUser.LastFailedLoginAttempt = null;
-                await _userRepository.UpdateAsync(foundUser);
+                // Lockout period has expired, mark for reset
+                lockoutExpired = true;
             }
             
             if (!foundUser.ValidEmail)
@@ -65,10 +64,13 @@ namespace Domain.Services.Implementations
                 return Result.Failure<LoginResponse>("Invalid email or password", StatusCodes.Status401Unauthorized);
             }
             
-            // Reset failed login attempts on successful login
-            foundUser.FailedLoginAttempts = 0;
-            foundUser.LastFailedLoginAttempt = null;
-            await _userRepository.UpdateAsync(foundUser);
+            // Reset failed login attempts on successful login (or if lockout expired)
+            if (foundUser.FailedLoginAttempts > 0 || lockoutExpired)
+            {
+                foundUser.FailedLoginAttempts = 0;
+                foundUser.LastFailedLoginAttempt = null;
+                await _userRepository.UpdateAsync(foundUser);
+            }
             
             // Login successful - create a new session
             var sessionResult = await _sessionService.CreateSessionAsync(foundUser.ID, userAgent, ipAddress);

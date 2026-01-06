@@ -22,5 +22,7 @@
         public DateTime? RestoreUserTokenExpiry { get; set; }
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiry { get; set; }
+        public int FailedLoginAttempts { get; set; } = 0;
+        public DateTime? LastFailedLoginAttempt { get; set; }
     }
 }

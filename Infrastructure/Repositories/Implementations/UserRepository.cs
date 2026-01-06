@@ -27,7 +27,9 @@ INSERT INTO dbo.[User] (
     password, 
     deleted, 
     validEmail,
-    emailValidationToken)
+    emailValidationToken,
+    failedLoginAttempts,
+    lastFailedLoginAttempt)
 OUTPUT INSERTED.ID
 VALUES (
     @Email,
@@ -41,7 +43,9 @@ VALUES (
     @Password, 
     @Deleted, 
     @ValidEmail,
-    @EmailValidationToken)";
+    @EmailValidationToken,
+    @FailedLoginAttempts,
+    @LastFailedLoginAttempt)";
 
             var parameters = new
             {
@@ -57,6 +61,8 @@ VALUES (
                 entity.Deleted,
                 entity.ValidEmail,
                 entity.EmailValidationToken,
+                entity.FailedLoginAttempts,
+                entity.LastFailedLoginAttempt,
             };
             Guid newUserId = await dbConnection.ExecuteScalarAsync<Guid>(query, parameters);
             entity.ID = newUserId; 
@@ -146,7 +152,9 @@ SET
     dbo.[User].passwordResetToken = @passwordResetToken,
     dbo.[User].passwordResetTokenExpiry = @passwordResetTokenExpiry,
     dbo.[User].restoreUserToken = @restoreUserToken,
-    dbo.[User].restoreUserTokenExpiry = @restoreUserTokenExpiry
+    dbo.[User].restoreUserTokenExpiry = @restoreUserTokenExpiry,
+    dbo.[User].failedLoginAttempts = @failedLoginAttempts,
+    dbo.[User].lastFailedLoginAttempt = @lastFailedLoginAttempt
 WHERE dbo.[User].id = @id";
 
             var parameters = new
@@ -167,6 +175,8 @@ WHERE dbo.[User].id = @id";
                 entity.PasswordResetTokenExpiry,
                 entity.RestoreUserToken,
                 entity.RestoreUserTokenExpiry,
+                entity.FailedLoginAttempts,
+                entity.LastFailedLoginAttempt,
             };
             await dbConnection.ExecuteAsync(query, parameters);
             return entity;

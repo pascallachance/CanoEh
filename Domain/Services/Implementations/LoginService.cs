@@ -32,6 +32,24 @@ namespace Domain.Services.Implementations
             {
                 return Result.Failure<LoginResponse>("User account is deleted", StatusCodes.Status401Unauthorized);
             }
+            
+            // Check if account is locked due to failed login attempts
+            if (foundUser.FailedLoginAttempts >= 3 && foundUser.LastFailedLoginAttempt.HasValue)
+            {
+                var lockoutExpiry = foundUser.LastFailedLoginAttempt.Value.AddMinutes(10);
+                if (DateTime.UtcNow < lockoutExpiry)
+                {
+                    var remainingMinutes = (lockoutExpiry - DateTime.UtcNow).TotalMinutes;
+                    return Result.Failure<LoginResponse>(
+                        $"Account is locked due to too many failed login attempts. Please try again in {Math.Ceiling(remainingMinutes)} minute(s).", 
+                        StatusCodes.Status429TooManyRequests);
+                }
+                // Lockout period has expired, reset failed attempts
+                foundUser.FailedLoginAttempts = 0;
+                foundUser.LastFailedLoginAttempt = null;
+                await _userRepository.UpdateAsync(foundUser);
+            }
+            
             if (!foundUser.ValidEmail)
             {
                 return Result.Failure<LoginResponse>("Please validate your email address before logging in", StatusCodes.Status403Forbidden);
@@ -39,8 +57,18 @@ namespace Domain.Services.Implementations
             var hasher = new PasswordHasher();
             if (string.IsNullOrEmpty(request.Password) || !hasher.VerifyPassword(request.Password, foundUser.Password))
             {
+                // Increment failed login attempts
+                foundUser.FailedLoginAttempts++;
+                foundUser.LastFailedLoginAttempt = DateTime.UtcNow;
+                await _userRepository.UpdateAsync(foundUser);
+                
                 return Result.Failure<LoginResponse>("Invalid email or password", StatusCodes.Status401Unauthorized);
             }
+            
+            // Reset failed login attempts on successful login
+            foundUser.FailedLoginAttempts = 0;
+            foundUser.LastFailedLoginAttempt = null;
+            await _userRepository.UpdateAsync(foundUser);
             
             // Login successful - create a new session
             var sessionResult = await _sessionService.CreateSessionAsync(foundUser.ID, userAgent, ipAddress);

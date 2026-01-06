@@ -32,14 +32,44 @@ namespace Domain.Services.Implementations
             {
                 return Result.Failure<LoginResponse>("User account is deleted", StatusCodes.Status401Unauthorized);
             }
+            
             if (!foundUser.ValidEmail)
             {
                 return Result.Failure<LoginResponse>("Please validate your email address before logging in", StatusCodes.Status403Forbidden);
             }
+            
+            // Check if account is locked due to failed login attempts
+            if (foundUser.FailedLoginAttempts >= 3 && foundUser.LastFailedLoginAttempt.HasValue)
+            {
+                var lockoutExpiry = foundUser.LastFailedLoginAttempt.Value.AddMinutes(10);
+                if (DateTime.UtcNow < lockoutExpiry)
+                {
+                    var remainingMinutes = (lockoutExpiry - DateTime.UtcNow).TotalMinutes;
+                    return Result.Failure<LoginResponse>(
+                        $"Account is locked due to too many failed login attempts. Please try again in {Math.Ceiling(remainingMinutes)} minute(s).", 
+                        StatusCodes.Status429TooManyRequests);
+                }
+            }
             var hasher = new PasswordHasher();
             if (string.IsNullOrEmpty(request.Password) || !hasher.VerifyPassword(request.Password, foundUser.Password))
             {
+                // Increment failed login attempts
+                // TODO: Consider implementing optimistic concurrency control to handle race conditions
+                // when multiple simultaneous login attempts occur for the same user account.
+                // This could be done by adding a version/timestamp field to User entity.
+                foundUser.FailedLoginAttempts++;
+                foundUser.LastFailedLoginAttempt = DateTime.UtcNow;
+                await _userRepository.UpdateAsync(foundUser);
+                
                 return Result.Failure<LoginResponse>("Invalid email or password", StatusCodes.Status401Unauthorized);
+            }
+            
+            // Reset failed login attempts on successful login
+            if (foundUser.FailedLoginAttempts > 0)
+            {
+                foundUser.FailedLoginAttempts = 0;
+                foundUser.LastFailedLoginAttempt = null;
+                await _userRepository.UpdateAsync(foundUser);
             }
             
             // Login successful - create a new session

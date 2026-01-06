@@ -179,8 +179,13 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
     const [showUndeleteModal, setShowUndeleteModal] = useState(false);
     const [itemToUndelete, setItemToUndelete] = useState<ApiItem | null>(null);
     
+    // State for delete confirmation modal
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<ApiItem | null>(null);
+    
     // Refs for accessibility
     const modalRef = useRef<HTMLDivElement>(null);
+    const deleteModalRef = useRef<HTMLDivElement>(null);
     const previousActiveElement = useRef<HTMLElement | null>(null);
 
     // Cleanup object URLs on component unmount
@@ -220,12 +225,37 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                 clearTimeout(timer);
                 document.body.style.overflow = '';
             };
-        } else if (previousActiveElement.current) {
-            // Return focus to the element that opened the modal
+        } else if (previousActiveElement.current && !showDeleteModal) {
+            // Return focus to the element that opened the modal (only if delete modal is not open)
             previousActiveElement.current.focus();
             previousActiveElement.current = null;
         }
-    }, [showUndeleteModal]);
+    }, [showUndeleteModal, showDeleteModal]);
+
+    // Accessibility: Focus management for delete modal
+    useEffect(() => {
+        if (showDeleteModal) {
+            // Store the currently focused element
+            previousActiveElement.current = document.activeElement as HTMLElement;
+            
+            // Focus the modal content
+            const timer = setTimeout(() => {
+                deleteModalRef.current?.focus();
+            }, 100);
+
+            // Prevent body scroll when modal is open
+            document.body.style.overflow = 'hidden';
+
+            return () => {
+                clearTimeout(timer);
+                document.body.style.overflow = '';
+            };
+        } else if (previousActiveElement.current && !showUndeleteModal) {
+            // Return focus to the element that opened the modal (only if undelete modal is not open)
+            previousActiveElement.current.focus();
+            previousActiveElement.current = null;
+        }
+    }, [showDeleteModal, showUndeleteModal]);
 
     // Handle escape key for undelete modal
     useEffect(() => {
@@ -241,6 +271,21 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
             return () => document.removeEventListener('keydown', handleEscape);
         }
     }, [showUndeleteModal]);
+
+    // Handle escape key for delete modal
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && showDeleteModal) {
+                setShowDeleteModal(false);
+                setItemToDelete(null);
+            }
+        };
+
+        if (showDeleteModal) {
+            document.addEventListener('keydown', handleEscape);
+            return () => document.removeEventListener('keydown', handleEscape);
+        }
+    }, [showDeleteModal]);
 
     // Validation logic for save button
     const isFormInvalid = useMemo(() => {
@@ -672,7 +717,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
     };
 
     // Handle deleting an item
-    const handleDeleteItem = async (item: ApiItem) => {
+    const handleDeleteItem = (item: ApiItem) => {
         // Validate item ID
         if (!item.id || typeof item.id !== 'string') {
             showError(t('products.invalidItemId'));
@@ -684,14 +729,18 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
             showError(t('products.alreadyDeleted'));
             return;
         }
-        // Show confirmation dialog
-        if (!window.confirm(t('products.deleteConfirm'))) {
-            return;
-        }
+        
+        // Show confirmation modal
+        setItemToDelete(item);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDeleteItem = async () => {
+        if (!itemToDelete) return;
 
         try {
             // Encode the ID to ensure URL safety (though GUID should be safe)
-            const encodedId = encodeURIComponent(item.id);
+            const encodedId = encodeURIComponent(itemToDelete.id);
             const response = await ApiClient.delete(
                 `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/DeleteItem/${encodedId}`
             );
@@ -707,7 +756,16 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         } catch (error) {
             console.error('Error deleting item:', error);
             showError(t('products.deleteError'));
+        } finally {
+            // Close modal
+            setShowDeleteModal(false);
+            setItemToDelete(null);
         }
+    };
+
+    const cancelDeleteItem = () => {
+        setShowDeleteModal(false);
+        setItemToDelete(null);
     };
 
     // Handle undeleting an item
@@ -769,6 +827,33 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
 
         if (event.key === 'Tab') {
             const focusableElements = modalRef.current.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            const firstElement = focusableElements[0] as HTMLElement;
+            const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+            if (event.shiftKey) {
+                // Shift + Tab
+                if (document.activeElement === firstElement) {
+                    event.preventDefault();
+                    lastElement?.focus();
+                }
+            } else {
+                // Tab
+                if (document.activeElement === lastElement) {
+                    event.preventDefault();
+                    firstElement?.focus();
+                }
+            }
+        }
+    };
+
+    // Focus trapping within delete modal
+    const handleDeleteKeyDown = (event: React.KeyboardEvent) => {
+        if (!showDeleteModal || !deleteModalRef.current) return;
+
+        if (event.key === 'Tab') {
+            const focusableElements = deleteModalRef.current.querySelectorAll(
                 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
             );
             const firstElement = focusableElements[0] as HTMLElement;
@@ -2137,6 +2222,51 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                 aria-label="Confirm restore item"
                             >
                                 {t('products.undelete')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && itemToDelete && (
+                <div 
+                    className="products-modal-overlay"
+                    onClick={(e) => {
+                        // Close modal when clicking on overlay, but not on modal content
+                        if (e.target === e.currentTarget) {
+                            cancelDeleteItem();
+                        }
+                    }}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="delete-modal-title"
+                    aria-describedby="delete-modal-description"
+                >
+                    <div 
+                        className="products-modal-content"
+                        ref={deleteModalRef}
+                        tabIndex={-1}
+                        onKeyDown={handleDeleteKeyDown}
+                    >
+                        <h3 id="delete-modal-title">{t('products.deleteConfirmTitle')}</h3>
+                        <p className="products-modal-message" id="delete-modal-description">
+                            {t('products.deleteConfirm')}
+                        </p>
+                        <div className="products-modal-actions">
+                            <button
+                                className="products-modal-button products-modal-button--cancel"
+                                onClick={cancelDeleteItem}
+                                aria-label="Cancel delete action"
+                            >
+                                {t('common.cancel')}
+                            </button>
+                            <button
+                                className="products-modal-button products-modal-button--confirm"
+                                onClick={confirmDeleteItem}
+                                aria-label="Confirm delete item"
+                            >
+                                {t('products.delete')}
                             </button>
                         </div>
                     </div>

@@ -66,6 +66,10 @@ export const translations: TranslationResources = {
     en: 'Delete',
     fr: 'Supprimer'
   },
+  'products.deleteConfirmTitle': {
+    en: 'Delete confirmation',
+    fr: 'Confirmation de suppression'
+  },
   'products.deleteConfirm': {
     en: 'Are you sure you want to delete this item? This item will be marked as deleted and can be restored later.',
     fr: 'Êtes-vous sûr de vouloir supprimer cet article ? Cet article sera marqué comme supprimé et pourra être restauré ultérieurement.'

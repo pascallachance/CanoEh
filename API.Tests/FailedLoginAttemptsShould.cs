@@ -249,7 +249,7 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task IncrementFailedLoginAttempts_ForNonExistentUser()
+        public async Task NotIncrementFailedLoginAttempts_ForNonExistentUser()
         {
             // Arrange
             var email = "nonexistent@example.com";

@@ -33,8 +33,12 @@ namespace Domain.Services.Implementations
                 return Result.Failure<LoginResponse>("User account is deleted", StatusCodes.Status401Unauthorized);
             }
             
+            if (!foundUser.ValidEmail)
+            {
+                return Result.Failure<LoginResponse>("Please validate your email address before logging in", StatusCodes.Status403Forbidden);
+            }
+            
             // Check if account is locked due to failed login attempts
-            bool lockoutExpired = false;
             if (foundUser.FailedLoginAttempts >= 3 && foundUser.LastFailedLoginAttempt.HasValue)
             {
                 var lockoutExpiry = foundUser.LastFailedLoginAttempt.Value.AddMinutes(10);
@@ -45,13 +49,6 @@ namespace Domain.Services.Implementations
                         $"Account is locked due to too many failed login attempts. Please try again in {Math.Ceiling(remainingMinutes)} minute(s).", 
                         StatusCodes.Status429TooManyRequests);
                 }
-                // Lockout period has expired, mark for reset
-                lockoutExpired = true;
-            }
-            
-            if (!foundUser.ValidEmail)
-            {
-                return Result.Failure<LoginResponse>("Please validate your email address before logging in", StatusCodes.Status403Forbidden);
             }
             var hasher = new PasswordHasher();
             if (string.IsNullOrEmpty(request.Password) || !hasher.VerifyPassword(request.Password, foundUser.Password))
@@ -64,8 +61,8 @@ namespace Domain.Services.Implementations
                 return Result.Failure<LoginResponse>("Invalid email or password", StatusCodes.Status401Unauthorized);
             }
             
-            // Reset failed login attempts on successful login (or if lockout expired)
-            if (foundUser.FailedLoginAttempts > 0 || lockoutExpired)
+            // Reset failed login attempts on successful login
+            if (foundUser.FailedLoginAttempts > 0)
             {
                 foundUser.FailedLoginAttempts = 0;
                 foundUser.LastFailedLoginAttempt = null;

@@ -284,6 +284,56 @@ namespace API.Tests
         }
 
         [Fact]
+        public async Task NotIncrementFailedLoginAttempts_ForUnvalidatedEmail()
+        {
+            // Arrange
+            var email = "unvalidated@example.com";
+            var password = "password123";
+            var hasher = new PasswordHasher();
+            
+            var user = new User
+            {
+                ID = Guid.NewGuid(),
+                Firstname = "Test",
+                Lastname = "User", 
+                Email = email,
+                Password = hasher.HashPassword(password),
+                Deleted = false,
+                ValidEmail = false, // Email not validated
+                Createdat = DateTime.UtcNow,
+                FailedLoginAttempts = 0,
+                LastFailedLoginAttempt = null
+            };
+
+            var mockUserRepository = new Mock<IUserRepository>();
+            var mockEmailService = new Mock<IEmailService>();
+            var mockSessionService = new Mock<ISessionService>();
+            var mockUserService = new Mock<IUserService>();
+            
+            mockUserRepository.Setup(r => r.FindByEmailAsync(email))
+                             .ReturnsAsync(user);
+
+            var loginService = new LoginService(mockUserRepository.Object, mockEmailService.Object, mockSessionService.Object, mockUserService.Object);
+
+            var loginRequest = new LoginRequest
+            {
+                Email = email,
+                Password = password
+            };
+
+            // Act
+            var result = await loginService.LoginAsync(loginRequest);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(403, result.ErrorCode); // Forbidden - email not validated
+            Assert.Contains("validate your email", result.Error);
+            
+            // Verify that UpdateAsync was NOT called - unvalidated emails don't accumulate failed attempts
+            mockUserRepository.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Never);
+        }
+
+        [Fact]
         public async Task AccumulateFailedLoginAttempts_OverMultipleAttempts()
         {
             // Arrange

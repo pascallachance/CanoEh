@@ -186,7 +186,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
     // Refs for accessibility
     const modalRef = useRef<HTMLDivElement>(null);
     const deleteModalRef = useRef<HTMLDivElement>(null);
-    const previousActiveElement = useRef<HTMLElement | null>(null);
+    const previousActiveElementForUndelete = useRef<HTMLElement | null>(null);
+    const previousActiveElementForDelete = useRef<HTMLElement | null>(null);
 
     // Cleanup object URLs on component unmount
     useEffect(() => {
@@ -211,7 +212,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
     useEffect(() => {
         if (showUndeleteModal) {
             // Store the currently focused element
-            previousActiveElement.current = document.activeElement as HTMLElement;
+            previousActiveElementForUndelete.current = document.activeElement as HTMLElement;
             
             // Focus the modal content
             const timer = setTimeout(() => {
@@ -225,18 +226,18 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                 clearTimeout(timer);
                 document.body.style.overflow = '';
             };
-        } else if (previousActiveElement.current && !showDeleteModal) {
-            // Return focus to the element that opened the modal (only if delete modal is not open)
-            previousActiveElement.current.focus();
-            previousActiveElement.current = null;
+        } else if (previousActiveElementForUndelete.current) {
+            // Return focus to the element that opened the modal
+            previousActiveElementForUndelete.current.focus();
+            previousActiveElementForUndelete.current = null;
         }
-    }, [showUndeleteModal, showDeleteModal]);
+    }, [showUndeleteModal]);
 
     // Accessibility: Focus management for delete modal
     useEffect(() => {
         if (showDeleteModal) {
             // Store the currently focused element
-            previousActiveElement.current = document.activeElement as HTMLElement;
+            previousActiveElementForDelete.current = document.activeElement as HTMLElement;
             
             // Focus the modal content
             const timer = setTimeout(() => {
@@ -250,12 +251,12 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                 clearTimeout(timer);
                 document.body.style.overflow = '';
             };
-        } else if (previousActiveElement.current && !showUndeleteModal) {
-            // Return focus to the element that opened the modal (only if undelete modal is not open)
-            previousActiveElement.current.focus();
-            previousActiveElement.current = null;
+        } else if (previousActiveElementForDelete.current) {
+            // Return focus to the element that opened the modal
+            previousActiveElementForDelete.current.focus();
+            previousActiveElementForDelete.current = null;
         }
-    }, [showDeleteModal, showUndeleteModal]);
+    }, [showDeleteModal]);
 
     // Handle escape key for undelete modal
     useEffect(() => {

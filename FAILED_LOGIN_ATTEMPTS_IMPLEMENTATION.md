@@ -107,12 +107,16 @@ Six comprehensive tests covering:
 - Conditional UPDATE only when reset is needed
 
 ## Future Enhancements (Out of Scope)
+- **Optimistic concurrency control**: Add version/timestamp field to User entity to handle race conditions during simultaneous login attempts
 - IP-based rate limiting
 - Configurable lockout parameters (threshold, duration)
 - Email notification on account lockout
 - Admin interface to manually unlock accounts
 - Permanent lockout after repeated violations
 - CAPTCHA after first failed attempt
+
+## Known Limitations
+- **Race Conditions**: Simultaneous login attempts for the same user may result in lost updates to the failed attempt counter. This is acceptable for the current implementation given the low probability and minimal impact (worst case: slightly inaccurate counter). For high-concurrency scenarios, consider implementing optimistic concurrency control with a version field on the User entity.
 
 ## Migration Instructions
 

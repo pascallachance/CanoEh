@@ -54,6 +54,9 @@ namespace Domain.Services.Implementations
             if (string.IsNullOrEmpty(request.Password) || !hasher.VerifyPassword(request.Password, foundUser.Password))
             {
                 // Increment failed login attempts
+                // TODO: Consider implementing optimistic concurrency control to handle race conditions
+                // when multiple simultaneous login attempts occur for the same user account.
+                // This could be done by adding a version/timestamp field to User entity.
                 foundUser.FailedLoginAttempts++;
                 foundUser.LastFailedLoginAttempt = DateTime.UtcNow;
                 await _userRepository.UpdateAsync(foundUser);

@@ -146,7 +146,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 Debug.WriteLine($"An error occurred: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
         }
 
@@ -173,7 +173,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 Debug.WriteLine($"An error occurred: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
         }
 
@@ -202,7 +202,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 Debug.WriteLine($"An error occurred: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
         }
 
@@ -231,7 +231,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 Debug.WriteLine($"An error occurred: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
         }
 
@@ -266,7 +266,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 Debug.WriteLine($"An error occurred: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
         }
 
@@ -306,7 +306,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 Debug.WriteLine($"An error occurred: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
         }
 
@@ -347,7 +347,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 Debug.WriteLine($"An error occurred: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
         }
 
@@ -396,7 +396,7 @@ namespace API.Controllers
             {
                 _logger.LogError(ex, "Exception in UnDeleteItem for itemId: {ItemId}", id);
                 Debug.WriteLine($"An error occurred: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
         }
 
@@ -446,7 +446,7 @@ namespace API.Controllers
             {
                 _logger.LogError(ex, "Exception in UnDeleteItemVariant for itemId: {ItemId}, variantId: {VariantId}", itemId, variantId);
                 Debug.WriteLine($"An error occurred: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
         }
 
@@ -596,7 +596,7 @@ namespace API.Controllers
                 _logger.LogError(ex, "=== UploadImage API FAILED === Exception: {Message}", ex.Message);
                 _logger.LogError("Stack trace: {StackTrace}", ex.StackTrace);
                 Debug.WriteLine($"An error occurred: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
         }
     }

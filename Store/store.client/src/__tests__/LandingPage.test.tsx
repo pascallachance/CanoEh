@@ -4,7 +4,8 @@
  * This test verifies the requirement:
  * "When entering https://localhost:64941 the first page should be the main screen not the login"
  * 
- * Run with: npm test (when testing framework is set up)
+ * Note: This test suite requires a testing framework (vitest, @testing-library/react) to be configured.
+ * To run tests, first add test dependencies to package.json, then run: npm test
  */
 
 import { describe, it, expect } from 'vitest';

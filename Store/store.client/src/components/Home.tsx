@@ -239,9 +239,9 @@ interface ItemPreviewCardProps {
 
 function ItemPreviewCard({ title, items, onClick }: ItemPreviewCardProps) {
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (onClick && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
-            onClick?.();
+            onClick();
         }
     };
 
@@ -249,10 +249,10 @@ function ItemPreviewCard({ title, items, onClick }: ItemPreviewCardProps) {
         <div
             className="item-preview-card"
             onClick={onClick}
-            onKeyDown={handleKeyDown}
-            tabIndex={0}
-            role="button"
-            aria-label={`${title}`}
+            onKeyDown={onClick ? handleKeyDown : undefined}
+            tabIndex={onClick ? 0 : undefined}
+            role={onClick ? 'button' : undefined}
+            aria-label={onClick ? title : undefined}
         >
             <h3 className="card-title">{title}</h3>
             <div className="items-grid">

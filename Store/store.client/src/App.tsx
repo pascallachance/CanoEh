@@ -1,8 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Login from './components/Login';
 import CreateUser from './components/CreateUser';
 import ForgotPassword from './components/ForgotPassword';
+import Home from './components/Home';
 
 function App() {
     const handleLoginSuccess = () => {
@@ -15,10 +16,11 @@ function App() {
     return (
         <Router>
             <Routes>
+                <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
                 <Route path="/CreateUser" element={<CreateUser onCreateSuccess={() => {/* Navigate to login after creation */}} />} />
                 <Route path="/RestorePassword" element={<ForgotPassword />} />
-                <Route path="*" element={<Navigate to="/login" replace />} />
+                <Route path="*" element={<Home />} />
             </Routes>
         </Router>
     );

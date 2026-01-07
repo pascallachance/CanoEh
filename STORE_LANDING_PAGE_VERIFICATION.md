@@ -123,7 +123,25 @@ npm run dev
    - "Connect" button
 4. **NOT See**: Login form (unless user clicks "Connect")
 
+## Screenshot Verification
+
+![Store Homepage](docs/store-homepage-screenshot.png)
+
+The screenshot above shows the default landing page at `https://localhost:64941/`. As you can see:
+
+✅ **This is the HOME/SHOPPING page, NOT the login page**
+
+The page displays:
+- CanoEh! branding and logo
+- Update Location button
+- Search bar for finding items
+- Language selector (English/Français)
+- **Connect button** (to navigate to login when needed)
+- Navigation menu: Shop by Category, Shop by Province, Best Sellers, Shop Offers, New Products
+- Welcome banner: "Welcome to CanoEh! Discover amazing deals and products from across Canada!"
+- Product preview cards: Suggested items, Offers, Explore Categories, Best Sellers, Best Rated
+
 ## Conclusion
 The Store application is **correctly configured** to show the main shopping screen as the default landing page. Users can browse items, search, and navigate categories without logging in. The login functionality is available via the "Connect" button or by directly navigating to `/login`.
 
-No code changes are required - the implementation already meets the stated requirements.
+✅ **No code changes are required** - the implementation already meets the stated requirements.

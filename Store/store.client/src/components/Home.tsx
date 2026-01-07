@@ -6,9 +6,10 @@ interface HomeProps {
     isAuthenticated?: boolean;
 }
 
+const ITEM_PLACEHOLDER_ARRAY = [1, 2, 3, 4];
+
 function Home({ isAuthenticated = false }: HomeProps) {
     const navigate = useNavigate();
-    const [userAddress] = useState<string>('');
     const [language, setLanguage] = useState<string>('en');
 
     useEffect(() => {
@@ -30,7 +31,7 @@ function Home({ isAuthenticated = false }: HomeProps) {
                 <div className="nav-item logo">CanoEh.ca</div>
                 <div className="nav-item address">
                     <span className="location-icon">📍</span>
-                    <span>{isAuthenticated && userAddress ? userAddress : 'Update Location'}</span>
+                    <span>Update Location</span>
                 </div>
                 <div className="nav-item search-bar">
                     <input type="text" placeholder="Search items..." />
@@ -76,16 +77,16 @@ function Home({ isAuthenticated = false }: HomeProps) {
 
             {/* Cards Section */}
             <section className="cards-section">
-                <ItemPreviewCard title="Suggested items" items={[1, 2, 3, 4]} />
-                <ItemPreviewCard title="Offers" items={[1, 2, 3, 4]} />
-                <ItemPreviewCard title="Explore Categories" items={[1, 2, 3, 4]} />
-                <ItemPreviewCard title="Best Sellers" items={[1, 2, 3, 4]} />
-                <ItemPreviewCard title="Best Rated" items={[1, 2, 3, 4]} />
+                <ItemPreviewCard title="Suggested items" items={ITEM_PLACEHOLDER_ARRAY} />
+                <ItemPreviewCard title="Offers" items={ITEM_PLACEHOLDER_ARRAY} />
+                <ItemPreviewCard title="Explore Categories" items={ITEM_PLACEHOLDER_ARRAY} />
+                <ItemPreviewCard title="Best Sellers" items={ITEM_PLACEHOLDER_ARRAY} />
+                <ItemPreviewCard title="Best Rated" items={ITEM_PLACEHOLDER_ARRAY} />
                 {isAuthenticated && (
                     <>
-                        <ItemPreviewCard title="Last Viewed Items" items={[1, 2, 3, 4]} />
-                        <ItemPreviewCard title="Local Products" items={[1, 2, 3, 4]} />
-                        <ItemPreviewCard title="Buy Again" items={[1, 2, 3, 4]} />
+                        <ItemPreviewCard title="Last Viewed Items" items={ITEM_PLACEHOLDER_ARRAY} />
+                        <ItemPreviewCard title="Local Products" items={ITEM_PLACEHOLDER_ARRAY} />
+                        <ItemPreviewCard title="Buy Again" items={ITEM_PLACEHOLDER_ARRAY} />
                     </>
                 )}
             </section>
@@ -103,8 +104,8 @@ function ItemPreviewCard({ title, items }: ItemPreviewCardProps) {
         <div className="item-preview-card">
             <h3 className="card-title">{title}</h3>
             <div className="items-grid">
-                {items.map((item, index) => (
-                    <div key={index} className="item-placeholder">
+                {items.map((item) => (
+                    <div key={item} className="item-placeholder">
                         <div className="item-image-placeholder">Item {item}</div>
                     </div>
                 ))}

@@ -20,6 +20,7 @@ function App() {
                 <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
                 <Route path="/CreateUser" element={<CreateUser onCreateSuccess={() => {/* Navigate to login after creation */}} />} />
                 <Route path="/RestorePassword" element={<ForgotPassword />} />
+                <Route path="*" element={<Home />} />
             </Routes>
         </Router>
     );

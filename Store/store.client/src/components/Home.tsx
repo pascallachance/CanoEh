@@ -11,6 +11,7 @@ const ITEM_PLACEHOLDER_ARRAY = [1, 2, 3, 4];
 function Home({ isAuthenticated = false }: HomeProps) {
     const navigate = useNavigate();
     const [language, setLanguage] = useState<string>('en');
+    const [searchQuery, setSearchQuery] = useState<string>('');
 
     useEffect(() => {
         // Set language based on user or system settings
@@ -22,45 +23,151 @@ function Home({ isAuthenticated = false }: HomeProps) {
         navigate('/login');
     };
 
+    const handleLogoClick = () => {
+        navigate('/');
+    };
+
+    const handleSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // TODO: Implement search functionality
+        console.log('Search query:', searchQuery);
+    };
+
+    const handleLocationClick = () => {
+        // TODO: Implement location update functionality
+        console.log('Update location clicked');
+    };
+
+    const handleNavItemClick = (item: string) => {
+        // TODO: Implement navigation to respective pages
+        console.log('Navigate to:', item);
+    };
+
+    const handleCardClick = (title: string) => {
+        // TODO: Implement navigation to respective category/search pages
+        console.log('Card clicked:', title);
+    };
+
+    // Get text based on selected language
+    const getText = (en: string, fr: string) => language === 'fr' ? fr : en;
+
     return (
         <div className="home-container">
             {/* Top Navigation Bar */}
             <nav className="top-nav">
-                <div className="nav-item logo">CanoEh.ca</div>
-                <div className="nav-item address">
+                <button
+                    type="button"
+                    className="nav-item logo"
+                    onClick={handleLogoClick}
+                    aria-label={getText("Go to home page", "Aller à la page d'accueil")}
+                >
+                    CanoEh!
+                </button>
+                <button
+                    type="button"
+                    className="nav-item address"
+                    onClick={handleLocationClick}
+                    aria-label={getText("Update location", "Mettre à jour l'emplacement")}
+                >
                     <span className="location-icon">📍</span>
-                    <span>Update Location</span>
-                </div>
-                <div className="nav-item search-bar">
-                    <input type="text" placeholder="Search items..." aria-label="Search for items" />
-                    <span className="search-icon">🔍</span>
-                </div>
+                    <span>{getText("Update Location", "Mettre à jour l'emplacement")}</span>
+                </button>
+                <form className="nav-item search-bar" onSubmit={handleSearchSubmit}>
+                    <input
+                        type="text"
+                        placeholder={getText("Search items...", "Rechercher des articles...")}
+                        aria-label={getText("Search for items", "Rechercher des articles")}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <button
+                        type="submit"
+                        className="search-icon"
+                        aria-label={getText("Search", "Rechercher")}
+                    >
+                        🔍
+                    </button>
+                </form>
                 <div className="nav-item language-selector">
-                    <select value={language} onChange={(e) => setLanguage(e.target.value)} aria-label="Select language">
+                    <select value={language} onChange={(e) => setLanguage(e.target.value)} aria-label={getText("Select language", "Sélectionner la langue")}>
                         <option value="en">English</option>
                         <option value="fr">Français</option>
                     </select>
                 </div>
                 <div className="nav-item connect-button">
                     <button onClick={handleConnectClick}>
-                        {isAuthenticated ? 'Account' : 'Connect'}
+                        {isAuthenticated ? getText('Account', 'Compte') : getText('Connect', 'Connexion')}
                     </button>
                 </div>
             </nav>
 
             {/* Bottom Navigation Bar */}
             <nav className="bottom-nav">
-                <div className="nav-item">Shop by Category</div>
-                <div className="nav-item">Shop by Province</div>
-                <div className="nav-item">Best Sellers</div>
-                <div className="nav-item">Shop Offers</div>
-                <div className="nav-item">New Products</div>
+                <button
+                    type="button"
+                    className="nav-item"
+                    onClick={() => handleNavItemClick('category')}
+                >
+                    {getText("Shop by Category", "Magasiner par catégorie")}
+                </button>
+                <button
+                    type="button"
+                    className="nav-item"
+                    onClick={() => handleNavItemClick('province')}
+                >
+                    {getText("Shop by Province", "Magasiner par province")}
+                </button>
+                <button
+                    type="button"
+                    className="nav-item"
+                    onClick={() => handleNavItemClick('bestsellers')}
+                >
+                    {getText("Best Sellers", "Meilleures ventes")}
+                </button>
+                <button
+                    type="button"
+                    className="nav-item"
+                    onClick={() => handleNavItemClick('offers')}
+                >
+                    {getText("Shop Offers", "Offres")}
+                </button>
+                <button
+                    type="button"
+                    className="nav-item"
+                    onClick={() => handleNavItemClick('new')}
+                >
+                    {getText("New Products", "Nouveaux produits")}
+                </button>
                 {isAuthenticated && (
                     <>
-                        <div className="nav-item">Local Products</div>
-                        <div className="nav-item">Gift Ideas</div>
-                        <div className="nav-item">Browsing History</div>
-                        <div className="nav-item">Customer Service</div>
+                        <button
+                            type="button"
+                            className="nav-item"
+                            onClick={() => handleNavItemClick('local')}
+                        >
+                            {getText("Local Products", "Produits locaux")}
+                        </button>
+                        <button
+                            type="button"
+                            className="nav-item"
+                            onClick={() => handleNavItemClick('gifts')}
+                        >
+                            {getText("Gift Ideas", "Idées cadeaux")}
+                        </button>
+                        <button
+                            type="button"
+                            className="nav-item"
+                            onClick={() => handleNavItemClick('history')}
+                        >
+                            {getText("Browsing History", "Historique de navigation")}
+                        </button>
+                        <button
+                            type="button"
+                            className="nav-item"
+                            onClick={() => handleNavItemClick('service')}
+                        >
+                            {getText("Customer Service", "Service client")}
+                        </button>
                     </>
                 )}
             </nav>
@@ -68,23 +175,55 @@ function Home({ isAuthenticated = false }: HomeProps) {
             {/* Page Content Section - Banner */}
             <section className="banner-section">
                 <div className="banner-widget">
-                    <h2>Welcome to CanoEh.ca</h2>
-                    <p>Discover amazing deals and products from across Canada!</p>
+                    <h2>{getText("Welcome to CanoEh!", "Bienvenue chez CanoEh!")}</h2>
+                    <p>{getText("Discover amazing deals and products from across Canada!", "Découvrez des offres et des produits incroyables de partout au Canada!")}</p>
                 </div>
             </section>
 
             {/* Cards Section */}
             <section className="cards-section">
-                <ItemPreviewCard title="Suggested items" items={ITEM_PLACEHOLDER_ARRAY} />
-                <ItemPreviewCard title="Offers" items={ITEM_PLACEHOLDER_ARRAY} />
-                <ItemPreviewCard title="Explore Categories" items={ITEM_PLACEHOLDER_ARRAY} />
-                <ItemPreviewCard title="Best Sellers" items={ITEM_PLACEHOLDER_ARRAY} />
-                <ItemPreviewCard title="Best Rated" items={ITEM_PLACEHOLDER_ARRAY} />
+                <ItemPreviewCard
+                    title={getText("Suggested items", "Articles suggérés")}
+                    items={ITEM_PLACEHOLDER_ARRAY}
+                    onClick={() => handleCardClick('suggested')}
+                />
+                <ItemPreviewCard
+                    title={getText("Offers", "Offres")}
+                    items={ITEM_PLACEHOLDER_ARRAY}
+                    onClick={() => handleCardClick('offers')}
+                />
+                <ItemPreviewCard
+                    title={getText("Explore Categories", "Explorer les catégories")}
+                    items={ITEM_PLACEHOLDER_ARRAY}
+                    onClick={() => handleCardClick('categories')}
+                />
+                <ItemPreviewCard
+                    title={getText("Best Sellers", "Meilleures ventes")}
+                    items={ITEM_PLACEHOLDER_ARRAY}
+                    onClick={() => handleCardClick('bestsellers')}
+                />
+                <ItemPreviewCard
+                    title={getText("Best Rated", "Mieux notés")}
+                    items={ITEM_PLACEHOLDER_ARRAY}
+                    onClick={() => handleCardClick('rated')}
+                />
                 {isAuthenticated && (
                     <>
-                        <ItemPreviewCard title="Last Viewed Items" items={ITEM_PLACEHOLDER_ARRAY} />
-                        <ItemPreviewCard title="Local Products" items={ITEM_PLACEHOLDER_ARRAY} />
-                        <ItemPreviewCard title="Buy Again" items={ITEM_PLACEHOLDER_ARRAY} />
+                        <ItemPreviewCard
+                            title={getText("Last Viewed Items", "Derniers articles consultés")}
+                            items={ITEM_PLACEHOLDER_ARRAY}
+                            onClick={() => handleCardClick('viewed')}
+                        />
+                        <ItemPreviewCard
+                            title={getText("Local Products", "Produits locaux")}
+                            items={ITEM_PLACEHOLDER_ARRAY}
+                            onClick={() => handleCardClick('local')}
+                        />
+                        <ItemPreviewCard
+                            title={getText("Buy Again", "Acheter à nouveau")}
+                            items={ITEM_PLACEHOLDER_ARRAY}
+                            onClick={() => handleCardClick('buyagain')}
+                        />
                     </>
                 )}
             </section>
@@ -95,11 +234,26 @@ function Home({ isAuthenticated = false }: HomeProps) {
 interface ItemPreviewCardProps {
     title: string;
     items: number[];
+    onClick?: () => void;
 }
 
-function ItemPreviewCard({ title, items }: ItemPreviewCardProps) {
+function ItemPreviewCard({ title, items, onClick }: ItemPreviewCardProps) {
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick?.();
+        }
+    };
+
     return (
-        <div className="item-preview-card">
+        <div
+            className="item-preview-card"
+            onClick={onClick}
+            onKeyPress={handleKeyPress}
+            tabIndex={0}
+            role="button"
+            aria-label={`View ${title}`}
+        >
             <h3 className="card-title">{title}</h3>
             <div className="items-grid">
                 {items.map((item) => (

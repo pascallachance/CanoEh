@@ -15,10 +15,8 @@ function Home({ isAuthenticated = false }: HomeProps) {
     useEffect(() => {
         // Set language based on user or system settings
         const browserLang = navigator.language.toLowerCase();
-        if (!isAuthenticated) {
-            setLanguage(browserLang.includes('fr') ? 'fr' : 'en');
-        }
-    }, [isAuthenticated]);
+        setLanguage(browserLang.includes('fr') ? 'fr' : 'en');
+    }, []);
 
     const handleConnectClick = () => {
         navigate('/login');
@@ -34,11 +32,11 @@ function Home({ isAuthenticated = false }: HomeProps) {
                     <span>Update Location</span>
                 </div>
                 <div className="nav-item search-bar">
-                    <input type="text" placeholder="Search items..." />
+                    <input type="text" placeholder="Search items..." aria-label="Search for items" />
                     <span className="search-icon">🔍</span>
                 </div>
                 <div className="nav-item language-selector">
-                    <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+                    <select value={language} onChange={(e) => setLanguage(e.target.value)} aria-label="Select language">
                         <option value="en">English</option>
                         <option value="fr">Français</option>
                     </select>

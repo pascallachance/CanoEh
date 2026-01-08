@@ -14,7 +14,7 @@
     padding: 12px 20px;
     background-color: #232f3e;
     color: white;
-    gap: 15px;
+    gap: 10px;
 }
 
 .top-nav .nav-item {
@@ -44,6 +44,8 @@
     font-weight: bold;
     color: #fff;
     flex-shrink: 0;
+    padding: 8px 10px;
+    max-width: fit-content;
 }
 
 .top-nav .address {
@@ -52,7 +54,8 @@
     gap: 8px;
     flex-shrink: 0;
     min-width: 0;
-    max-width: 200px;
+    max-width: 150px;
+    padding: 8px 10px;
 }
 
 .top-nav .address .location-icon {
@@ -132,16 +135,20 @@
 
 .top-nav .language-selector {
     flex-shrink: 0;
+    padding: 8px 10px;
+    max-width: fit-content;
 }
 
 .top-nav .language-selector select {
     background-color: transparent;
     color: white;
     border: 1px solid #555;
-    padding: 6px 10px;
+    padding: 6px 8px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
+    min-width: 0;
+    width: auto;
 }
 
 .top-nav .language-selector select option {
@@ -151,19 +158,22 @@
 
 .top-nav .connect-button {
     flex-shrink: 0;
+    padding: 8px 10px;
+    max-width: fit-content;
 }
 
 .top-nav .connect-button button {
     background-color: #f08804;
     color: white;
     border: none;
-    padding: 8px 20px;
+    padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
     font-weight: bold;
     width: auto;
     margin: 0;
+    white-space: nowrap;
 }
 
 .top-nav .connect-button button:hover {
@@ -176,10 +186,11 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 4px 12px;
+    gap: 6px;
+    padding: 4px 10px;
     position: relative;
     flex-shrink: 0;
+    max-width: fit-content;
 }
 
 .top-nav .cart-button > div:first-child {

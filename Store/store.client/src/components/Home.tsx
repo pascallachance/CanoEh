@@ -137,7 +137,6 @@ function Home({ isAuthenticated = false }: HomeProps) {
                         <span className="nav-cart-line1"></span>
                         <span className="nav-cart-line2">
                             {getText("Cart", "Panier")}
-                            <span></span>
                         </span>
                     </div>
                 </button>

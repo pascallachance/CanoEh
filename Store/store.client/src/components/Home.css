@@ -43,14 +43,16 @@
     font-size: 24px;
     font-weight: bold;
     color: #fff;
+    flex-shrink: 0;
 }
 
 .top-nav .address {
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-shrink: 1;
+    flex-shrink: 0;
     min-width: 0;
+    max-width: 200px;
 }
 
 .top-nav .address .location-icon {
@@ -128,6 +130,10 @@
     outline-offset: -2px;
 }
 
+.top-nav .language-selector {
+    flex-shrink: 0;
+}
+
 .top-nav .language-selector select {
     background-color: transparent;
     color: white;
@@ -141,6 +147,10 @@
 .top-nav .language-selector select option {
     background-color: #232f3e;
     color: white;
+}
+
+.top-nav .connect-button {
+    flex-shrink: 0;
 }
 
 .top-nav .connect-button button {
@@ -169,6 +179,7 @@
     gap: 8px;
     padding: 4px 12px;
     position: relative;
+    flex-shrink: 0;
 }
 
 .top-nav .cart-button > div:first-child {

@@ -75,7 +75,7 @@ function Home({ isAuthenticated = false }: HomeProps) {
                             {getText("Deliver to", "Livrer à")}
                         </span>
                         <span>
-                            {isAuthenticated ? "H1A 1A1" : getText("Mettre à jour l'emplacement", "Mettre à jour l'emplacement")}
+                            {isAuthenticated ? "H1A 1A1" : getText("Update location", "Mettre à jour l'emplacement")}
                         </span>
                     </div>
                 </button>

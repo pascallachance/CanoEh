@@ -13,6 +13,7 @@ function Home({ isAuthenticated = false }: HomeProps) {
     const [language, setLanguage] = useState<string>('en');
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [userPostalCode, setUserPostalCode] = useState<string>('');
+    const [cartItemsCount, setCartItemsCount] = useState<number>(0);
 
     useEffect(() => {
         // Set language based on user or system settings
@@ -25,6 +26,10 @@ function Home({ isAuthenticated = false }: HomeProps) {
             // Example: fetchUserPostalCode().then(code => setUserPostalCode(code));
             setUserPostalCode(''); // Empty until integrated with user profile API
         }
+
+        // TODO: Fetch cart items count from API/state management
+        // For now, this is hardcoded for demonstration
+        setCartItemsCount(0); // Will be updated when cart state management is implemented
     }, [isAuthenticated]);
 
     const handleConnectClick = () => {
@@ -49,6 +54,10 @@ function Home({ isAuthenticated = false }: HomeProps) {
     const handleNavItemClick = (item: string) => {
         // TODO: Implement navigation to respective pages
         console.log('Navigate to:', item);
+    };
+
+    const handleCartClick = () => {
+        navigate('/cart');
     };
 
     const handleCardClick = (title: string) => {
@@ -114,6 +123,23 @@ function Home({ isAuthenticated = false }: HomeProps) {
                         {isAuthenticated ? getText('Account', 'Compte') : getText('Connect', 'Connexion')}
                     </button>
                 </div>
+                <button
+                    type="button"
+                    className="nav-item cart-button"
+                    onClick={handleCartClick}
+                    aria-label={getText("Shopping cart", "Panier d'achat")}
+                >
+                    <div className="cart-icon-container">
+                        <span className="cart-count">{cartItemsCount}</span>
+                        <span className="nav-cart-icon"></span>
+                    </div>
+                    <div className="cart-text-container">
+                        <span className="nav-cart-line1"></span>
+                        <span className="nav-cart-line2">
+                            {getText("Cart", "Panier")}
+                        </span>
+                    </div>
+                </button>
             </nav>
 
             {/* Bottom Navigation Bar */}

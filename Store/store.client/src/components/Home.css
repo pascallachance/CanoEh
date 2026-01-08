@@ -49,7 +49,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-shrink: 0;
+    flex-shrink: 1;
+    min-width: 0;
 }
 
 .top-nav .address .location-icon {
@@ -66,17 +67,24 @@
     flex-direction: column;
     align-items: flex-start;
     line-height: 1.2;
+    min-width: 0;
 }
 
 .top-nav .address > div span:first-child {
     font-size: 12px;
     color: #ccc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .top-nav .address > div span:last-child {
     font-size: 14px;
     font-weight: bold;
     color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .top-nav .search-bar {
@@ -148,6 +156,68 @@
 
 .top-nav .connect-button button:hover {
     background-color: #f5a623;
+}
+
+/* Cart Button */
+.top-nav .cart-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 4px 12px;
+    position: relative;
+}
+
+.cart-icon-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-count {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #f08804;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 20px;
+    text-align: center;
+    z-index: 1;
+}
+
+.nav-cart-icon {
+    width: 24px;
+    height: 24px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    display: block;
+}
+
+.cart-text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+}
+
+.nav-cart-line1 {
+    font-size: 12px;
+    color: #ccc;
+    height: 0;
+}
+
+.nav-cart-line2 {
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
 }
 
 /* Bottom Navigation Bar */

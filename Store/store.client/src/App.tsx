@@ -4,6 +4,7 @@ import Login from './components/Login';
 import CreateUser from './components/CreateUser';
 import ForgotPassword from './components/ForgotPassword';
 import Home from './components/Home';
+import Cart from './components/Cart';
 
 function App() {
     const handleLoginSuccess = () => {
@@ -20,6 +21,7 @@ function App() {
                 <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
                 <Route path="/CreateUser" element={<CreateUser onCreateSuccess={() => {/* Navigate to login after creation */}} />} />
                 <Route path="/RestorePassword" element={<ForgotPassword />} />
+                <Route path="/cart" element={<Cart />} />
                 <Route path="*" element={<Home />} />
             </Routes>
         </Router>

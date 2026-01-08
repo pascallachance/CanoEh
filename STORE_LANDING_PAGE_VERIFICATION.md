@@ -96,6 +96,15 @@ Navigates to /login
 ## Testing the Application
 
 ### Start the Application
+
+The recommended approach is to use the `start-dev.sh` script which starts both the API and frontend:
+
+```bash
+./start-dev.sh
+```
+
+Or manually start both services:
+
 ```bash
 # Terminal 1: Start API Backend
 cd API
@@ -109,7 +118,8 @@ npm run dev
 ### Access Points
 - **Frontend**: https://localhost:64941/ (Main shopping page)
 - **Login**: https://localhost:64941/login
-- **API**: https://localhost:7182
+- **API (HTTPS)**: https://localhost:7182
+- **API (HTTP)**: http://localhost:5269
 - **Swagger**: https://localhost:7182/swagger
 
 ### Expected Behavior

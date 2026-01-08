@@ -10,7 +10,6 @@
 
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
 import App from '../App';
 
 describe('Store Landing Page Routing', () => {
@@ -20,11 +19,7 @@ describe('Store Landing Page Routing', () => {
     
     window.history.pushState({}, 'Test', '/');
     
-    render(
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    );
+    render(<App />);
     
     // Home component should have the CanoEh! branding
     const logoElements = screen.getAllByText(/CanoEh!/i);
@@ -38,11 +33,7 @@ describe('Store Landing Page Routing', () => {
   it('should allow browsing without authentication', () => {
     window.history.pushState({}, 'Test', '/');
     
-    render(
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    );
+    render(<App />);
     
     // Should have search functionality available without login
     const searchInputs = screen.getAllByPlaceholderText(/Search|Rechercher/i);
@@ -56,11 +47,7 @@ describe('Store Landing Page Routing', () => {
   it('should NOT show login form at root path', () => {
     window.history.pushState({}, 'Test', '/');
     
-    render(
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    );
+    render(<App />);
     
     // Login page would have both email and password inputs together
     // Home page should NOT have these (it has a Connect button instead)
@@ -75,11 +62,7 @@ describe('Store Landing Page Routing', () => {
   it('should show login page only at /login path', () => {
     window.history.pushState({}, 'Test', '/login');
     
-    render(
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    );
+    render(<App />);
     
     // Login page should have email and password inputs
     const passwordInputs = screen.queryAllByLabelText(/password/i);

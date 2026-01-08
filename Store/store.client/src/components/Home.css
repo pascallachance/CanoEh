@@ -44,7 +44,6 @@
     font-weight: bold;
     color: #fff;
     flex-shrink: 0;
-    width: auto;
 }
 
 .top-nav .address {
@@ -100,7 +99,6 @@
     background-color: white;
     border-radius: 4px;
     padding: 0;
-    max-width: none;
 }
 
 .top-nav .search-bar input {
@@ -144,7 +142,6 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
-    width: auto;
 }
 
 .top-nav .language-selector select option {

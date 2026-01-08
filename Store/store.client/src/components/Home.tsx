@@ -130,7 +130,9 @@ function Home({ isAuthenticated = false }: HomeProps) {
                     aria-label={getText("Shopping cart", "Panier d'achat")}
                 >
                     <div className="cart-icon-container">
-                        <span className="cart-count">{cartItemsCount}</span>
+                        {cartItemsCount > 0 && (
+                            <span className="cart-count">{cartItemsCount}</span>
+                        )}
                         <span className="nav-cart-icon"></span>
                     </div>
                     <div className="cart-text-container">

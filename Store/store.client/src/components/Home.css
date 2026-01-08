@@ -76,6 +76,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 .top-nav .address > div span:last-child {
@@ -85,6 +86,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 .top-nav .search-bar {
@@ -211,7 +213,8 @@
 .nav-cart-line1 {
     font-size: 12px;
     color: #ccc;
-    height: 0;
+    height: 12px;
+    display: block;
 }
 
 .nav-cart-line2 {

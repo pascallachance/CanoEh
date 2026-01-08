@@ -28,6 +28,11 @@ function Cart() {
         navigate('/');
     };
 
+    const handleCheckout = () => {
+        // TODO: Implement checkout functionality
+        console.log('Proceed to checkout');
+    };
+
     const getTotalPrice = () => {
         return cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     };
@@ -65,7 +70,7 @@ function Cart() {
                             <span>{getText("Subtotal:", "Sous-total:")}</span>
                             <span>${getTotalPrice().toFixed(2)}</span>
                         </div>
-                        <button className="checkout-btn">
+                        <button className="checkout-btn" onClick={handleCheckout}>
                             {getText("Proceed to Checkout", "Passer à la caisse")}
                         </button>
                     </div>

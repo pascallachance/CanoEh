@@ -48,15 +48,40 @@
 .top-nav .address {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
-.top-nav .location-icon {
-    font-size: 18px;
+.top-nav .address #location-icon {
+    width: 18px;
+    height: 18px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    flex-shrink: 0;
+}
+
+.top-nav .address > div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.2;
+}
+
+.top-nav .address > div span:first-child {
+    font-size: 12px;
+    color: #ccc;
+}
+
+.top-nav .address > div span:last-child {
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
 }
 
 .top-nav .search-bar {
-    flex-grow: 1;
+    flex: 1 1 auto;
+    min-width: 0;
     display: flex;
     align-items: center;
     background-color: white;

@@ -69,8 +69,15 @@ function Home({ isAuthenticated = false }: HomeProps) {
                     onClick={handleLocationClick}
                     aria-label={getText("Update location", "Mettre à jour l'emplacement")}
                 >
-                    <span className="location-icon">📍</span>
-                    <span>{getText("Update Location", "Mettre à jour l'emplacement")}</span>
+                    <div id="location-icon"></div>
+                    <div>
+                        <span>
+                            {getText("Deliver to", "Livrer à")}
+                        </span>
+                        <span>
+                            {isAuthenticated ? "H1A 1A1" : getText("Mettre a jour l'emplacement", "Mettre a jour l'emplacement")}
+                        </span>
+                    </div>
                 </button>
                 <form className="nav-item search-bar" onSubmit={handleSearchSubmit}>
                     <input

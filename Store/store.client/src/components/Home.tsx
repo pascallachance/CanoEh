@@ -134,7 +134,7 @@ function Home({ isAuthenticated = false }: HomeProps) {
                     </div>
                     <div>
                         <span className="nav-cart-line1">
-                            {cartItemsCount > 0 ? cartItemsCount : ''}
+                            {cartItemsCount > 0 ? cartItemsCount : null}
                         </span>
                         <span className="nav-cart-line2">
                             {getText("Cart", "Panier")}

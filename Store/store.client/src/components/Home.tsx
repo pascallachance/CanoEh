@@ -12,12 +12,20 @@ function Home({ isAuthenticated = false }: HomeProps) {
     const navigate = useNavigate();
     const [language, setLanguage] = useState<string>('en');
     const [searchQuery, setSearchQuery] = useState<string>('');
+    const [userPostalCode, setUserPostalCode] = useState<string>('');
 
     useEffect(() => {
         // Set language based on user or system settings
         const browserLang = navigator.language.toLowerCase();
         setLanguage(browserLang.includes('fr') ? 'fr' : 'en');
-    }, []);
+
+        // TODO: Fetch user's postal code from their profile/session data
+        // For now, this is a placeholder that would be replaced with actual API call
+        if (isAuthenticated) {
+            // Example: fetchUserPostalCode().then(code => setUserPostalCode(code));
+            setUserPostalCode(''); // Empty until integrated with user profile API
+        }
+    }, [isAuthenticated]);
 
     const handleConnectClick = () => {
         navigate('/login');
@@ -69,8 +77,15 @@ function Home({ isAuthenticated = false }: HomeProps) {
                     onClick={handleLocationClick}
                     aria-label={getText("Update location", "Mettre à jour l'emplacement")}
                 >
-                    <span className="location-icon">📍</span>
-                    <span>{getText("Update Location", "Mettre à jour l'emplacement")}</span>
+                    <div className="location-icon"></div>
+                    <div>
+                        <span>
+                            {getText("Deliver to", "Livrer à")}
+                        </span>
+                        <span>
+                            {isAuthenticated && userPostalCode ? userPostalCode : getText("Update location", "Mettre à jour l'emplacement")}
+                        </span>
+                    </div>
                 </button>
                 <form className="nav-item search-bar" onSubmit={handleSearchSubmit}>
                     <input

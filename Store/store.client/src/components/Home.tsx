@@ -129,14 +129,13 @@ function Home({ isAuthenticated = false }: HomeProps) {
                     onClick={handleCartClick}
                     aria-label={getText("Shopping cart", "Panier d'achat")}
                 >
-                    <div className="cart-icon-container">
-                        {cartItemsCount > 0 && (
-                            <span className="cart-count">{cartItemsCount}</span>
-                        )}
+                    <div>
                         <span className="nav-cart-icon"></span>
                     </div>
-                    <div className="cart-text-container">
-                        <span className="nav-cart-line1"></span>
+                    <div>
+                        <span className="nav-cart-line1">
+                            {cartItemsCount > 0 ? cartItemsCount : ''}
+                        </span>
                         <span className="nav-cart-line2">
                             {getText("Cart", "Panier")}
                         </span>

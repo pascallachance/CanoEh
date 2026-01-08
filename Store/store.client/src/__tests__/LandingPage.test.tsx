@@ -145,7 +145,7 @@ describe('Cart Navigation and Functionality', () => {
     
     // Badge with class 'cart-count' should not be visible when count is 0
     const badge = cartButton.querySelector('.cart-count');
-    expect(badge).not.toBeInTheDocument();
+    expect(badge).toBeNull();
   });
 });
 

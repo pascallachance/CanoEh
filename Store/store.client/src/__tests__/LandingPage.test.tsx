@@ -1,15 +1,19 @@
 /**
  * Simple test to verify the Store landing page shows Home (shopping) page by default
+ * and that cart navigation works correctly
  * 
  * This test verifies the requirement:
  * "When entering https://localhost:64941 the first page should be the main screen not the login"
  * 
- * Note: This test suite requires a testing framework (vitest, @testing-library/react) to be configured.
- * To run tests, first add test dependencies to package.json, then run: npm test
+ * Also tests cart functionality:
+ * - Cart route renders Cart component
+ * - Cart button navigates to /cart
+ * - Cart count badge displays correct value
  */
 
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import App from '../App';
 
 describe('Store Landing Page Routing', () => {
@@ -72,3 +76,76 @@ describe('Store Landing Page Routing', () => {
     expect(passwordInputs.length).toBeGreaterThan(0);
   });
 });
+
+describe('Cart Navigation and Functionality', () => {
+  it('should render Cart component at /cart path', () => {
+    // Navigate to the cart page
+    window.history.pushState({}, 'Test', '/cart');
+    
+    render(<App />);
+    
+    // Cart page should have "Shopping Cart" or "Panier d'achat" heading
+    const cartHeading = screen.getByRole('heading', { name: /Shopping Cart|Panier d'achat/i });
+    expect(cartHeading).toBeInTheDocument();
+  });
+
+  it('should show empty cart message when cart has no items', () => {
+    window.history.pushState({}, 'Test', '/cart');
+    
+    render(<App />);
+    
+    // Should show empty cart message
+    const emptyMessage = screen.getByRole('heading', { name: /Your cart is empty|Votre panier est vide/i });
+    expect(emptyMessage).toBeInTheDocument();
+    
+    // Should have "Continue Shopping" button
+    const continueButton = screen.getByRole('button', { name: /Continue Shopping|Continuer vos achats/i });
+    expect(continueButton).toBeInTheDocument();
+  });
+
+  it('should navigate to cart page when cart button is clicked', async () => {
+    window.history.pushState({}, 'Test', '/');
+    
+    const user = userEvent.setup();
+    render(<App />);
+    
+    // Find and click the cart button
+    const cartButton = screen.getByRole('button', { name: /Shopping cart|Panier d'achat/i });
+    expect(cartButton).toBeInTheDocument();
+    
+    await user.click(cartButton);
+    
+    // After clicking, should navigate to cart page
+    // Wait for cart heading to appear
+    const cartHeading = await screen.findByRole('heading', { name: /Shopping Cart|Panier d'achat/i });
+    expect(cartHeading).toBeInTheDocument();
+  });
+
+  it('should display cart button in navigation', () => {
+    window.history.pushState({}, 'Test', '/');
+    
+    render(<App />);
+    
+    // Cart button should be present in navigation
+    const cartButton = screen.getByRole('button', { name: /Shopping cart|Panier d'achat/i });
+    expect(cartButton).toBeInTheDocument();
+    
+    // Cart button should contain "Cart" or "Panier" text
+    expect(cartButton.textContent).toMatch(/Cart|Panier/i);
+  });
+
+  it('should not display cart count badge when count is 0', () => {
+    window.history.pushState({}, 'Test', '/');
+    
+    render(<App />);
+    
+    // Cart button should be present
+    const cartButton = screen.getByRole('button', { name: /Shopping cart|Panier d'achat/i });
+    expect(cartButton).toBeInTheDocument();
+    
+    // Badge with class 'cart-count' should not be visible when count is 0
+    const badge = cartButton.querySelector('.cart-count');
+    expect(badge).not.toBeInTheDocument();
+  });
+});
+

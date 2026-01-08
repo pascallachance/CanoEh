@@ -10,8 +10,16 @@ interface CartItem {
 }
 
 function Cart() {
+    const getInitialLanguage = (): string => {
+        if (typeof navigator !== 'undefined' && navigator.language) {
+            const lang = navigator.language.toLowerCase();
+            return lang.startsWith('fr') ? 'fr' : 'en';
+        }
+        return 'en';
+    };
+
     const navigate = useNavigate();
-    const [language] = useState<string>('en'); // TODO: Get from context/parent
+    const [language] = useState<string>(getInitialLanguage); // TODO: Get from context/parent
     const [cartItems] = useState<CartItem[]>([]); // TODO: Implement cart state management
 
     const getText = (en: string, fr: string) => language === 'fr' ? fr : en;

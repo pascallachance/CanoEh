@@ -46,6 +46,7 @@
     flex-shrink: 0;
     padding: 0 10px;
     max-width: fit-content;
+    margin-top: 0;
 }
 
 .top-nav .address {
@@ -56,6 +57,7 @@
     min-width: 0;
     max-width: 150px;
     padding: 0 10px;
+    margin-top: 0;
 }
 
 .top-nav .address .location-icon {
@@ -144,6 +146,7 @@
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
+    margin-top: 0;
 }
 
 .top-nav .search-icon:hover {
@@ -213,6 +216,7 @@
     position: relative;
     flex-shrink: 0;
     max-width: fit-content;
+    margin-top: 0;
 }
 
 .top-nav .cart-button > div:first-child {

@@ -185,6 +185,7 @@
     flex-shrink: 0;
     padding: 0 10px;
     max-width: fit-content;
+    margin-top: 0;
 }
 
 .top-nav .connect-button button {
@@ -288,15 +289,10 @@
 }
 
 /* Banner Section */
-.banner-section {
-    margin: 20px;
-    padding: 20px;
-}
-
 .banner-widget {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 60px 40px;
-    border-radius: 8px;
+    border-radius: 0;
     color: white;
     text-align: center;
 }

@@ -29,9 +29,9 @@ describe('Store Landing Page Routing', () => {
     const logoElements = screen.getAllByText(/CanoEh!/i);
     expect(logoElements.length).toBeGreaterThan(0);
     
-    // Should have a Connect button (to navigate TO login, not already ON login)
-    const connectButton = screen.getByRole('button', { name: /Connect|Connexion/i });
-    expect(connectButton).toBeTruthy();
+    // Should have a Sign In button (to navigate TO login, not already ON login)
+    const signInButton = screen.getByRole('button', { name: /Sign In|Connexion/i });
+    expect(signInButton).toBeTruthy();
   });
 
   it('should allow browsing without authentication', () => {

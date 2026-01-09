@@ -124,7 +124,7 @@ function Home({ isAuthenticated = false }: HomeProps) {
                 </div>
                 <div className="nav-item connect-button">
                     <button onClick={handleConnectClick}>
-                        {isAuthenticated ? getText('Account', 'Compte') : getText('Connect', 'Connexion')}
+                        {isAuthenticated ? getText('Account', 'Compte') : getText('Sign In', 'Connexion')}
                     </button>
                 </div>
                 <button

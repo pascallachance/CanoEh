@@ -97,20 +97,24 @@ function Home({ isAuthenticated = false }: HomeProps) {
                     </div>
                 </button>
                 <form className="nav-item search-bar" onSubmit={handleSearchSubmit}>
-                    <input
-                        type="text"
-                        placeholder={getText("Search items...", "Rechercher des articles...")}
-                        aria-label={getText("Search for items", "Rechercher des articles")}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    <button
-                        type="submit"
-                        className="search-icon"
-                        aria-label={getText("Search", "Rechercher")}
-                    >
-                        🔍
-                    </button>
+                    <div className="nav-search-field">
+                        <input
+                            type="text"
+                            placeholder={getText("Search items...", "Rechercher des articles...")}
+                            aria-label={getText("Search for items", "Rechercher des articles")}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    <div className="nav-right">
+                        <button
+                            type="submit"
+                            className="search-icon"
+                            aria-label={getText("Search", "Rechercher")}
+                        >
+                            🔍
+                        </button>
+                    </div>
                 </form>
                 <div className="nav-item language-selector">
                     <select value={language} onChange={(e) => setLanguage(e.target.value)} aria-label={getText("Select language", "Sélectionner la langue")}>

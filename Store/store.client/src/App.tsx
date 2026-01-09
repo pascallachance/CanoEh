@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import './App.css';
 import Login from './components/Login';
 import CreateUser from './components/CreateUser';
@@ -6,24 +6,38 @@ import ForgotPassword from './components/ForgotPassword';
 import Home from './components/Home';
 import Cart from './components/Cart';
 
-function App() {
+function AppContent() {
+    const navigate = useNavigate();
+
     const handleLoginSuccess = () => {
-        // Navigate to main content or dashboard after login
-        // For now, we could add navigation logic here if needed
+        // Navigate to home page after successful login
         console.log('Login successful - user authenticated');
+        navigate('/');
+    };
+
+    const handleCreateUserSuccess = () => {
+        // Navigate to login page after successful user creation
+        console.log('User created successfully');
+        navigate('/login');
     };
 
     // Show login/register forms
     return (
+        <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
+            <Route path="/CreateUser" element={<CreateUser onCreateSuccess={handleCreateUserSuccess} />} />
+            <Route path="/RestorePassword" element={<ForgotPassword />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="*" element={<Home />} />
+        </Routes>
+    );
+}
+
+function App() {
+    return (
         <Router>
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
-                <Route path="/CreateUser" element={<CreateUser onCreateSuccess={() => {/* Navigate to login after creation */}} />} />
-                <Route path="/RestorePassword" element={<ForgotPassword />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="*" element={<Home />} />
-            </Routes>
+            <AppContent />
         </Router>
     );
 }

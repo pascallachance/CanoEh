@@ -119,6 +119,8 @@
     font-size: 14px;
     outline: none;
     color: #333;
+    height: 38px;
+    box-sizing: border-box;
 }
 
 .top-nav .nav-right {
@@ -130,6 +132,7 @@
 .top-nav .search-icon {
     padding: 10px;
     width: 40px;
+    height: 38px;
     background-color: #febd69;
     border-radius: 0 4px 4px 0;
     cursor: pointer;
@@ -139,6 +142,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box;
 }
 
 .top-nav .search-icon:hover {
@@ -204,7 +208,7 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    padding: 4px 10px;
+    padding: 8px 10px;
     position: relative;
     flex-shrink: 0;
     max-width: fit-content;

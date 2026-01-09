@@ -1,5 +1,5 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: system-ui, Avenir, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -13,14 +13,6 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f000;
-    padding: 20px;
-}
-
 a {
   font-weight: 500;
   color: #646cff;
@@ -32,6 +24,8 @@ a:hover {
 
 body {
   margin: 0;
+  display: flex;
+  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -42,33 +36,19 @@ h1 {
 }
 
 button {
-    width: 100%;
-    padding: 8px 16px 8px 16px;
-    background-color: #f00;
-    color: white;
-    border: none;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
 }
-
-button:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+button:hover {
+  border-color: #646cff;
 }
-
-button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* button:hover { */
-/*   border-color: #646cff; */
-/* } */
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;

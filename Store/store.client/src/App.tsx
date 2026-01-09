@@ -40,6 +40,12 @@ function AppContent() {
         try {
             // Call logout API
             const apiBaseUrl = import.meta.env.VITE_API_STORE_BASE_URL;
+            if (!apiBaseUrl) {
+                console.error('API base URL is not configured');
+                setIsAuthenticated(false);
+                return;
+            }
+            
             const response = await fetch(`${apiBaseUrl}/api/Login/logout`, {
                 method: 'POST',
                 credentials: 'include',

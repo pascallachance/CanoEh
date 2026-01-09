@@ -277,6 +277,7 @@
     border: none;
     color: white;
     font-family: inherit;
+    margin-top: 0;
 }
 
 .bottom-nav .nav-item:hover {
@@ -289,6 +290,10 @@
 }
 
 /* Banner Section */
+.banner-section {
+    padding: 0 80px;
+}
+
 .banner-widget {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 60px 40px;

@@ -14,9 +14,16 @@ function AppContent() {
     // Check for authentication on mount
     useEffect(() => {
         const checkAuth = () => {
-            // Check if AuthToken cookie exists
+            // Check if AuthToken cookie exists and has a value
             const cookies = document.cookie.split(';');
-            const hasAuthToken = cookies.some(cookie => cookie.trim().startsWith('AuthToken='));
+            const hasAuthToken = cookies.some(cookie => {
+                const trimmed = cookie.trim();
+                if (trimmed.startsWith('AuthToken=')) {
+                    const value = trimmed.substring('AuthToken='.length);
+                    return value.length > 0;
+                }
+                return false;
+            });
             setIsAuthenticated(hasAuthToken);
         };
         checkAuth();

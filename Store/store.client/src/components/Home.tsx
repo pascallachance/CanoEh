@@ -34,9 +34,11 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     }, [isAuthenticated]);
 
     const handleConnectClick = () => {
-        if (isAuthenticated && onLogout) {
-            // User is authenticated, perform logout
-            onLogout();
+        if (isAuthenticated) {
+            // User is authenticated, perform logout if handler is available
+            if (onLogout) {
+                onLogout();
+            }
         } else {
             // User is not authenticated, navigate to login
             navigate('/login');

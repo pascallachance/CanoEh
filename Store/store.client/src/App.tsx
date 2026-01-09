@@ -15,12 +15,18 @@ function AppContent() {
         navigate('/');
     };
 
+    const handleCreateUserSuccess = () => {
+        // Navigate to login page after successful user creation
+        console.log('User created successfully');
+        navigate('/login');
+    };
+
     // Show login/register forms
     return (
         <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
-            <Route path="/CreateUser" element={<CreateUser onCreateSuccess={() => {/* Navigate to login after creation */}} />} />
+            <Route path="/CreateUser" element={<CreateUser onCreateSuccess={handleCreateUserSuccess} />} />
             <Route path="/RestorePassword" element={<ForgotPassword />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="*" element={<Home />} />

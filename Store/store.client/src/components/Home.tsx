@@ -4,11 +4,12 @@ import './Home.css';
 
 interface HomeProps {
     isAuthenticated?: boolean;
+    onLogout?: () => void;
 }
 
 const ITEM_PLACEHOLDER_ARRAY = [1, 2, 3, 4];
 
-function Home({ isAuthenticated = false }: HomeProps) {
+function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const navigate = useNavigate();
     const [language, setLanguage] = useState<string>('en');
     const [searchQuery, setSearchQuery] = useState<string>('');
@@ -33,7 +34,15 @@ function Home({ isAuthenticated = false }: HomeProps) {
     }, [isAuthenticated]);
 
     const handleConnectClick = () => {
-        navigate('/login');
+        if (isAuthenticated) {
+            // User is authenticated, perform logout if handler is available
+            if (onLogout) {
+                onLogout();
+            }
+        } else {
+            // User is not authenticated, navigate to login
+            navigate('/login');
+        }
     };
 
     const handleLogoClick = () => {
@@ -124,7 +133,7 @@ function Home({ isAuthenticated = false }: HomeProps) {
                 </div>
                 <div className="nav-item connect-button">
                     <button onClick={handleConnectClick}>
-                        {isAuthenticated ? getText('Account', 'Compte') : getText('Sign In', 'Connexion')}
+                        {isAuthenticated ? getText('Logout', 'Déconnexion') : getText('Sign In', 'Connexion')}
                     </button>
                 </div>
                 <button

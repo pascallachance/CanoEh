@@ -262,6 +262,11 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     items={ITEM_PLACEHOLDER_ARRAY}
                     onClick={() => handleCardClick('rated')}
                 />
+                <ItemPreviewCard
+                    title={getText("Recently added items", "Articles récemment ajoutés")}
+                    items={ITEM_PLACEHOLDER_ARRAY}
+                    onClick={() => handleCardClick('recentlyadded')}
+                />
                 {isAuthenticated && (
                     <>
                         <ItemPreviewCard

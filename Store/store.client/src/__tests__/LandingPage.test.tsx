@@ -48,6 +48,16 @@ describe('Store Landing Page Routing', () => {
     expect(welcomeText).toBeTruthy();
   });
 
+  it('should display "Recently added items" card on home page', () => {
+    window.history.pushState({}, 'Test', '/');
+    
+    render(<App />);
+    
+    // Should show "Recently added items" card (or French "Articles récemment ajoutés")
+    const recentlyAddedCard = screen.getByText(/Recently added items|Articles récemment ajoutés/i);
+    expect(recentlyAddedCard).toBeInTheDocument();
+  });
+
   it('should NOT show login form at root path', () => {
     window.history.pushState({}, 'Test', '/');
     

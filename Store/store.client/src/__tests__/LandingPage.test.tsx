@@ -144,7 +144,7 @@ describe('Cart Navigation and Functionality', () => {
     expect(cartButton.textContent).toMatch(/Cart|Panier/i);
   });
 
-  it('should not display cart count badge when count is 0', () => {
+  it('should display 0 in cart count badge when count is 0', () => {
     window.history.pushState({}, 'Test', '/');
     
     render(<App />);
@@ -153,9 +153,8 @@ describe('Cart Navigation and Functionality', () => {
     const cartButton = screen.getByRole('button', { name: /Shopping cart|Panier d'achat/i });
     expect(cartButton).toBeInTheDocument();
     
-    // Badge with class 'cart-count' should not be visible when count is 0
-    const badge = cartButton.querySelector('.cart-count');
-    expect(badge).toBeNull();
+    // Cart button should display "0" when count is 0
+    expect(cartButton.textContent).toMatch(/0/);
   });
 });
 

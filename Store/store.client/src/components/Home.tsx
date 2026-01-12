@@ -15,6 +15,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [userPostalCode, setUserPostalCode] = useState<string>('');
     const [cartItemsCount, setCartItemsCount] = useState<number>(0);
+    const [recentProductImages, setRecentProductImages] = useState<string[]>([]);
 
     useEffect(() => {
         // Set language based on user or system settings
@@ -31,7 +32,55 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         // TODO: Fetch cart items count from API/state management
         // For now, this is hardcoded for demonstration
         setCartItemsCount(0); // Will be updated when cart state management is implemented
+
+        // Fetch recently added products
+        fetchRecentlyAddedProducts();
     }, [isAuthenticated]);
+
+    const fetchRecentlyAddedProducts = async () => {
+        try {
+            const apiBaseUrl = import.meta.env.VITE_API_STORE_BASE_URL;
+            if (!apiBaseUrl) {
+                console.warn('API base URL not configured');
+                return;
+            }
+
+            const response = await fetch(`${apiBaseUrl}/api/Item/GetRecentlyAddedProducts?count=100`);
+            if (!response.ok) {
+                console.error('Failed to fetch recently added products');
+                return;
+            }
+
+            const result = await response.json();
+            if (result.isSuccess && result.value) {
+                // Extract first image from first variant of the 4 most recent items
+                const images: string[] = [];
+                for (let i = 0; i < Math.min(4, result.value.length); i++) {
+                    const product = result.value[i];
+                    if (product.variants && product.variants.length > 0) {
+                        const firstVariant = product.variants[0];
+                        // Try to get first image from ImageUrls or fall back to ThumbnailUrl
+                        if (firstVariant.imageUrls) {
+                            const urls = firstVariant.imageUrls.split(',').filter((url: string) => url.trim());
+                            if (urls.length > 0) {
+                                images.push(urls[0].trim());
+                                continue;
+                            }
+                        }
+                        if (firstVariant.thumbnailUrl) {
+                            images.push(firstVariant.thumbnailUrl);
+                            continue;
+                        }
+                    }
+                    // If no image found, add placeholder
+                    images.push('');
+                }
+                setRecentProductImages(images);
+            }
+        } catch (error) {
+            console.error('Error fetching recently added products:', error);
+        }
+    };
 
     const handleConnectClick = () => {
         if (isAuthenticated) {
@@ -265,6 +314,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 <ItemPreviewCard
                     title={getText("Recently added items", "Articles récemment ajoutés")}
                     items={ITEM_PLACEHOLDER_ARRAY}
+                    imageUrls={recentProductImages}
                     onClick={() => handleCardClick('recentlyadded')}
                 />
                 {isAuthenticated && (
@@ -294,10 +344,11 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 interface ItemPreviewCardProps {
     title: string;
     items: number[];
+    imageUrls?: string[];
     onClick?: () => void;
 }
 
-function ItemPreviewCard({ title, items, onClick }: ItemPreviewCardProps) {
+function ItemPreviewCard({ title, items, imageUrls, onClick }: ItemPreviewCardProps) {
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (onClick && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
@@ -316,9 +367,23 @@ function ItemPreviewCard({ title, items, onClick }: ItemPreviewCardProps) {
         >
             <h3 className="card-title">{title}</h3>
             <div className="items-grid">
-                {items.map((item) => (
+                {items.map((item, index) => (
                     <div key={item} className="item-placeholder">
-                        <div className="item-image-placeholder">Item {item}</div>
+                        {imageUrls && imageUrls[index] ? (
+                            <img 
+                                src={imageUrls[index]} 
+                                alt={`Item ${item}`} 
+                                className="item-image"
+                                onError={(e) => {
+                                    // Fallback to placeholder on image load error
+                                    e.currentTarget.style.display = 'none';
+                                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                }}
+                            />
+                        ) : null}
+                        <div className={imageUrls && imageUrls[index] ? 'item-image-placeholder hidden' : 'item-image-placeholder'}>
+                            Item {item}
+                        </div>
                     </div>
                 ))}
             </div>

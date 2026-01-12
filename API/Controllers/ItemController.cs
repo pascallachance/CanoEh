@@ -210,15 +210,27 @@ namespace API.Controllers
         /// Gets the last N recently added products (Items with their Variants, ItemAttributes, and ItemVariantAttributes).
         /// Products are ordered by creation date, from most recent to least recent.
         /// </summary>
-        /// <param name="count">Number of products to retrieve. Default is 100.</param>
+        /// <param name="count">Number of products to retrieve. Default is 100. Maximum is 1000.</param>
         /// <returns>Returns a list of recently added products or an error response.</returns>
         [HttpGet("GetRecentlyAddedProducts")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetRecentlyAddedProducts([FromQuery] int count = 100)
         {
             try
             {
+                // Validate count parameter
+                if (count <= 0)
+                {
+                    return BadRequest("Count must be greater than 0.");
+                }
+
+                if (count > 1000)
+                {
+                    return BadRequest("Count cannot exceed 1000.");
+                }
+
                 var result = await _itemService.GetRecentlyAddedProductsAsync(count);
 
                 if (result.IsFailure)

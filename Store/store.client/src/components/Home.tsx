@@ -45,7 +45,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 return;
             }
 
-            const response = await fetch(`${apiBaseUrl}/api/Item/GetRecentlyAddedProducts?count=100`);
+            const response = await fetch(`${apiBaseUrl}/api/Item/GetRecentlyAddedProducts?count=4`);
             if (!response.ok) {
                 console.error('Failed to fetch recently added products');
                 return;
@@ -349,11 +349,17 @@ interface ItemPreviewCardProps {
 }
 
 function ItemPreviewCard({ title, items, imageUrls, onClick }: ItemPreviewCardProps) {
+    const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (onClick && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
             onClick();
         }
+    };
+
+    const handleImageError = (index: number) => {
+        setImageErrors((prev) => new Set(prev).add(index));
     };
 
     return (
@@ -369,21 +375,18 @@ function ItemPreviewCard({ title, items, imageUrls, onClick }: ItemPreviewCardPr
             <div className="items-grid">
                 {items.map((item, index) => (
                     <div key={item} className="item-placeholder">
-                        {imageUrls && imageUrls[index] ? (
+                        {imageUrls && imageUrls[index] && !imageErrors.has(index) ? (
                             <img 
                                 src={imageUrls[index]} 
                                 alt={`Item ${item}`} 
                                 className="item-image"
-                                onError={(e) => {
-                                    // Fallback to placeholder on image load error
-                                    e.currentTarget.style.display = 'none';
-                                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                                }}
+                                onError={() => handleImageError(index)}
                             />
-                        ) : null}
-                        <div className={imageUrls && imageUrls[index] ? 'item-image-placeholder hidden' : 'item-image-placeholder'}>
-                            Item {item}
-                        </div>
+                        ) : (
+                            <div className="item-image-placeholder">
+                                Item {item}
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>

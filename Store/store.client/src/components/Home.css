@@ -385,10 +385,6 @@
     font-size: 12px;
 }
 
-.item-image-placeholder.hidden {
-    display: none;
-}
-
 /* Responsive Design */
 @media (max-width: 1200px) {
     .cards-section {

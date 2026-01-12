@@ -788,5 +788,20 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             }
             return attributes.Select(MapToItemAttributeDto).ToList();
         }
+
+        public async Task<Result<IEnumerable<GetItemResponse>>> GetRecentlyAddedProductsAsync(int count = 100)
+        {
+            try
+            {
+                var items = await _itemRepository.GetRecentlyAddedProductsAsync(count);
+                var response = items.Select(item => MapItemToGetItemResponse(item));
+
+                return Result.Success(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<IEnumerable<GetItemResponse>>($"An error occurred while retrieving recently added products: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
     }
 }

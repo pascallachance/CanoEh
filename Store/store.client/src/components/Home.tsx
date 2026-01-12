@@ -8,6 +8,7 @@ interface HomeProps {
 }
 
 const ITEM_PLACEHOLDER_ARRAY = [1, 2, 3, 4];
+const RECENT_ITEMS_DISPLAY_COUNT = 4;
 
 function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const navigate = useNavigate();
@@ -45,7 +46,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 return;
             }
 
-            const response = await fetch(`${apiBaseUrl}/api/Item/GetRecentlyAddedProducts?count=4`);
+            const response = await fetch(`${apiBaseUrl}/api/Item/GetRecentlyAddedProducts?count=${RECENT_ITEMS_DISPLAY_COUNT}`);
             if (!response.ok) {
                 console.error('Failed to fetch recently added products');
                 return;
@@ -53,9 +54,9 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result = await response.json();
             if (result.isSuccess && result.value) {
-                // Extract first image from first variant of the 4 most recent items
+                // Extract first image from first variant of the most recent items
                 const images: string[] = [];
-                for (let i = 0; i < Math.min(4, result.value.length); i++) {
+                for (let i = 0; i < Math.min(RECENT_ITEMS_DISPLAY_COUNT, result.value.length); i++) {
                     const product = result.value[i];
                     if (product.variants && product.variants.length > 0) {
                         const firstVariant = product.variants[0];

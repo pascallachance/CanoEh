@@ -235,7 +235,7 @@ namespace API.Controllers
 
                 if (result.IsFailure)
                 {
-                    return StatusCode(result.ErrorCode ?? 501, result.Error);
+                    return StatusCode(result.ErrorCode ?? StatusCodes.Status500InternalServerError, result.Error);
                 }
 
                 return Ok(result);

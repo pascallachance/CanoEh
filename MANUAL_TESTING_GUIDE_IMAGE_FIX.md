@@ -10,7 +10,7 @@
 
 ### 1. Start the API Server
 ```bash
-cd /home/runner/work/CanoEh/CanoEh/API
+cd <repository_root>/API
 dotnet run --launch-profile https
 ```
 
@@ -31,7 +31,7 @@ curl -k -I https://localhost:7182/uploads/test.jpg
 
 ### 3. Start the Store Frontend
 ```bash
-cd /home/runner/work/CanoEh/CanoEh/Store/store.client
+cd <repository_root>/Store/store.client
 npm install  # If not already done
 npm run dev
 ```
@@ -99,7 +99,7 @@ In browser DevTools Console tab:
 
 2. Check if image files actually exist on disk:
    ```bash
-   ls -la /home/runner/work/CanoEh/CanoEh/API/wwwroot/uploads/
+   ls -la <repository_root>/API/wwwroot/uploads/
    ```
 
 3. Check browser console for specific error messages
@@ -107,7 +107,7 @@ In browser DevTools Console tab:
 4. Verify Vite proxy is working:
    ```bash
    # Should show proxy config
-   cat /home/runner/work/CanoEh/CanoEh/Store/store.client/vite.config.ts | grep -A5 "uploads"
+   cat <repository_root>/Store/store.client/vite.config.ts | grep -A5 "uploads"
    ```
 
 ### Database Connection Errors

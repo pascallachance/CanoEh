@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import './AnalyticsSection.css';
-import { formatDate } from '../../utils/dateUtils';
+import { formatShortDate } from '../../utils/dateUtils';
 
 interface Company {
     id: string;
@@ -149,7 +149,7 @@ function AnalyticsSection(_props: AnalyticsSectionProps) {
                                         >
                                         </div>
                                         <div className="analytics-chart-date">
-                                            {formatDate(day.date)}
+                                            {formatShortDate(day.date)}
                                         </div>
                                     </div>
                                 );

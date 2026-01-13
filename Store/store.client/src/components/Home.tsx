@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
+import { toAbsoluteUrl } from '../utils/urlUtils';
 
 interface HomeProps {
     isAuthenticated?: boolean;
@@ -138,7 +139,9 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
                         // Only add to images array if we found a valid image URL
                         if (imageUrl) {
-                            images.push(imageUrl);
+                            // Use utility function to convert relative paths to absolute URLs
+                            const fullImageUrl = toAbsoluteUrl(imageUrl);
+                            images.push(fullImageUrl);
                         }
                     }
                 }

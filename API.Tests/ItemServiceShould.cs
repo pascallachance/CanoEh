@@ -1166,5 +1166,206 @@ namespace API.Tests
             Assert.Equal(StatusCodes.Status404NotFound, result.ErrorCode);
             Assert.Equal("Item or variant not found.", result.Error);
         }
+
+        [Fact]
+        public async Task GetRecentlyAddedProductsAsync_ReturnSuccess_WhenItemsExist()
+        {
+            // Arrange
+            var items = new List<Item>
+            {
+                new Item
+                {
+                    Id = Guid.NewGuid(),
+                    SellerID = Guid.NewGuid(),
+                    Name_en = "Recent Item 1",
+                    Name_fr = "Article récent 1",
+                    Description_en = "Test Description EN",
+                    Description_fr = "Test Description FR",
+                    CategoryID = Guid.NewGuid(),
+                    Variants = new List<ItemVariant>
+                    {
+                        new ItemVariant
+                        {
+                            Id = Guid.NewGuid(),
+                            ItemId = Guid.NewGuid(),
+                            Price = 29.99m,
+                            StockQuantity = 10,
+                            Sku = "TEST-001",
+                            ImageUrls = "https://example.com/image1.jpg",
+                            ThumbnailUrl = "https://example.com/thumb1.jpg",
+                            ItemVariantAttributes = new List<ItemVariantAttribute>(),
+                            Deleted = false
+                        }
+                    },
+                    ItemAttributes = new List<ItemAttribute>(),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = null,
+                    Deleted = false
+                },
+                new Item
+                {
+                    Id = Guid.NewGuid(),
+                    SellerID = Guid.NewGuid(),
+                    Name_en = "Recent Item 2",
+                    Name_fr = "Article récent 2",
+                    Description_en = "Test Description EN",
+                    Description_fr = "Test Description FR",
+                    CategoryID = Guid.NewGuid(),
+                    Variants = new List<ItemVariant>(),
+                    ItemAttributes = new List<ItemAttribute>(),
+                    CreatedAt = DateTime.UtcNow.AddMinutes(-1),
+                    UpdatedAt = null,
+                    Deleted = false
+                }
+            };
+
+            _mockItemRepository.Setup(x => x.GetRecentlyAddedProductsAsync(It.IsAny<int>()))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _itemService.GetRecentlyAddedProductsAsync(4);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            var resultList = result.Value.ToList();
+            Assert.Equal(2, resultList.Count);
+            Assert.Equal("Recent Item 1", resultList[0].Name_en);
+            Assert.Equal("Recent Item 2", resultList[1].Name_en);
+        }
+
+        [Fact]
+        public async Task GetRecentlyAddedProductsAsync_ReturnSuccess_WhenNoItemsExist()
+        {
+            // Arrange
+            var items = new List<Item>();
+            _mockItemRepository.Setup(x => x.GetRecentlyAddedProductsAsync(It.IsAny<int>()))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _itemService.GetRecentlyAddedProductsAsync(100);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Empty(result.Value);
+        }
+
+        [Fact]
+        public async Task GetRecentlyAddedProductsAsync_PassCorrectCountToRepository()
+        {
+            // Arrange
+            var items = new List<Item>();
+            _mockItemRepository.Setup(x => x.GetRecentlyAddedProductsAsync(50))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _itemService.GetRecentlyAddedProductsAsync(50);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            _mockItemRepository.Verify(x => x.GetRecentlyAddedProductsAsync(50), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetRecentlyAddedProductsAsync_ReturnFailure_WhenExceptionOccurs()
+        {
+            // Arrange
+            _mockItemRepository.Setup(x => x.GetRecentlyAddedProductsAsync(It.IsAny<int>()))
+                              .ThrowsAsync(new Exception("Database connection failed"));
+
+            // Act
+            var result = await _itemService.GetRecentlyAddedProductsAsync(100);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.ErrorCode);
+            Assert.Contains("An error occurred while retrieving recently added products", result.Error);
+        }
+
+        [Fact]
+        public async Task GetRecentlyAddedProductsAsync_MapItemsToDtosCorrectly()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            var attributeId = Guid.NewGuid();
+            var variantAttributeId = Guid.NewGuid();
+
+            var items = new List<Item>
+            {
+                new Item
+                {
+                    Id = itemId,
+                    SellerID = Guid.NewGuid(),
+                    Name_en = "Test Item",
+                    Name_fr = "Article de test",
+                    Description_en = "Description EN",
+                    Description_fr = "Description FR",
+                    CategoryID = Guid.NewGuid(),
+                    Variants = new List<ItemVariant>
+                    {
+                        new ItemVariant
+                        {
+                            Id = variantId,
+                            ItemId = itemId,
+                            Price = 19.99m,
+                            StockQuantity = 5,
+                            Sku = "SKU-001",
+                            ImageUrls = "image1.jpg,image2.jpg",
+                            ThumbnailUrl = "thumb.jpg",
+                            ItemVariantName_en = "Variant EN",
+                            ItemVariantName_fr = "Variant FR",
+                            ItemVariantAttributes = new List<ItemVariantAttribute>
+                            {
+                                new ItemVariantAttribute
+                                {
+                                    Id = variantAttributeId,
+                                    ItemVariantID = variantId,
+                                    AttributeName_en = "Color",
+                                    AttributeName_fr = "Couleur",
+                                    Attributes_en = "Red",
+                                    Attributes_fr = "Rouge"
+                                }
+                            },
+                            Deleted = false
+                        }
+                    },
+                    ItemAttributes = new List<ItemAttribute>
+                    {
+                        new ItemAttribute
+                        {
+                            Id = attributeId,
+                            ItemID = itemId,
+                            AttributeName_en = "Material",
+                            AttributeName_fr = "Matériau",
+                            Attributes_en = "Cotton",
+                            Attributes_fr = "Coton"
+                        }
+                    },
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = null,
+                    Deleted = false
+                }
+            };
+
+            _mockItemRepository.Setup(x => x.GetRecentlyAddedProductsAsync(It.IsAny<int>()))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _itemService.GetRecentlyAddedProductsAsync(1);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            var item = result.Value.First();
+            Assert.Equal(itemId, item.Id);
+            Assert.Equal("Test Item", item.Name_en);
+            Assert.Single(item.Variants);
+            Assert.Single(item.ItemAttributes);
+            Assert.Equal(variantId, item.Variants[0].Id);
+            Assert.Equal(19.99m, item.Variants[0].Price);
+            Assert.Single(item.Variants[0].ItemVariantAttributes);
+            Assert.Equal("Color", item.Variants[0].ItemVariantAttributes[0].AttributeName_en);
+        }
     }
 }

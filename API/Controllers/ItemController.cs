@@ -207,6 +207,47 @@ namespace API.Controllers
         }
 
         /// <summary>
+        /// Gets the last N recently added products (Items with their Variants, ItemAttributes, and ItemVariantAttributes).
+        /// Products are ordered by creation date, from most recent to least recent.
+        /// </summary>
+        /// <param name="count">Number of products to retrieve. Default is 100. Maximum is 1000.</param>
+        /// <returns>Returns a list of recently added products or an error response.</returns>
+        [HttpGet("GetRecentlyAddedProducts")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetRecentlyAddedProducts([FromQuery] int count = 100)
+        {
+            try
+            {
+                // Validate count parameter
+                if (count <= 0)
+                {
+                    return BadRequest("Count must be greater than 0.");
+                }
+
+                if (count > 1000)
+                {
+                    return BadRequest("Count cannot exceed 1000.");
+                }
+
+                var result = await _itemService.GetRecentlyAddedProductsAsync(count);
+
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? StatusCodes.Status500InternalServerError, result.Error);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
+        }
+
+        /// <summary>
         /// Gets all items from a seller by seller ID.
         /// </summary>
         /// <param name="sellerId">The ID of the seller.</param>

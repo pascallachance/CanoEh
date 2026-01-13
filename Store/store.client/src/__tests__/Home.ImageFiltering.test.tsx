@@ -147,7 +147,7 @@ describe('Home - Image Filtering', () => {
             ]
         };
 
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse
         });
@@ -218,7 +218,7 @@ describe('Home - Image Filtering', () => {
             ]
         };
 
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse
         });
@@ -270,7 +270,7 @@ describe('Home - Image Filtering', () => {
             ]
         };
 
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse
         });

@@ -185,6 +185,13 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         navigate('/cart');
     };
 
+    // Generate array for displaying recently added items
+    // If we have images, create an array matching the number of images (up to 4)
+    // Otherwise, use the default placeholder array
+    const recentItemsArray = recentProductImages.length > 0 
+        ? Array.from({ length: recentProductImages.length }, (_, i) => i + 1)
+        : ITEM_PLACEHOLDER_ARRAY;
+
     const handleCardClick = (title: string) => {
         // TODO: Implement navigation to respective category/search pages
         console.log('Card clicked:', title);
@@ -380,7 +387,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 />
                 <ItemPreviewCard
                     title={getText("Recently added items", "Articles récemment ajoutés")}
-                    items={recentProductImages.length > 0 ? Array.from({ length: recentProductImages.length }, (_, i) => i + 1) : ITEM_PLACEHOLDER_ARRAY}
+                    items={recentItemsArray}
                     imageUrls={recentProductImages}
                     onClick={() => handleCardClick('recentlyadded')}
                 />

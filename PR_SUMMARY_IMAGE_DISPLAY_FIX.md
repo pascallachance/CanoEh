@@ -139,7 +139,7 @@ If this change needs to be rolled back:
 4. No component changes to rollback
 
 ## Related Issues/PRs
-- This fix addresses the same category of issue as PR #345 (image display on home page)
+- This fix addresses the same category of image display issues previously observed on the home page
 - Complements the existing image filtering logic that filters out products without images
 - No conflicts with existing functionality
 

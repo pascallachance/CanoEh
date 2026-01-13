@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import './AnalyticsSection.css';
+import { formatDate } from '../../utils/dateUtils';
 
 interface Company {
     id: string;
@@ -148,13 +149,7 @@ function AnalyticsSection(_props: AnalyticsSectionProps) {
                                         >
                                         </div>
                                         <div className="analytics-chart-date">
-                                            {(() => {
-                                                const date = new Date(day.date);
-                                                const year = date.getFullYear();
-                                                const month = String(date.getMonth() + 1).padStart(2, '0');
-                                                const dayNum = String(date.getDate()).padStart(2, '0');
-                                                return `${year}/${month}/${dayNum}`;
-                                            })()}
+                                            {formatDate(day.date)}
                                         </div>
                                     </div>
                                 );

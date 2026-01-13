@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNotifications } from '../../contexts/useNotifications';
 import { toAbsoluteUrl } from '../../utils/urlUtils';
 import { ApiClient } from '../../utils/apiClient';
+import { formatDate } from '../../utils/dateUtils';
 import './CompanySection.css';
 
 interface Company {
@@ -496,13 +497,7 @@ function CompanySection({ companies, onCompanyUpdate }: CompanySectionProps) {
             <div className="company-header">
                 <h2>{selectedCompany.name}</h2>
                 <p className="company-created">
-                    Created: {(() => {
-                        const date = new Date(selectedCompany.createdAt);
-                        const year = date.getFullYear();
-                        const month = String(date.getMonth() + 1).padStart(2, '0');
-                        const day = String(date.getDate()).padStart(2, '0');
-                        return `${year}/${month}/${day}`;
-                    })()}
+                    Created: {formatDate(selectedCompany.createdAt)}
                 </p>
             </div>
 

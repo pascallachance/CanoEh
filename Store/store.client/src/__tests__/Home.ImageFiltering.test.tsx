@@ -558,4 +558,108 @@ describe('Home - Image Filtering', () => {
         // Both should be images, not placeholders
         expect(images?.length).toBe(2);
     });
+
+    it('should prepend API base URL to relative image paths', async () => {
+        // Mock API response with product that has relative image path
+        const mockResponse = {
+            isSuccess: true,
+            value: [
+                {
+                    id: '1',
+                    sellerID: 'seller1',
+                    name_en: 'Product 1',
+                    name_fr: 'Produit 1',
+                    categoryID: 'cat1',
+                    createdAt: '2024-01-01',
+                    deleted: false,
+                    variants: [
+                        {
+                            id: 'var1',
+                            price: 10,
+                            stockQuantity: 5,
+                            sku: 'SKU1',
+                            imageUrls: '/uploads/company-id/variant-id/image.jpg',
+                            itemVariantAttributes: [],
+                            deleted: false
+                        }
+                    ],
+                    itemAttributes: []
+                }
+            ]
+        };
+
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            ok: true,
+            json: async () => mockResponse
+        });
+
+        render(
+            <BrowserRouter>
+                <Home />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalled();
+        });
+
+        // Should prepend API base URL to relative path
+        const recentlyAddedCard = screen.getByText(/Recently added items|Articles récemment ajoutés/).closest('.item-preview-card');
+        const images = recentlyAddedCard?.querySelectorAll('.item-image');
+        
+        expect(images?.length).toBe(1);
+        expect(images?.[0].getAttribute('src')).toBe('https://localhost:7182/uploads/company-id/variant-id/image.jpg');
+    });
+
+    it('should not modify absolute URLs that already start with http', async () => {
+        // Mock API response with product that has absolute URL
+        const mockResponse = {
+            isSuccess: true,
+            value: [
+                {
+                    id: '1',
+                    sellerID: 'seller1',
+                    name_en: 'Product 1',
+                    name_fr: 'Produit 1',
+                    categoryID: 'cat1',
+                    createdAt: '2024-01-01',
+                    deleted: false,
+                    variants: [
+                        {
+                            id: 'var1',
+                            price: 10,
+                            stockQuantity: 5,
+                            sku: 'SKU1',
+                            imageUrls: 'https://cdn.example.com/image.jpg',
+                            itemVariantAttributes: [],
+                            deleted: false
+                        }
+                    ],
+                    itemAttributes: []
+                }
+            ]
+        };
+
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            ok: true,
+            json: async () => mockResponse
+        });
+
+        render(
+            <BrowserRouter>
+                <Home />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalled();
+        });
+
+        // Should keep absolute URL as-is
+        const recentlyAddedCard = screen.getByText(/Recently added items|Articles récemment ajoutés/).closest('.item-preview-card');
+        const images = recentlyAddedCard?.querySelectorAll('.item-image');
+        
+        expect(images?.length).toBe(1);
+        expect(images?.[0].getAttribute('src')).toBe('https://cdn.example.com/image.jpg');
+    });
 });

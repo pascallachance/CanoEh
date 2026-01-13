@@ -48,6 +48,11 @@ export default defineConfig({
                 target: 'https://localhost:7182',
                 secure: false, // Allow self-signed certificates in development
                 changeOrigin: true
+            },
+            '^/uploads': {
+                target: 'https://localhost:7182',
+                secure: false, // Allow self-signed certificates in development
+                changeOrigin: true
             }
         },
         port: parseInt(env.DEV_SERVER_PORT || '62209'),

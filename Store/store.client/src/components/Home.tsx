@@ -64,6 +64,7 @@ interface ApiResult<T> {
 
 const ITEM_PLACEHOLDER_ARRAY = [1, 2, 3, 4];
 const RECENT_ITEMS_DISPLAY_COUNT = 4;
+const RECENT_ITEMS_FETCH_COUNT = 20; // Fetch more to ensure we get enough with images
 
 function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const navigate = useNavigate();
@@ -101,7 +102,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 return;
             }
 
-            const response = await fetch(`${apiBaseUrl}/api/Item/GetRecentlyAddedProducts?count=${RECENT_ITEMS_DISPLAY_COUNT}`);
+            // Fetch more products than needed to ensure we get enough with images
+            const response = await fetch(`${apiBaseUrl}/api/Item/GetRecentlyAddedProducts?count=${RECENT_ITEMS_FETCH_COUNT}`);
             if (!response.ok) {
                 console.error('Failed to fetch recently added products');
                 return;
@@ -109,27 +111,36 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                // Extract first image from first variant of the most recent items
+                // Extract images from products, but only include products that have valid images
                 const images: string[] = [];
-                for (let i = 0; i < Math.min(RECENT_ITEMS_DISPLAY_COUNT, result.value.length); i++) {
-                    const product: GetItemResponse = result.value[i];
+                for (const product of result.value) {
+                    // Stop if we already have enough images
+                    if (images.length >= RECENT_ITEMS_DISPLAY_COUNT) {
+                        break;
+                    }
+
                     if (product.variants && product.variants.length > 0) {
                         const firstVariant: ItemVariantDto = product.variants[0];
-                        // Try to get first image from ImageUrls or fall back to ThumbnailUrl
+                        let imageUrl: string | null = null;
+
+                        // Try to get first image from ImageUrls
                         if (firstVariant.imageUrls) {
                             const urls = firstVariant.imageUrls.split(',').filter((url: string) => url.trim());
                             if (urls.length > 0) {
-                                images.push(urls[0].trim());
-                                continue;
+                                imageUrl = urls[0].trim();
                             }
                         }
-                        if (firstVariant.thumbnailUrl) {
-                            images.push(firstVariant.thumbnailUrl);
-                            continue;
+
+                        // Fall back to ThumbnailUrl if no ImageUrls found
+                        if (!imageUrl && firstVariant.thumbnailUrl) {
+                            imageUrl = firstVariant.thumbnailUrl;
+                        }
+
+                        // Only add to images array if we found a valid image URL
+                        if (imageUrl) {
+                            images.push(imageUrl);
                         }
                     }
-                    // If no image found, add placeholder
-                    images.push('');
                 }
                 setRecentProductImages(images);
             }
@@ -173,6 +184,16 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const handleCartClick = () => {
         navigate('/cart');
     };
+
+    // Generate array for displaying recently added items
+    // If we have images, create an array matching the number of images (up to 4)
+    // Otherwise, use the default placeholder array.
+    // NOTE: The numeric values here (1, 2, 3, ...) are only used as simple render keys
+    // and placeholder labels ("Item 1", "Item 2", etc.). When actual images are shown,
+    // these numbers do not represent real item IDs and are not meaningful domain data.
+    const recentItemsArray = recentProductImages.length > 0 
+        ? Array.from({ length: recentProductImages.length }, (_, i) => i + 1)
+        : ITEM_PLACEHOLDER_ARRAY;
 
     const handleCardClick = (title: string) => {
         // TODO: Implement navigation to respective category/search pages
@@ -369,7 +390,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 />
                 <ItemPreviewCard
                     title={getText("Recently added items", "Articles récemment ajoutés")}
-                    items={ITEM_PLACEHOLDER_ARRAY}
+                    items={recentItemsArray}
                     imageUrls={recentProductImages}
                     onClick={() => handleCardClick('recentlyadded')}
                 />

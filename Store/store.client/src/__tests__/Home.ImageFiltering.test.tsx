@@ -612,7 +612,59 @@ describe('Home - Image Filtering', () => {
     });
 
     it('should not modify absolute URLs that already start with http', async () => {
-        // Mock API response with product that has absolute URL
+        // Mock API response with product that has absolute HTTP URL
+        const mockResponse = {
+            isSuccess: true,
+            value: [
+                {
+                    id: '1',
+                    sellerID: 'seller1',
+                    name_en: 'Product 1',
+                    name_fr: 'Produit 1',
+                    categoryID: 'cat1',
+                    createdAt: '2024-01-01',
+                    deleted: false,
+                    variants: [
+                        {
+                            id: 'var1',
+                            price: 10,
+                            stockQuantity: 5,
+                            sku: 'SKU1',
+                            imageUrls: 'http://cdn.example.com/image.jpg',
+                            itemVariantAttributes: [],
+                            deleted: false
+                        }
+                    ],
+                    itemAttributes: []
+                }
+            ]
+        };
+
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            ok: true,
+            json: async () => mockResponse
+        });
+
+        render(
+            <BrowserRouter>
+                <Home />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalled();
+        });
+
+        // Should keep absolute HTTP URL as-is
+        const recentlyAddedCard = screen.getByText(/Recently added items|Articles récemment ajoutés/).closest('.item-preview-card');
+        const images = recentlyAddedCard?.querySelectorAll('.item-image');
+        
+        expect(images?.length).toBe(1);
+        expect(images?.[0].getAttribute('src')).toBe('http://cdn.example.com/image.jpg');
+    });
+
+    it('should not modify absolute URLs that already start with https', async () => {
+        // Mock API response with product that has absolute HTTPS URL
         const mockResponse = {
             isSuccess: true,
             value: [
@@ -655,7 +707,7 @@ describe('Home - Image Filtering', () => {
             expect(global.fetch).toHaveBeenCalled();
         });
 
-        // Should keep absolute URL as-is
+        // Should keep absolute HTTPS URL as-is
         const recentlyAddedCard = screen.getByText(/Recently added items|Articles récemment ajoutés/).closest('.item-preview-card');
         const images = recentlyAddedCard?.querySelectorAll('.item-image');
         

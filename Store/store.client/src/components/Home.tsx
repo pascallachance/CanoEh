@@ -137,8 +137,14 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                         }
 
                         // Only add to images array if we found a valid image URL
+                        // Prepend API base URL to make the image path absolute
                         if (imageUrl) {
-                            images.push(imageUrl);
+                            // If the imageUrl is already absolute (starts with http), use it as-is
+                            // Otherwise, prepend the API base URL to make it absolute
+                            const fullImageUrl = imageUrl.startsWith('http') 
+                                ? imageUrl 
+                                : `${apiBaseUrl}${imageUrl}`;
+                            images.push(fullImageUrl);
                         }
                     }
                 }

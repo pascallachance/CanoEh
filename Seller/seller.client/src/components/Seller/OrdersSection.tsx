@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import './OrdersSection.css';
+import { formatDate } from '../../utils/dateUtils';
 
 interface Company {
     id: string;
@@ -281,7 +282,7 @@ function OrdersSection(_props: OrdersSectionProps) {
                                             </span>
                                         </td>
                                         <td>
-                                            {new Date(order.createdAt).toLocaleDateString()}
+                                            {formatDate(order.createdAt)}
                                         </td>
                                         <td>
                                             <div className="orders-actions">

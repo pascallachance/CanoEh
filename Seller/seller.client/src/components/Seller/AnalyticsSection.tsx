@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import './AnalyticsSection.css';
+import { formatShortDate } from '../../utils/dateUtils';
 
 interface Company {
     id: string;
@@ -148,10 +149,7 @@ function AnalyticsSection(_props: AnalyticsSectionProps) {
                                         >
                                         </div>
                                         <div className="analytics-chart-date">
-                                            {new Date(day.date).toLocaleDateString('en-US', { 
-                                                month: 'short', 
-                                                day: 'numeric' 
-                                            })}
+                                            {formatShortDate(day.date)}
                                         </div>
                                     </div>
                                 );

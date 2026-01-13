@@ -7,6 +7,7 @@ import {
     formatAttributeName,
     formatVariantAttribute
 } from '../../utils/bilingualArrayUtils';
+import { formatDate } from '../../utils/dateUtils';
 import type { AddProductStep1Data } from '../AddProductStep1';
 import type { AddProductStep2Data } from '../AddProductStep2';
 import type { AddProductStep3Data, ItemAttribute } from '../AddProductStep3';
@@ -564,16 +565,6 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
     };
 
     // Format date for display
-    const formatDate = (dateString: string | undefined): string => {
-        if (!dateString) return '-';
-        const date = new Date(dateString);
-        return date.toLocaleDateString(language === 'fr' ? 'fr-CA' : 'en-CA', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    };
-
     // Handle sort column click
     const handleSortClick = (column: 'itemName' | 'itemCategory' | 'creationDate' | 'lastUpdated', direction: 'asc' | 'desc') => {
         setSortBy(column);

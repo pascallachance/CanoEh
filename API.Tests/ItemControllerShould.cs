@@ -911,5 +911,138 @@ namespace API.Tests
             var errorResult = Assert.IsType<ObjectResult>(response);
             Assert.Equal(StatusCodes.Status500InternalServerError, errorResult.StatusCode);
         }
+
+        [Fact]
+        public async Task GetRecentlyAddedProducts_ReturnOk_WhenProductsExist()
+        {
+            // Arrange
+            var items = new List<GetItemResponse>
+            {
+                new GetItemResponse
+                {
+                    Id = Guid.NewGuid(),
+                    SellerID = Guid.NewGuid(),
+                    Name_en = "Recent Item 1",
+                    Name_fr = "Article récent 1",
+                    Description_en = "Test Description EN",
+                    Description_fr = "Test Description FR",
+                    CategoryID = Guid.NewGuid(),
+                    Variants = new List<ItemVariantDto>
+                    {
+                        new ItemVariantDto
+                        {
+                            Id = Guid.NewGuid(),
+                            Price = 29.99m,
+                            StockQuantity = 10,
+                            Sku = "TEST-001",
+                            ImageUrls = "https://example.com/image1.jpg",
+                            ThumbnailUrl = "https://example.com/thumb1.jpg",
+                            ItemVariantAttributes = new List<ItemVariantAttributeDto>(),
+                            Deleted = false
+                        }
+                    },
+                    ItemAttributes = new List<ItemAttributeDto>(),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = null,
+                    Deleted = false
+                },
+                new GetItemResponse
+                {
+                    Id = Guid.NewGuid(),
+                    SellerID = Guid.NewGuid(),
+                    Name_en = "Recent Item 2",
+                    Name_fr = "Article récent 2",
+                    Description_en = "Test Description EN",
+                    Description_fr = "Test Description FR",
+                    CategoryID = Guid.NewGuid(),
+                    Variants = new List<ItemVariantDto>(),
+                    ItemAttributes = new List<ItemAttributeDto>(),
+                    CreatedAt = DateTime.UtcNow.AddMinutes(-1),
+                    UpdatedAt = null,
+                    Deleted = false
+                }
+            };
+
+            var result = Result.Success<IEnumerable<GetItemResponse>>(items);
+            _mockItemService.Setup(x => x.GetRecentlyAddedProductsAsync(It.IsAny<int>()))
+                           .ReturnsAsync(result);
+
+            // Act
+            var response = await _controller.GetRecentlyAddedProducts(4);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(response);
+            Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetRecentlyAddedProducts_ReturnBadRequest_WhenCountIsZero()
+        {
+            // Arrange & Act
+            var response = await _controller.GetRecentlyAddedProducts(0);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+            Assert.Equal("Count must be greater than 0.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task GetRecentlyAddedProducts_ReturnBadRequest_WhenCountIsNegative()
+        {
+            // Arrange & Act
+            var response = await _controller.GetRecentlyAddedProducts(-5);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+            Assert.Equal("Count must be greater than 0.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task GetRecentlyAddedProducts_ReturnBadRequest_WhenCountExceedsMaximum()
+        {
+            // Arrange & Act
+            var response = await _controller.GetRecentlyAddedProducts(1001);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+            Assert.Equal("Count cannot exceed 1000.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task GetRecentlyAddedProducts_ReturnInternalServerError_WhenServiceFails()
+        {
+            // Arrange
+            var result = Result.Failure<IEnumerable<GetItemResponse>>("Database error", StatusCodes.Status500InternalServerError);
+            _mockItemService.Setup(x => x.GetRecentlyAddedProductsAsync(It.IsAny<int>()))
+                           .ReturnsAsync(result);
+
+            // Act
+            var response = await _controller.GetRecentlyAddedProducts(100);
+
+            // Assert
+            var errorResult = Assert.IsType<ObjectResult>(response);
+            Assert.Equal(StatusCodes.Status500InternalServerError, errorResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetRecentlyAddedProducts_UseDefaultCount_WhenCountNotProvided()
+        {
+            // Arrange
+            var items = new List<GetItemResponse>();
+            var result = Result.Success<IEnumerable<GetItemResponse>>(items);
+            _mockItemService.Setup(x => x.GetRecentlyAddedProductsAsync(100))
+                           .ReturnsAsync(result);
+
+            // Act
+            var response = await _controller.GetRecentlyAddedProducts();
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(response);
+            Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+            _mockItemService.Verify(x => x.GetRecentlyAddedProductsAsync(100), Times.Once);
+        }
     }
 }

@@ -7,6 +7,61 @@ interface HomeProps {
     onLogout?: () => void;
 }
 
+// API Response Types
+interface ItemVariantAttributeDto {
+    id: string;
+    attributeName_en: string;
+    attributeName_fr?: string;
+    attributes_en: string;
+    attributes_fr?: string;
+}
+
+interface ItemVariantDto {
+    id: string;
+    price: number;
+    stockQuantity: number;
+    sku: string;
+    productIdentifierType?: string;
+    productIdentifierValue?: string;
+    imageUrls?: string;
+    thumbnailUrl?: string;
+    itemVariantName_en?: string;
+    itemVariantName_fr?: string;
+    itemVariantAttributes: ItemVariantAttributeDto[];
+    deleted: boolean;
+}
+
+interface ItemAttributeDto {
+    id: string;
+    attributeName_en: string;
+    attributeName_fr?: string;
+    attributes_en: string;
+    attributes_fr?: string;
+}
+
+interface GetItemResponse {
+    id: string;
+    sellerID: string;
+    name_en: string;
+    name_fr: string;
+    description_en?: string;
+    description_fr?: string;
+    imageUrl?: string;
+    categoryID: string;
+    variants: ItemVariantDto[];
+    itemAttributes: ItemAttributeDto[];
+    createdAt: string;
+    updatedAt?: string;
+    deleted: boolean;
+}
+
+interface ApiResult<T> {
+    isSuccess: boolean;
+    value?: T;
+    error?: string;
+    errorCode?: number;
+}
+
 const ITEM_PLACEHOLDER_ARRAY = [1, 2, 3, 4];
 const RECENT_ITEMS_DISPLAY_COUNT = 4;
 
@@ -52,14 +107,14 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 return;
             }
 
-            const result = await response.json();
+            const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
                 // Extract first image from first variant of the most recent items
                 const images: string[] = [];
                 for (let i = 0; i < Math.min(RECENT_ITEMS_DISPLAY_COUNT, result.value.length); i++) {
-                    const product = result.value[i];
+                    const product: GetItemResponse = result.value[i];
                     if (product.variants && product.variants.length > 0) {
-                        const firstVariant = product.variants[0];
+                        const firstVariant: ItemVariantDto = product.variants[0];
                         // Try to get first image from ImageUrls or fall back to ThumbnailUrl
                         if (firstVariant.imageUrls) {
                             const urls = firstVariant.imageUrls.split(',').filter((url: string) => url.trim());

@@ -116,9 +116,10 @@ The implementation extracts and displays images in the following priority:
    ```
 
 3. **View in Swagger UI:**
-   - Navigate to `http://localhost:5269/swagger`
+   - Navigate to `https://localhost:7182/swagger` (HTTPS required for standalone API)
    - Find `GET /api/Item/GetRecentlyAddedProducts`
    - Test with different count values
+   - Note: Swagger UI is also available on Store.Server at `http://localhost:5199/swagger`
 
 ### Frontend Testing
 

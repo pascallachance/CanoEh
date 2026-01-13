@@ -567,11 +567,10 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
     const formatDate = (dateString: string | undefined): string => {
         if (!dateString) return '-';
         const date = new Date(dateString);
-        return date.toLocaleDateString(language === 'fr' ? 'fr-CA' : 'en-CA', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}/${month}/${day}`;
     };
 
     // Handle sort column click

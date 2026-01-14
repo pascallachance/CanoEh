@@ -248,6 +248,48 @@ namespace API.Controllers
         }
 
         /// <summary>
+        /// Gets random suggested products (Items with their Variants, ItemAttributes, and ItemVariantAttributes).
+        /// Returns only items that have at least one variant with ImageUrls.
+        /// Returns maximum one image from the same Item (we don't want to get Images from two variants of the same item).
+        /// </summary>
+        /// <param name="count">Number of products to retrieve. Default is 4. Maximum is 100.</param>
+        /// <returns>Returns a list of suggested products or an error response.</returns>
+        [HttpGet("GetSuggestedProducts")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetSuggestedProducts([FromQuery] int count = 4)
+        {
+            try
+            {
+                // Validate count parameter
+                if (count <= 0)
+                {
+                    return BadRequest("Count must be greater than 0.");
+                }
+
+                if (count > 100)
+                {
+                    return BadRequest("Count cannot exceed 100.");
+                }
+
+                var result = await _itemService.GetSuggestedProductsAsync(count);
+
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? StatusCodes.Status500InternalServerError, result.Error);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
+        }
+
+        /// <summary>
         /// Gets all items from a seller by seller ID.
         /// </summary>
         /// <param name="sellerId">The ID of the seller.</param>

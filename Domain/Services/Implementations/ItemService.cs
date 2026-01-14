@@ -803,5 +803,20 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 return Result.Failure<IEnumerable<GetItemResponse>>($"An error occurred while retrieving recently added products: {ex.Message}", StatusCodes.Status500InternalServerError);
             }
         }
+
+        public async Task<Result<IEnumerable<GetItemResponse>>> GetSuggestedProductsAsync(int count = 4)
+        {
+            try
+            {
+                var items = await _itemRepository.GetSuggestedProductsAsync(count);
+                var response = items.Select(item => MapItemToGetItemResponse(item));
+
+                return Result.Success(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<IEnumerable<GetItemResponse>>($"An error occurred while retrieving suggested products: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
     }
 }

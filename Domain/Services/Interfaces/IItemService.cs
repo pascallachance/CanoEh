@@ -21,5 +21,6 @@ namespace Domain.Services.Interfaces
         Task<Result> UpdateItemVariantAsync(ItemVariant variant);
         Task<Result> UpdateItemVariantImageAsync(Guid variantId, string imageType, string imageUrl, int imageNumber);
         Task<Result<IEnumerable<GetItemResponse>>> GetRecentlyAddedProductsAsync(int count = 100);
+        Task<Result<IEnumerable<GetItemResponse>>> GetSuggestedProductsAsync(int count = 4);
     }
 }

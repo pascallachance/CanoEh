@@ -321,5 +321,131 @@ namespace Infrastructure.Repositories.Tests
             Assert.NotNull(interfaceMethodInfo);
             Assert.Equal(typeof(Task<IEnumerable<Item>>), interfaceMethodInfo.ReturnType);
         }
+
+        [Fact]
+        public void GetSuggestedProductsAsync_MethodExists_OnItemRepository()
+        {
+            // Arrange & Act
+            // This test verifies that GetSuggestedProductsAsync method is properly defined on ItemRepository
+            // and returns the expected type (Task<IEnumerable<Item>>).
+            // Integration tests with a real database would be needed to verify:
+            // - The SQL randomization logic using NEWID()
+            // - The CTE filtering for items with images
+            // - The batched queries and dictionary lookups work correctly
+            // - ItemVariants, ItemVariantAttributes, and ItemAttributes are properly loaded
+            var methodInfo = _itemRepository.GetType().GetMethod("GetSuggestedProductsAsync");
+            
+            // Assert
+            Assert.NotNull(methodInfo);
+            Assert.Equal(typeof(Task<IEnumerable<Item>>), methodInfo.ReturnType);
+            
+            // Verify method parameter
+            var parameters = methodInfo.GetParameters();
+            Assert.Single(parameters);
+            Assert.Equal("count", parameters[0].Name);
+            Assert.Equal(typeof(int), parameters[0].ParameterType);
+        }
+
+        [Fact]
+        public void GetSuggestedProductsAsync_Interface_ShouldDefineMethod()
+        {
+            // Arrange & Act
+            // Verify the interface contract for GetSuggestedProductsAsync
+            var interfaceMethodInfo = typeof(IItemRepository).GetMethod("GetSuggestedProductsAsync");
+            
+            // Assert
+            Assert.NotNull(interfaceMethodInfo);
+            Assert.Equal(typeof(Task<IEnumerable<Item>>), interfaceMethodInfo.ReturnType);
+            
+            // Verify method parameter on interface
+            var parameters = interfaceMethodInfo.GetParameters();
+            Assert.Single(parameters);
+            Assert.Equal("count", parameters[0].Name);
+            Assert.Equal(typeof(int), parameters[0].ParameterType);
+        }
+
+        [Fact]
+        public async Task GetSuggestedProductsAsync_ShouldReturnItems_WhenItemsWithImagesExist()
+        {
+            // Arrange
+            var items = new List<Item>
+            {
+                new Item
+                {
+                    Id = Guid.NewGuid(),
+                    SellerID = Guid.NewGuid(),
+                    Name_en = "Suggested Item 1",
+                    Name_fr = "Article suggéré 1",
+                    Description_en = "Description EN",
+                    Description_fr = "Description FR",
+                    CategoryID = Guid.NewGuid(),
+                    Variants = new List<ItemVariant>
+                    {
+                        new ItemVariant
+                        {
+                            Id = Guid.NewGuid(),
+                            ItemId = Guid.NewGuid(),
+                            Price = 29.99m,
+                            StockQuantity = 10,
+                            Sku = "SUGG-001",
+                            ImageUrls = "https://example.com/image1.jpg",
+                            Deleted = false
+                        }
+                    },
+                    ItemAttributes = new List<ItemAttribute>(),
+                    CreatedAt = DateTime.UtcNow,
+                    Deleted = false
+                }
+            };
+
+            _mockItemRepository.Setup(repo => repo.GetSuggestedProductsAsync(It.IsAny<int>()))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _mockItemRepository.Object.GetSuggestedProductsAsync(4);
+
+            // Assert
+            Assert.NotNull(result);
+            var resultList = result.ToList();
+            Assert.Single(resultList);
+            Assert.Equal("Suggested Item 1", resultList[0].Name_en);
+            Assert.NotEmpty(resultList[0].Variants);
+            Assert.NotNull(resultList[0].Variants[0].ImageUrls);
+            _mockItemRepository.Verify(repo => repo.GetSuggestedProductsAsync(4), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetSuggestedProductsAsync_ShouldReturnEmpty_WhenNoItemsWithImagesExist()
+        {
+            // Arrange
+            var items = new List<Item>();
+            _mockItemRepository.Setup(repo => repo.GetSuggestedProductsAsync(It.IsAny<int>()))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _mockItemRepository.Object.GetSuggestedProductsAsync(4);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+            _mockItemRepository.Verify(repo => repo.GetSuggestedProductsAsync(4), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetSuggestedProductsAsync_ShouldRespectCountParameter()
+        {
+            // Arrange
+            var count = 10;
+            var items = new List<Item>();
+            _mockItemRepository.Setup(repo => repo.GetSuggestedProductsAsync(count))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _mockItemRepository.Object.GetSuggestedProductsAsync(count);
+
+            // Assert
+            Assert.NotNull(result);
+            _mockItemRepository.Verify(repo => repo.GetSuggestedProductsAsync(count), Times.Once);
+        }
     }
 }

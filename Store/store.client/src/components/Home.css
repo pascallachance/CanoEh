@@ -30,7 +30,7 @@
     font-size: 14px;
 }
 
-.top-nav .nav-item:hover {
+.top-nav .nav-item:hover:not(.connect-button) {
     background-color: #374151;
 }
 

@@ -576,17 +576,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         return (
             <th>
                 <div className="products-header-cell">
-                    <span>{t(labelKey)}</span>
                     <div className="products-sort-arrows">
-                        <button
-                            type="button"
-                            className={`products-sort-arrow ${sortBy === column && sortDirection === 'asc' ? 'active' : ''}`}
-                            onClick={() => handleSortClick(column, 'asc')}
-                            title={t('products.sort.ascending')}
-                            aria-label={`${t(`products.sort.${column}`)} ${t('products.sort.ascending')}`}
-                        >
-                            ▲
-                        </button>
                         <button
                             type="button"
                             className={`products-sort-arrow ${sortBy === column && sortDirection === 'desc' ? 'active' : ''}`}
@@ -594,9 +584,19 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                             title={t('products.sort.descending')}
                             aria-label={`${t(`products.sort.${column}`)} ${t('products.sort.descending')}`}
                         >
+                            ▲
+                        </button>
+                        <button
+                            type="button"
+                            className={`products-sort-arrow ${sortBy === column && sortDirection === 'asc' ? 'active' : ''}`}
+                            onClick={() => handleSortClick(column, 'asc')}
+                            title={t('products.sort.ascending')}
+                            aria-label={`${t(`products.sort.${column}`)} ${t('products.sort.ascending')}`}
+                        >
                             ▼
                         </button>
                     </div>
+                    <span>{t(labelKey)}</span>
                 </div>
             </th>
         );

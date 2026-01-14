@@ -66,6 +66,7 @@ interface ApiResult<T> {
 const ITEM_PLACEHOLDER_ARRAY = [1, 2, 3, 4];
 const RECENT_ITEMS_DISPLAY_COUNT = 4;
 const RECENT_ITEMS_FETCH_COUNT = 20; // Fetch more to ensure we get enough with images
+const SUGGESTED_ITEMS_COUNT = 4;
 
 function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const navigate = useNavigate();
@@ -74,6 +75,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const [userPostalCode, setUserPostalCode] = useState<string>('');
     const [cartItemsCount, setCartItemsCount] = useState<number>(0);
     const [recentProductImages, setRecentProductImages] = useState<string[]>([]);
+    const [suggestedProductImages, setSuggestedProductImages] = useState<string[]>([]);
 
     useEffect(() => {
         // Set language based on user or system settings
@@ -91,8 +93,9 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         // For now, this is hardcoded for demonstration
         setCartItemsCount(0); // Will be updated when cart state management is implemented
 
-        // Fetch recently added products
+        // Fetch recently added products and suggested products
         fetchRecentlyAddedProducts();
+        fetchSuggestedProducts();
     }, [isAuthenticated]);
 
     const fetchRecentlyAddedProducts = async () => {
@@ -152,6 +155,56 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         }
     };
 
+    const fetchSuggestedProducts = async () => {
+        try {
+            const apiBaseUrl = import.meta.env.VITE_API_STORE_BASE_URL;
+            if (!apiBaseUrl) {
+                console.warn('API base URL not configured');
+                return;
+            }
+
+            const response = await fetch(`${apiBaseUrl}/api/Item/GetSuggestedProducts?count=${SUGGESTED_ITEMS_COUNT}`);
+            if (!response.ok) {
+                console.error('Failed to fetch suggested products');
+                return;
+            }
+
+            const result: ApiResult<GetItemResponse[]> = await response.json();
+            if (result.isSuccess && result.value) {
+                // Extract the first image from each product
+                const images: string[] = [];
+                for (const product of result.value) {
+                    if (product.variants && product.variants.length > 0) {
+                        const firstVariant: ItemVariantDto = product.variants[0];
+                        let imageUrl: string | null = null;
+
+                        // Try to get first image from ImageUrls
+                        if (firstVariant.imageUrls) {
+                            const urls = firstVariant.imageUrls.split(',').filter((url: string) => url.trim());
+                            if (urls.length > 0) {
+                                imageUrl = urls[0].trim();
+                            }
+                        }
+
+                        // Fall back to ThumbnailUrl if no ImageUrls found
+                        if (!imageUrl && firstVariant.thumbnailUrl) {
+                            imageUrl = firstVariant.thumbnailUrl;
+                        }
+
+                        // Add to images array (should always have an image since the endpoint filters for items with images)
+                        if (imageUrl) {
+                            const fullImageUrl = toAbsoluteUrl(imageUrl);
+                            images.push(fullImageUrl);
+                        }
+                    }
+                }
+                setSuggestedProductImages(images);
+            }
+        } catch (error) {
+            console.error('Error fetching suggested products:', error);
+        }
+    };
+
     const handleConnectClick = () => {
         if (isAuthenticated) {
             // User is authenticated, perform logout if handler is available
@@ -196,6 +249,11 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     // these numbers do not represent real item IDs and are not meaningful domain data.
     const recentItemsArray = recentProductImages.length > 0 
         ? Array.from({ length: recentProductImages.length }, (_, i) => i + 1)
+        : ITEM_PLACEHOLDER_ARRAY;
+
+    // Generate array for displaying suggested items
+    const suggestedItemsArray = suggestedProductImages.length > 0 
+        ? Array.from({ length: suggestedProductImages.length }, (_, i) => i + 1)
         : ITEM_PLACEHOLDER_ARRAY;
 
     const handleCardClick = (title: string) => {
@@ -368,7 +426,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
             <section className="cards-section">
                 <ItemPreviewCard
                     title={getText("Suggested items", "Articles suggérés")}
-                    items={ITEM_PLACEHOLDER_ARRAY}
+                    items={suggestedItemsArray}
+                    imageUrls={suggestedProductImages}
                     onClick={() => handleCardClick('suggested')}
                 />
                 <ItemPreviewCard

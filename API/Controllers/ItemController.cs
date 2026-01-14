@@ -250,7 +250,7 @@ namespace API.Controllers
         /// <summary>
         /// Gets random suggested products (Items with their Variants, ItemAttributes, and ItemVariantAttributes).
         /// Returns only items that have at least one variant with ImageUrls.
-        /// Returns maximum one image from the same Item (we don't want to get Images from two variants of the same item).
+        /// Returns at most one Item per product; each returned Item includes all of its variants and related attributes.
         /// </summary>
         /// <param name="count">Number of products to retrieve. Default is 4. Maximum is 100.</param>
         /// <returns>Returns a list of suggested products or an error response.</returns>

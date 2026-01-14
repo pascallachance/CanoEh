@@ -202,7 +202,9 @@
     white-space: nowrap;
 }
 
-
+.top-nav .connect-button button:hover {
+    background-color: #f5a623;
+}
 
 /* Cart Button */
 .top-nav .cart-button {

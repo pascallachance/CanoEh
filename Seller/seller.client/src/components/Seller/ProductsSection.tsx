@@ -576,6 +576,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         return (
             <th>
                 <div className="products-header-cell">
+                    <span>{t(labelKey)}</span>
                     <div className="products-sort-arrows">
                         <button
                             type="button"
@@ -596,7 +597,6 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                             ▼
                         </button>
                     </div>
-                    <span>{t(labelKey)}</span>
                 </div>
             </th>
         );

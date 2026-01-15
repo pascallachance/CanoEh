@@ -826,7 +826,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
             
             if (field === 'offer') {
                 const numValue = value === '' ? undefined : parseFloat(value);
-                if (numValue !== undefined && (numValue < 0 || numValue > 100)) {
+                if (numValue !== undefined && (isNaN(numValue) || numValue < 0 || numValue > 100)) {
                     return prev;
                 }
                 newChanges.set(variantId, { ...current, offer: numValue });
@@ -869,8 +869,12 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                 const request = {
                     variantId,
                     offer: changes.offer,
-                    offerStart: changes.offerStart ? new Date(changes.offerStart).toISOString() : undefined,
-                    offerEnd: changes.offerEnd ? new Date(changes.offerEnd).toISOString() : undefined
+                    offerStart: changes.offerStart && !isNaN(new Date(changes.offerStart).getTime()) 
+                        ? new Date(changes.offerStart).toISOString() 
+                        : undefined,
+                    offerEnd: changes.offerEnd && !isNaN(new Date(changes.offerEnd).getTime()) 
+                        ? new Date(changes.offerEnd).toISOString() 
+                        : undefined
                 };
 
                 const response = await ApiClient.put(

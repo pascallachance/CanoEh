@@ -380,6 +380,8 @@ WHERE Id = @Id";
                       AND iv.Deleted = 0
                       AND iv.Offer IS NOT NULL
                       AND iv.Offer > 0
+                      AND (iv.OfferStart IS NULL OR iv.OfferStart <= GETUTCDATE())
+                      AND (iv.OfferEnd IS NULL OR iv.OfferEnd >= GETUTCDATE())
                     GROUP BY i.Id
                 )
                 SELECT TOP (@count) i.* 
@@ -402,13 +404,15 @@ WHERE Id = @Id";
             var itemAttributesByItemId = itemAttributes.GroupBy(ia => ia.ItemID).ToDictionary(g => g.Key, g => g.ToList());
             
             // Get ItemVariants with offers (exclude deleted variants)
-            // Only include variants that have an offer
+            // Only include variants that have an offer within the date range
             var variantQuery = @"
                 SELECT * FROM dbo.ItemVariant 
                 WHERE ItemId IN @itemIds 
                   AND Deleted = 0 
                   AND Offer IS NOT NULL 
-                  AND Offer > 0";
+                  AND Offer > 0
+                  AND (OfferStart IS NULL OR OfferStart <= GETUTCDATE())
+                  AND (OfferEnd IS NULL OR OfferEnd >= GETUTCDATE())";
             
             var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { itemIds })).ToList();
             var variantsByItemId = variants.GroupBy(v => v.ItemId).ToDictionary(g => g.Key, g => g.ToList());

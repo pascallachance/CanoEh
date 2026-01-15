@@ -258,12 +258,19 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     }
                 }
 
-                // Randomly select 4 variants
+                // Randomly select up to OFFERS_COUNT variants using Fisher-Yates shuffle
                 const selectedVariants: typeof variantsWithOffers = [];
                 const availableIndices = Array.from({ length: variantsWithOffers.length }, (_, i) => i);
-                for (let i = 0; i < Math.min(OFFERS_COUNT, variantsWithOffers.length); i++) {
-                    const randomIndex = Math.floor(Math.random() * availableIndices.length);
-                    const selectedIndex = availableIndices.splice(randomIndex, 1)[0];
+
+                // Shuffle indices in-place (Fisher-Yates)
+                for (let i = availableIndices.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [availableIndices[i], availableIndices[j]] = [availableIndices[j], availableIndices[i]];
+                }
+
+                const count = Math.min(OFFERS_COUNT, variantsWithOffers.length);
+                for (let i = 0; i < count; i++) {
+                    const selectedIndex = availableIndices[i];
                     selectedVariants.push(variantsWithOffers[selectedIndex]);
                 }
 

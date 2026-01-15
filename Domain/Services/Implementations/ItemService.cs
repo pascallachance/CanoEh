@@ -856,20 +856,33 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             try
             {
                 // Validate the request
+                // If there is an offer, both start and end dates must be provided
+                // If there is no offer, all three fields (Offer, OfferStart, OfferEnd) must be null
                 if (request.Offer.HasValue)
                 {
                     if (request.Offer < 0 || request.Offer > 100)
                     {
                         return Result.Failure("Offer must be between 0 and 100", StatusCodes.Status400BadRequest);
                     }
-                }
 
-                // Validate date range
-                if (request.OfferStart.HasValue && request.OfferEnd.HasValue)
-                {
+                    // If there's an offer, both dates are required
+                    if (!request.OfferStart.HasValue || !request.OfferEnd.HasValue)
+                    {
+                        return Result.Failure("Both OfferStart and OfferEnd are required when setting an offer", StatusCodes.Status400BadRequest);
+                    }
+
+                    // Validate date range
                     if (request.OfferEnd < request.OfferStart)
                     {
                         return Result.Failure("OfferEnd must not be before OfferStart", StatusCodes.Status400BadRequest);
+                    }
+                }
+                else
+                {
+                    // If there's no offer, dates should also be null
+                    if (request.OfferStart.HasValue || request.OfferEnd.HasValue)
+                    {
+                        return Result.Failure("OfferStart and OfferEnd must be null when there is no offer", StatusCodes.Status400BadRequest);
                     }
                 }
 

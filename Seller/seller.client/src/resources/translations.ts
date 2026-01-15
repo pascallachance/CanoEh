@@ -532,6 +532,10 @@ export const translations: TranslationResources = {
     en: 'Clear',
     fr: 'Effacer'
   },
+  'products.offer.invalidRange': {
+    en: 'Offer must be a number between 0 and 100',
+    fr: 'L\'offre doit être un nombre entre 0 et 100'
+  },
   'products.offers.clearOffer': {
     en: 'Clear offer for this variant',
     fr: 'Effacer l\'offre pour cette variante'

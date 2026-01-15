@@ -827,6 +827,7 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
             if (field === 'offer') {
                 const numValue = value === '' ? undefined : parseFloat(value);
                 if (numValue !== undefined && (isNaN(numValue) || numValue < 0 || numValue > 100)) {
+                    showError(t('products.offer.invalidRange'));
                     return prev;
                 }
                 newChanges.set(variantId, { ...current, offer: numValue });

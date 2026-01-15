@@ -533,7 +533,7 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, onClick }: ItemPr
                             <>
                                 <img 
                                     src={imageUrls[index]} 
-                                    alt={`Item ${item}`} 
+                                    alt={itemNames?.[index] || `Item ${item}`} 
                                     className="item-image"
                                     onError={() => handleImageError(index)}
                                 />

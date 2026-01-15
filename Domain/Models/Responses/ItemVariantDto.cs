@@ -18,5 +18,10 @@ namespace Domain.Models.Responses
         public string? ItemVariantName_fr { get; set; }
         public List<ItemVariantAttributeDto> ItemVariantAttributes { get; set; } = [];
         public bool Deleted { get; set; }
+        
+        // Offer fields
+        public decimal? Offer { get; set; }
+        public DateTime? OfferStart { get; set; }
+        public DateTime? OfferEnd { get; set; }
     }
 }

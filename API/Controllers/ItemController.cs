@@ -290,6 +290,48 @@ namespace API.Controllers
         }
 
         /// <summary>
+        /// Gets products with offers (Items with their Variants, ItemAttributes, and ItemVariantAttributes).
+        /// Returns only items that have at least one variant with an offer.
+        /// Products are sorted by best offer (highest percentage) first.
+        /// </summary>
+        /// <param name="count">Number of products to retrieve. Default is 10. Maximum is 100.</param>
+        /// <returns>Returns a list of products with offers or an error response.</returns>
+        [HttpGet("GetProductsWithOffers")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetProductsWithOffers([FromQuery] int count = 10)
+        {
+            try
+            {
+                // Validate count parameter
+                if (count <= 0)
+                {
+                    return BadRequest("Count must be greater than 0.");
+                }
+
+                if (count > 100)
+                {
+                    return BadRequest("Count cannot exceed 100.");
+                }
+
+                var result = await _itemService.GetProductsWithOffersAsync(count);
+
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? StatusCodes.Status500InternalServerError, result.Error);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
+        }
+
+        /// <summary>
         /// Gets all items from a seller by seller ID.
         /// </summary>
         /// <param name="sellerId">The ID of the seller.</param>

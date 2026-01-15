@@ -163,7 +163,10 @@ INSERT INTO dbo.ItemVariant (
     ThumbnailUrl,
     ItemVariantName_en,
     ItemVariantName_fr,
-    Deleted)
+    Deleted,
+    Offer,
+    OfferStart,
+    OfferEnd)
 OUTPUT INSERTED.Id
 VALUES (
     @ItemId,
@@ -176,7 +179,10 @@ VALUES (
     @ThumbnailUrl,
     @ItemVariantName_en,
     @ItemVariantName_fr,
-    @Deleted)";
+    @Deleted,
+    @Offer,
+    @OfferStart,
+    @OfferEnd)";
 
                             foreach (var variantRequest in itemVariantRequests)
                             {
@@ -192,7 +198,10 @@ VALUES (
                                     variantRequest.ThumbnailUrl,
                                     variantRequest.ItemVariantName_en,
                                     variantRequest.ItemVariantName_fr,
-                                    variantRequest.Deleted
+                                    variantRequest.Deleted,
+                                    variantRequest.Offer,
+                                    variantRequest.OfferStart,
+                                    variantRequest.OfferEnd
                                 }, transaction);
 
                                 var variant = new ItemVariant
@@ -208,7 +217,10 @@ VALUES (
                                     ThumbnailUrl = variantRequest.ThumbnailUrl,
                                     ItemVariantName_en = variantRequest.ItemVariantName_en,
                                     ItemVariantName_fr = variantRequest.ItemVariantName_fr,
-                                    Deleted = variantRequest.Deleted
+                                    Deleted = variantRequest.Deleted,
+                                    Offer = variantRequest.Offer,
+                                    OfferStart = variantRequest.OfferStart,
+                                    OfferEnd = variantRequest.OfferEnd
                                 };
                                 itemVariants.Add(variant);
 
@@ -755,7 +767,10 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 ItemVariantName_en = variant.ItemVariantName_en,
                 ItemVariantName_fr = variant.ItemVariantName_fr,
                 ItemVariantAttributes = variant.ItemVariantAttributes?.Select(MapToItemVariantAttributeDto).ToList() ?? [],
-                Deleted = variant.Deleted
+                Deleted = variant.Deleted,
+                Offer = variant.Offer,
+                OfferStart = variant.OfferStart,
+                OfferEnd = variant.OfferEnd
             };
         }
 
@@ -816,6 +831,23 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             catch (Exception ex)
             {
                 return Result.Failure<IEnumerable<GetItemResponse>>($"An error occurred while retrieving suggested products: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        public async Task<Result<IEnumerable<GetItemResponse>>> GetProductsWithOffersAsync(int count = 10)
+        {
+            try
+            {
+                // Query to get items with variants that have offers
+                // Sort by best offer (highest percentage) first
+                var items = await _itemRepository.GetProductsWithOffersAsync(count);
+                var response = items.Select(item => MapItemToGetItemResponse(item));
+
+                return Result.Success(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<IEnumerable<GetItemResponse>>($"An error occurred while retrieving products with offers: {ex.Message}", StatusCodes.Status500InternalServerError);
             }
         }
     }

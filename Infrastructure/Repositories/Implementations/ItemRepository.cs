@@ -370,7 +370,7 @@ WHERE Id = @Id";
             
             // Get items that have at least one variant with an offer
             // Sort by best offer (highest percentage) first
-            // Only include variants where offer is not null and within the offer date range
+            // Only include variants where offer is not null and current date fit between OfferStart and OfferEnd to keep only currently valid offers
             var itemQuery = @"
                 WITH ItemsWithOffers AS (
                     SELECT DISTINCT i.Id, MAX(iv.Offer) AS BestOffer

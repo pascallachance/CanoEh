@@ -299,7 +299,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                         images.push(fullImageUrl);
                         const productName = language === 'fr' ? productName_fr : productName_en;
                         names.push(productName);
-                        percentages.push(variant.offer as number);
+                        percentages.push(variant.offer!);
                     }
                 }
                 setOfferProductImages(images);

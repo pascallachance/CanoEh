@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Domain.Models.Requests
 {
     public class CreateItemVariantRequest
@@ -13,5 +15,11 @@ namespace Domain.Models.Requests
         public string? ItemVariantName_fr { get; set; }
         public List<CreateItemVariantAttributeRequest> ItemVariantAttributes { get; set; } = new();
         public bool Deleted { get; set; } = false;
+        
+        // Offer fields
+        [Range(0, 100, ErrorMessage = "Offer must be between 0 and 100")]
+        public decimal? Offer { get; set; }
+        public DateTime? OfferStart { get; set; }
+        public DateTime? OfferEnd { get; set; }
     }
 }

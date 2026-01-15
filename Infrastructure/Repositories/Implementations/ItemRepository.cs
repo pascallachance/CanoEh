@@ -360,5 +360,87 @@ WHERE Id = @Id";
             
             return items;
         }
+
+        public async Task<IEnumerable<Item>> GetProductsWithOffersAsync(int count = 10)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+            
+            // Get items that have at least one variant with an offer
+            // Sort by best offer (highest percentage) first
+            // Only include variants where offer is not null and current date fit between OfferStart and OfferEnd to keep only currently valid offers
+            var itemQuery = @"
+                WITH ItemsWithOffers AS (
+                    SELECT DISTINCT i.Id, MAX(iv.Offer) AS BestOffer
+                    FROM dbo.Item i
+                    INNER JOIN dbo.ItemVariant iv ON i.Id = iv.ItemId
+                    WHERE i.Deleted = 0 
+                      AND iv.Deleted = 0
+                      AND iv.Offer IS NOT NULL
+                      AND iv.Offer > 0
+                      AND (iv.OfferStart IS NULL OR iv.OfferStart <= GETUTCDATE())
+                      AND (iv.OfferEnd IS NULL OR iv.OfferEnd >= GETUTCDATE())
+                    GROUP BY i.Id
+                )
+                SELECT TOP (@count) i.* 
+                FROM dbo.Item i
+                INNER JOIN ItemsWithOffers iwo ON i.Id = iwo.Id
+                ORDER BY iwo.BestOffer DESC, i.CreatedAt DESC";
+            
+            var items = (await dbConnection.QueryAsync<Item>(itemQuery, new { count })).ToList();
+            
+            if (!items.Any())
+            {
+                return items;
+            }
+            
+            var itemIds = items.Select(i => i.Id).ToList();
+            
+            // Get all ItemAttributes for the items and group by ItemID for O(1) lookup
+            var itemAttributeQuery = "SELECT * FROM dbo.ItemAttribute WHERE ItemID IN @itemIds";
+            var itemAttributes = (await dbConnection.QueryAsync<ItemAttribute>(itemAttributeQuery, new { itemIds })).ToList();
+            var itemAttributesByItemId = itemAttributes.GroupBy(ia => ia.ItemID).ToDictionary(g => g.Key, g => g.ToList());
+            
+            // Get ItemVariants with offers (exclude deleted variants)
+            // Only include variants that have an offer within the date range
+            var variantQuery = @"
+                SELECT * FROM dbo.ItemVariant 
+                WHERE ItemId IN @itemIds 
+                  AND Deleted = 0 
+                  AND Offer IS NOT NULL 
+                  AND Offer > 0
+                  AND (OfferStart IS NULL OR OfferStart <= GETUTCDATE())
+                  AND (OfferEnd IS NULL OR OfferEnd >= GETUTCDATE())";
+            
+            var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { itemIds })).ToList();
+            var variantsByItemId = variants.GroupBy(v => v.ItemId).ToDictionary(g => g.Key, g => g.ToList());
+            
+            if (variants.Any())
+            {
+                var variantIds = variants.Select(v => v.Id).ToList();
+                
+                // Get all ItemVariantAttributes for the variants and group by ItemVariantID for O(1) lookup
+                var variantAttributeQuery = "SELECT * FROM dbo.ItemVariantAttribute WHERE ItemVariantID IN @variantIds";
+                var variantAttributes = (await dbConnection.QueryAsync<ItemVariantAttribute>(variantAttributeQuery, new { variantIds })).ToList();
+                var variantAttributesByVariantId = variantAttributes.GroupBy(va => va.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
+                
+                // Assign ItemVariantAttributes to their respective ItemVariants using dictionary lookup
+                foreach (var variant in variants)
+                {
+                    variant.ItemVariantAttributes = variantAttributesByVariantId.TryGetValue(variant.Id, out var attrs) ? attrs : new List<ItemVariantAttribute>();
+                }
+            }
+            
+            // Assign ItemVariants and ItemAttributes to their respective Items using dictionary lookup
+            foreach (var item in items)
+            {
+                item.Variants = variantsByItemId.TryGetValue(item.Id, out var vars) ? vars : new List<ItemVariant>();
+                item.ItemAttributes = itemAttributesByItemId.TryGetValue(item.Id, out var attrs) ? attrs : new List<ItemAttribute>();
+            }
+            
+            return items;
+        }
     }
 }

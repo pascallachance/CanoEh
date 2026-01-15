@@ -290,6 +290,163 @@ namespace API.Controllers
         }
 
         /// <summary>
+        /// Gets products with offers (Items with their Variants, ItemAttributes, and ItemVariantAttributes).
+        /// Returns only items that have at least one variant with an offer.
+        /// Products are sorted by best offer (highest percentage) first.
+        /// </summary>
+        /// <param name="count">Number of products to retrieve. Default is 10. Maximum is 100.</param>
+        /// <returns>Returns a list of products with offers or an error response.</returns>
+        [HttpGet("GetProductsWithOffers")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetProductsWithOffers([FromQuery] int count = 10)
+        {
+            try
+            {
+                // Validate count parameter
+                if (count <= 0)
+                {
+                    return BadRequest("Count must be greater than 0.");
+                }
+
+                if (count > 100)
+                {
+                    return BadRequest("Count cannot exceed 100.");
+                }
+
+                var result = await _itemService.GetProductsWithOffersAsync(count);
+
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? StatusCodes.Status500InternalServerError, result.Error);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
+        }
+
+        /// <summary>
+        /// Updates offer fields for an item variant.
+        /// </summary>
+        /// <param name="request">The offer update details.</param>
+        /// <returns>Returns success or an error response.</returns>
+        [HttpPut("UpdateItemVariantOffer")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateItemVariantOffer([FromBody] UpdateItemVariantOfferRequest request)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                // Get the item by variant ID to verify ownership
+                var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(authenticatedEmail))
+                {
+                    return Unauthorized("User not authenticated.");
+                }
+
+                var userResult = await _userService.GetUserEntityAsync(authenticatedEmail);
+                if (userResult.IsFailure || userResult.Value == null)
+                {
+                    return Unauthorized("Invalid user.");
+                }
+
+                var userId = userResult.Value.ID;
+
+                // Get the item by variant ID and verify ownership
+                var itemResult = await _itemService.GetItemByVariantIdAsync(request.VariantId, userId);
+                if (itemResult.IsFailure)
+                {
+                    if (itemResult.ErrorCode == StatusCodes.Status404NotFound)
+                        return NotFound("Variant not found or you do not have permission to modify this variant.");
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving item by variant.");
+                }
+
+                var result = await _itemService.UpdateItemVariantOfferAsync(request);
+
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? 501, result.Error);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
+        }
+
+        /// <summary>
+        /// Batch updates offer fields for multiple item variants.
+        /// </summary>
+        /// <param name="request">The batch offer update details.</param>
+        /// <returns>Returns success or an error response.</returns>
+        [HttpPut("BatchUpdateItemVariantOffers")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> BatchUpdateItemVariantOffers([FromBody] BatchUpdateItemVariantOffersRequest request)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                // Get the authenticated user
+                var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(authenticatedEmail))
+                {
+                    return Unauthorized("User not authenticated.");
+                }
+
+                var userResult = await _userService.GetUserEntityAsync(authenticatedEmail);
+                if (userResult.IsFailure || userResult.Value == null)
+                {
+                    return Unauthorized("Invalid user.");
+                }
+
+                var userId = userResult.Value.ID;
+
+                var result = await _itemService.BatchUpdateItemVariantOffersAsync(request, userId);
+
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? 501, result.Error);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
+        }
+
+        /// <summary>
         /// Gets all items from a seller by seller ID.
         /// </summary>
         /// <param name="sellerId">The ID of the seller.</param>

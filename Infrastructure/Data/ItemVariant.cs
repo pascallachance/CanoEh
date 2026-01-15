@@ -15,5 +15,10 @@ namespace Infrastructure.Data
         public string? ItemVariantName_fr { get; set; }
         public List<ItemVariantAttribute> ItemVariantAttributes { get; set; } = [];
         public bool Deleted { get; set; } = false;
+        
+        // Offer fields
+        public decimal? Offer { get; set; } // Percentage (0-100)
+        public DateTime? OfferStart { get; set; }
+        public DateTime? OfferEnd { get; set; }
     }
 }

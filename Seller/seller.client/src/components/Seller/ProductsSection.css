@@ -1134,9 +1134,127 @@
     outline-offset: 2px;
 }
 
+/* Manage Offers Styles */
+.products-list-header {
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.products-manage-offers-button {
+    padding: 0.75rem 1.5rem;
+    background: #17a2b8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.products-manage-offers-button:hover:not(:disabled) {
+    background: #138496;
+}
+
+.products-manage-offers-button:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.products-modal-content--large {
+    max-width: 90%;
+    max-height: 90vh;
+    width: 1200px;
+}
+
+.products-offers-container {
+    max-height: 60vh;
+    overflow-y: auto;
+    margin: 1.5rem 0;
+}
+
+.products-offers-table-wrapper {
+    overflow-x: auto;
+}
+
+.products-offers-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.products-offers-table th,
+.products-offers-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.products-offers-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.products-offers-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.products-offer-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.products-offer-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.products-clear-offer-button {
+    padding: 0.5rem 1rem;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+}
+
+.products-clear-offer-button:hover {
+    background: #c82333;
+}
+
+.products-modal-button:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
 @media (max-width: 768px) {
     .products-filter-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .products-modal-content--large {
+        max-width: 95%;
+        width: 95%;
+    }
+    
+    .products-offers-table {
+        font-size: 0.875rem;
+    }
+    
+    .products-offers-table th,
+    .products-offers-table td {
+        padding: 0.5rem;
     }
 }
 }

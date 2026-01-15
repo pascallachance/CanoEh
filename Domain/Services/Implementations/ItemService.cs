@@ -163,7 +163,10 @@ INSERT INTO dbo.ItemVariant (
     ThumbnailUrl,
     ItemVariantName_en,
     ItemVariantName_fr,
-    Deleted)
+    Deleted,
+    Offer,
+    OfferStart,
+    OfferEnd)
 OUTPUT INSERTED.Id
 VALUES (
     @ItemId,
@@ -176,7 +179,10 @@ VALUES (
     @ThumbnailUrl,
     @ItemVariantName_en,
     @ItemVariantName_fr,
-    @Deleted)";
+    @Deleted,
+    @Offer,
+    @OfferStart,
+    @OfferEnd)";
 
                             foreach (var variantRequest in itemVariantRequests)
                             {
@@ -192,7 +198,10 @@ VALUES (
                                     variantRequest.ThumbnailUrl,
                                     variantRequest.ItemVariantName_en,
                                     variantRequest.ItemVariantName_fr,
-                                    variantRequest.Deleted
+                                    variantRequest.Deleted,
+                                    variantRequest.Offer,
+                                    variantRequest.OfferStart,
+                                    variantRequest.OfferEnd
                                 }, transaction);
 
                                 var variant = new ItemVariant
@@ -208,7 +217,10 @@ VALUES (
                                     ThumbnailUrl = variantRequest.ThumbnailUrl,
                                     ItemVariantName_en = variantRequest.ItemVariantName_en,
                                     ItemVariantName_fr = variantRequest.ItemVariantName_fr,
-                                    Deleted = variantRequest.Deleted
+                                    Deleted = variantRequest.Deleted,
+                                    Offer = variantRequest.Offer,
+                                    OfferStart = variantRequest.OfferStart,
+                                    OfferEnd = variantRequest.OfferEnd
                                 };
                                 itemVariants.Add(variant);
 
@@ -755,7 +767,10 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 ItemVariantName_en = variant.ItemVariantName_en,
                 ItemVariantName_fr = variant.ItemVariantName_fr,
                 ItemVariantAttributes = variant.ItemVariantAttributes?.Select(MapToItemVariantAttributeDto).ToList() ?? [],
-                Deleted = variant.Deleted
+                Deleted = variant.Deleted,
+                Offer = variant.Offer,
+                OfferStart = variant.OfferStart,
+                OfferEnd = variant.OfferEnd
             };
         }
 
@@ -816,6 +831,170 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             catch (Exception ex)
             {
                 return Result.Failure<IEnumerable<GetItemResponse>>($"An error occurred while retrieving suggested products: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        public async Task<Result<IEnumerable<GetItemResponse>>> GetProductsWithOffersAsync(int count = 10)
+        {
+            try
+            {
+                // Query to get items with variants that have offers
+                // Sort by best offer (highest percentage) first
+                var items = await _itemRepository.GetProductsWithOffersAsync(count);
+                var response = items.Select(item => MapItemToGetItemResponse(item));
+
+                return Result.Success(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<IEnumerable<GetItemResponse>>($"An error occurred while retrieving products with offers: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        public async Task<Result> UpdateItemVariantOfferAsync(UpdateItemVariantOfferRequest request)
+        {
+            try
+            {
+                // Validate the request
+                // If there is an offer, both start and end dates must be provided
+                // If there is no offer, all three fields (Offer, OfferStart, OfferEnd) must be null
+                
+                // Validate offer percentage range
+                if (request.Offer.HasValue && (request.Offer < 0 || request.Offer > 100))
+                {
+                    return Result.Failure("Offer must be between 0 and 100", StatusCodes.Status400BadRequest);
+                }
+
+                if (request.Offer.HasValue)
+                {
+                    // If there's an offer, both dates are required
+                    if (!request.OfferStart.HasValue || !request.OfferEnd.HasValue)
+                    {
+                        return Result.Failure("Both OfferStart and OfferEnd are required when setting an offer", StatusCodes.Status400BadRequest);
+                    }
+
+                    // Validate date range
+                    if (request.OfferEnd < request.OfferStart)
+                    {
+                        return Result.Failure("OfferEnd must not be before OfferStart", StatusCodes.Status400BadRequest);
+                    }
+                }
+                else
+                {
+                    // If there's no offer, dates should also be null
+                    if (request.OfferStart.HasValue || request.OfferEnd.HasValue)
+                    {
+                        return Result.Failure("OfferStart and OfferEnd must be null when there is no offer", StatusCodes.Status400BadRequest);
+                    }
+                }
+
+                // Get the variant
+                var variant = await _itemVariantRepository.GetByIdAsync(request.VariantId);
+                if (variant == null)
+                {
+                    return Result.Failure("Variant not found", StatusCodes.Status404NotFound);
+                }
+
+                // Update the offer fields
+                variant.Offer = request.Offer;
+                variant.OfferStart = request.OfferStart;
+                variant.OfferEnd = request.OfferEnd;
+
+                // Save changes
+                await _itemVariantRepository.UpdateAsync(variant);
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"An error occurred while updating variant offer: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        public async Task<Result> BatchUpdateItemVariantOffersAsync(BatchUpdateItemVariantOffersRequest request, Guid userId)
+        {
+            try
+            {
+                if (request.OfferUpdates == null || !request.OfferUpdates.Any())
+                {
+                    return Result.Failure("No offer updates provided", StatusCodes.Status400BadRequest);
+                }
+
+                // Validate all requests first
+                var validationErrors = new List<string>();
+                foreach (var offerUpdate in request.OfferUpdates)
+                {
+                    // Validate offer percentage range
+                    if (offerUpdate.Offer.HasValue && (offerUpdate.Offer < 0 || offerUpdate.Offer > 100))
+                    {
+                        validationErrors.Add($"Variant {offerUpdate.VariantId}: Offer must be between 0 and 100");
+                    }
+
+                    if (offerUpdate.Offer.HasValue)
+                    {
+                        // If there's an offer, both dates are required
+                        if (!offerUpdate.OfferStart.HasValue || !offerUpdate.OfferEnd.HasValue)
+                        {
+                            validationErrors.Add($"Variant {offerUpdate.VariantId}: Both OfferStart and OfferEnd are required when setting an offer");
+                        }
+                        else if (offerUpdate.OfferEnd < offerUpdate.OfferStart)
+                        {
+                            validationErrors.Add($"Variant {offerUpdate.VariantId}: OfferEnd must not be before OfferStart");
+                        }
+                    }
+                    else
+                    {
+                        // If there's no offer, dates should also be null
+                        if (offerUpdate.OfferStart.HasValue || offerUpdate.OfferEnd.HasValue)
+                        {
+                            validationErrors.Add($"Variant {offerUpdate.VariantId}: OfferStart and OfferEnd must be null when there is no offer");
+                        }
+                    }
+                }
+
+                if (validationErrors.Any())
+                {
+                    return Result.Failure(string.Join("; ", validationErrors), StatusCodes.Status400BadRequest);
+                }
+
+                // Verify ownership of all variants
+                var variantIds = request.OfferUpdates.Select(u => u.VariantId).ToList();
+                var variants = new List<ItemVariant>();
+
+                foreach (var variantId in variantIds)
+                {
+                    var variant = await _itemVariantRepository.GetByIdAsync(variantId);
+                    if (variant == null)
+                    {
+                        return Result.Failure($"Variant {variantId} not found", StatusCodes.Status404NotFound);
+                    }
+
+                    // Verify ownership by checking the item
+                    var itemResult = await GetItemByVariantIdAsync(variantId, userId);
+                    if (itemResult.IsFailure)
+                    {
+                        return Result.Failure($"Variant {variantId}: Unauthorized or not found", StatusCodes.Status403Forbidden);
+                    }
+
+                    variants.Add(variant);
+                }
+
+                // All validations passed, now update all variants
+                foreach (var offerUpdate in request.OfferUpdates)
+                {
+                    var variant = variants.First(v => v.Id == offerUpdate.VariantId);
+                    variant.Offer = offerUpdate.Offer;
+                    variant.OfferStart = offerUpdate.OfferStart;
+                    variant.OfferEnd = offerUpdate.OfferEnd;
+
+                    await _itemVariantRepository.UpdateAsync(variant);
+                }
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"An error occurred while batch updating variant offers: {ex.Message}", StatusCodes.Status500InternalServerError);
             }
         }
     }

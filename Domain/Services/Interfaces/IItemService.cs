@@ -22,5 +22,8 @@ namespace Domain.Services.Interfaces
         Task<Result> UpdateItemVariantImageAsync(Guid variantId, string imageType, string imageUrl, int imageNumber);
         Task<Result<IEnumerable<GetItemResponse>>> GetRecentlyAddedProductsAsync(int count = 100);
         Task<Result<IEnumerable<GetItemResponse>>> GetSuggestedProductsAsync(int count = 4);
+        Task<Result<IEnumerable<GetItemResponse>>> GetProductsWithOffersAsync(int count = 10);
+        Task<Result> UpdateItemVariantOfferAsync(UpdateItemVariantOfferRequest request);
+        Task<Result> BatchUpdateItemVariantOffersAsync(BatchUpdateItemVariantOffersRequest request, Guid userId);
     }
 }

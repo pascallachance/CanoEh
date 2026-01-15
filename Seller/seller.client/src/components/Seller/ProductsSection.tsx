@@ -855,6 +855,13 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         return '';
     };
 
+    // Helper function to convert date string to ISO format with validation
+    const toISODateOrUndefined = (dateString?: string): string | undefined => {
+        if (!dateString) return undefined;
+        const date = new Date(dateString);
+        return !isNaN(date.getTime()) ? date.toISOString() : undefined;
+    };
+
     // Handle saving all offer changes
     const handleSaveOffers = async () => {
         if (offerChanges.size === 0) {
@@ -869,12 +876,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                 const request = {
                     variantId,
                     offer: changes.offer,
-                    offerStart: changes.offerStart && !isNaN(new Date(changes.offerStart).getTime()) 
-                        ? new Date(changes.offerStart).toISOString() 
-                        : undefined,
-                    offerEnd: changes.offerEnd && !isNaN(new Date(changes.offerEnd).getTime()) 
-                        ? new Date(changes.offerEnd).toISOString() 
-                        : undefined
+                    offerStart: toISODateOrUndefined(changes.offerStart),
+                    offerEnd: toISODateOrUndefined(changes.offerEnd)
                 };
 
                 const response = await ApiClient.put(

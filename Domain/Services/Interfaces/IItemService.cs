@@ -24,5 +24,6 @@ namespace Domain.Services.Interfaces
         Task<Result<IEnumerable<GetItemResponse>>> GetSuggestedProductsAsync(int count = 4);
         Task<Result<IEnumerable<GetItemResponse>>> GetProductsWithOffersAsync(int count = 10);
         Task<Result> UpdateItemVariantOfferAsync(UpdateItemVariantOfferRequest request);
+        Task<Result> BatchUpdateItemVariantOffersAsync(BatchUpdateItemVariantOffersRequest request, Guid userId);
     }
 }

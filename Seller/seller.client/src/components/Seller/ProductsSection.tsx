@@ -873,28 +873,27 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         setIsSavingOffers(true);
 
         try {
-            const promises = Array.from(offerChanges.entries()).map(async ([variantId, changes]) => {
-                const request = {
-                    variantId,
-                    offer: changes.offer,
-                    offerStart: toISODateOrUndefined(changes.offerStart),
-                    offerEnd: toISODateOrUndefined(changes.offerEnd)
-                };
+            // Prepare batch request with all offer updates
+            const offerUpdates = Array.from(offerChanges.entries()).map(([variantId, changes]) => ({
+                variantId,
+                offer: changes.offer,
+                offerStart: toISODateOrUndefined(changes.offerStart),
+                offerEnd: toISODateOrUndefined(changes.offerEnd)
+            }));
 
-                const response = await ApiClient.put(
-                    `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/UpdateItemVariantOffer`,
-                    request
-                );
+            const batchRequest = {
+                offerUpdates
+            };
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Failed to update variant ${variantId}: ${errorText}`);
-                }
+            const response = await ApiClient.put(
+                `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/BatchUpdateItemVariantOffers`,
+                batchRequest
+            );
 
-                return response;
-            });
-
-            await Promise.all(promises);
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to update offers: ${errorText}`);
+            }
             
             showSuccess(t('products.offers.saveSuccess'));
             setShowManageOffersModal(false);

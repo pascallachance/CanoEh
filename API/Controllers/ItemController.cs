@@ -394,6 +394,59 @@ namespace API.Controllers
         }
 
         /// <summary>
+        /// Batch updates offer fields for multiple item variants.
+        /// </summary>
+        /// <param name="request">The batch offer update details.</param>
+        /// <returns>Returns success or an error response.</returns>
+        [HttpPut("BatchUpdateItemVariantOffers")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> BatchUpdateItemVariantOffers([FromBody] BatchUpdateItemVariantOffersRequest request)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                // Get the authenticated user
+                var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(authenticatedEmail))
+                {
+                    return Unauthorized("User not authenticated.");
+                }
+
+                var userResult = await _userService.GetUserEntityAsync(authenticatedEmail);
+                if (userResult.IsFailure || userResult.Value == null)
+                {
+                    return Unauthorized("Invalid user.");
+                }
+
+                var userId = userResult.Value.ID;
+
+                var result = await _itemService.BatchUpdateItemVariantOffersAsync(request, userId);
+
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? 501, result.Error);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
+        }
+
+        /// <summary>
         /// Gets all items from a seller by seller ID.
         /// </summary>
         /// <param name="sellerId">The ID of the seller.</param>

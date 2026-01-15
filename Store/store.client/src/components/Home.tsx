@@ -76,6 +76,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const [cartItemsCount, setCartItemsCount] = useState<number>(0);
     const [recentProductImages, setRecentProductImages] = useState<string[]>([]);
     const [suggestedProductImages, setSuggestedProductImages] = useState<string[]>([]);
+    const [recentProductNames, setRecentProductNames] = useState<string[]>([]);
+    const [suggestedProductNames, setSuggestedProductNames] = useState<string[]>([]);
 
     useEffect(() => {
         // Set language based on user or system settings
@@ -117,6 +119,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
             if (result.isSuccess && result.value) {
                 // Extract images from products, but only include products that have valid images
                 const images: string[] = [];
+                const names: string[] = [];
                 for (const product of result.value) {
                     // Stop if we already have enough images
                     if (images.length >= RECENT_ITEMS_DISPLAY_COUNT) {
@@ -145,10 +148,14 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                             // Use utility function to convert relative paths to absolute URLs
                             const fullImageUrl = toAbsoluteUrl(imageUrl);
                             images.push(fullImageUrl);
+                            // Get product name based on language preference
+                            const productName = language === 'fr' ? product.name_fr : product.name_en;
+                            names.push(productName);
                         }
                     }
                 }
                 setRecentProductImages(images);
+                setRecentProductNames(names);
             }
         } catch (error) {
             console.error('Error fetching recently added products:', error);
@@ -173,6 +180,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
             if (result.isSuccess && result.value) {
                 // Extract the first image from each product
                 const images: string[] = [];
+                const names: string[] = [];
                 for (const product of result.value) {
                     if (product.variants && product.variants.length > 0) {
                         const firstVariant: ItemVariantDto = product.variants[0];
@@ -195,10 +203,14 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                         if (imageUrl) {
                             const fullImageUrl = toAbsoluteUrl(imageUrl);
                             images.push(fullImageUrl);
+                            // Get product name based on language preference
+                            const productName = language === 'fr' ? product.name_fr : product.name_en;
+                            names.push(productName);
                         }
                     }
                 }
                 setSuggestedProductImages(images);
+                setSuggestedProductNames(names);
             }
         } catch (error) {
             console.error('Error fetching suggested products:', error);
@@ -428,6 +440,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     title={getText("Suggested items", "Articles suggérés")}
                     items={suggestedItemsArray}
                     imageUrls={suggestedProductImages}
+                    itemNames={suggestedProductNames}
                     onClick={() => handleCardClick('suggested')}
                 />
                 <ItemPreviewCard
@@ -454,6 +467,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     title={getText("Recently added items", "Articles récemment ajoutés")}
                     items={recentItemsArray}
                     imageUrls={recentProductImages}
+                    itemNames={recentProductNames}
                     onClick={() => handleCardClick('recentlyadded')}
                 />
                 {isAuthenticated && (
@@ -484,10 +498,11 @@ interface ItemPreviewCardProps {
     title: string;
     items: number[];
     imageUrls?: string[];
+    itemNames?: string[];
     onClick?: () => void;
 }
 
-function ItemPreviewCard({ title, items, imageUrls, onClick }: ItemPreviewCardProps) {
+function ItemPreviewCard({ title, items, imageUrls, itemNames, onClick }: ItemPreviewCardProps) {
     const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -515,12 +530,17 @@ function ItemPreviewCard({ title, items, imageUrls, onClick }: ItemPreviewCardPr
                 {items.map((item, index) => (
                     <div key={item} className="item-placeholder">
                         {imageUrls && imageUrls[index] && !imageErrors.has(index) ? (
-                            <img 
-                                src={imageUrls[index]} 
-                                alt={`Item ${item}`} 
-                                className="item-image"
-                                onError={() => handleImageError(index)}
-                            />
+                            <>
+                                <img 
+                                    src={imageUrls[index]} 
+                                    alt={`Item ${item}`} 
+                                    className="item-image"
+                                    onError={() => handleImageError(index)}
+                                />
+                                {itemNames && itemNames[index] && (
+                                    <div className="item-name">{itemNames[index]}</div>
+                                )}
+                            </>
                         ) : (
                             <div className="item-image-placeholder">
                                 Item {item}

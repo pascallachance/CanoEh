@@ -95,6 +95,9 @@ interface ApiItemVariant {
     itemVariantName_fr?: string;
     itemVariantAttributes: ApiItemVariantAttribute[];
     deleted: boolean;
+    offer?: number;
+    offerStart?: string;
+    offerEnd?: string;
 }
 
 interface ApiItemAttribute {
@@ -184,11 +187,18 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<ApiItem | null>(null);
     
+    // State for manage offers modal
+    const [showManageOffersModal, setShowManageOffersModal] = useState(false);
+    const [offerChanges, setOfferChanges] = useState<Map<string, { offer?: number; offerStart?: string; offerEnd?: string }>>(new Map());
+    const [isSavingOffers, setIsSavingOffers] = useState(false);
+    
     // Refs for accessibility
     const modalRef = useRef<HTMLDivElement>(null);
     const deleteModalRef = useRef<HTMLDivElement>(null);
+    const manageOffersModalRef = useRef<HTMLDivElement>(null);
     const previousActiveElementForUndelete = useRef<HTMLElement | null>(null);
     const previousActiveElementForDelete = useRef<HTMLElement | null>(null);
+    const previousActiveElementForOffers = useRef<HTMLElement | null>(null);
 
     // Cleanup object URLs on component unmount
     useEffect(() => {
@@ -288,6 +298,42 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
             return () => document.removeEventListener('keydown', handleEscape);
         }
     }, [showDeleteModal]);
+
+    // Accessibility: Focus management for manage offers modal
+    useEffect(() => {
+        if (showManageOffersModal) {
+            previousActiveElementForOffers.current = document.activeElement as HTMLElement;
+            
+            const timer = setTimeout(() => {
+                manageOffersModalRef.current?.focus();
+            }, 100);
+
+            document.body.style.overflow = 'hidden';
+
+            return () => {
+                clearTimeout(timer);
+                document.body.style.overflow = '';
+            };
+        } else if (previousActiveElementForOffers.current) {
+            previousActiveElementForOffers.current.focus();
+            previousActiveElementForOffers.current = null;
+        }
+    }, [showManageOffersModal]);
+
+    // Handle escape key for manage offers modal
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && showManageOffersModal) {
+                setShowManageOffersModal(false);
+                setOfferChanges(new Map());
+            }
+        };
+
+        if (showManageOffersModal) {
+            document.addEventListener('keydown', handleEscape);
+            return () => document.removeEventListener('keydown', handleEscape);
+        }
+    }, [showManageOffersModal]);
 
     // Validation logic for save button
     const isFormInvalid = useMemo(() => {
@@ -760,6 +806,109 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         setItemToDelete(null);
     };
 
+    // Handle opening manage offers modal
+    const handleOpenManageOffers = () => {
+        setShowManageOffersModal(true);
+        setOfferChanges(new Map());
+    };
+
+    // Handle closing manage offers modal
+    const handleCloseManageOffers = () => {
+        setShowManageOffersModal(false);
+        setOfferChanges(new Map());
+    };
+
+    // Handle offer field change for a variant
+    const handleOfferChange = (variantId: string, field: 'offer' | 'offerStart' | 'offerEnd', value: string) => {
+        setOfferChanges(prev => {
+            const newChanges = new Map(prev);
+            const current = newChanges.get(variantId) || {};
+            
+            if (field === 'offer') {
+                const numValue = value === '' ? undefined : parseFloat(value);
+                if (numValue !== undefined && (numValue < 0 || numValue > 100)) {
+                    return prev;
+                }
+                newChanges.set(variantId, { ...current, offer: numValue });
+            } else if (field === 'offerStart' || field === 'offerEnd') {
+                newChanges.set(variantId, { ...current, [field]: value || undefined });
+            }
+            
+            return newChanges;
+        });
+    };
+
+    // Get current offer value for a variant (from changes or original)
+    const getCurrentOffer = (variant: ApiItemVariant, field: 'offer' | 'offerStart' | 'offerEnd') => {
+        const changes = offerChanges.get(variant.id);
+        if (changes && changes[field] !== undefined) {
+            return changes[field];
+        }
+        
+        if (field === 'offer') {
+            return variant.offer !== undefined && variant.offer !== null ? variant.offer : '';
+        } else if (field === 'offerStart') {
+            return variant.offerStart ? variant.offerStart.split('T')[0] : '';
+        } else if (field === 'offerEnd') {
+            return variant.offerEnd ? variant.offerEnd.split('T')[0] : '';
+        }
+        return '';
+    };
+
+    // Handle saving all offer changes
+    const handleSaveOffers = async () => {
+        if (offerChanges.size === 0) {
+            showError(t('products.offers.noChanges'));
+            return;
+        }
+
+        setIsSavingOffers(true);
+
+        try {
+            const promises = Array.from(offerChanges.entries()).map(async ([variantId, changes]) => {
+                const request = {
+                    variantId,
+                    offer: changes.offer,
+                    offerStart: changes.offerStart ? new Date(changes.offerStart).toISOString() : undefined,
+                    offerEnd: changes.offerEnd ? new Date(changes.offerEnd).toISOString() : undefined
+                };
+
+                const response = await ApiClient.put(
+                    `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/UpdateItemVariantOffer`,
+                    request
+                );
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Failed to update variant ${variantId}: ${errorText}`);
+                }
+
+                return response;
+            });
+
+            await Promise.all(promises);
+            
+            showSuccess(t('products.offers.saveSuccess'));
+            setShowManageOffersModal(false);
+            setOfferChanges(new Map());
+            await fetchSellerItems();
+        } catch (error) {
+            console.error('Error saving offers:', error);
+            showError(t('products.offers.saveError'));
+        } finally {
+            setIsSavingOffers(false);
+        }
+    };
+
+    // Handle clearing offer for a variant
+    const handleClearOffer = (variantId: string) => {
+        setOfferChanges(prev => {
+            const newChanges = new Map(prev);
+            newChanges.set(variantId, { offer: undefined, offerStart: undefined, offerEnd: undefined });
+            return newChanges;
+        });
+    };
+
     // Handle undeleting an item
     const handleUndeleteItem = (item: ApiItem) => {
         // Validate item ID
@@ -859,6 +1008,31 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                 }
             } else {
                 // Tab
+                if (document.activeElement === lastElement) {
+                    event.preventDefault();
+                    firstElement?.focus();
+                }
+            }
+        }
+    };
+
+    // Focus trapping within manage offers modal
+    const handleManageOffersKeyDown = (event: React.KeyboardEvent) => {
+        if (!showManageOffersModal || !manageOffersModalRef.current) return;
+
+        if (event.key === 'Tab') {
+            const focusableElements = manageOffersModalRef.current.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            const firstElement = focusableElements[0] as HTMLElement;
+            const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+            if (event.shiftKey) {
+                if (document.activeElement === firstElement) {
+                    event.preventDefault();
+                    lastElement?.focus();
+                }
+            } else {
                 if (document.activeElement === lastElement) {
                     event.preventDefault();
                     firstElement?.focus();
@@ -1763,6 +1937,17 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
 
             {showListSection && (
                 <div className="products-list-section">
+                    {/* Manage Offers Button */}
+                    <div className="products-list-header">
+                        <button
+                            onClick={handleOpenManageOffers}
+                            className="products-manage-offers-button"
+                            disabled={isLoadingItems || sellerItems.length === 0}
+                        >
+                            {t('products.manageOffers')}
+                        </button>
+                    </div>
+
                     {/* Filter and Sort Section */}
                     <div className="products-filter-section">
                         <h4>{t('products.filter.title')}</h4>
@@ -2259,6 +2444,121 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
                                 aria-label="Confirm delete item"
                             >
                                 {t('products.delete')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Manage Offers Modal */}
+            {showManageOffersModal && (
+                <div 
+                    className="products-modal-overlay"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            handleCloseManageOffers();
+                        }
+                    }}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="manage-offers-modal-title"
+                >
+                    <div 
+                        className="products-modal-content products-modal-content--large"
+                        ref={manageOffersModalRef}
+                        tabIndex={-1}
+                        onKeyDown={handleManageOffersKeyDown}
+                    >
+                        <h3 id="manage-offers-modal-title">{t('products.manageOffers')}</h3>
+                        
+                        <div className="products-offers-container">
+                            {isLoadingItems ? (
+                                <p>{t('products.list.loading')}</p>
+                            ) : sellerItems.length === 0 ? (
+                                <p>{t('products.list.noItems')}</p>
+                            ) : (
+                                <div className="products-offers-table-wrapper">
+                                    <table className="products-offers-table">
+                                        <thead>
+                                            <tr>
+                                                <th>{t('products.itemName')}</th>
+                                                <th>{t('products.variant.name')}</th>
+                                                <th>{t('products.offers.offer')} (%)</th>
+                                                <th>{t('products.offers.offerStart')}</th>
+                                                <th>{t('products.offers.offerEnd')}</th>
+                                                <th>{t('products.actions')}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {sellerItems.filter(item => !item.deleted).map(item => (
+                                                item.variants.filter(v => !v.deleted).map((variant, index) => (
+                                                    <tr key={variant.id}>
+                                                        {index === 0 && (
+                                                            <td rowSpan={item.variants.filter(v => !v.deleted).length}>
+                                                                {getItemName(item)}
+                                                            </td>
+                                                        )}
+                                                        <td>{getVariantName(variant)}</td>
+                                                        <td>
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                max="100"
+                                                                step="0.01"
+                                                                value={getCurrentOffer(variant, 'offer')}
+                                                                onChange={(e) => handleOfferChange(variant.id, 'offer', e.target.value)}
+                                                                className="products-offer-input"
+                                                                placeholder="0-100"
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <input
+                                                                type="date"
+                                                                value={getCurrentOffer(variant, 'offerStart')}
+                                                                onChange={(e) => handleOfferChange(variant.id, 'offerStart', e.target.value)}
+                                                                className="products-offer-input"
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <input
+                                                                type="date"
+                                                                value={getCurrentOffer(variant, 'offerEnd')}
+                                                                onChange={(e) => handleOfferChange(variant.id, 'offerEnd', e.target.value)}
+                                                                className="products-offer-input"
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <button
+                                                                onClick={() => handleClearOffer(variant.id)}
+                                                                className="products-clear-offer-button"
+                                                                title={t('products.offers.clearOffer')}
+                                                            >
+                                                                {t('products.offers.clear')}
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="products-modal-actions">
+                            <button
+                                className="products-modal-button products-modal-button--cancel"
+                                onClick={handleCloseManageOffers}
+                                disabled={isSavingOffers}
+                            >
+                                {t('common.cancel')}
+                            </button>
+                            <button
+                                className="products-modal-button products-modal-button--confirm"
+                                onClick={handleSaveOffers}
+                                disabled={isSavingOffers || offerChanges.size === 0}
+                            >
+                                {isSavingOffers ? t('products.saving') : t('products.offers.save')}
                             </button>
                         </div>
                     </div>

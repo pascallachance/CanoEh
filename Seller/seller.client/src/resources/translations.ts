@@ -507,6 +507,48 @@ export const translations: TranslationResources = {
     fr: 'Décroissant'
   },
 
+  // Manage Offers
+  'products.manageOffers': {
+    en: 'Manage Offers',
+    fr: 'Gérer les offres'
+  },
+  'products.offers.offer': {
+    en: 'Offer',
+    fr: 'Offre'
+  },
+  'products.offers.offerStart': {
+    en: 'Offer Start',
+    fr: 'Début de l\'offre'
+  },
+  'products.offers.offerEnd': {
+    en: 'Offer End',
+    fr: 'Fin de l\'offre'
+  },
+  'products.offers.save': {
+    en: 'Save Offers',
+    fr: 'Enregistrer les offres'
+  },
+  'products.offers.clear': {
+    en: 'Clear',
+    fr: 'Effacer'
+  },
+  'products.offers.clearOffer': {
+    en: 'Clear offer for this variant',
+    fr: 'Effacer l\'offre pour cette variante'
+  },
+  'products.offers.noChanges': {
+    en: 'No changes to save',
+    fr: 'Aucune modification à enregistrer'
+  },
+  'products.offers.saveSuccess': {
+    en: 'Offers updated successfully',
+    fr: 'Offres mises à jour avec succès'
+  },
+  'products.offers.saveError': {
+    en: 'Failed to update offers',
+    fr: 'Échec de la mise à jour des offres'
+  },
+
   // Pagination
   'pagination.previous': {
     en: 'Previous',

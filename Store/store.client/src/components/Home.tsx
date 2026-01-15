@@ -30,6 +30,9 @@ interface ItemVariantDto {
     itemVariantName_fr?: string;
     itemVariantAttributes: ItemVariantAttributeDto[];
     deleted: boolean;
+    offer?: number | null;
+    offerStart?: string | null;
+    offerEnd?: string | null;
 }
 
 interface ItemAttributeDto {
@@ -67,6 +70,7 @@ const ITEM_PLACEHOLDER_ARRAY = [1, 2, 3, 4];
 const RECENT_ITEMS_DISPLAY_COUNT = 4;
 const RECENT_ITEMS_FETCH_COUNT = 20; // Fetch more to ensure we get enough with images
 const SUGGESTED_ITEMS_COUNT = 4;
+const OFFERS_COUNT = 4;
 
 function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const navigate = useNavigate();
@@ -78,6 +82,9 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const [suggestedProductImages, setSuggestedProductImages] = useState<string[]>([]);
     const [recentProductNames, setRecentProductNames] = useState<string[]>([]);
     const [suggestedProductNames, setSuggestedProductNames] = useState<string[]>([]);
+    const [offerProductImages, setOfferProductImages] = useState<string[]>([]);
+    const [offerProductNames, setOfferProductNames] = useState<string[]>([]);
+    const [offerPercentages, setOfferPercentages] = useState<number[]>([]);
 
     useEffect(() => {
         // Set language based on user or system settings
@@ -98,6 +105,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         // Fetch recently added products and suggested products
         fetchRecentlyAddedProducts();
         fetchSuggestedProducts();
+        fetchProductsWithOffers();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthenticated]);
 
     const fetchRecentlyAddedProducts = async () => {
@@ -217,6 +226,84 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         }
     };
 
+    const fetchProductsWithOffers = async () => {
+        try {
+            const apiBaseUrl = import.meta.env.VITE_API_STORE_BASE_URL;
+            if (!apiBaseUrl) {
+                console.warn('API base URL not configured');
+                return;
+            }
+
+            const response = await fetch(`${apiBaseUrl}/api/Item/GetProductsWithOffers?count=${OFFERS_COUNT}`);
+            if (!response.ok) {
+                console.error('Failed to fetch products with offers');
+                return;
+            }
+
+            const result: ApiResult<GetItemResponse[]> = await response.json();
+            if (result.isSuccess && result.value) {
+                // Collect all variants with offers from all products
+                const variantsWithOffers: { variant: ItemVariantDto; productName_en: string; productName_fr: string }[] = [];
+                for (const product of result.value) {
+                    if (product.variants && product.variants.length > 0) {
+                        for (const variant of product.variants) {
+                            if (variant.offer && variant.offer > 0) {
+                                variantsWithOffers.push({
+                                    variant,
+                                    productName_en: product.name_en,
+                                    productName_fr: product.name_fr
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // Randomly select 4 variants
+                const selectedVariants: typeof variantsWithOffers = [];
+                const availableIndices = Array.from({ length: variantsWithOffers.length }, (_, i) => i);
+                for (let i = 0; i < Math.min(OFFERS_COUNT, variantsWithOffers.length); i++) {
+                    const randomIndex = Math.floor(Math.random() * availableIndices.length);
+                    const selectedIndex = availableIndices.splice(randomIndex, 1)[0];
+                    selectedVariants.push(variantsWithOffers[selectedIndex]);
+                }
+
+                // Extract images, names, and offer percentages
+                const images: string[] = [];
+                const names: string[] = [];
+                const percentages: number[] = [];
+                for (const { variant, productName_en, productName_fr } of selectedVariants) {
+                    let imageUrl: string | null = null;
+
+                    // Try to get first image from ImageUrls
+                    if (variant.imageUrls) {
+                        const urls = variant.imageUrls.split(',').filter((url: string) => url.trim());
+                        if (urls.length > 0) {
+                            imageUrl = urls[0].trim();
+                        }
+                    }
+
+                    // Fall back to ThumbnailUrl if no ImageUrls found
+                    if (!imageUrl && variant.thumbnailUrl) {
+                        imageUrl = variant.thumbnailUrl;
+                    }
+
+                    if (imageUrl) {
+                        const fullImageUrl = toAbsoluteUrl(imageUrl);
+                        images.push(fullImageUrl);
+                        const productName = language === 'fr' ? productName_fr : productName_en;
+                        names.push(productName);
+                        percentages.push(variant.offer!);
+                    }
+                }
+                setOfferProductImages(images);
+                setOfferProductNames(names);
+                setOfferPercentages(percentages);
+            }
+        } catch (error) {
+            console.error('Error fetching products with offers:', error);
+        }
+    };
+
     const handleConnectClick = () => {
         if (isAuthenticated) {
             // User is authenticated, perform logout if handler is available
@@ -266,6 +353,11 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     // Generate array for displaying suggested items
     const suggestedItemsArray = suggestedProductImages.length > 0 
         ? Array.from({ length: suggestedProductImages.length }, (_, i) => i + 1)
+        : ITEM_PLACEHOLDER_ARRAY;
+
+    // Generate array for displaying offer items
+    const offerItemsArray = offerProductImages.length > 0 
+        ? Array.from({ length: offerProductImages.length }, (_, i) => i + 1)
         : ITEM_PLACEHOLDER_ARRAY;
 
     const handleCardClick = (title: string) => {
@@ -445,7 +537,10 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 />
                 <ItemPreviewCard
                     title={getText("Offers", "Offres")}
-                    items={ITEM_PLACEHOLDER_ARRAY}
+                    items={offerItemsArray}
+                    imageUrls={offerProductImages}
+                    itemNames={offerProductNames}
+                    offerPercentages={offerPercentages}
                     onClick={() => handleCardClick('offers')}
                 />
                 <ItemPreviewCard
@@ -499,10 +594,11 @@ interface ItemPreviewCardProps {
     items: number[];
     imageUrls?: string[];
     itemNames?: string[];
+    offerPercentages?: number[];
     onClick?: () => void;
 }
 
-function ItemPreviewCard({ title, items, imageUrls, itemNames, onClick }: ItemPreviewCardProps) {
+function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages, onClick }: ItemPreviewCardProps) {
     const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -537,6 +633,9 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, onClick }: ItemPr
                                     className="item-image"
                                     onError={() => handleImageError(index)}
                                 />
+                                {offerPercentages && offerPercentages[index] !== undefined && (
+                                    <div className="offer-badge">{offerPercentages[index]}% OFF</div>
+                                )}
                                 {itemNames && itemNames[index] && (
                                     <div className="item-name">{itemNames[index]}</div>
                                 )}

@@ -850,5 +850,50 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 return Result.Failure<IEnumerable<GetItemResponse>>($"An error occurred while retrieving products with offers: {ex.Message}", StatusCodes.Status500InternalServerError);
             }
         }
+
+        public async Task<Result> UpdateItemVariantOfferAsync(UpdateItemVariantOfferRequest request)
+        {
+            try
+            {
+                // Validate the request
+                if (request.Offer.HasValue)
+                {
+                    if (request.Offer < 0 || request.Offer > 100)
+                    {
+                        return Result.Failure("Offer must be between 0 and 100", StatusCodes.Status400BadRequest);
+                    }
+                }
+
+                // Validate date range
+                if (request.OfferStart.HasValue && request.OfferEnd.HasValue)
+                {
+                    if (request.OfferEnd < request.OfferStart)
+                    {
+                        return Result.Failure("OfferEnd must not be before OfferStart", StatusCodes.Status400BadRequest);
+                    }
+                }
+
+                // Get the variant
+                var variant = await _itemVariantRepository.GetByIdAsync(request.VariantId);
+                if (variant == null)
+                {
+                    return Result.Failure("Variant not found", StatusCodes.Status404NotFound);
+                }
+
+                // Update the offer fields
+                variant.Offer = request.Offer;
+                variant.OfferStart = request.OfferStart;
+                variant.OfferEnd = request.OfferEnd;
+
+                // Save changes
+                await _itemVariantRepository.UpdateAsync(variant);
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"An error occurred while updating variant offer: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
     }
 }

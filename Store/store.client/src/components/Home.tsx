@@ -71,6 +71,7 @@ const RECENT_ITEMS_DISPLAY_COUNT = 4;
 const RECENT_ITEMS_FETCH_COUNT = 20; // Fetch more to ensure we get enough with images
 const SUGGESTED_ITEMS_COUNT = 4;
 const OFFERS_COUNT = 4;
+const PRIMARY_IMAGE_PATTERN = /_1\.(jpg|jpeg|png|gif|webp)$/i; // Pattern to match primary product images ending with _1
 
 function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const navigate = useNavigate();
@@ -242,49 +243,52 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                // Collect all variants with offers from all products
-                const variantsWithOffers: { variant: ItemVariantDto; productName_en: string; productName_fr: string }[] = [];
+                // Get one variant with offer from each product (4 different products)
+                const productsWithOffers: { variant: ItemVariantDto; productName_en: string; productName_fr: string }[] = [];
+                
                 for (const product of result.value) {
+                    // Stop if we already have enough products
+                    if (productsWithOffers.length >= OFFERS_COUNT) {
+                        break;
+                    }
+
                     if (product.variants && product.variants.length > 0) {
-                        for (const variant of product.variants) {
-                            if (variant.offer && variant.offer > 0) {
-                                variantsWithOffers.push({
-                                    variant,
-                                    productName_en: product.name_en,
-                                    productName_fr: product.name_fr
-                                });
-                            }
+                        // Find the first variant with an offer
+                        const variantWithOffer = product.variants.find(v => v.offer && v.offer > 0);
+                        
+                        if (variantWithOffer) {
+                            productsWithOffers.push({
+                                variant: variantWithOffer,
+                                productName_en: product.name_en,
+                                productName_fr: product.name_fr
+                            });
                         }
                     }
-                }
-
-                // Randomly select up to OFFERS_COUNT variants using Fisher-Yates shuffle
-                const selectedVariants: typeof variantsWithOffers = [];
-                const availableIndices = Array.from({ length: variantsWithOffers.length }, (_, i) => i);
-
-                // Shuffle indices in-place (Fisher-Yates)
-                for (let i = availableIndices.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [availableIndices[i], availableIndices[j]] = [availableIndices[j], availableIndices[i]];
-                }
-
-                const count = Math.min(OFFERS_COUNT, variantsWithOffers.length);
-                for (let i = 0; i < count; i++) {
-                    const selectedIndex = availableIndices[i];
-                    selectedVariants.push(variantsWithOffers[selectedIndex]);
                 }
 
                 // Extract images, names, and offer percentages
                 const images: string[] = [];
                 const names: string[] = [];
                 const percentages: number[] = [];
-                for (const { variant, productName_en, productName_fr } of selectedVariants) {
+                
+                for (const { variant, productName_en, productName_fr } of productsWithOffers) {
                     let imageUrl: string | null = null;
 
-                    // Try to get first image from ImageUrls
+                    // Try to find image ending with _1 from ImageUrls
                     if (variant.imageUrls) {
                         const urls = variant.imageUrls.split(',').filter((url: string) => url.trim());
-                        if (urls.length > 0) {
+                        
+                        // Look for image ending with _1 (before file extension)
+                        const imageWith_1 = urls.find((url: string) => {
+                            const trimmedUrl = url.trim();
+                            // Match pattern like: /path/image_1.jpg or /path/image_1.png
+                            return PRIMARY_IMAGE_PATTERN.test(trimmedUrl);
+                        });
+                        
+                        if (imageWith_1) {
+                            imageUrl = imageWith_1.trim();
+                        } else if (urls.length > 0) {
+                            // Fall back to first image if no _1 image found
                             imageUrl = urls[0].trim();
                         }
                     }

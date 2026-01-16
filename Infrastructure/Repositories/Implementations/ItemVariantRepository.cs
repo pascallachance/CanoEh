@@ -32,7 +32,10 @@ INSERT INTO dbo.ItemVariant (
     ThumbnailUrl,
     ItemVariantName_en,
     ItemVariantName_fr,
-    Deleted)
+    Deleted,
+    Offer,
+    OfferStart,
+    OfferEnd)
 VALUES (
     @Id,
     @ItemId,
@@ -45,7 +48,10 @@ VALUES (
     @ThumbnailUrl,
     @ItemVariantName_en,
     @ItemVariantName_fr,
-    @Deleted)";
+    @Deleted,
+    @Offer,
+    @OfferStart,
+    @OfferEnd)";
 
             var parameters = new
             {
@@ -60,7 +66,10 @@ VALUES (
                 entity.ThumbnailUrl,
                 entity.ItemVariantName_en,
                 entity.ItemVariantName_fr,
-                entity.Deleted
+                entity.Deleted,
+                entity.Offer,
+                entity.OfferStart,
+                entity.OfferEnd
             };
 
             await dbConnection.ExecuteAsync(query, parameters);

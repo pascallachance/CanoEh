@@ -115,7 +115,7 @@ If you need to add a new column `PreferredLanguage` to the `User` table:
 2. **Create** `Database/Migrations/004_Add_PreferredLanguage_To_User.sql`:
    ```sql
    -- Migration: Add PreferredLanguage column to User table
-   -- Date: 2026-XX-XX
+   -- Date: <YYYY-MM-DD>  -- Replace with the actual migration date
    -- Description: Adds PreferredLanguage column for UI language preference
    
    IF NOT EXISTS (SELECT * FROM sys.columns 

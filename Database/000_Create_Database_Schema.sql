@@ -608,6 +608,6 @@ PRINT '';
 PRINT 'Next steps:';
 PRINT '1. Review the created tables and indexes';
 PRINT '2. Apply any migration scripts in order (001, 002, 003, etc.)';
-PRINT '3. Populate lookup tables with initial data if needed';
+PRINT '3. Note: OrderStatus and OrderItemStatus tables are already populated with initial data';
 PRINT '';
 GO

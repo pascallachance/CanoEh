@@ -602,7 +602,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             {/* Store Footer */}
             <footer className="store-footer">
-                <p>{getText("© 2024 CanoEh! All rights reserved.", "© 2024 CanoEh! Tous droits réservés.")}</p>
+                <p>{getText("© 2025 CanoEh! All rights reserved.", "© 2025 CanoEh! Tous droits réservés.")}</p>
             </footer>
         </div>
     );

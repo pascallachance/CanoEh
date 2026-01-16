@@ -71,6 +71,7 @@ const RECENT_ITEMS_DISPLAY_COUNT = 4;
 const RECENT_ITEMS_FETCH_COUNT = 20; // Fetch more to ensure we get enough with images
 const SUGGESTED_ITEMS_COUNT = 4;
 const OFFERS_COUNT = 4;
+const PRIMARY_IMAGE_PATTERN = /_1\.(jpg|jpeg|png|gif|webp)$/i; // Pattern to match primary product images ending with _1
 
 function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const navigate = useNavigate();
@@ -281,11 +282,11 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                         const imageWith_1 = urls.find((url: string) => {
                             const trimmedUrl = url.trim();
                             // Match pattern like: /path/image_1.jpg or /path/image_1.png
-                            return /_1\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedUrl);
+                            return PRIMARY_IMAGE_PATTERN.test(trimmedUrl);
                         });
                         
                         if (imageWith_1) {
-                            imageUrl = imageWith_1.trim();
+                            imageUrl = imageWith_1;
                         } else if (urls.length > 0) {
                             // Fall back to first image if no _1 image found
                             imageUrl = urls[0].trim();

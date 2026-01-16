@@ -815,11 +815,19 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     };
 
     // Handle opening manage offers modal
-    const handleOpenManageOffers = async () => {
-        // Refresh data to ensure we show the latest offers
-        await fetchSellerItems();
-        setShowManageOffersModal(true);
-        setOfferChanges(new Map());
+    const handleOpenManageOffers = () => {
+        void (async () => {
+            try {
+                // Refresh data to ensure we show the latest offers
+                await fetchSellerItems();
+                setShowManageOffersModal(true);
+                setOfferChanges(new Map());
+            } catch (error) {
+                console.error('Error fetching seller items before opening manage offers modal:', error);
+                // Provide user feedback and do not open the modal on failure
+                showError(t('products.list.error'));
+            }
+        })();
     };
     
     // Expose methods and state to parent component

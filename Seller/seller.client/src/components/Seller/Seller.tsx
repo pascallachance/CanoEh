@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Seller.css';
 import ProductsSection from './ProductsSection';
+import type { ProductsSectionRef } from './ProductsSection';
 import OrdersSection from './OrdersSection';
 import AnalyticsSection from './AnalyticsSection';
 import CompanySection from './CompanySection';
@@ -68,6 +69,7 @@ function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerP
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
     const { language, setLanguage, t } = useLanguage();
     const navigate = useNavigate();
+    const productsSectionRef = useRef<ProductsSectionRef>(null);
     // Track the last navigation key we processed to avoid reprocessing
     // Empty string ensures first real navigation will always be different
     const lastProcessedKeyRef = useRef<string>('');
@@ -105,6 +107,7 @@ function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerP
                 return <AnalyticsSection companies={companies} />;
             case 'products':
                 return <ProductsSection 
+                    ref={productsSectionRef}
                     companies={companies} 
                     viewMode="list"
                     onViewModeChange={() => {}}
@@ -131,6 +134,12 @@ function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerP
             case 'products':
                 return (
                     <div className="action-buttons">
+                        <button 
+                            className="action-button"
+                            onClick={() => productsSectionRef.current?.openManageOffers()}
+                        >
+                            {t('products.manageOffers')}
+                        </button>
                         <button 
                             className="action-button"
                             onClick={() => navigate('/add-product')}

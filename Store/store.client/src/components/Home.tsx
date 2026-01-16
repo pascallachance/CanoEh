@@ -634,30 +634,41 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages,
         >
             <h3 className="card-title">{title}</h3>
             <div className="items-grid">
-                {items.map((item, index) => (
-                    <div key={item} className="item-placeholder">
-                        {imageUrls && imageUrls[index] && !imageErrors.has(index) ? (
-                            <>
-                                <img 
-                                    src={imageUrls[index]} 
-                                    alt={itemNames?.[index] || `Item ${item}`} 
-                                    className="item-image"
-                                    onError={() => handleImageError(index)}
-                                />
-                                {offerPercentages && offerPercentages[index] !== undefined && (
-                                    <div className="offer-badge">{offerPercentages[index]}% OFF</div>
-                                )}
-                                {itemNames && itemNames[index] && (
-                                    <div className="item-name">{itemNames[index]}</div>
-                                )}
-                            </>
-                        ) : (
-                            <div className="item-image-placeholder">
-                                Item {item}
-                            </div>
-                        )}
-                    </div>
-                ))}
+                {items.map((item, index) => {
+                    // Only render the item-placeholder if there's an image to display
+                    const hasImage = imageUrls && imageUrls[index] && !imageErrors.has(index);
+                    const hasPlaceholder = !imageUrls || imageUrls.length === 0;
+                    
+                    if (!hasImage && !hasPlaceholder) {
+                        // Don't render this item-placeholder if there's no image for it
+                        return null;
+                    }
+                    
+                    return (
+                        <div key={item} className="item-placeholder">
+                            {hasImage ? (
+                                <>
+                                    <img 
+                                        src={imageUrls[index]} 
+                                        alt={itemNames?.[index] || `Item ${item}`} 
+                                        className="item-image"
+                                        onError={() => handleImageError(index)}
+                                    />
+                                    {offerPercentages && offerPercentages[index] !== undefined && (
+                                        <div className="offer-badge">{offerPercentages[index]}% OFF</div>
+                                    )}
+                                    {itemNames && itemNames[index] && (
+                                        <div className="item-name">{itemNames[index]}</div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="item-image-placeholder">
+                                    Item {item}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );

@@ -351,9 +351,10 @@ describe('Home - Offers Card', () => {
         // Should display only one variant from the product (the first one with an offer)
         expect(images?.length).toBe(1);
         
-        // Verify it's the first variant's image
+        // Verify it's the first variant's image, not the second variant
         const imageSrcs = Array.from(images || []).map(img => img.getAttribute('src') || '');
         expect(imageSrcs[0]).toContain('variant1_1.jpg');
+        expect(imageSrcs[0]).not.toContain('variant2_1.jpg');
     });
 
     it('should prioritize images ending with _1 when selecting from multiple images', async () => {
@@ -510,5 +511,157 @@ describe('Home - Offers Card', () => {
         // Should fallback to the first image when no _1 image is found
         const imageSrcs = Array.from(images || []).map(img => img.getAttribute('src') || '');
         expect(imageSrcs[0]).toContain('product_first.jpg');
+    });
+
+    it('should support all file extensions in the _1 pattern (jpg, jpeg, png, gif, webp)', async () => {
+        const mockRecentProducts = { isSuccess: true, value: [] };
+        const mockSuggestedProducts = { isSuccess: true, value: [] };
+
+        // Test products with different _1 image extensions
+        const mockOffersResponse = {
+            isSuccess: true,
+            value: [
+                {
+                    id: '1',
+                    sellerID: 'seller1',
+                    name_en: 'Product with PNG',
+                    name_fr: 'Produit avec PNG',
+                    categoryID: 'cat1',
+                    createdAt: '2024-01-01',
+                    deleted: false,
+                    variants: [
+                        {
+                            id: 'var1',
+                            price: 100,
+                            stockQuantity: 10,
+                            sku: 'SKU1',
+                            imageUrls: 'https://example.com/product_2.png,https://example.com/product_1.png',
+                            offer: 10,
+                            offerStart: '2024-01-01T00:00:00Z',
+                            offerEnd: '2024-12-31T23:59:59Z',
+                            itemVariantAttributes: [],
+                            deleted: false
+                        }
+                    ],
+                    itemAttributes: []
+                },
+                {
+                    id: '2',
+                    sellerID: 'seller2',
+                    name_en: 'Product with GIF',
+                    name_fr: 'Produit avec GIF',
+                    categoryID: 'cat1',
+                    createdAt: '2024-01-02',
+                    deleted: false,
+                    variants: [
+                        {
+                            id: 'var2',
+                            price: 200,
+                            stockQuantity: 5,
+                            sku: 'SKU2',
+                            imageUrls: 'https://example.com/product_3.gif,https://example.com/product_1.gif',
+                            offer: 15,
+                            offerStart: '2024-01-01T00:00:00Z',
+                            offerEnd: '2024-12-31T23:59:59Z',
+                            itemVariantAttributes: [],
+                            deleted: false
+                        }
+                    ],
+                    itemAttributes: []
+                },
+                {
+                    id: '3',
+                    sellerID: 'seller3',
+                    name_en: 'Product with WEBP',
+                    name_fr: 'Produit avec WEBP',
+                    categoryID: 'cat1',
+                    createdAt: '2024-01-03',
+                    deleted: false,
+                    variants: [
+                        {
+                            id: 'var3',
+                            price: 300,
+                            stockQuantity: 8,
+                            sku: 'SKU3',
+                            imageUrls: 'https://example.com/product_2.webp,https://example.com/product_1.webp',
+                            offer: 20,
+                            offerStart: '2024-01-01T00:00:00Z',
+                            offerEnd: '2024-12-31T23:59:59Z',
+                            itemVariantAttributes: [],
+                            deleted: false
+                        }
+                    ],
+                    itemAttributes: []
+                },
+                {
+                    id: '4',
+                    sellerID: 'seller4',
+                    name_en: 'Product with JPEG',
+                    name_fr: 'Produit avec JPEG',
+                    categoryID: 'cat1',
+                    createdAt: '2024-01-04',
+                    deleted: false,
+                    variants: [
+                        {
+                            id: 'var4',
+                            price: 400,
+                            stockQuantity: 3,
+                            sku: 'SKU4',
+                            imageUrls: 'https://example.com/product_3.jpeg,https://example.com/product_1.jpeg',
+                            offer: 25,
+                            offerStart: '2024-01-01T00:00:00Z',
+                            offerEnd: '2024-12-31T23:59:59Z',
+                            itemVariantAttributes: [],
+                            deleted: false
+                        }
+                    ],
+                    itemAttributes: []
+                }
+            ]
+        };
+
+        (global.fetch as ReturnType<typeof vi.fn>).mockImplementation((url: string) => {
+            if (url.includes('GetRecentlyAddedProducts')) {
+                return Promise.resolve({ ok: true, json: async () => mockRecentProducts });
+            } else if (url.includes('GetSuggestedProducts')) {
+                return Promise.resolve({ ok: true, json: async () => mockSuggestedProducts });
+            } else if (url.includes('GetProductsWithOffers')) {
+                return Promise.resolve({ ok: true, json: async () => mockOffersResponse });
+            }
+            return Promise.resolve({ ok: false, json: async () => ({}) });
+        });
+
+        render(
+            <BrowserRouter>
+                <Home />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith(
+                expect.stringContaining('/api/Item/GetProductsWithOffers?count=4')
+            );
+        });
+
+        await waitFor(() => {
+            const allOffersElements = screen.queryAllByText(/^Offers$|^Offres$/);
+            const offersCardTitle = allOffersElements.find(el => el.classList.contains('card-title'));
+            expect(offersCardTitle).toBeInTheDocument();
+        });
+
+        const allOffersElements = screen.getAllByText(/^Offers$|^Offres$/);
+        const offersCardTitle = allOffersElements.find(el => el.classList.contains('card-title'));
+        const offersCard = offersCardTitle?.closest('.item-preview-card');
+        expect(offersCard).toBeInTheDocument();
+
+        const images = offersCard?.querySelectorAll('.item-image');
+        expect(images?.length).toBe(4);
+        
+        // Verify that all supported extensions are matched correctly
+        const imageSrcs = Array.from(images || []).map(img => img.getAttribute('src') || '');
+        expect(imageSrcs.some(src => src.includes('product_1.png'))).toBe(true);
+        expect(imageSrcs.some(src => src.includes('product_1.gif'))).toBe(true);
+        expect(imageSrcs.some(src => src.includes('product_1.webp'))).toBe(true);
+        expect(imageSrcs.some(src => src.includes('product_1.jpeg'))).toBe(true);
     });
 });

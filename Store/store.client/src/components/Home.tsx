@@ -286,7 +286,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                         });
                         
                         if (imageWith_1) {
-                            imageUrl = imageWith_1;
+                            imageUrl = imageWith_1.trim();
                         } else if (urls.length > 0) {
                             // Fall back to first image if no _1 image found
                             imageUrl = urls[0].trim();

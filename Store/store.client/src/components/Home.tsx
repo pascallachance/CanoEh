@@ -637,7 +637,7 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages,
                 {items.map((item, index) => {
                     // Only render the item-placeholder if there's an image to display
                     const hasImage = imageUrls && imageUrls[index] && !imageErrors.has(index);
-                    const shouldShowDefaultPlaceholders = !imageUrls || imageUrls.length === 0;
+                    const shouldShowDefaultPlaceholders = !imageUrls?.length;
                     
                     // Skip rendering if we have image data but this specific index has no image
                     if (!hasImage && !shouldShowDefaultPlaceholders) {

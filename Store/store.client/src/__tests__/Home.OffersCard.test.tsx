@@ -10,7 +10,7 @@ describe('Home - Offers Card', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         // Mock environment variable
-        vi.stubEnv('VITE_API_STORE_BASE_URL', 'http://localhost:5269');
+        vi.stubEnv('VITE_API_STORE_BASE_URL', 'https://localhost:7182');
     });
 
     afterEach(() => {

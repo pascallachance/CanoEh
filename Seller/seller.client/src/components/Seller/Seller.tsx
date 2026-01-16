@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Seller.css';
 import ProductsSection from './ProductsSection';
@@ -67,6 +67,7 @@ function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerP
     
     const [activeSection, setActiveSection] = useState<SellerSection>(() => getInitialSection(location));
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
+    const [isManageOffersDisabled, setIsManageOffersDisabled] = useState(true);
     const { language, setLanguage, t } = useLanguage();
     const navigate = useNavigate();
     const productsSectionRef = useRef<ProductsSectionRef>(null);
@@ -101,6 +102,10 @@ function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerP
         }
     }, [location.key, location.state]);
 
+    const handleManageOffersStateChange = useCallback((isLoading: boolean, hasItems: boolean) => {
+        setIsManageOffersDisabled(isLoading || !hasItems);
+    }, []);
+
     const renderContent = () => {
         switch (activeSection) {
             case 'analytics':
@@ -112,6 +117,7 @@ function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerP
                     viewMode="list"
                     onViewModeChange={() => {}}
                     onEditProduct={onEditProduct}
+                    onManageOffersStateChange={handleManageOffersStateChange}
                 />;
             case 'orders':
                 return <OrdersSection companies={companies} />;
@@ -137,6 +143,7 @@ function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerP
                         <button 
                             className="action-button"
                             onClick={() => productsSectionRef.current?.openManageOffers()}
+                            disabled={isManageOffersDisabled}
                         >
                             {t('products.manageOffers')}
                         </button>

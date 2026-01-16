@@ -29,10 +29,13 @@ interface ProductsSectionProps {
     viewMode?: 'list' | 'add' | 'edit';
     onViewModeChange?: (mode: 'list' | 'add' | 'edit') => void;
     onEditProduct?: (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, step3Data: AddProductStep3Data, existingVariants: any[]) => void;
+    onManageOffersStateChange?: (isLoading: boolean, hasItems: boolean) => void;
 }
 
 export interface ProductsSectionRef {
     openManageOffers: () => void;
+    isLoadingItems: boolean;
+    hasItems: boolean;
 }
 
 interface QuickProductAttribute {
@@ -128,7 +131,7 @@ interface ApiItem {
 }
 
 const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
-    ({ companies, viewMode = 'list', onViewModeChange, onEditProduct }, ref) => {
+    ({ companies, viewMode = 'list', onViewModeChange, onEditProduct, onManageOffersStateChange }, ref) => {
     const [categories, setCategories] = useState<Category[]>([]);
     const { language, t } = useLanguage();
     const { showError, showSuccess } = useNotifications();
@@ -817,10 +820,19 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         setOfferChanges(new Map());
     };
     
-    // Expose methods to parent component
+    // Expose methods and state to parent component
     useImperativeHandle(ref, () => ({
-        openManageOffers: handleOpenManageOffers
-    }));
+        openManageOffers: handleOpenManageOffers,
+        isLoadingItems,
+        hasItems: sellerItems.length > 0
+    }), [isLoadingItems, sellerItems.length]);
+
+    // Notify parent of state changes for managing button disabled state
+    useEffect(() => {
+        if (onManageOffersStateChange) {
+            onManageOffersStateChange(isLoadingItems, sellerItems.length > 0);
+        }
+    }, [isLoadingItems, sellerItems.length, onManageOffersStateChange]);
 
     // Handle closing manage offers modal
     const handleCloseManageOffers = () => {

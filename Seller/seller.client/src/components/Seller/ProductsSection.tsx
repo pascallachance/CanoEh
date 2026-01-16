@@ -815,7 +815,9 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     };
 
     // Handle opening manage offers modal
-    const handleOpenManageOffers = () => {
+    const handleOpenManageOffers = async () => {
+        // Refresh data to ensure we show the latest offers
+        await fetchSellerItems();
         setShowManageOffersModal(true);
         setOfferChanges(new Map());
     };

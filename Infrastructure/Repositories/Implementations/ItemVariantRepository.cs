@@ -143,7 +143,10 @@ SET ItemId = @ItemId,
     ThumbnailUrl = @ThumbnailUrl,
     ItemVariantName_en = @ItemVariantName_en,
     ItemVariantName_fr = @ItemVariantName_fr,
-    Deleted = @Deleted
+    Deleted = @Deleted,
+    Offer = @Offer,
+    OfferStart = @OfferStart,
+    OfferEnd = @OfferEnd
 WHERE Id = @Id";
 
             var parameters = new
@@ -159,7 +162,10 @@ WHERE Id = @Id";
                 entity.ThumbnailUrl,
                 entity.ItemVariantName_en,
                 entity.ItemVariantName_fr,
-                entity.Deleted
+                entity.Deleted,
+                entity.Offer,
+                entity.OfferStart,
+                entity.OfferEnd
             };
 
             await dbConnection.ExecuteAsync(query, parameters);

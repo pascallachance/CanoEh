@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Seller.css';
 import ProductsSection from './ProductsSection';
+import type { ProductsSectionRef } from './ProductsSection';
 import OrdersSection from './OrdersSection';
 import AnalyticsSection from './AnalyticsSection';
 import CompanySection from './CompanySection';
@@ -66,8 +67,10 @@ function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerP
     
     const [activeSection, setActiveSection] = useState<SellerSection>(() => getInitialSection(location));
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
+    const [isManageOffersDisabled, setIsManageOffersDisabled] = useState(true);
     const { language, setLanguage, t } = useLanguage();
     const navigate = useNavigate();
+    const productsSectionRef = useRef<ProductsSectionRef>(null);
     // Track the last navigation key we processed to avoid reprocessing
     // Empty string ensures first real navigation will always be different
     const lastProcessedKeyRef = useRef<string>('');
@@ -99,16 +102,22 @@ function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerP
         }
     }, [location.key, location.state]);
 
+    const handleManageOffersStateChange = useCallback((isLoading: boolean, hasItems: boolean) => {
+        setIsManageOffersDisabled(isLoading || !hasItems);
+    }, []);
+
     const renderContent = () => {
         switch (activeSection) {
             case 'analytics':
                 return <AnalyticsSection companies={companies} />;
             case 'products':
                 return <ProductsSection 
+                    ref={productsSectionRef}
                     companies={companies} 
                     viewMode="list"
                     onViewModeChange={() => {}}
                     onEditProduct={onEditProduct}
+                    onManageOffersStateChange={handleManageOffersStateChange}
                 />;
             case 'orders':
                 return <OrdersSection companies={companies} />;
@@ -131,6 +140,13 @@ function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerP
             case 'products':
                 return (
                     <div className="action-buttons">
+                        <button 
+                            className="action-button"
+                            onClick={() => productsSectionRef.current?.openManageOffers()}
+                            disabled={isManageOffersDisabled}
+                        >
+                            {t('products.manageOffers')}
+                        </button>
                         <button 
                             className="action-button"
                             onClick={() => navigate('/add-product')}

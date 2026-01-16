@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, Fragment, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback, Fragment, useRef, useImperativeHandle, forwardRef } from 'react';
 import './ProductsSection.css';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useNotifications } from '../../contexts/useNotifications';
@@ -29,6 +29,13 @@ interface ProductsSectionProps {
     viewMode?: 'list' | 'add' | 'edit';
     onViewModeChange?: (mode: 'list' | 'add' | 'edit') => void;
     onEditProduct?: (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, step3Data: AddProductStep3Data, existingVariants: any[]) => void;
+    onManageOffersStateChange?: (isLoading: boolean, hasItems: boolean) => void;
+}
+
+export interface ProductsSectionRef {
+    openManageOffers: () => void;
+    isLoadingItems: boolean;
+    hasItems: boolean;
 }
 
 interface QuickProductAttribute {
@@ -123,7 +130,8 @@ interface ApiItem {
     deleted: boolean;
 }
 
-function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEditProduct }: ProductsSectionProps) {
+const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
+    ({ companies, viewMode = 'list', onViewModeChange, onEditProduct, onManageOffersStateChange }, ref) => {
     const [categories, setCategories] = useState<Category[]>([]);
     const { language, t } = useLanguage();
     const { showError, showSuccess } = useNotifications();
@@ -811,6 +819,20 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
         setShowManageOffersModal(true);
         setOfferChanges(new Map());
     };
+    
+    // Expose methods and state to parent component
+    useImperativeHandle(ref, () => ({
+        openManageOffers: handleOpenManageOffers,
+        isLoadingItems,
+        hasItems: sellerItems.length > 0
+    }), [isLoadingItems, sellerItems.length]);
+
+    // Notify parent of state changes for managing button disabled state
+    useEffect(() => {
+        if (onManageOffersStateChange) {
+            onManageOffersStateChange(isLoadingItems, sellerItems.length > 0);
+        }
+    }, [isLoadingItems, sellerItems.length, onManageOffersStateChange]);
 
     // Handle closing manage offers modal
     const handleCloseManageOffers = () => {
@@ -1944,17 +1966,6 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
 
             {showListSection && (
                 <div className="products-list-section">
-                    {/* Manage Offers Button */}
-                    <div className="products-list-header">
-                        <button
-                            onClick={handleOpenManageOffers}
-                            className="products-manage-offers-button"
-                            disabled={isLoadingItems || sellerItems.length === 0}
-                        >
-                            {t('products.manageOffers')}
-                        </button>
-                    </div>
-
                     {/* Filter and Sort Section */}
                     <div className="products-filter-section">
                         <h4>{t('products.filter.title')}</h4>
@@ -2573,6 +2584,8 @@ function ProductsSection({ companies, viewMode = 'list', onViewModeChange, onEdi
             )}
         </div>
     );
-}
+});
+
+ProductsSection.displayName = 'ProductsSection';
 
 export default ProductsSection;

@@ -7,6 +7,9 @@ This directory contains all database-related scripts for the CanoEh e-commerce a
 ```
 Database/
 ├── 000_Create_Database_Schema.sql    # Complete database creation script
+├── Validate_Database_Schema.sql      # Validation script to verify schema
+├── README.md                          # This file
+├── QUICK_REFERENCE.md                 # Quick reference guide for tables and queries
 └── Migrations/                        # Incremental migration scripts
     ├── 001_Add_Language_Column_To_User.sql
     ├── 002_Add_Email_Website_Columns_To_Company.sql
@@ -62,10 +65,11 @@ The CanoEh database is designed for a bilingual (English/French) e-commerce plat
    sqlcmd -S (localdb)\MSSQLLocalDB -i "Database/000_Create_Database_Schema.sql"
    ```
 
-2. **Verify the database was created:**
+2. **Verify the database was created successfully:**
    ```bash
-   sqlcmd -S (localdb)\MSSQLLocalDB -Q "SELECT name FROM sys.databases WHERE name = 'CanoEh'"
+   sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Validate_Database_Schema.sql"
    ```
+   This validation script will check that all tables, indexes, constraints, and seed data were created correctly.
 
 3. **Apply migration scripts** (if updating an existing database):
    ```bash

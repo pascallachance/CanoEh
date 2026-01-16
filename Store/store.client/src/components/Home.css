@@ -6,6 +6,14 @@
     padding: 0;
 }
 
+/* Store Content Container - invisible wrapper */
+.store-content {
+    /* Invisible container with no visual styling */
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
 /* Top Navigation Bar */
 .top-nav {
     display: flex;
@@ -426,4 +434,13 @@
     .bottom-nav {
         overflow-x: scroll;
     }
+}
+
+/* Store Footer */
+.store-footer {
+    background: #343a40;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    margin-top: auto;
 }

@@ -529,16 +529,18 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 )}
             </nav>
 
-            {/* Page Content Section - Banner */}
-            <section className="banner-section">
-                <div className="banner-widget">
-                    <h2>{getText("Welcome to CanoEh!", "Bienvenue chez CanoEh!")}</h2>
-                    <p>{getText("Discover amazing deals and products from across Canada!", "Découvrez des offres et des produits incroyables de partout au Canada!")}</p>
-                </div>
-            </section>
+            {/* Store Content Container */}
+            <div className="store-content">
+                {/* Page Content Section - Banner */}
+                <section className="banner-section">
+                    <div className="banner-widget">
+                        <h2>{getText("Welcome to CanoEh!", "Bienvenue chez CanoEh!")}</h2>
+                        <p>{getText("Discover amazing deals and products from across Canada!", "Découvrez des offres et des produits incroyables de partout au Canada!")}</p>
+                    </div>
+                </section>
 
-            {/* Cards Section */}
-            <section className="cards-section">
+                {/* Cards Section */}
+                <section className="cards-section">
                 <ItemPreviewCard
                     title={getText("Suggested items", "Articles suggérés")}
                     items={suggestedItemsArray}
@@ -595,7 +597,13 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                         />
                     </>
                 )}
-            </section>
+                </section>
+            </div>
+
+            {/* Store Footer */}
+            <footer className="store-footer">
+                <p>{getText("© 2024 CanoEh! All rights reserved.", "© 2024 CanoEh! Tous droits réservés.")}</p>
+            </footer>
         </div>
     );
 }

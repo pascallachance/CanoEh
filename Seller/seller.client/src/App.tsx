@@ -16,6 +16,7 @@ import Seller from './components/Seller/Seller';
 import { ApiClient } from './utils/apiClient';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { toUTCISOString } from './utils/dateUtils';
 import type { CreateCompanyStep1Data } from './components/CreateCompanyStep1';
 import type { CreateCompanyStep2Data } from './components/CreateCompanyStep2';
 import type { AddProductStep1Data } from './components/AddProductStep1';
@@ -184,7 +185,7 @@ function AppContent() {
                 countryOfCitizenship: step1.countryOfCitizenship,
                 fullBirthName: step1.fullBirthName,
                 countryOfBirth: step1.countryOfBirth,
-                birthDate: step1.birthDate ? new Date(step1.birthDate).toISOString() : undefined,
+                birthDate: toUTCISOString(step1.birthDate),
                 identityDocumentType: step1.identityDocumentType,
                 identityDocument: step1.identityDocument,
                 bankDocument: step1.bankDocument,

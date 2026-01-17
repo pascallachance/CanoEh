@@ -8,9 +8,10 @@
  * 4. formatDate() correctly zero-pads single-digit months and days
  * 5. formatShortDate() correctly formats valid dates to MM/DD
  * 6. formatShortDate() handles edge cases properly
+ * 7. toUTCISOString() correctly converts local dates to UTC ISO format
  */
 
-import { formatDate, formatShortDate } from '../src/utils/dateUtils';
+import { formatDate, formatShortDate, toUTCISOString } from '../src/utils/dateUtils';
 
 console.log('🧪 Testing Date Formatting Utilities\n');
 
@@ -109,9 +110,44 @@ shortEdgeCases.forEach(({ input, expected, label }) => {
 });
 console.log(`Result: ${shortEdgePassed ? '✅ PASSED' : '❌ FAILED'}\n`);
 
+// Test 7: toUTCISOString() converts local date strings to UTC ISO format
+console.log('Test 7: toUTCISOString() converts local date strings to UTC ISO format');
+const utcConversionTests = [
+    { input: '2024-01-15', label: 'standard date' },
+    { input: '2023-12-25', label: 'Christmas date' },
+    { input: '2024-06-01', label: 'first of month' }
+];
+
+let utcConversionPassed = true;
+utcConversionTests.forEach(({ input, label }) => {
+    const result = toUTCISOString(input);
+    // Result should be a valid ISO string ending with Z (UTC)
+    const passed = result !== undefined && result.endsWith('Z') && result.includes('T00:00:00');
+    utcConversionPassed = utcConversionPassed && passed;
+    console.log(`  ${passed ? '✅' : '❌'} toUTCISOString("${input}") = "${result}" (${label})`);
+});
+console.log(`Result: ${utcConversionPassed ? '✅ PASSED' : '❌ FAILED'}\n`);
+
+// Test 8: toUTCISOString() handles edge cases
+console.log('Test 8: toUTCISOString() handles edge cases');
+const utcEdgeCases = [
+    { input: undefined, expected: undefined, label: 'undefined' },
+    { input: '', expected: undefined, label: 'empty string' },
+    { input: 'invalid-date', expected: undefined, label: 'invalid date' }
+];
+
+let utcEdgePassed = true;
+utcEdgeCases.forEach(({ input, expected, label }) => {
+    const result = toUTCISOString(input);
+    const passed = result === expected;
+    utcEdgePassed = utcEdgePassed && passed;
+    console.log(`  ${passed ? '✅' : '❌'} toUTCISOString(${label}) = ${result === undefined ? 'undefined' : `"${result}"`} ${passed ? '' : `(expected ${expected === undefined ? 'undefined' : `"${expected}"`})`}`);
+});
+console.log(`Result: ${utcEdgePassed ? '✅ PASSED' : '❌ FAILED'}\n`);
+
 // Summary
 console.log('═══════════════════════════════════════');
-const allTestsPassed = allPassed && undefinedPassed && invalidPassed && zeroPadPassed && shortDatePassed && shortEdgePassed;
+const allTestsPassed = allPassed && undefinedPassed && invalidPassed && zeroPadPassed && shortDatePassed && shortEdgePassed && utcConversionPassed && utcEdgePassed;
 console.log(`Overall: ${allTestsPassed ? '✅ ALL TESTS PASSED' : '❌ SOME TESTS FAILED'}`);
 console.log('═══════════════════════════════════════');
 

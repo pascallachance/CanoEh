@@ -7,7 +7,7 @@ import {
     formatAttributeName,
     formatVariantAttribute
 } from '../../utils/bilingualArrayUtils';
-import { formatDate } from '../../utils/dateUtils';
+import { formatDate, toUTCISOString } from '../../utils/dateUtils';
 import type { AddProductStep1Data } from '../AddProductStep1';
 import type { AddProductStep2Data } from '../AddProductStep2';
 import type { AddProductStep3Data, ItemAttribute } from '../AddProductStep3';
@@ -889,10 +889,9 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     };
 
     // Helper function to convert date string to ISO format with validation
+    // Uses the centralized UTC conversion utility
     const toISODateOrUndefined = (dateString?: string): string | undefined => {
-        if (!dateString) return undefined;
-        const date = new Date(dateString);
-        return !isNaN(date.getTime()) ? date.toISOString() : undefined;
+        return toUTCISOString(dateString);
     };
 
     // Handle saving all offer changes

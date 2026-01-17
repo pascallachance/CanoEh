@@ -245,12 +245,7 @@ public class Program
         });
 
         // Add services to the container.
-        builder.Services.AddControllers()
-            .AddJsonOptions(options =>
-            {
-                // Ensure dates are serialized in UTC with 'Z' suffix
-                options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-            });
+        builder.Services.AddControllers();
         builder.Services.AddControllersWithViews();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>

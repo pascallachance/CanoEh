@@ -37,7 +37,7 @@ namespace API.Controllers
 
                 if (result.IsFailure)
                 {
-                    return StatusCode(result.ErrorCode ?? 501, result.Error);
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
                 }
 
                 return Ok(result);
@@ -64,7 +64,7 @@ namespace API.Controllers
 
                 if (result.IsFailure)
                 {
-                    return StatusCode(result.ErrorCode ?? 501, result.Error);
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
                 }
 
                 return Ok(result);
@@ -93,7 +93,7 @@ namespace API.Controllers
 
                 if (result.IsFailure)
                 {
-                    return StatusCode(result.ErrorCode ?? 501, result.Error);
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
                 }
 
                 return Ok(result);
@@ -120,7 +120,7 @@ namespace API.Controllers
 
                 if (result.IsFailure)
                 {
-                    return StatusCode(result.ErrorCode ?? 501, result.Error);
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
                 }
 
                 return Ok(result);
@@ -149,7 +149,7 @@ namespace API.Controllers
 
                 if (result.IsFailure)
                 {
-                    return StatusCode(result.ErrorCode ?? 501, result.Error);
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
                 }
 
                 return Ok(result);
@@ -178,7 +178,7 @@ namespace API.Controllers
 
                 if (result.IsFailure)
                 {
-                    return StatusCode(result.ErrorCode ?? 501, result.Error);
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
                 }
 
                 return Ok(result);
@@ -205,7 +205,7 @@ namespace API.Controllers
 
                 if (result.IsFailure)
                 {
-                    return StatusCode(result.ErrorCode ?? 501, result.Error);
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
                 }
 
                 return Ok(result);
@@ -243,7 +243,7 @@ namespace API.Controllers
 
                 if (result.IsFailure)
                 {
-                    return StatusCode(result.ErrorCode ?? 501, result.Error);
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
                 }
 
                 return Ok(result);
@@ -276,7 +276,7 @@ namespace API.Controllers
 
                 if (result.IsFailure)
                 {
-                    return StatusCode(result.ErrorCode ?? 501, result.Error);
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
                 }
 
                 return Ok(result);

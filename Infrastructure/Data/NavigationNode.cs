@@ -8,7 +8,7 @@ namespace Infrastructure.Data
     {
         public NavigationNode()
         {
-            NodeType = "Navigation";
+            NodeType = NodeTypeNavigation;
         }
     }
 }

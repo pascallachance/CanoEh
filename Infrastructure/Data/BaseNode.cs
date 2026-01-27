@@ -5,6 +5,11 @@ namespace Infrastructure.Data
     /// </summary>
     public abstract class BaseNode
     {
+        public const string NodeTypeDepartement = "Departement";
+        public const string NodeTypeNavigation = "Navigation";
+        public const string NodeTypeCategory = "Category";
+        public const int MaxNameLength = 200;
+
         public Guid Id { get; set; }
         public string Name_en { get; set; } = string.Empty;
         public string Name_fr { get; set; } = string.Empty;

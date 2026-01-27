@@ -7,7 +7,7 @@ namespace Infrastructure.Data
     {
         public DepartementNode()
         {
-            NodeType = "Departement";
+            NodeType = NodeTypeDepartement;
         }
     }
 }

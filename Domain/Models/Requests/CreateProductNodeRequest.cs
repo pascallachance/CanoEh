@@ -1,4 +1,5 @@
 using Helpers.Common;
+using Infrastructure.Data;
 using Microsoft.AspNetCore.Http;
 
 namespace Domain.Models.Requests
@@ -24,14 +25,14 @@ namespace Domain.Models.Requests
                 return Result.Failure("French name is required.", StatusCodes.Status400BadRequest);
             }
 
-            if (Name_en.Length > 200)
+            if (Name_en.Length > BaseNode.MaxNameLength)
             {
-                return Result.Failure("English name cannot exceed 200 characters.", StatusCodes.Status400BadRequest);
+                return Result.Failure($"English name cannot exceed {BaseNode.MaxNameLength} characters.", StatusCodes.Status400BadRequest);
             }
 
-            if (Name_fr.Length > 200)
+            if (Name_fr.Length > BaseNode.MaxNameLength)
             {
-                return Result.Failure("French name cannot exceed 200 characters.", StatusCodes.Status400BadRequest);
+                return Result.Failure($"French name cannot exceed {BaseNode.MaxNameLength} characters.", StatusCodes.Status400BadRequest);
             }
 
             if (string.IsNullOrWhiteSpace(NodeType))
@@ -39,19 +40,19 @@ namespace Domain.Models.Requests
                 return Result.Failure("NodeType is required.", StatusCodes.Status400BadRequest);
             }
 
-            if (NodeType != "Departement" && NodeType != "Navigation" && NodeType != "Category")
+            if (NodeType != BaseNode.NodeTypeDepartement && NodeType != BaseNode.NodeTypeNavigation && NodeType != BaseNode.NodeTypeCategory)
             {
-                return Result.Failure("NodeType must be 'Departement', 'Navigation', or 'Category'.", StatusCodes.Status400BadRequest);
+                return Result.Failure($"NodeType must be '{BaseNode.NodeTypeDepartement}', '{BaseNode.NodeTypeNavigation}', or '{BaseNode.NodeTypeCategory}'.", StatusCodes.Status400BadRequest);
             }
 
             // Departement nodes should not have a parent
-            if (NodeType == "Departement" && ParentId.HasValue)
+            if (NodeType == BaseNode.NodeTypeDepartement && ParentId.HasValue)
             {
                 return Result.Failure("Departement nodes cannot have a parent.", StatusCodes.Status400BadRequest);
             }
 
             // Navigation and Category nodes must have a parent
-            if ((NodeType == "Navigation" || NodeType == "Category") && !ParentId.HasValue)
+            if ((NodeType == BaseNode.NodeTypeNavigation || NodeType == BaseNode.NodeTypeCategory) && !ParentId.HasValue)
             {
                 return Result.Failure($"{NodeType} nodes must have a parent.", StatusCodes.Status400BadRequest);
             }

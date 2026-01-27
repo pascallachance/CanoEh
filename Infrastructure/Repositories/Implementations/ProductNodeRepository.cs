@@ -15,18 +15,18 @@ namespace Infrastructure.Repositories.Implementations
             }
 
             // Validate node type
-            if (entity.NodeType != "Departement" && entity.NodeType != "Navigation" && entity.NodeType != "Category")
+            if (entity.NodeType != BaseNode.NodeTypeDepartement && entity.NodeType != BaseNode.NodeTypeNavigation && entity.NodeType != BaseNode.NodeTypeCategory)
             {
-                throw new ArgumentException("Invalid NodeType. Must be 'Departement', 'Navigation', or 'Category'.");
+                throw new ArgumentException($"Invalid NodeType. Must be '{BaseNode.NodeTypeDepartement}', '{BaseNode.NodeTypeNavigation}', or '{BaseNode.NodeTypeCategory}'.");
             }
 
             // Validate ParentId constraints
-            if (entity.NodeType == "Departement" && entity.ParentId.HasValue)
+            if (entity.NodeType == BaseNode.NodeTypeDepartement && entity.ParentId.HasValue)
             {
                 throw new InvalidOperationException("Departement nodes cannot have a parent.");
             }
 
-            if (entity.NodeType != "Departement" && !entity.ParentId.HasValue)
+            if (entity.NodeType != BaseNode.NodeTypeDepartement && !entity.ParentId.HasValue)
             {
                 throw new InvalidOperationException($"{entity.NodeType} nodes must have a parent.");
             }
@@ -151,12 +151,12 @@ ORDER BY SortOrder, Name_en";
             }
 
             // Validate ParentId constraints for node types
-            if (entity.NodeType == "Departement" && entity.ParentId.HasValue)
+            if (entity.NodeType == BaseNode.NodeTypeDepartement && entity.ParentId.HasValue)
             {
                 throw new InvalidOperationException("Departement nodes cannot have a parent.");
             }
 
-            if (entity.NodeType != "Departement" && !entity.ParentId.HasValue)
+            if (entity.NodeType != BaseNode.NodeTypeDepartement && !entity.ParentId.HasValue)
             {
                 throw new InvalidOperationException($"{entity.NodeType} nodes must have a parent.");
             }
@@ -264,7 +264,7 @@ ORDER BY SortOrder, Name_en";
 
             // Check if this is a Category node
             var node = await GetNodeByIdAsync(categoryNodeId);
-            if (node?.NodeType != "Category")
+            if (node?.NodeType != BaseNode.NodeTypeCategory)
             {
                 return false;
             }
@@ -333,9 +333,9 @@ WHERE Id = @nodeId";
         {
             BaseNode node = dto.NodeType switch
             {
-                "Departement" => new DepartementNode(),
-                "Navigation" => new NavigationNode(),
-                "Category" => new CategoryNode(),
+                var type when type == BaseNode.NodeTypeDepartement => new DepartementNode(),
+                var type when type == BaseNode.NodeTypeNavigation => new NavigationNode(),
+                var type when type == BaseNode.NodeTypeCategory => new CategoryNode(),
                 _ => throw new InvalidOperationException($"Unknown NodeType: {dto.NodeType}")
             };
 

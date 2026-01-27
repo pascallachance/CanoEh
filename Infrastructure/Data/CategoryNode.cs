@@ -8,7 +8,7 @@ namespace Infrastructure.Data
     {
         public CategoryNode()
         {
-            NodeType = "Category";
+            NodeType = NodeTypeCategory;
         }
     }
 }

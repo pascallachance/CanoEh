@@ -36,9 +36,9 @@ namespace Domain.Services.Implementations
 
                 BaseNode node = request.NodeType switch
                 {
-                    "Departement" => new DepartementNode(),
-                    "Navigation" => new NavigationNode(),
-                    "Category" => new CategoryNode(),
+                    var type when type == BaseNode.NodeTypeDepartement => new DepartementNode(),
+                    var type when type == BaseNode.NodeTypeNavigation => new NavigationNode(),
+                    var type when type == BaseNode.NodeTypeCategory => new CategoryNode(),
                     _ => throw new ArgumentException("Invalid NodeType")
                 };
 
@@ -96,7 +96,7 @@ namespace Domain.Services.Implementations
                 if (id == Guid.Empty)
                 {
                     return Result.Failure<GetProductNodeResponse>(
-                        "Product node ID is required.",
+                        "Product node ID cannot be empty.",
                         StatusCodes.Status400BadRequest);
                 }
 
@@ -145,7 +145,7 @@ namespace Domain.Services.Implementations
                 if (parentId == Guid.Empty)
                 {
                     return Result.Failure<IEnumerable<GetProductNodeResponse>>(
-                        "Parent ID is required.",
+                        "Parent ID cannot be empty.",
                         StatusCodes.Status400BadRequest);
                 }
 
@@ -180,10 +180,10 @@ namespace Domain.Services.Implementations
                         StatusCodes.Status400BadRequest);
                 }
 
-                if (nodeType != "Departement" && nodeType != "Navigation" && nodeType != "Category")
+                if (nodeType != BaseNode.NodeTypeDepartement && nodeType != BaseNode.NodeTypeNavigation && nodeType != BaseNode.NodeTypeCategory)
                 {
                     return Result.Failure<IEnumerable<GetProductNodeResponse>>(
-                        "NodeType must be 'Departement', 'Navigation', or 'Category'.",
+                        $"NodeType must be '{BaseNode.NodeTypeDepartement}', '{BaseNode.NodeTypeNavigation}', or '{BaseNode.NodeTypeCategory}'.",
                         StatusCodes.Status400BadRequest);
                 }
 
@@ -288,7 +288,7 @@ namespace Domain.Services.Implementations
                 if (id == Guid.Empty)
                 {
                     return Result.Failure<DeleteProductNodeResponse>(
-                        "Product node ID is required.",
+                        "Product node ID cannot be empty.",
                         StatusCodes.Status400BadRequest);
                 }
 

@@ -1,27 +1,27 @@
 -- =============================================
--- Migration: Add ProductNode Table
+-- Migration: Add CategoryNode Table
 -- =============================================
--- This migration adds the ProductNode table to support
--- the new hierarchical product structure with:
+-- This migration adds the CategoryNode table to support
+-- the new hierarchical product category structure with:
 -- - DepartementNode (root level)
 -- - NavigationNode (intermediate grouping)
 -- - CategoryNode (leaf categories for products)
 --
--- The ProductNode table will eventually replace the Category table.
+-- The CategoryNode table will eventually replace the Category table.
 --
 -- Usage:
---   sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Migrations/004_Add_ProductNode_Table.sql"
+--   sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Migrations/004_Add_CategoryNode_Table.sql"
 -- =============================================
 
 USE CanoEh;
 GO
 
 -- =============================================
--- Create ProductNode Table
+-- Create CategoryNode Table
 -- =============================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ProductNode' AND schema_id = SCHEMA_ID('dbo'))
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CategoryNode' AND schema_id = SCHEMA_ID('dbo'))
 BEGIN
-    CREATE TABLE dbo.ProductNode (
+    CREATE TABLE dbo.CategoryNode (
         Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
         Name_en NVARCHAR(200) NOT NULL,
         Name_fr NVARCHAR(200) NOT NULL,
@@ -34,23 +34,23 @@ BEGIN
         SortOrder INT NULL,
         CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
         UpdatedAt DATETIME2 NULL,
-        CONSTRAINT FK_ProductNode_Parent FOREIGN KEY (ParentId) REFERENCES dbo.ProductNode(Id),
-        CONSTRAINT CK_ProductNode_NodeType CHECK (NodeType IN ('Departement', 'Navigation', 'Category'))
+        CONSTRAINT FK_CategoryNode_Parent FOREIGN KEY (ParentId) REFERENCES dbo.CategoryNode(Id),
+        CONSTRAINT CK_CategoryNode_NodeType CHECK (NodeType IN ('Departement', 'Navigation', 'Category'))
     );
     
     -- Indexes for performance
-    CREATE INDEX IX_ProductNode_ParentId ON dbo.ProductNode(ParentId);
-    CREATE INDEX IX_ProductNode_NodeType ON dbo.ProductNode(NodeType);
-    CREATE INDEX IX_ProductNode_IsActive ON dbo.ProductNode(IsActive);
-    CREATE INDEX IX_ProductNode_SortOrder ON dbo.ProductNode(SortOrder);
+    CREATE INDEX IX_CategoryNode_ParentId ON dbo.CategoryNode(ParentId);
+    CREATE INDEX IX_CategoryNode_NodeType ON dbo.CategoryNode(NodeType);
+    CREATE INDEX IX_CategoryNode_IsActive ON dbo.CategoryNode(IsActive);
+    CREATE INDEX IX_CategoryNode_SortOrder ON dbo.CategoryNode(SortOrder);
     
-    PRINT 'Table ProductNode created successfully.';
+    PRINT 'Table CategoryNode created successfully.';
 END
 ELSE
 BEGIN
-    PRINT 'Table ProductNode already exists.';
+    PRINT 'Table CategoryNode already exists.';
 END
 GO
 
-PRINT 'Migration 004_Add_ProductNode_Table completed successfully.';
+PRINT 'Migration 004_Add_CategoryNode_Table completed successfully.';
 GO

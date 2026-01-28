@@ -5,7 +5,7 @@ using Infrastructure.Repositories.Interfaces;
 
 namespace Infrastructure.Repositories.Implementations
 {
-    public class ProductNodeRepository(string connectionString) : GenericRepository<BaseNode>(connectionString), IProductNodeRepository
+    public class CategoryNodeRepository(string connectionString) : GenericRepository<BaseNode>(connectionString), ICategoryNodeRepository
     {
         public override async Task<BaseNode> AddAsync(BaseNode entity)
         {
@@ -32,7 +32,7 @@ namespace Infrastructure.Repositories.Implementations
             }
 
             var query = @"
-INSERT INTO dbo.ProductNode (Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt)
+INSERT INTO dbo.CategoryNode (Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt)
 VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @CreatedAt)";
 
             var parameters = new
@@ -86,7 +86,7 @@ VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @C
                 }
             }
 
-            var query = "DELETE FROM dbo.ProductNode WHERE Id = @Id";
+            var query = "DELETE FROM dbo.CategoryNode WHERE Id = @Id";
             await dbConnection.ExecuteAsync(query, new { entity.Id });
         }
 
@@ -96,7 +96,7 @@ VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @C
             {
                 dbConnection.Open();
             }
-            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.ProductNode WHERE Id = @id", new { id });
+            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.CategoryNode WHERE Id = @id", new { id });
         }
 
         public override async Task<IEnumerable<BaseNode>> FindAsync(Func<BaseNode, bool> predicate)
@@ -118,10 +118,10 @@ VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @C
 
             var query = @"
 SELECT Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt, UpdatedAt
-FROM dbo.ProductNode
+FROM dbo.CategoryNode
 ORDER BY SortOrder, Name_en";
 
-            var nodesData = await dbConnection.QueryAsync<ProductNodeDto>(query);
+            var nodesData = await dbConnection.QueryAsync<CategoryNodeDto>(query);
             
             return nodesData.Select(MapToNode);
         }
@@ -134,7 +134,7 @@ ORDER BY SortOrder, Name_en";
             }
 
             var node = await GetNodeByIdAsync(id);
-            return node ?? throw new InvalidOperationException($"ProductNode with id {id} not found");
+            return node ?? throw new InvalidOperationException($"CategoryNode with id {id} not found");
         }
 
         public override async Task<BaseNode> UpdateAsync(BaseNode entity)
@@ -162,7 +162,7 @@ ORDER BY SortOrder, Name_en";
             }
 
             var query = @"
-UPDATE dbo.ProductNode
+UPDATE dbo.CategoryNode
 SET Name_en = @Name_en,
     Name_fr = @Name_fr,
     ParentId = @ParentId,
@@ -186,7 +186,6 @@ WHERE Id = @Id";
             return entity;
         }
 
-        // IProductNodeRepository specific methods
         public async Task<BaseNode?> GetNodeByIdAsync(Guid id)
         {
             if (dbConnection.State != ConnectionState.Open)
@@ -196,10 +195,10 @@ WHERE Id = @Id";
 
             var query = @"
 SELECT Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt, UpdatedAt
-FROM dbo.ProductNode
+FROM dbo.CategoryNode
 WHERE Id = @id";
 
-            var dto = await dbConnection.QueryFirstOrDefaultAsync<ProductNodeDto>(query, new { id });
+            var dto = await dbConnection.QueryFirstOrDefaultAsync<CategoryNodeDto>(query, new { id });
             
             if (dto == null)
                 return null;
@@ -216,11 +215,11 @@ WHERE Id = @id";
 
             var query = @"
 SELECT Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt, UpdatedAt
-FROM dbo.ProductNode
+FROM dbo.CategoryNode
 WHERE ParentId IS NULL
 ORDER BY SortOrder, Name_en";
 
-            var nodesData = await dbConnection.QueryAsync<ProductNodeDto>(query);
+            var nodesData = await dbConnection.QueryAsync<CategoryNodeDto>(query);
             
             return nodesData.Select(MapToNode);
         }
@@ -234,11 +233,11 @@ ORDER BY SortOrder, Name_en";
 
             var query = @"
 SELECT Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt, UpdatedAt
-FROM dbo.ProductNode
+FROM dbo.CategoryNode
 WHERE ParentId = @parentId
 ORDER BY SortOrder, Name_en";
 
-            var nodesData = await dbConnection.QueryAsync<ProductNodeDto>(query, new { parentId });
+            var nodesData = await dbConnection.QueryAsync<CategoryNodeDto>(query, new { parentId });
             
             return nodesData.Select(MapToNode);
         }
@@ -250,7 +249,7 @@ ORDER BY SortOrder, Name_en";
                 dbConnection.Open();
             }
 
-            var query = "SELECT COUNT(1) FROM dbo.ProductNode WHERE ParentId = @nodeId";
+            var query = "SELECT COUNT(1) FROM dbo.CategoryNode WHERE ParentId = @nodeId";
             var count = await dbConnection.ExecuteScalarAsync<int>(query, new { nodeId });
             return count > 0;
         }
@@ -283,11 +282,11 @@ ORDER BY SortOrder, Name_en";
 
             var query = @"
 SELECT Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt, UpdatedAt
-FROM dbo.ProductNode
+FROM dbo.CategoryNode
 WHERE NodeType = @nodeType
 ORDER BY SortOrder, Name_en";
 
-            var nodesData = await dbConnection.QueryAsync<ProductNodeDto>(query, new { nodeType });
+            var nodesData = await dbConnection.QueryAsync<CategoryNodeDto>(query, new { nodeType });
             
             return nodesData.Select(MapToNode);
         }
@@ -295,6 +294,89 @@ ORDER BY SortOrder, Name_en";
         public async Task<IEnumerable<BaseNode>> GetCategoryNodesAsync()
         {
             return await GetNodesByTypeAsync(BaseNode.NodeTypeCategory);
+        }
+
+        public async Task<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes)> AddNodeWithAttributesAsync(
+            BaseNode node, 
+            IEnumerable<CategoryMandatoryAttribute> attributes)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+
+            // Validate node type
+            if (node.NodeType != BaseNode.NodeTypeDepartement && node.NodeType != BaseNode.NodeTypeNavigation && node.NodeType != BaseNode.NodeTypeCategory)
+            {
+                throw new ArgumentException($"Invalid NodeType. Must be '{BaseNode.NodeTypeDepartement}', '{BaseNode.NodeTypeNavigation}', or '{BaseNode.NodeTypeCategory}'.");
+            }
+
+            // Validate ParentId constraints
+            if (node.NodeType == BaseNode.NodeTypeDepartement && node.ParentId.HasValue)
+            {
+                throw new InvalidOperationException("Departement nodes cannot have a parent.");
+            }
+
+            if (node.NodeType != BaseNode.NodeTypeDepartement && !node.ParentId.HasValue)
+            {
+                throw new InvalidOperationException($"{node.NodeType} nodes must have a parent.");
+            }
+
+            using var transaction = dbConnection.BeginTransaction();
+            try
+            {
+                // Insert the CategoryNode
+                var nodeQuery = @"
+INSERT INTO dbo.CategoryNode (Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt)
+VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @CreatedAt)";
+
+                var nodeParameters = new
+                {
+                    node.Id,
+                    node.Name_en,
+                    node.Name_fr,
+                    node.NodeType,
+                    node.ParentId,
+                    node.IsActive,
+                    node.SortOrder,
+                    node.CreatedAt
+                };
+
+                await dbConnection.ExecuteAsync(nodeQuery, nodeParameters, transaction);
+
+                // Insert the CategoryMandatoryAttributes if any
+                var createdAttributes = new List<CategoryMandatoryAttribute>();
+                if (attributes != null && attributes.Any())
+                {
+                    var attributeQuery = @"
+INSERT INTO dbo.CategoryMandatoryAttribute (Id, CategoryNodeId, Name_en, Name_fr, AttributeType, SortOrder)
+VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
+
+                    foreach (var attribute in attributes)
+                    {
+                        var attributeParameters = new
+                        {
+                            attribute.Id,
+                            attribute.CategoryNodeId,
+                            attribute.Name_en,
+                            attribute.Name_fr,
+                            attribute.AttributeType,
+                            attribute.SortOrder
+                        };
+
+                        await dbConnection.ExecuteAsync(attributeQuery, attributeParameters, transaction);
+                        createdAttributes.Add(attribute);
+                    }
+                }
+
+                transaction.Commit();
+                return (node, createdAttributes);
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         private async Task ValidateNoCircularReferenceAsync(Guid nodeId, Guid proposedParentId)
@@ -308,13 +390,13 @@ ORDER BY SortOrder, Name_en";
             var query = @"
 WITH NodeAncestors AS (
     SELECT Id, ParentId
-    FROM dbo.ProductNode
+    FROM dbo.CategoryNode
     WHERE Id = @proposedParentId
     
     UNION ALL
     
     SELECT n.Id, n.ParentId
-    FROM dbo.ProductNode n
+    FROM dbo.CategoryNode n
     INNER JOIN NodeAncestors na ON n.Id = na.ParentId
 )
 SELECT COUNT(1)
@@ -329,7 +411,7 @@ WHERE Id = @nodeId";
             }
         }
 
-        private static BaseNode MapToNode(ProductNodeDto dto)
+        private static BaseNode MapToNode(CategoryNodeDto dto)
         {
             BaseNode node = dto.NodeType switch
             {
@@ -351,7 +433,7 @@ WHERE Id = @nodeId";
             return node;
         }
 
-        private sealed class ProductNodeDto
+        private sealed class CategoryNodeDto
         {
             public Guid Id { get; set; }
             public string Name_en { get; set; } = string.Empty;

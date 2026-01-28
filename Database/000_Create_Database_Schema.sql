@@ -598,11 +598,11 @@ END
 GO
 
 -- =============================================
--- Create ProductNode Table
+-- Create CategoryNode Table
 -- =============================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ProductNode' AND schema_id = SCHEMA_ID('dbo'))
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CategoryNode' AND schema_id = SCHEMA_ID('dbo'))
 BEGIN
-    CREATE TABLE dbo.ProductNode (
+    CREATE TABLE dbo.CategoryNode (
         Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
         Name_en NVARCHAR(200) NOT NULL,
         Name_fr NVARCHAR(200) NOT NULL,
@@ -615,21 +615,21 @@ BEGIN
         SortOrder INT NULL,
         CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
         UpdatedAt DATETIME2 NULL,
-        CONSTRAINT FK_ProductNode_Parent FOREIGN KEY (ParentId) REFERENCES dbo.ProductNode(Id),
-        CONSTRAINT CK_ProductNode_NodeType CHECK (NodeType IN ('Departement', 'Navigation', 'Category'))
+        CONSTRAINT FK_CategoryNode_Parent FOREIGN KEY (ParentId) REFERENCES dbo.CategoryNode(Id),
+        CONSTRAINT CK_CategoryNode_NodeType CHECK (NodeType IN ('Departement', 'Navigation', 'Category'))
     );
     
     -- Indexes for performance
-    CREATE INDEX IX_ProductNode_ParentId ON dbo.ProductNode(ParentId);
-    CREATE INDEX IX_ProductNode_NodeType ON dbo.ProductNode(NodeType);
-    CREATE INDEX IX_ProductNode_IsActive ON dbo.ProductNode(IsActive);
-    CREATE INDEX IX_ProductNode_SortOrder ON dbo.ProductNode(SortOrder);
+    CREATE INDEX IX_CategoryNode_ParentId ON dbo.CategoryNode(ParentId);
+    CREATE INDEX IX_CategoryNode_NodeType ON dbo.CategoryNode(NodeType);
+    CREATE INDEX IX_CategoryNode_IsActive ON dbo.CategoryNode(IsActive);
+    CREATE INDEX IX_CategoryNode_SortOrder ON dbo.CategoryNode(SortOrder);
     
-    PRINT 'Table ProductNode created successfully.';
+    PRINT 'Table CategoryNode created successfully.';
 END
 ELSE
 BEGIN
-    PRINT 'Table ProductNode already exists.';
+    PRINT 'Table CategoryNode already exists.';
 END
 GO
 
@@ -640,13 +640,13 @@ IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CategoryMandatoryAttribute
 BEGIN
     CREATE TABLE dbo.CategoryMandatoryAttribute (
         Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-        CategoryNodeId UNIQUEIDENTIFIER NOT NULL, -- FK to ProductNode(Id), must be a CategoryNode
+        CategoryNodeId UNIQUEIDENTIFIER NOT NULL, -- FK to CategoryNode(Id), must be a CategoryNode
         Name_en NVARCHAR(100) NOT NULL,
         Name_fr NVARCHAR(100) NOT NULL,
         AttributeType NVARCHAR(50) NULL, -- e.g., 'string', 'int', 'enum', etc. (optional)
         SortOrder INT NULL,
-        CONSTRAINT FK_CategoryMandatoryAttribute_ProductNode
-            FOREIGN KEY (CategoryNodeId) REFERENCES dbo.ProductNode(Id) ON DELETE CASCADE
+        CONSTRAINT FK_CategoryMandatoryAttribute_CategoryNode
+            FOREIGN KEY (CategoryNodeId) REFERENCES dbo.CategoryNode(Id) ON DELETE CASCADE
     );
     
     -- Indexes for performance

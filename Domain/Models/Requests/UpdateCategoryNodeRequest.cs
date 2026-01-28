@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Domain.Models.Requests
 {
-    public class UpdateProductNodeRequest
+    public class UpdateCategoryNodeRequest
     {
         public required Guid Id { get; set; }
         public required string Name_en { get; set; }
@@ -17,7 +17,7 @@ namespace Domain.Models.Requests
         {
             if (Id == Guid.Empty)
             {
-                return Result.Failure("Product node ID cannot be empty.", StatusCodes.Status400BadRequest);
+                return Result.Failure("Category node ID cannot be empty.", StatusCodes.Status400BadRequest);
             }
 
             if (string.IsNullOrWhiteSpace(Name_en))

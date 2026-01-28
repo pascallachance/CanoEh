@@ -1,6 +1,6 @@
 namespace Domain.Models.Responses
 {
-    public class DeleteProductNodeResponse
+    public class DeleteCategoryNodeResponse
     {
         public Guid Id { get; set; }
         public bool Success { get; set; }

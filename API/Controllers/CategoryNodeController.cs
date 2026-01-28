@@ -8,23 +8,25 @@ namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductNodeController(IProductNodeService productNodeService) : ControllerBase
+    public class CategoryNodeController(ICategoryNodeService categoryNodeService) : ControllerBase
     {
-        private readonly IProductNodeService _productNodeService = productNodeService;
+        private readonly ICategoryNodeService _categoryNodeService = categoryNodeService;
 
         /// <summary>
-        /// Creates a new product node (Departement, Navigation, or Category).
+        /// Creates a new category node (Departement, Navigation, or Category).
+        /// When creating a Category node, you can optionally include CategoryMandatoryAttributes
+        /// which will be created in the same operation and linked to the new Category node.
         /// </summary>
-        /// <param name="request">The product node details to create.</param>
-        /// <returns>Returns the created product node or an error response.</returns>
+        /// <param name="request">The category node details to create, optionally including CategoryMandatoryAttributes for Category nodes.</param>
+        /// <returns>Returns the created category node with any created mandatory attributes or an error response.</returns>
         [Authorize(Roles = "Admin")]
-        [HttpPost("CreateProductNode")]
+        [HttpPost("CreateCategoryNode")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateProductNode([FromBody] CreateProductNodeRequest request)
+        public async Task<IActionResult> CreateCategoryNode([FromBody] CreateCategoryNodeRequest request)
         {
             try
             {
@@ -33,7 +35,7 @@ namespace API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var result = await _productNodeService.CreateProductNodeAsync(request);
+                var result = await _categoryNodeService.CreateCategoryNodeAsync(request);
 
                 if (result.IsFailure)
                 {
@@ -50,17 +52,17 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Gets all product nodes.
+        /// Gets all category nodes.
         /// </summary>
-        /// <returns>Returns all product nodes or an error response.</returns>
-        [HttpGet("GetAllProductNodes")]
+        /// <returns>Returns all category nodes or an error response.</returns>
+        [HttpGet("GetAllCategoryNodes")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetAllProductNodes()
+        public async Task<IActionResult> GetAllCategoryNodes()
         {
             try
             {
-                var result = await _productNodeService.GetAllProductNodesAsync();
+                var result = await _categoryNodeService.GetAllCategoryNodesAsync();
 
                 if (result.IsFailure)
                 {
@@ -77,19 +79,19 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Gets a product node by ID.
+        /// Gets a category node by ID.
         /// </summary>
-        /// <param name="id">The product node ID.</param>
-        /// <returns>Returns the product node or an error response.</returns>
-        [HttpGet("GetProductNodeById/{id}")]
+        /// <param name="id">The category node ID.</param>
+        /// <returns>Returns the category node or an error response.</returns>
+        [HttpGet("GetCategoryNodeById/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetProductNodeById(Guid id)
+        public async Task<IActionResult> GetCategoryNodeById(Guid id)
         {
             try
             {
-                var result = await _productNodeService.GetProductNodeByIdAsync(id);
+                var result = await _categoryNodeService.GetCategoryNodeByIdAsync(id);
 
                 if (result.IsFailure)
                 {
@@ -116,7 +118,7 @@ namespace API.Controllers
         {
             try
             {
-                var result = await _productNodeService.GetRootNodesAsync();
+                var result = await _categoryNodeService.GetRootNodesAsync();
 
                 if (result.IsFailure)
                 {
@@ -145,7 +147,7 @@ namespace API.Controllers
         {
             try
             {
-                var result = await _productNodeService.GetChildrenAsync(parentId);
+                var result = await _categoryNodeService.GetChildrenAsync(parentId);
 
                 if (result.IsFailure)
                 {
@@ -174,7 +176,7 @@ namespace API.Controllers
         {
             try
             {
-                var result = await _productNodeService.GetNodesByTypeAsync(nodeType);
+                var result = await _categoryNodeService.GetNodesByTypeAsync(nodeType);
 
                 if (result.IsFailure)
                 {
@@ -201,7 +203,7 @@ namespace API.Controllers
         {
             try
             {
-                var result = await _productNodeService.GetCategoryNodesAsync();
+                var result = await _categoryNodeService.GetCategoryNodesAsync();
 
                 if (result.IsFailure)
                 {
@@ -218,19 +220,19 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Updates a product node.
+        /// Updates a category node.
         /// </summary>
-        /// <param name="request">The product node details to update.</param>
-        /// <returns>Returns the updated product node or an error response.</returns>
+        /// <param name="request">The category node details to update.</param>
+        /// <returns>Returns the updated category node or an error response.</returns>
         [Authorize(Roles = "Admin")]
-        [HttpPut("UpdateProductNode")]
+        [HttpPut("UpdateCategoryNode")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateProductNode([FromBody] UpdateProductNodeRequest request)
+        public async Task<IActionResult> UpdateCategoryNode([FromBody] UpdateCategoryNodeRequest request)
         {
             try
             {
@@ -239,7 +241,7 @@ namespace API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var result = await _productNodeService.UpdateProductNodeAsync(request);
+                var result = await _categoryNodeService.UpdateCategoryNodeAsync(request);
 
                 if (result.IsFailure)
                 {
@@ -256,23 +258,23 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Deletes a product node.
+        /// Deletes a category node.
         /// </summary>
-        /// <param name="id">The product node ID to delete.</param>
+        /// <param name="id">The category node ID to delete.</param>
         /// <returns>Returns success response or an error response.</returns>
         [Authorize(Roles = "Admin")]
-        [HttpDelete("DeleteProductNode/{id}")]
+        [HttpDelete("DeleteCategoryNode/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteProductNode(Guid id)
+        public async Task<IActionResult> DeleteCategoryNode(Guid id)
         {
             try
             {
-                var result = await _productNodeService.DeleteProductNodeAsync(id);
+                var result = await _categoryNodeService.DeleteCategoryNodeAsync(id);
 
                 if (result.IsFailure)
                 {

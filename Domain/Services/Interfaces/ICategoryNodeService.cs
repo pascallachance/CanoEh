@@ -7,7 +7,7 @@ namespace Domain.Services.Interfaces
     public interface ICategoryNodeService
     {
         Task<Result<CreateCategoryNodeResponse>> CreateCategoryNodeAsync(CreateCategoryNodeRequest request);
-        Task<Result<BulkCreateStructureResponse>> CreateStructureAsync(BulkCreateStructureRequest request);
+        Task<Result<BulkCreateCategoryNodesResponse>> BulkCreateCategoryNodesAsync(BulkCreateCategoryNodesRequest request);
         Task<Result<IEnumerable<GetCategoryNodeResponse>>> GetAllCategoryNodesAsync();
         Task<Result<GetCategoryNodeResponse>> GetCategoryNodeByIdAsync(Guid id);
         Task<Result<IEnumerable<GetCategoryNodeResponse>>> GetRootNodesAsync();

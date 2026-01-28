@@ -427,18 +427,15 @@ VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
                     });
 
                     // Collect attribute parameters for batch insert
-                        var attributeParameters = attributes.Select(attribute => new
-                        {
-                            attribute.Id,
-                            attribute.CategoryNodeId,
-                            attribute.Name_en,
-                            attribute.Name_fr,
-                            attribute.AttributeType,
-                            attribute.SortOrder
-                        });
-
-                        await dbConnection.ExecuteAsync(attributeQuery, attributeParameters, transaction);
-                    }
+                    allAttributeParameters.AddRange(attributes.Select(attribute => new
+                    {
+                        attribute.Id,
+                        attribute.CategoryNodeId,
+                        attribute.Name_en,
+                        attribute.Name_fr,
+                        attribute.AttributeType,
+                        attribute.SortOrder
+                    }));
 
                     createdNodes.Add(node);
                 }

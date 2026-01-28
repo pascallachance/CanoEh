@@ -113,14 +113,14 @@ namespace Domain.Services.Implementations
             }
         }
 
-        public async Task<Result<BulkCreateStructureResponse>> CreateStructureAsync(BulkCreateStructureRequest request)
+        public async Task<Result<BulkCreateCategoryNodesResponse>> BulkCreateCategoryNodesAsync(BulkCreateCategoryNodesRequest request)
         {
             try
             {
                 var validationResult = request.Validate();
                 if (validationResult.IsFailure)
                 {
-                    return Result.Failure<BulkCreateStructureResponse>(validationResult.Error!, validationResult.ErrorCode ?? 400);
+                    return Result.Failure<BulkCreateCategoryNodesResponse>(validationResult.Error!, validationResult.ErrorCode ?? 400);
                 }
 
                 var nodesWithAttributes = new List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes)>();
@@ -137,7 +137,7 @@ namespace Domain.Services.Implementations
                 // Create all nodes in a single transaction
                 await _categoryNodeRepository.AddMultipleNodesWithAttributesAsync(nodesWithAttributes);
 
-                var response = new BulkCreateStructureResponse
+                var response = new BulkCreateCategoryNodesResponse
                 {
                     Departements = responseDepartements,
                     TotalNodesCreated = totalNodesCreated
@@ -148,10 +148,10 @@ namespace Domain.Services.Implementations
             catch (Exception ex)
             {
                 // Log the exception for debugging but don't expose internal details to clients
-                Console.Error.WriteLine($"Error creating structure: {ex}");
+                Console.Error.WriteLine($"Error in BulkCreateCategoryNodesAsync: {ex}");
                 
-                return Result.Failure<BulkCreateStructureResponse>(
-                    "An error occurred while creating the structure.",
+                return Result.Failure<BulkCreateCategoryNodesResponse>(
+                    "An error occurred while bulk creating category nodes.",
                     StatusCodes.Status500InternalServerError);
             }
         }

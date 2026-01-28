@@ -61,13 +61,13 @@ namespace API.Controllers
         /// <param name="request">The hierarchical structure to create, containing one or more Departement nodes.</param>
         /// <returns>Returns the created structure with generated IDs or an error response.</returns>
         [Authorize(Roles = "Admin")]
-        [HttpPost("CreateStructure")]
+        [HttpPost("BulkCreateCategoryNodes")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateStructure([FromBody] BulkCreateStructureRequest request)
+        public async Task<IActionResult> BulkCreateCategoryNodes([FromBody] BulkCreateCategoryNodesRequest request)
         {
             try
             {
@@ -76,7 +76,7 @@ namespace API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var result = await _categoryNodeService.CreateStructureAsync(request);
+                var result = await _categoryNodeService.BulkCreateCategoryNodesAsync(request);
 
                 if (result.IsFailure)
                 {

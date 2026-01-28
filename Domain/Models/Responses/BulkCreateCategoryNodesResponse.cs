@@ -35,7 +35,7 @@ namespace Domain.Models.Responses
         public List<CategoryNodeResponseDto>? CategoryNodes { get; set; }
     }
 
-    public class BulkCreateStructureResponse
+    public class BulkCreateCategoryNodesResponse
     {
         public List<DepartementNodeResponseDto> Departements { get; set; } = new();
         public int TotalNodesCreated { get; set; }

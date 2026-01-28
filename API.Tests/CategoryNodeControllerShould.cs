@@ -555,11 +555,11 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task CreateStructure_ReturnOk_WhenStructureCreatedSuccessfully()
+        public async Task BulkCreateCategoryNodes_ReturnOk_WhenStructureCreatedSuccessfully()
         {
             // Arrange
             SetupAdminUser();
-            var request = new BulkCreateStructureRequest
+            var request = new BulkCreateCategoryNodesRequest
             {
                 Departements = new List<DepartementNodeDto>
                 {
@@ -593,7 +593,7 @@ namespace API.Tests
                 }
             };
 
-            var response = new BulkCreateStructureResponse
+            var response = new BulkCreateCategoryNodesResponse
             {
                 Departements = new List<DepartementNodeResponseDto>
                 {
@@ -635,38 +635,38 @@ namespace API.Tests
             };
 
             var result = Result.Success(response);
-            _mockCategoryNodeService.Setup(x => x.CreateStructureAsync(It.IsAny<BulkCreateStructureRequest>()))
+            _mockCategoryNodeService.Setup(x => x.BulkCreateCategoryNodesAsync(It.IsAny<BulkCreateCategoryNodesRequest>()))
                                .ReturnsAsync(result);
 
             // Act
-            var actionResult = await _controller.CreateStructure(request);
+            var actionResult = await _controller.BulkCreateCategoryNodes(request);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(actionResult);
             Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
-            var resultValue = Assert.IsType<Result<BulkCreateStructureResponse>>(okResult.Value);
+            var resultValue = Assert.IsType<Result<BulkCreateCategoryNodesResponse>>(okResult.Value);
             Assert.True(resultValue.IsSuccess);
             Assert.Equal(3, resultValue.Value?.TotalNodesCreated);
         }
 
         [Fact]
-        public async Task CreateStructure_ReturnBadRequest_WhenValidationFails()
+        public async Task BulkCreateCategoryNodes_ReturnBadRequest_WhenValidationFails()
         {
             // Arrange
             SetupAdminUser();
-            var request = new BulkCreateStructureRequest
+            var request = new BulkCreateCategoryNodesRequest
             {
                 Departements = new List<DepartementNodeDto>()
             };
 
-            var result = Result.Failure<BulkCreateStructureResponse>(
+            var result = Result.Failure<BulkCreateCategoryNodesResponse>(
                 "At least one Departement node is required.", 
                 StatusCodes.Status400BadRequest);
-            _mockCategoryNodeService.Setup(x => x.CreateStructureAsync(It.IsAny<BulkCreateStructureRequest>()))
+            _mockCategoryNodeService.Setup(x => x.BulkCreateCategoryNodesAsync(It.IsAny<BulkCreateCategoryNodesRequest>()))
                                .ReturnsAsync(result);
 
             // Act
-            var actionResult = await _controller.CreateStructure(request);
+            var actionResult = await _controller.BulkCreateCategoryNodes(request);
 
             // Assert
             var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
@@ -674,11 +674,11 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task CreateStructure_ReturnInternalServerError_WhenExceptionThrown()
+        public async Task BulkCreateCategoryNodes_ReturnInternalServerError_WhenExceptionThrown()
         {
             // Arrange
             SetupAdminUser();
-            var request = new BulkCreateStructureRequest
+            var request = new BulkCreateCategoryNodesRequest
             {
                 Departements = new List<DepartementNodeDto>
                 {
@@ -690,11 +690,11 @@ namespace API.Tests
                 }
             };
 
-            _mockCategoryNodeService.Setup(x => x.CreateStructureAsync(It.IsAny<BulkCreateStructureRequest>()))
+            _mockCategoryNodeService.Setup(x => x.BulkCreateCategoryNodesAsync(It.IsAny<BulkCreateCategoryNodesRequest>()))
                                .ThrowsAsync(new Exception("Database error"));
 
             // Act
-            var actionResult = await _controller.CreateStructure(request);
+            var actionResult = await _controller.BulkCreateCategoryNodes(request);
 
             // Assert
             var serverErrorResult = Assert.IsType<ObjectResult>(actionResult);
@@ -702,11 +702,11 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task CreateStructure_ReturnOk_WhenMultipleDepartmentsCreated()
+        public async Task BulkCreateCategoryNodes_ReturnOk_WhenMultipleDepartmentsCreated()
         {
             // Arrange
             SetupAdminUser();
-            var request = new BulkCreateStructureRequest
+            var request = new BulkCreateCategoryNodesRequest
             {
                 Departements = new List<DepartementNodeDto>
                 {
@@ -727,7 +727,7 @@ namespace API.Tests
                 }
             };
 
-            var response = new BulkCreateStructureResponse
+            var response = new BulkCreateCategoryNodesResponse
             {
                 Departements = new List<DepartementNodeResponseDto>
                 {
@@ -754,28 +754,28 @@ namespace API.Tests
             };
 
             var result = Result.Success(response);
-            _mockCategoryNodeService.Setup(x => x.CreateStructureAsync(It.IsAny<BulkCreateStructureRequest>()))
+            _mockCategoryNodeService.Setup(x => x.BulkCreateCategoryNodesAsync(It.IsAny<BulkCreateCategoryNodesRequest>()))
                                .ReturnsAsync(result);
 
             // Act
-            var actionResult = await _controller.CreateStructure(request);
+            var actionResult = await _controller.BulkCreateCategoryNodes(request);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(actionResult);
             Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
-            var resultValue = Assert.IsType<Result<BulkCreateStructureResponse>>(okResult.Value);
+            var resultValue = Assert.IsType<Result<BulkCreateCategoryNodesResponse>>(okResult.Value);
             Assert.True(resultValue.IsSuccess);
             Assert.Equal(2, resultValue.Value?.Departements.Count);
             Assert.Equal(2, resultValue.Value?.TotalNodesCreated);
         }
 
         [Fact]
-        public async Task CreateStructure_ReturnBadRequest_WhenAttributeTypeTooLong()
+        public async Task BulkCreateCategoryNodes_ReturnBadRequest_WhenAttributeTypeTooLong()
         {
             // Arrange
             SetupAdminUser();
             var longAttributeType = new string('X', 51); // Max is 50 characters
-            var request = new BulkCreateStructureRequest
+            var request = new BulkCreateCategoryNodesRequest
             {
                 Departements = new List<DepartementNodeDto>
                 {
@@ -812,14 +812,14 @@ namespace API.Tests
                 }
             };
 
-            var result = Result.Failure<BulkCreateStructureResponse>(
+            var result = Result.Failure<BulkCreateCategoryNodesResponse>(
                 "CategoryMandatoryAttribute AttributeType cannot exceed 50 characters.",
                 StatusCodes.Status400BadRequest);
-            _mockCategoryNodeService.Setup(x => x.CreateStructureAsync(It.IsAny<BulkCreateStructureRequest>()))
+            _mockCategoryNodeService.Setup(x => x.BulkCreateCategoryNodesAsync(It.IsAny<BulkCreateCategoryNodesRequest>()))
                                .ReturnsAsync(result);
 
             // Act
-            var actionResult = await _controller.CreateStructure(request);
+            var actionResult = await _controller.BulkCreateCategoryNodes(request);
 
             // Assert
             var badRequestResult = Assert.IsType<ObjectResult>(actionResult);

@@ -553,5 +553,277 @@ namespace API.Tests
             var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
             Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
         }
+
+        [Fact]
+        public async Task CreateStructure_ReturnOk_WhenStructureCreatedSuccessfully()
+        {
+            // Arrange
+            SetupAdminUser();
+            var request = new BulkCreateStructureRequest
+            {
+                Departements = new List<DepartementNodeDto>
+                {
+                    new DepartementNodeDto
+                    {
+                        Name_en = "Electronics",
+                        Name_fr = "Électronique",
+                        IsActive = true,
+                        SortOrder = 1,
+                        NavigationNodes = new List<NavigationNodeDto>
+                        {
+                            new NavigationNodeDto
+                            {
+                                Name_en = "Computers",
+                                Name_fr = "Ordinateurs",
+                                IsActive = true,
+                                SortOrder = 1,
+                                CategoryNodes = new List<CategoryNodeDto>
+                                {
+                                    new CategoryNodeDto
+                                    {
+                                        Name_en = "Laptops",
+                                        Name_fr = "Ordinateurs portables",
+                                        IsActive = true,
+                                        SortOrder = 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            var response = new BulkCreateStructureResponse
+            {
+                Departements = new List<DepartementNodeResponseDto>
+                {
+                    new DepartementNodeResponseDto
+                    {
+                        Id = Guid.NewGuid(),
+                        Name_en = "Electronics",
+                        Name_fr = "Électronique",
+                        NodeType = "Departement",
+                        IsActive = true,
+                        SortOrder = 1,
+                        NavigationNodes = new List<NavigationNodeResponseDto>
+                        {
+                            new NavigationNodeResponseDto
+                            {
+                                Id = Guid.NewGuid(),
+                                Name_en = "Computers",
+                                Name_fr = "Ordinateurs",
+                                NodeType = "Navigation",
+                                IsActive = true,
+                                SortOrder = 1,
+                                CategoryNodes = new List<CategoryNodeResponseDto>
+                                {
+                                    new CategoryNodeResponseDto
+                                    {
+                                        Id = Guid.NewGuid(),
+                                        Name_en = "Laptops",
+                                        Name_fr = "Ordinateurs portables",
+                                        NodeType = "Category",
+                                        IsActive = true,
+                                        SortOrder = 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                TotalNodesCreated = 3
+            };
+
+            var result = Result.Success(response);
+            _mockCategoryNodeService.Setup(x => x.CreateStructureAsync(It.IsAny<BulkCreateStructureRequest>()))
+                               .ReturnsAsync(result);
+
+            // Act
+            var actionResult = await _controller.CreateStructure(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(actionResult);
+            Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+            var resultValue = Assert.IsType<Result<BulkCreateStructureResponse>>(okResult.Value);
+            Assert.True(resultValue.IsSuccess);
+            Assert.Equal(3, resultValue.Value?.TotalNodesCreated);
+        }
+
+        [Fact]
+        public async Task CreateStructure_ReturnBadRequest_WhenValidationFails()
+        {
+            // Arrange
+            SetupAdminUser();
+            var request = new BulkCreateStructureRequest
+            {
+                Departements = new List<DepartementNodeDto>()
+            };
+
+            var result = Result.Failure<BulkCreateStructureResponse>(
+                "At least one Departement node is required.", 
+                StatusCodes.Status400BadRequest);
+            _mockCategoryNodeService.Setup(x => x.CreateStructureAsync(It.IsAny<BulkCreateStructureRequest>()))
+                               .ReturnsAsync(result);
+
+            // Act
+            var actionResult = await _controller.CreateStructure(request);
+
+            // Assert
+            var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task CreateStructure_ReturnInternalServerError_WhenExceptionThrown()
+        {
+            // Arrange
+            SetupAdminUser();
+            var request = new BulkCreateStructureRequest
+            {
+                Departements = new List<DepartementNodeDto>
+                {
+                    new DepartementNodeDto
+                    {
+                        Name_en = "Electronics",
+                        Name_fr = "Électronique"
+                    }
+                }
+            };
+
+            _mockCategoryNodeService.Setup(x => x.CreateStructureAsync(It.IsAny<BulkCreateStructureRequest>()))
+                               .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var actionResult = await _controller.CreateStructure(request);
+
+            // Assert
+            var serverErrorResult = Assert.IsType<ObjectResult>(actionResult);
+            Assert.Equal(StatusCodes.Status500InternalServerError, serverErrorResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task CreateStructure_ReturnOk_WhenMultipleDepartmentsCreated()
+        {
+            // Arrange
+            SetupAdminUser();
+            var request = new BulkCreateStructureRequest
+            {
+                Departements = new List<DepartementNodeDto>
+                {
+                    new DepartementNodeDto
+                    {
+                        Name_en = "Electronics",
+                        Name_fr = "Électronique",
+                        IsActive = true,
+                        SortOrder = 1
+                    },
+                    new DepartementNodeDto
+                    {
+                        Name_en = "Clothing",
+                        Name_fr = "Vêtements",
+                        IsActive = true,
+                        SortOrder = 2
+                    }
+                }
+            };
+
+            var response = new BulkCreateStructureResponse
+            {
+                Departements = new List<DepartementNodeResponseDto>
+                {
+                    new DepartementNodeResponseDto
+                    {
+                        Id = Guid.NewGuid(),
+                        Name_en = "Electronics",
+                        Name_fr = "Électronique",
+                        NodeType = "Departement",
+                        IsActive = true,
+                        SortOrder = 1
+                    },
+                    new DepartementNodeResponseDto
+                    {
+                        Id = Guid.NewGuid(),
+                        Name_en = "Clothing",
+                        Name_fr = "Vêtements",
+                        NodeType = "Departement",
+                        IsActive = true,
+                        SortOrder = 2
+                    }
+                },
+                TotalNodesCreated = 2
+            };
+
+            var result = Result.Success(response);
+            _mockCategoryNodeService.Setup(x => x.CreateStructureAsync(It.IsAny<BulkCreateStructureRequest>()))
+                               .ReturnsAsync(result);
+
+            // Act
+            var actionResult = await _controller.CreateStructure(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(actionResult);
+            Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+            var resultValue = Assert.IsType<Result<BulkCreateStructureResponse>>(okResult.Value);
+            Assert.True(resultValue.IsSuccess);
+            Assert.Equal(2, resultValue.Value?.Departements.Count);
+            Assert.Equal(2, resultValue.Value?.TotalNodesCreated);
+        }
+
+        [Fact]
+        public async Task CreateStructure_ReturnBadRequest_WhenAttributeTypeTooLong()
+        {
+            // Arrange
+            SetupAdminUser();
+            var longAttributeType = new string('X', 51); // Max is 50 characters
+            var request = new BulkCreateStructureRequest
+            {
+                Departements = new List<DepartementNodeDto>
+                {
+                    new DepartementNodeDto
+                    {
+                        Name_en = "Electronics",
+                        Name_fr = "Électronique",
+                        NavigationNodes = new List<NavigationNodeDto>
+                        {
+                            new NavigationNodeDto
+                            {
+                                Name_en = "Computers",
+                                Name_fr = "Ordinateurs",
+                                CategoryNodes = new List<CategoryNodeDto>
+                                {
+                                    new CategoryNodeDto
+                                    {
+                                        Name_en = "Laptops",
+                                        Name_fr = "Ordinateurs portables",
+                                        CategoryMandatoryAttributes = new List<CreateCategoryMandatoryAttributeDto>
+                                        {
+                                            new CreateCategoryMandatoryAttributeDto
+                                            {
+                                                Name_en = "Brand",
+                                                Name_fr = "Marque",
+                                                AttributeType = longAttributeType
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            var result = Result.Failure<BulkCreateStructureResponse>(
+                "CategoryMandatoryAttribute AttributeType cannot exceed 50 characters.",
+                StatusCodes.Status400BadRequest);
+            _mockCategoryNodeService.Setup(x => x.CreateStructureAsync(It.IsAny<BulkCreateStructureRequest>()))
+                               .ReturnsAsync(result);
+
+            // Act
+            var actionResult = await _controller.CreateStructure(request);
+
+            // Assert
+            var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+        }
     }
 }

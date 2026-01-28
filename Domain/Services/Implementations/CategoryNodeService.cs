@@ -113,6 +113,216 @@ namespace Domain.Services.Implementations
             }
         }
 
+        public async Task<Result<BulkCreateStructureResponse>> CreateStructureAsync(BulkCreateStructureRequest request)
+        {
+            try
+            {
+                var validationResult = request.Validate();
+                if (validationResult.IsFailure)
+                {
+                    return Result.Failure<BulkCreateStructureResponse>(validationResult.Error!, validationResult.ErrorCode ?? 400);
+                }
+
+                var nodesWithAttributes = new List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes)>();
+                var responseDepartements = new List<DepartementNodeResponseDto>();
+                var totalNodesCreated = 0;
+
+                // Process each departement
+                foreach (var deptDto in request.Departements)
+                {
+                    var deptResponse = ProcessDepartementNode(deptDto, nodesWithAttributes, ref totalNodesCreated);
+                    responseDepartements.Add(deptResponse);
+                }
+
+                // Create all nodes in a single transaction
+                await _categoryNodeRepository.AddMultipleNodesWithAttributesAsync(nodesWithAttributes);
+
+                var response = new BulkCreateStructureResponse
+                {
+                    Departements = responseDepartements,
+                    TotalNodesCreated = totalNodesCreated
+                };
+
+                return Result.Success(response);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging but don't expose internal details to clients
+                Console.Error.WriteLine($"Error creating structure: {ex}");
+                
+                return Result.Failure<BulkCreateStructureResponse>(
+                    "An error occurred while creating the structure.",
+                    StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        private DepartementNodeResponseDto ProcessDepartementNode(
+            DepartementNodeDto deptDto,
+            List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes)> nodesWithAttributes,
+            ref int totalNodesCreated)
+        {
+            var dept = new DepartementNode
+            {
+                Id = Guid.NewGuid(),
+                Name_en = deptDto.Name_en,
+                Name_fr = deptDto.Name_fr,
+                ParentId = null, // Departement nodes never have a parent
+                IsActive = deptDto.IsActive,
+                SortOrder = deptDto.SortOrder,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            nodesWithAttributes.Add((dept, new List<CategoryMandatoryAttribute>()));
+            totalNodesCreated++;
+
+            var response = new DepartementNodeResponseDto
+            {
+                Id = dept.Id,
+                Name_en = dept.Name_en,
+                Name_fr = dept.Name_fr,
+                NodeType = dept.NodeType,
+                IsActive = dept.IsActive,
+                SortOrder = dept.SortOrder,
+                NavigationNodes = new List<NavigationNodeResponseDto>(),
+                CategoryNodes = new List<CategoryNodeResponseDto>()
+            };
+
+            // Process navigation nodes
+            if (deptDto.NavigationNodes != null)
+            {
+                foreach (var navDto in deptDto.NavigationNodes)
+                {
+                    var navResponse = ProcessNavigationNode(navDto, dept.Id, nodesWithAttributes, ref totalNodesCreated);
+                    response.NavigationNodes.Add(navResponse);
+                }
+            }
+
+            // Process category nodes
+            if (deptDto.CategoryNodes != null)
+            {
+                foreach (var catDto in deptDto.CategoryNodes)
+                {
+                    var catResponse = ProcessCategoryNode(catDto, dept.Id, nodesWithAttributes, ref totalNodesCreated);
+                    response.CategoryNodes.Add(catResponse);
+                }
+            }
+
+            return response;
+        }
+
+        private NavigationNodeResponseDto ProcessNavigationNode(
+            NavigationNodeDto navDto,
+            Guid parentId,
+            List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes)> nodesWithAttributes,
+            ref int totalNodesCreated)
+        {
+            var nav = new NavigationNode
+            {
+                Id = Guid.NewGuid(),
+                Name_en = navDto.Name_en,
+                Name_fr = navDto.Name_fr,
+                ParentId = parentId,
+                IsActive = navDto.IsActive,
+                SortOrder = navDto.SortOrder,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            nodesWithAttributes.Add((nav, new List<CategoryMandatoryAttribute>()));
+            totalNodesCreated++;
+
+            var response = new NavigationNodeResponseDto
+            {
+                Id = nav.Id,
+                Name_en = nav.Name_en,
+                Name_fr = nav.Name_fr,
+                NodeType = nav.NodeType,
+                IsActive = nav.IsActive,
+                SortOrder = nav.SortOrder,
+                NavigationNodes = new List<NavigationNodeResponseDto>(),
+                CategoryNodes = new List<CategoryNodeResponseDto>()
+            };
+
+            // Process child navigation nodes (recursive)
+            if (navDto.NavigationNodes != null)
+            {
+                foreach (var childNavDto in navDto.NavigationNodes)
+                {
+                    var childNavResponse = ProcessNavigationNode(childNavDto, nav.Id, nodesWithAttributes, ref totalNodesCreated);
+                    response.NavigationNodes.Add(childNavResponse);
+                }
+            }
+
+            // Process category nodes
+            if (navDto.CategoryNodes != null)
+            {
+                foreach (var catDto in navDto.CategoryNodes)
+                {
+                    var catResponse = ProcessCategoryNode(catDto, nav.Id, nodesWithAttributes, ref totalNodesCreated);
+                    response.CategoryNodes.Add(catResponse);
+                }
+            }
+
+            return response;
+        }
+
+        private CategoryNodeResponseDto ProcessCategoryNode(
+            CategoryNodeDto catDto,
+            Guid parentId,
+            List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes)> nodesWithAttributes,
+            ref int totalNodesCreated)
+        {
+            var cat = new CategoryNode
+            {
+                Id = Guid.NewGuid(),
+                Name_en = catDto.Name_en,
+                Name_fr = catDto.Name_fr,
+                ParentId = parentId,
+                IsActive = catDto.IsActive,
+                SortOrder = catDto.SortOrder,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var attributes = new List<CategoryMandatoryAttribute>();
+            if (catDto.CategoryMandatoryAttributes != null && catDto.CategoryMandatoryAttributes.Any())
+            {
+                foreach (var attrDto in catDto.CategoryMandatoryAttributes)
+                {
+                    attributes.Add(new CategoryMandatoryAttribute
+                    {
+                        Id = Guid.NewGuid(),
+                        CategoryNodeId = cat.Id,
+                        Name_en = attrDto.Name_en,
+                        Name_fr = attrDto.Name_fr,
+                        AttributeType = attrDto.AttributeType,
+                        SortOrder = attrDto.SortOrder
+                    });
+                }
+            }
+
+            nodesWithAttributes.Add((cat, attributes));
+            totalNodesCreated++;
+
+            var response = new CategoryNodeResponseDto
+            {
+                Id = cat.Id,
+                Name_en = cat.Name_en,
+                Name_fr = cat.Name_fr,
+                NodeType = cat.NodeType,
+                IsActive = cat.IsActive,
+                SortOrder = cat.SortOrder,
+                CategoryMandatoryAttributes = attributes.Select(attr => new CategoryMandatoryAttributeResponseDto
+                {
+                    Id = attr.Id,
+                    Name_en = attr.Name_en,
+                    Name_fr = attr.Name_fr,
+                    AttributeType = attr.AttributeType,
+                    SortOrder = attr.SortOrder
+                }).ToList()
+            };
+
+            return response;
+        }
+
         public async Task<Result<IEnumerable<GetCategoryNodeResponse>>> GetAllCategoryNodesAsync()
         {
             try

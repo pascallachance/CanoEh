@@ -379,6 +379,100 @@ VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
             }
         }
 
+        public async Task<IEnumerable<BaseNode>> AddMultipleNodesWithAttributesAsync(
+            IEnumerable<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes)> nodesWithAttributes)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+
+            using var transaction = dbConnection.BeginTransaction();
+            try
+            {
+                var createdNodes = new List<BaseNode>();
+                var allNodeParameters = new List<object>();
+                var allAttributeParameters = new List<object>();
+
+                foreach (var (node, attributes) in nodesWithAttributes)
+                {
+                    // Validate node type
+                    if (node.NodeType != BaseNode.NodeTypeDepartement && node.NodeType != BaseNode.NodeTypeNavigation && node.NodeType != BaseNode.NodeTypeCategory)
+                    {
+                        throw new ArgumentException($"Invalid NodeType. Must be '{BaseNode.NodeTypeDepartement}', '{BaseNode.NodeTypeNavigation}', or '{BaseNode.NodeTypeCategory}'.");
+                    }
+
+                    // Validate ParentId constraints
+                    if (node.NodeType == BaseNode.NodeTypeDepartement && node.ParentId.HasValue)
+                    {
+                        throw new InvalidOperationException("Departement nodes cannot have a parent.");
+                    }
+
+                    if (node.NodeType != BaseNode.NodeTypeDepartement && !node.ParentId.HasValue)
+                    {
+                        throw new InvalidOperationException($"{node.NodeType} nodes must have a parent.");
+                    }
+
+                    // Collect node parameters for batch insert
+                    allNodeParameters.Add(new
+                    {
+                        node.Id,
+                        node.Name_en,
+                        node.Name_fr,
+                        node.NodeType,
+                        node.ParentId,
+                        node.IsActive,
+                        node.SortOrder,
+                        node.CreatedAt
+                    });
+
+                    // Collect attribute parameters for batch insert
+                        var attributeParameters = attributes.Select(attribute => new
+                        {
+                            attribute.Id,
+                            attribute.CategoryNodeId,
+                            attribute.Name_en,
+                            attribute.Name_fr,
+                            attribute.AttributeType,
+                            attribute.SortOrder
+                        });
+
+                        await dbConnection.ExecuteAsync(attributeQuery, attributeParameters, transaction);
+                    }
+
+                    createdNodes.Add(node);
+                }
+
+                // Batch insert all nodes in a single database roundtrip
+                if (allNodeParameters.Any())
+                {
+                    var nodeQuery = @"
+INSERT INTO dbo.CategoryNode (Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt)
+VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @CreatedAt)";
+                    
+                    await dbConnection.ExecuteAsync(nodeQuery, allNodeParameters, transaction);
+                }
+
+                // Batch insert all attributes in a single database roundtrip
+                if (allAttributeParameters.Any())
+                {
+                    var attributeQuery = @"
+INSERT INTO dbo.CategoryMandatoryAttribute (Id, CategoryNodeId, Name_en, Name_fr, AttributeType, SortOrder)
+VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
+                    
+                    await dbConnection.ExecuteAsync(attributeQuery, allAttributeParameters, transaction);
+                }
+
+                transaction.Commit();
+                return createdNodes;
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+
         private async Task ValidateNoCircularReferenceAsync(Guid nodeId, Guid proposedParentId)
         {
             if (dbConnection.State != ConnectionState.Open)

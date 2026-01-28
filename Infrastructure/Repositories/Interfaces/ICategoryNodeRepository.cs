@@ -14,5 +14,7 @@ namespace Infrastructure.Repositories.Interfaces
         Task<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes)> AddNodeWithAttributesAsync(
             BaseNode node, 
             IEnumerable<CategoryMandatoryAttribute> attributes);
+        Task<IEnumerable<BaseNode>> AddMultipleNodesWithAttributesAsync(
+            IEnumerable<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes)> nodesWithAttributes);
     }
 }

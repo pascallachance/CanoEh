@@ -148,10 +148,10 @@ namespace Domain.Services.Implementations
             catch (Exception ex)
             {
                 // Log the exception for debugging but don't expose internal details to clients
-                Console.Error.WriteLine($"Error creating structure: {ex}");
+                Console.Error.WriteLine($"Error in BulkCreateCategoryNodesAsync: {ex}");
                 
                 return Result.Failure<BulkCreateCategoryNodesResponse>(
-                    "An error occurred while creating the structure.",
+                    "An error occurred while bulk creating category nodes.",
                     StatusCodes.Status500InternalServerError);
             }
         }

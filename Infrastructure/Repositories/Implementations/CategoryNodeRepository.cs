@@ -391,6 +391,8 @@ VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
             try
             {
                 var createdNodes = new List<BaseNode>();
+                var allNodeParameters = new List<object>();
+                var allAttributeParameters = new List<object>();
 
                 foreach (var (node, attributes) in nodesWithAttributes)
                 {
@@ -411,12 +413,8 @@ VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
                         throw new InvalidOperationException($"{node.NodeType} nodes must have a parent.");
                     }
 
-                    // Insert the CategoryNode
-                    var nodeQuery = @"
-INSERT INTO dbo.CategoryNode (Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt)
-VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @CreatedAt)";
-
-                    var nodeParameters = new
+                    // Collect node parameters for batch insert
+                    allNodeParameters.Add(new
                     {
                         node.Id,
                         node.Name_en,
@@ -426,20 +424,14 @@ VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @C
                         node.IsActive,
                         node.SortOrder,
                         node.CreatedAt
-                    };
+                    });
 
-                    await dbConnection.ExecuteAsync(nodeQuery, nodeParameters, transaction);
-
-                    // Insert the CategoryMandatoryAttributes if any
+                    // Collect attribute parameters for batch insert
                     if (attributes != null && attributes.Any())
                     {
-                        var attributeQuery = @"
-INSERT INTO dbo.CategoryMandatoryAttribute (Id, CategoryNodeId, Name_en, Name_fr, AttributeType, SortOrder)
-VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
-
                         foreach (var attribute in attributes)
                         {
-                            var attributeParameters = new
+                            allAttributeParameters.Add(new
                             {
                                 attribute.Id,
                                 attribute.CategoryNodeId,
@@ -447,13 +439,31 @@ VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
                                 attribute.Name_fr,
                                 attribute.AttributeType,
                                 attribute.SortOrder
-                            };
-
-                            await dbConnection.ExecuteAsync(attributeQuery, attributeParameters, transaction);
+                            });
                         }
                     }
 
                     createdNodes.Add(node);
+                }
+
+                // Batch insert all nodes in a single database roundtrip
+                if (allNodeParameters.Any())
+                {
+                    var nodeQuery = @"
+INSERT INTO dbo.CategoryNode (Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt)
+VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @CreatedAt)";
+                    
+                    await dbConnection.ExecuteAsync(nodeQuery, allNodeParameters, transaction);
+                }
+
+                // Batch insert all attributes in a single database roundtrip
+                if (allAttributeParameters.Any())
+                {
+                    var attributeQuery = @"
+INSERT INTO dbo.CategoryMandatoryAttribute (Id, CategoryNodeId, Name_en, Name_fr, AttributeType, SortOrder)
+VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
+                    
+                    await dbConnection.ExecuteAsync(attributeQuery, allAttributeParameters, transaction);
                 }
 
                 transaction.Commit();

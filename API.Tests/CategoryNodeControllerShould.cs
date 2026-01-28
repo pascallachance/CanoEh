@@ -768,5 +768,62 @@ namespace API.Tests
             Assert.Equal(2, resultValue.Value?.Departements.Count);
             Assert.Equal(2, resultValue.Value?.TotalNodesCreated);
         }
+
+        [Fact]
+        public async Task CreateStructure_ReturnBadRequest_WhenAttributeTypeTooLong()
+        {
+            // Arrange
+            SetupAdminUser();
+            var longAttributeType = new string('X', 51); // Max is 50 characters
+            var request = new BulkCreateStructureRequest
+            {
+                Departements = new List<DepartementNodeDto>
+                {
+                    new DepartementNodeDto
+                    {
+                        Name_en = "Electronics",
+                        Name_fr = "Électronique",
+                        NavigationNodes = new List<NavigationNodeDto>
+                        {
+                            new NavigationNodeDto
+                            {
+                                Name_en = "Computers",
+                                Name_fr = "Ordinateurs",
+                                CategoryNodes = new List<CategoryNodeDto>
+                                {
+                                    new CategoryNodeDto
+                                    {
+                                        Name_en = "Laptops",
+                                        Name_fr = "Ordinateurs portables",
+                                        CategoryMandatoryAttributes = new List<CreateCategoryMandatoryAttributeDto>
+                                        {
+                                            new CreateCategoryMandatoryAttributeDto
+                                            {
+                                                Name_en = "Brand",
+                                                Name_fr = "Marque",
+                                                AttributeType = longAttributeType
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            var result = Result.Failure<BulkCreateStructureResponse>(
+                "CategoryMandatoryAttribute AttributeType cannot exceed 50 characters.",
+                StatusCodes.Status400BadRequest);
+            _mockCategoryNodeService.Setup(x => x.CreateStructureAsync(It.IsAny<BulkCreateStructureRequest>()))
+                               .ReturnsAsync(result);
+
+            // Act
+            var actionResult = await _controller.CreateStructure(request);
+
+            // Assert
+            var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+        }
     }
 }

@@ -147,8 +147,11 @@ namespace Domain.Services.Implementations
             }
             catch (Exception ex)
             {
+                // Log the exception for debugging but don't expose internal details to clients
+                System.Diagnostics.Debug.WriteLine($"Error creating structure: {ex}");
+                
                 return Result.Failure<BulkCreateStructureResponse>(
-                    $"An error occurred while creating the structure: {ex.Message}",
+                    "An error occurred while creating the structure.",
                     StatusCodes.Status500InternalServerError);
             }
         }

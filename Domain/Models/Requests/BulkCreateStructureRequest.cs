@@ -44,16 +44,12 @@ namespace Domain.Models.Requests
                 return Result.Failure("At least one Departement node is required.", StatusCodes.Status400BadRequest);
             }
 
-            foreach (var dept in Departements)
-            {
-                var deptValidation = ValidateDepartementNode(dept);
-                if (deptValidation.IsFailure)
-                {
-                    return deptValidation;
-                }
-            }
+            // Validate all departments and return first failure if any
+            var failedValidation = Departements
+                .Select(ValidateDepartementNode)
+                .FirstOrDefault(v => v.IsFailure);
 
-            return Result.Success();
+            return failedValidation ?? Result.Success();
         }
 
         private static Result ValidateDepartementNode(DepartementNodeDto dept)
@@ -66,25 +62,25 @@ namespace Domain.Models.Requests
 
             if (dept.NavigationNodes != null)
             {
-                foreach (var nav in dept.NavigationNodes)
+                var navValidation = dept.NavigationNodes
+                    .Select(ValidateNavigationNode)
+                    .FirstOrDefault(v => v.IsFailure);
+                
+                if (navValidation != null)
                 {
-                    var navValidation = ValidateNavigationNode(nav);
-                    if (navValidation.IsFailure)
-                    {
-                        return navValidation;
-                    }
+                    return navValidation;
                 }
             }
 
             if (dept.CategoryNodes != null)
             {
-                foreach (var cat in dept.CategoryNodes)
+                var catValidation = dept.CategoryNodes
+                    .Select(ValidateCategoryNode)
+                    .FirstOrDefault(v => v.IsFailure);
+                
+                if (catValidation != null)
                 {
-                    var catValidation = ValidateCategoryNode(cat);
-                    if (catValidation.IsFailure)
-                    {
-                        return catValidation;
-                    }
+                    return catValidation;
                 }
             }
 
@@ -101,25 +97,25 @@ namespace Domain.Models.Requests
 
             if (nav.NavigationNodes != null)
             {
-                foreach (var childNav in nav.NavigationNodes)
+                var navValidation = nav.NavigationNodes
+                    .Select(ValidateNavigationNode)
+                    .FirstOrDefault(v => v.IsFailure);
+                
+                if (navValidation != null)
                 {
-                    var navValidation = ValidateNavigationNode(childNav);
-                    if (navValidation.IsFailure)
-                    {
-                        return navValidation;
-                    }
+                    return navValidation;
                 }
             }
 
             if (nav.CategoryNodes != null)
             {
-                foreach (var cat in nav.CategoryNodes)
+                var catValidation = nav.CategoryNodes
+                    .Select(ValidateCategoryNode)
+                    .FirstOrDefault(v => v.IsFailure);
+                
+                if (catValidation != null)
                 {
-                    var catValidation = ValidateCategoryNode(cat);
-                    if (catValidation.IsFailure)
-                    {
-                        return catValidation;
-                    }
+                    return catValidation;
                 }
             }
 
@@ -157,6 +153,12 @@ namespace Domain.Models.Requests
                     if (attr.Name_fr.Length > MaxAttributeNameLength)
                     {
                         return Result.Failure($"CategoryMandatoryAttribute French name cannot exceed {MaxAttributeNameLength} characters.", StatusCodes.Status400BadRequest);
+                    }
+
+                    const int MaxAttributeTypeLength = 50;
+                    if (!string.IsNullOrWhiteSpace(attr.AttributeType) && attr.AttributeType.Length > MaxAttributeTypeLength)
+                    {
+                        return Result.Failure($"CategoryMandatoryAttribute AttributeType cannot exceed {MaxAttributeTypeLength} characters.", StatusCodes.Status400BadRequest);
                     }
                 }
             }

@@ -427,20 +427,17 @@ VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
                     });
 
                     // Collect attribute parameters for batch insert
-                    if (attributes != null && attributes.Any())
-                    {
-                        foreach (var attribute in attributes)
+                        var attributeParameters = attributes.Select(attribute => new
                         {
-                            allAttributeParameters.Add(new
-                            {
-                                attribute.Id,
-                                attribute.CategoryNodeId,
-                                attribute.Name_en,
-                                attribute.Name_fr,
-                                attribute.AttributeType,
-                                attribute.SortOrder
-                            });
-                        }
+                            attribute.Id,
+                            attribute.CategoryNodeId,
+                            attribute.Name_en,
+                            attribute.Name_fr,
+                            attribute.AttributeType,
+                            attribute.SortOrder
+                        });
+
+                        await dbConnection.ExecuteAsync(attributeQuery, attributeParameters, transaction);
                     }
 
                     createdNodes.Add(node);

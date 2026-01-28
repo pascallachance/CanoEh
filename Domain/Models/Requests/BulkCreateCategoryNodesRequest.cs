@@ -33,7 +33,7 @@ namespace Domain.Models.Requests
         public List<CategoryNodeDto>? CategoryNodes { get; set; }
     }
 
-    public class BulkCreateStructureRequest
+    public class BulkCreateCategoryNodesRequest
     {
         public List<DepartementNodeDto> Departements { get; set; } = new();
 

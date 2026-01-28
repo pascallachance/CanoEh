@@ -14,6 +14,8 @@ Database/
     ├── 001_Add_Language_Column_To_User.sql
     ├── 002_Add_Email_Website_Columns_To_Company.sql
     ├── 003_Add_Failed_Login_Tracking_To_User.sql
+    ├── 004_Add_ProductNode_Table.sql
+    ├── 005_Add_CategoryMandatoryAttribute_Table.sql
     └── README.md
 ```
 
@@ -39,7 +41,9 @@ The CanoEh database is designed for a bilingual (English/French) e-commerce plat
 - **PaymentMethod**: Stored payment methods for users
 
 #### Catalog
-- **Category**: Hierarchical product categories
+- **Category**: Hierarchical product categories (legacy)
+- **ProductNode**: Hierarchical product structure (Departement, Navigation, Category nodes)
+- **CategoryMandatoryAttribute**: Mandatory attributes for category nodes
 - **Item**: Products with bilingual names and descriptions
 - **ItemVariant**: Product variants (SKU, price, stock, offers)
 - **ItemAttribute**: Custom attributes for items
@@ -76,6 +80,8 @@ The CanoEh database is designed for a bilingual (English/French) e-commerce plat
    sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Migrations/001_Add_Language_Column_To_User.sql"
    sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Migrations/002_Add_Email_Website_Columns_To_Company.sql"
    sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Migrations/003_Add_Failed_Login_Tracking_To_User.sql"
+   sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Migrations/004_Add_ProductNode_Table.sql"
+   sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Migrations/005_Add_CategoryMandatoryAttribute_Table.sql"
    ```
 
 ### Using SQL Server Management Studio (SSMS) or Azure Data Studio

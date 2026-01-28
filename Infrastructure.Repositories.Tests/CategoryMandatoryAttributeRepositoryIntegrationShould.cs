@@ -6,6 +6,17 @@ using System.Runtime.InteropServices;
 namespace Infrastructure.Repositories.Tests
 {
     /// <summary>
+    /// Collection definition for database integration tests.
+    /// This prevents parallel execution of database tests to avoid conflicts.
+    /// </summary>
+    [CollectionDefinition("Database")]
+    public class DatabaseCollection
+    {
+        // This class has no code, and is never created. Its purpose is simply
+        // to be the place to apply [CollectionDefinition] and the collection's fixtures.
+    }
+
+    /// <summary>
     /// Integration tests for CategoryMandatoryAttributeRepository that validate
     /// the actual SQL/Dapper implementation against a real database.
     /// These tests use LocalDB to execute queries end-to-end.
@@ -230,8 +241,130 @@ namespace Infrastructure.Repositories.Tests
             Assert.Null(resultList[1].SortOrder);
         }
 
+        [Fact]
+        public async Task GetAttributesByCategoryNodeIdAsync_ShouldSortByNameWhenSortOrderIsSame()
+        {
+            if (!IsLocalDbAvailable())
+            {
+                // Skip test on non-Windows platforms
+                return;
+            }
+            
+            // Arrange
+            var categoryNodeId = await CreateTestCategoryNodeAsync();
+            var attribute1 = new CategoryMandatoryAttribute
+            {
+                Id = Guid.NewGuid(),
+                CategoryNodeId = categoryNodeId,
+                Name_en = "Zebra",
+                Name_fr = "Zèbre",
+                AttributeType = "string",
+                SortOrder = 1
+            };
+            var attribute2 = new CategoryMandatoryAttribute
+            {
+                Id = Guid.NewGuid(),
+                CategoryNodeId = categoryNodeId,
+                Name_en = "Apple",
+                Name_fr = "Pomme",
+                AttributeType = "string",
+                SortOrder = 1
+            };
+            var attribute3 = new CategoryMandatoryAttribute
+            {
+                Id = Guid.NewGuid(),
+                CategoryNodeId = categoryNodeId,
+                Name_en = "Banana",
+                Name_fr = "Banane",
+                AttributeType = "string",
+                SortOrder = 1
+            };
+
+            await _repository!.AddAsync(attribute1);
+            await _repository!.AddAsync(attribute2);
+            await _repository!.AddAsync(attribute3);
+
+            // Act
+            var result = await _repository!.GetAttributesByCategoryNodeIdAsync(categoryNodeId);
+
+            // Assert
+            Assert.NotNull(result);
+            var resultList = result.ToList();
+            Assert.Equal(3, resultList.Count);
+            
+            // Verify alphabetical ordering by Name_en when SortOrder is the same
+            Assert.Equal("Apple", resultList[0].Name_en);
+            Assert.Equal("Banana", resultList[1].Name_en);
+            Assert.Equal("Zebra", resultList[2].Name_en);
+            
+            // All should have SortOrder = 1
+            Assert.All(resultList, attr => Assert.Equal(1, attr.SortOrder));
+        }
+
+        [Fact]
+        public async Task GetAttributesByCategoryNodeIdAsync_ShouldSortByNameWhenMultipleNullSortOrders()
+        {
+            if (!IsLocalDbAvailable())
+            {
+                // Skip test on non-Windows platforms
+                return;
+            }
+            
+            // Arrange
+            var categoryNodeId = await CreateTestCategoryNodeAsync();
+            var attribute1 = new CategoryMandatoryAttribute
+            {
+                Id = Guid.NewGuid(),
+                CategoryNodeId = categoryNodeId,
+                Name_en = "Zebra",
+                Name_fr = "Zèbre",
+                AttributeType = "string",
+                SortOrder = null
+            };
+            var attribute2 = new CategoryMandatoryAttribute
+            {
+                Id = Guid.NewGuid(),
+                CategoryNodeId = categoryNodeId,
+                Name_en = "Apple",
+                Name_fr = "Pomme",
+                AttributeType = "string",
+                SortOrder = null
+            };
+            var attribute3 = new CategoryMandatoryAttribute
+            {
+                Id = Guid.NewGuid(),
+                CategoryNodeId = categoryNodeId,
+                Name_en = "First",
+                Name_fr = "Premier",
+                AttributeType = "string",
+                SortOrder = 1
+            };
+
+            await _repository!.AddAsync(attribute1);
+            await _repository!.AddAsync(attribute2);
+            await _repository!.AddAsync(attribute3);
+
+            // Act
+            var result = await _repository!.GetAttributesByCategoryNodeIdAsync(categoryNodeId);
+
+            // Assert
+            Assert.NotNull(result);
+            var resultList = result.ToList();
+            Assert.Equal(3, resultList.Count);
+            
+            // Verify attribute with SortOrder comes first
+            Assert.Equal("First", resultList[0].Name_en);
+            Assert.Equal(1, resultList[0].SortOrder);
+            
+            // Verify NULL SortOrder attributes are sorted alphabetically by Name_en
+            Assert.Equal("Apple", resultList[1].Name_en);
+            Assert.Null(resultList[1].SortOrder);
+            Assert.Equal("Zebra", resultList[2].Name_en);
+            Assert.Null(resultList[2].SortOrder);
+        }
+
         /// <summary>
-        /// Creates a test CategoryNode (ProductNode with IsCategory=true) in the database.
+        /// Creates a test CategoryNode (ProductNode with NodeType='Category') in the database.
         /// Returns the Id of the created node and tracks it for cleanup.
         /// </summary>
         private async Task<Guid> CreateTestCategoryNodeAsync()
@@ -242,16 +375,16 @@ namespace Infrastructure.Repositories.Tests
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
             
-            // Insert a test ProductNode with IsCategory=true
+            // Insert a test ProductNode with NodeType='Category'
             var insertQuery = @"
-                INSERT INTO dbo.ProductNode (Id, Name_en, Name_fr, IsCategory, ParentId, SortOrder)
-                VALUES (@Id, @Name_en, @Name_fr, @IsCategory, NULL, 1)";
+                INSERT INTO dbo.ProductNode (Id, Name_en, Name_fr, NodeType, ParentId, SortOrder)
+                VALUES (@Id, @Name_en, @Name_fr, @NodeType, NULL, 1)";
             
             using var command = new SqlCommand(insertQuery, connection);
             command.Parameters.AddWithValue("@Id", categoryNodeId);
             command.Parameters.AddWithValue("@Name_en", $"Test Category {categoryNodeId}");
             command.Parameters.AddWithValue("@Name_fr", $"Catégorie de test {categoryNodeId}");
-            command.Parameters.AddWithValue("@IsCategory", true);
+            command.Parameters.AddWithValue("@NodeType", "Category");
             
             await command.ExecuteNonQueryAsync();
             

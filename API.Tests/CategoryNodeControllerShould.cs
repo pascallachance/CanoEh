@@ -635,7 +635,7 @@ namespace API.Tests
             };
 
             var result = Result.Success(response);
-            _mockCategoryNodeService.Setup(x => x.CreateStructureAsync(It.IsAny<BulkCreateCategoryNodesRequest>()))
+            _mockCategoryNodeService.Setup(x => x.BulkCreateCategoryNodesAsync(It.IsAny<BulkCreateCategoryNodesRequest>()))
                                .ReturnsAsync(result);
 
             // Act
@@ -662,7 +662,7 @@ namespace API.Tests
             var result = Result.Failure<BulkCreateCategoryNodesResponse>(
                 "At least one Departement node is required.", 
                 StatusCodes.Status400BadRequest);
-            _mockCategoryNodeService.Setup(x => x.CreateStructureAsync(It.IsAny<BulkCreateCategoryNodesRequest>()))
+            _mockCategoryNodeService.Setup(x => x.BulkCreateCategoryNodesAsync(It.IsAny<BulkCreateCategoryNodesRequest>()))
                                .ReturnsAsync(result);
 
             // Act
@@ -690,7 +690,7 @@ namespace API.Tests
                 }
             };
 
-            _mockCategoryNodeService.Setup(x => x.CreateStructureAsync(It.IsAny<BulkCreateCategoryNodesRequest>()))
+            _mockCategoryNodeService.Setup(x => x.BulkCreateCategoryNodesAsync(It.IsAny<BulkCreateCategoryNodesRequest>()))
                                .ThrowsAsync(new Exception("Database error"));
 
             // Act
@@ -754,7 +754,7 @@ namespace API.Tests
             };
 
             var result = Result.Success(response);
-            _mockCategoryNodeService.Setup(x => x.CreateStructureAsync(It.IsAny<BulkCreateCategoryNodesRequest>()))
+            _mockCategoryNodeService.Setup(x => x.BulkCreateCategoryNodesAsync(It.IsAny<BulkCreateCategoryNodesRequest>()))
                                .ReturnsAsync(result);
 
             // Act
@@ -815,7 +815,7 @@ namespace API.Tests
             var result = Result.Failure<BulkCreateCategoryNodesResponse>(
                 "CategoryMandatoryAttribute AttributeType cannot exceed 50 characters.",
                 StatusCodes.Status400BadRequest);
-            _mockCategoryNodeService.Setup(x => x.CreateStructureAsync(It.IsAny<BulkCreateCategoryNodesRequest>()))
+            _mockCategoryNodeService.Setup(x => x.BulkCreateCategoryNodesAsync(It.IsAny<BulkCreateCategoryNodesRequest>()))
                                .ReturnsAsync(result);
 
             // Act

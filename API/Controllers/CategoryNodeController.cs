@@ -76,7 +76,7 @@ namespace API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var result = await _categoryNodeService.CreateStructureAsync(request);
+                var result = await _categoryNodeService.BulkCreateCategoryNodesAsync(request);
 
                 if (result.IsFailure)
                 {

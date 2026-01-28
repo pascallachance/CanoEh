@@ -113,7 +113,7 @@ namespace Domain.Services.Implementations
             }
         }
 
-        public async Task<Result<BulkCreateCategoryNodesResponse>> CreateStructureAsync(BulkCreateCategoryNodesRequest request)
+        public async Task<Result<BulkCreateCategoryNodesResponse>> BulkCreateCategoryNodesAsync(BulkCreateCategoryNodesRequest request)
         {
             try
             {

@@ -42,7 +42,7 @@ INSERT INTO @ExpectedTables VALUES
     ('User'), ('Session'), ('Company'), ('Address'), ('PaymentMethod'),
     ('Category'), ('Item'), ('ItemVariant'), ('ItemAttribute'), ('ItemVariantAttribute'),
     ('Order'), ('OrderItem'), ('OrderAddress'), ('OrderPayment'),
-    ('OrderStatus'), ('OrderItemStatus'), ('TaxRate');
+    ('OrderStatus'), ('OrderItemStatus'), ('TaxRate'), ('ProductNode'), ('CategoryMandatoryAttribute');
 
 DECLARE @TableName NVARCHAR(100);
 DECLARE @TableExists BIT;
@@ -69,7 +69,7 @@ CLOSE TableCursor;
 DEALLOCATE TableCursor;
 
 IF @MissingTables = 0
-    PRINT '  All 17 tables created successfully!'
+    PRINT '  All 19 tables created successfully!'
 ELSE
     PRINT '  ERROR: ' + CAST(@MissingTables AS NVARCHAR) + ' table(s) missing'
 GO
@@ -81,7 +81,7 @@ PRINT '';
 PRINT 'Checking Foreign Key Constraints:';
 PRINT '----------------------------------';
 
-DECLARE @ExpectedFKs INT = 18;
+DECLARE @ExpectedFKs INT = 20;
 DECLARE @ActualFKs INT;
 
 SELECT @ActualFKs = COUNT(*) 

@@ -296,6 +296,89 @@ ORDER BY SortOrder, Name_en";
             return await GetNodesByTypeAsync(BaseNode.NodeTypeCategory);
         }
 
+        public async Task<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes)> AddNodeWithAttributesAsync(
+            BaseNode node, 
+            IEnumerable<CategoryMandatoryAttribute> attributes)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+
+            // Validate node type
+            if (node.NodeType != BaseNode.NodeTypeDepartement && node.NodeType != BaseNode.NodeTypeNavigation && node.NodeType != BaseNode.NodeTypeCategory)
+            {
+                throw new ArgumentException($"Invalid NodeType. Must be '{BaseNode.NodeTypeDepartement}', '{BaseNode.NodeTypeNavigation}', or '{BaseNode.NodeTypeCategory}'.");
+            }
+
+            // Validate ParentId constraints
+            if (node.NodeType == BaseNode.NodeTypeDepartement && node.ParentId.HasValue)
+            {
+                throw new InvalidOperationException("Departement nodes cannot have a parent.");
+            }
+
+            if (node.NodeType != BaseNode.NodeTypeDepartement && !node.ParentId.HasValue)
+            {
+                throw new InvalidOperationException($"{node.NodeType} nodes must have a parent.");
+            }
+
+            using var transaction = dbConnection.BeginTransaction();
+            try
+            {
+                // Insert the CategoryNode
+                var nodeQuery = @"
+INSERT INTO dbo.CategoryNode (Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt)
+VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @CreatedAt)";
+
+                var nodeParameters = new
+                {
+                    node.Id,
+                    node.Name_en,
+                    node.Name_fr,
+                    node.NodeType,
+                    node.ParentId,
+                    node.IsActive,
+                    node.SortOrder,
+                    node.CreatedAt
+                };
+
+                await dbConnection.ExecuteAsync(nodeQuery, nodeParameters, transaction);
+
+                // Insert the CategoryMandatoryAttributes if any
+                var createdAttributes = new List<CategoryMandatoryAttribute>();
+                if (attributes != null && attributes.Any())
+                {
+                    var attributeQuery = @"
+INSERT INTO dbo.CategoryMandatoryAttribute (Id, CategoryNodeId, Name_en, Name_fr, AttributeType, SortOrder)
+VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
+
+                    foreach (var attribute in attributes)
+                    {
+                        var attributeParameters = new
+                        {
+                            attribute.Id,
+                            attribute.CategoryNodeId,
+                            attribute.Name_en,
+                            attribute.Name_fr,
+                            attribute.AttributeType,
+                            attribute.SortOrder
+                        };
+
+                        await dbConnection.ExecuteAsync(attributeQuery, attributeParameters, transaction);
+                        createdAttributes.Add(attribute);
+                    }
+                }
+
+                transaction.Commit();
+                return (node, createdAttributes);
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+
         private async Task ValidateNoCircularReferenceAsync(Guid nodeId, Guid proposedParentId)
         {
             if (dbConnection.State != ConnectionState.Open)

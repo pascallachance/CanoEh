@@ -66,6 +66,12 @@ namespace Domain.Models.Requests
                 return Result.Failure($"{NodeType} nodes must have a parent.", StatusCodes.Status400BadRequest);
             }
 
+            // CategoryMandatoryAttributes can only be provided for Category nodes
+            if (CategoryMandatoryAttributes != null && CategoryMandatoryAttributes.Any() && NodeType != BaseNode.NodeTypeCategory)
+            {
+                return Result.Failure("CategoryMandatoryAttributes can only be provided when creating a Category node.", StatusCodes.Status400BadRequest);
+            }
+
             // Validate CategoryMandatoryAttributes if provided
             if (CategoryMandatoryAttributes != null && CategoryMandatoryAttributes.Any())
             {
@@ -79,6 +85,17 @@ namespace Domain.Models.Requests
                     if (string.IsNullOrWhiteSpace(attr.Name_fr))
                     {
                         return Result.Failure("CategoryMandatoryAttribute French name is required.", StatusCodes.Status400BadRequest);
+                    }
+
+                    const int MaxAttributeNameLength = 100;
+                    if (attr.Name_en.Length > MaxAttributeNameLength)
+                    {
+                        return Result.Failure($"CategoryMandatoryAttribute English name cannot exceed {MaxAttributeNameLength} characters.", StatusCodes.Status400BadRequest);
+                    }
+
+                    if (attr.Name_fr.Length > MaxAttributeNameLength)
+                    {
+                        return Result.Failure($"CategoryMandatoryAttribute French name cannot exceed {MaxAttributeNameLength} characters.", StatusCodes.Status400BadRequest);
                     }
                 }
             }

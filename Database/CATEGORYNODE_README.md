@@ -170,6 +170,67 @@ POST /api/CategoryNode/CreateCategoryNode
 }
 ```
 
+### Creating a Category Node with Mandatory Attributes
+
+When creating a Category node, you can optionally include CategoryMandatoryAttributes that will be created in the same operation:
+
+```json
+POST /api/CategoryNode/CreateCategoryNode
+{
+  "name_en": "Speakers",
+  "name_fr": "Haut-parleurs",
+  "nodeType": "Category",
+  "parentId": "<home-audio-navigation-id>",
+  "isActive": true,
+  "sortOrder": 1,
+  "categoryMandatoryAttributes": [
+    {
+      "name_en": "Wattage",
+      "name_fr": "Puissance",
+      "attributeType": "int",
+      "sortOrder": 1
+    },
+    {
+      "name_en": "Driver Size",
+      "name_fr": "Taille du haut-parleur",
+      "attributeType": "string",
+      "sortOrder": 2
+    }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "id": "category-node-id-guid",
+  "name_en": "Speakers",
+  "name_fr": "Haut-parleurs",
+  "nodeType": "Category",
+  "parentId": "<home-audio-navigation-id>",
+  "isActive": true,
+  "sortOrder": 1,
+  "categoryMandatoryAttributes": [
+    {
+      "id": "attribute-1-guid",
+      "name_en": "Wattage",
+      "name_fr": "Puissance",
+      "attributeType": "int",
+      "sortOrder": 1
+    },
+    {
+      "id": "attribute-2-guid",
+      "name_en": "Driver Size",
+      "name_fr": "Taille du haut-parleur",
+      "attributeType": "string",
+      "sortOrder": 2
+    }
+  ]
+}
+```
+
+**Note:** CategoryMandatoryAttributes can only be provided when creating Category nodes. They are ignored for Departement and Navigation nodes.
+
 ## Features
 
 ### Bilingual Support

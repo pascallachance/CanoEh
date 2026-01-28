@@ -14,9 +14,11 @@ namespace API.Controllers
 
         /// <summary>
         /// Creates a new category node (Departement, Navigation, or Category).
+        /// When creating a Category node, you can optionally include CategoryMandatoryAttributes
+        /// which will be created in the same operation and linked to the new Category node.
         /// </summary>
-        /// <param name="request">The category node details to create.</param>
-        /// <returns>Returns the created category node or an error response.</returns>
+        /// <param name="request">The category node details to create, optionally including CategoryMandatoryAttributes for Category nodes.</param>
+        /// <returns>Returns the created category node with any created mandatory attributes or an error response.</returns>
         [Authorize(Roles = "Admin")]
         [HttpPost("CreateCategoryNode")]
         [ProducesResponseType(StatusCodes.Status200OK)]

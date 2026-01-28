@@ -32,7 +32,7 @@ namespace Infrastructure.Repositories.Implementations
             }
 
             var query = @"
-INSERT INTO dbo.ProductNode (Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt)
+INSERT INTO dbo.CategoryNode (Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt)
 VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @CreatedAt)";
 
             var parameters = new
@@ -86,7 +86,7 @@ VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @C
                 }
             }
 
-            var query = "DELETE FROM dbo.ProductNode WHERE Id = @Id";
+            var query = "DELETE FROM dbo.CategoryNode WHERE Id = @Id";
             await dbConnection.ExecuteAsync(query, new { entity.Id });
         }
 
@@ -96,7 +96,7 @@ VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @C
             {
                 dbConnection.Open();
             }
-            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.ProductNode WHERE Id = @id", new { id });
+            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.CategoryNode WHERE Id = @id", new { id });
         }
 
         public override async Task<IEnumerable<BaseNode>> FindAsync(Func<BaseNode, bool> predicate)
@@ -118,7 +118,7 @@ VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @C
 
             var query = @"
 SELECT Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt, UpdatedAt
-FROM dbo.ProductNode
+FROM dbo.CategoryNode
 ORDER BY SortOrder, Name_en";
 
             var nodesData = await dbConnection.QueryAsync<CategoryNodeDto>(query);
@@ -162,7 +162,7 @@ ORDER BY SortOrder, Name_en";
             }
 
             var query = @"
-UPDATE dbo.ProductNode
+UPDATE dbo.CategoryNode
 SET Name_en = @Name_en,
     Name_fr = @Name_fr,
     ParentId = @ParentId,
@@ -195,7 +195,7 @@ WHERE Id = @Id";
 
             var query = @"
 SELECT Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt, UpdatedAt
-FROM dbo.ProductNode
+FROM dbo.CategoryNode
 WHERE Id = @id";
 
             var dto = await dbConnection.QueryFirstOrDefaultAsync<CategoryNodeDto>(query, new { id });
@@ -215,7 +215,7 @@ WHERE Id = @id";
 
             var query = @"
 SELECT Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt, UpdatedAt
-FROM dbo.ProductNode
+FROM dbo.CategoryNode
 WHERE ParentId IS NULL
 ORDER BY SortOrder, Name_en";
 
@@ -233,7 +233,7 @@ ORDER BY SortOrder, Name_en";
 
             var query = @"
 SELECT Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt, UpdatedAt
-FROM dbo.ProductNode
+FROM dbo.CategoryNode
 WHERE ParentId = @parentId
 ORDER BY SortOrder, Name_en";
 
@@ -249,7 +249,7 @@ ORDER BY SortOrder, Name_en";
                 dbConnection.Open();
             }
 
-            var query = "SELECT COUNT(1) FROM dbo.ProductNode WHERE ParentId = @nodeId";
+            var query = "SELECT COUNT(1) FROM dbo.CategoryNode WHERE ParentId = @nodeId";
             var count = await dbConnection.ExecuteScalarAsync<int>(query, new { nodeId });
             return count > 0;
         }
@@ -282,7 +282,7 @@ ORDER BY SortOrder, Name_en";
 
             var query = @"
 SELECT Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt, UpdatedAt
-FROM dbo.ProductNode
+FROM dbo.CategoryNode
 WHERE NodeType = @nodeType
 ORDER BY SortOrder, Name_en";
 
@@ -307,13 +307,13 @@ ORDER BY SortOrder, Name_en";
             var query = @"
 WITH NodeAncestors AS (
     SELECT Id, ParentId
-    FROM dbo.ProductNode
+    FROM dbo.CategoryNode
     WHERE Id = @proposedParentId
     
     UNION ALL
     
     SELECT n.Id, n.ParentId
-    FROM dbo.ProductNode n
+    FROM dbo.CategoryNode n
     INNER JOIN NodeAncestors na ON n.Id = na.ParentId
 )
 SELECT COUNT(1)

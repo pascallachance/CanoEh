@@ -31,7 +31,7 @@ Integration tests use the connection string: `Server=(localdb)\MSSQLLocalDB;Data
 They expect:
 1. SQL Server LocalDB installed and running
 2. The `CanoEh` database created with the required schema
-3. The necessary tables (e.g., `CategoryMandatoryAttribute`, `ProductNode`)
+3. The necessary tables (e.g., `CategoryMandatoryAttribute`, `CategoryNode`)
 
 ### Running Tests
 
@@ -53,7 +53,7 @@ dotnet test Infrastructure.Repositories.Tests/Infrastructure.Repositories.Tests.
 ## Test Cleanup
 
 Integration tests implement `IDisposable` and clean up test data automatically:
-- Test ProductNode records are deleted after each test
+- Test CategoryNode records are deleted after each test
 - CategoryMandatoryAttribute records are explicitly deleted first (to respect FK constraints)
 - The repository instance is disposed to release database connections
 - Cleanup is skipped on non-Windows platforms

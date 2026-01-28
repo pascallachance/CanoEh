@@ -4,6 +4,14 @@ using Microsoft.AspNetCore.Http;
 
 namespace Domain.Models.Requests
 {
+    public class CreateCategoryMandatoryAttributeDto
+    {
+        public required string Name_en { get; set; }
+        public required string Name_fr { get; set; }
+        public string? AttributeType { get; set; }
+        public int? SortOrder { get; set; }
+    }
+
     public class CreateCategoryNodeRequest
     {
         public required string Name_en { get; set; }
@@ -12,6 +20,7 @@ namespace Domain.Models.Requests
         public Guid? ParentId { get; set; }
         public bool IsActive { get; set; } = true;
         public int? SortOrder { get; set; }
+        public List<CreateCategoryMandatoryAttributeDto>? CategoryMandatoryAttributes { get; set; }
 
         public Result Validate()
         {
@@ -55,6 +64,23 @@ namespace Domain.Models.Requests
             if ((NodeType == BaseNode.NodeTypeNavigation || NodeType == BaseNode.NodeTypeCategory) && !ParentId.HasValue)
             {
                 return Result.Failure($"{NodeType} nodes must have a parent.", StatusCodes.Status400BadRequest);
+            }
+
+            // Validate CategoryMandatoryAttributes if provided
+            if (CategoryMandatoryAttributes != null && CategoryMandatoryAttributes.Any())
+            {
+                foreach (var attr in CategoryMandatoryAttributes)
+                {
+                    if (string.IsNullOrWhiteSpace(attr.Name_en))
+                    {
+                        return Result.Failure("CategoryMandatoryAttribute English name is required.", StatusCodes.Status400BadRequest);
+                    }
+                    
+                    if (string.IsNullOrWhiteSpace(attr.Name_fr))
+                    {
+                        return Result.Failure("CategoryMandatoryAttribute French name is required.", StatusCodes.Status400BadRequest);
+                    }
+                }
             }
 
             return Result.Success();

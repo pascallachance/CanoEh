@@ -1,10 +1,10 @@
-# ProductNode Hierarchy Implementation
+# CategoryNode Hierarchy Implementation
 
-This document describes the ProductNode hierarchy implementation for the CanoEh e-commerce application.
+This document describes the CategoryNode hierarchy implementation for the CanoEh e-commerce application.
 
 ## Overview
 
-The ProductNode hierarchy is a flexible, multi-level categorization system for products. It replaces the simpler Category table with a more robust structure that supports:
+The CategoryNode hierarchy is a flexible, multi-level categorization system for organizing product categories. It replaces the simpler Category table with a more robust structure that supports:
 
 - **Departement Nodes**: Root-level organizational units (e.g., "Electronics", "Clothing")
 - **Navigation Nodes**: Intermediate grouping levels for organizing categories (e.g., "Home Audio", "Portable Audio")
@@ -12,10 +12,10 @@ The ProductNode hierarchy is a flexible, multi-level categorization system for p
 
 ## Database Schema
 
-### ProductNode Table
+### CategoryNode Table
 
 ```sql
-CREATE TABLE dbo.ProductNode (
+CREATE TABLE dbo.CategoryNode (
     Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     Name_en NVARCHAR(200) NOT NULL,
     Name_fr NVARCHAR(200) NOT NULL,
@@ -25,8 +25,8 @@ CREATE TABLE dbo.ProductNode (
     SortOrder INT NULL,
     CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
     UpdatedAt DATETIME2 NULL,
-    CONSTRAINT FK_ProductNode_Parent FOREIGN KEY (ParentId) REFERENCES dbo.ProductNode(Id),
-    CONSTRAINT CK_ProductNode_NodeType CHECK (NodeType IN ('Departement', 'Navigation', 'Category'))
+    CONSTRAINT FK_CategoryNode_Parent FOREIGN KEY (ParentId) REFERENCES dbo.CategoryNode(Id),
+    CONSTRAINT CK_CategoryNode_NodeType CHECK (NodeType IN ('Departement', 'Navigation', 'Category'))
 );
 ```
 
@@ -34,12 +34,12 @@ CREATE TABLE dbo.ProductNode (
 
 The database table can be created using the migration script:
 ```
-Database/Migrations/004_Add_ProductNode_Table.sql
+Database/Migrations/004_Add_CategoryNode_Table.sql
 ```
 
 Run with:
 ```bash
-sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Migrations/004_Add_ProductNode_Table.sql"
+sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Migrations/004_Add_CategoryNode_Table.sql"
 ```
 
 ## Hierarchy Rules
@@ -81,22 +81,22 @@ Clothing (Departement)
 
 ## API Endpoints
 
-All endpoints are available at `/api/ProductNode/`:
+All endpoints are available at `/api/CategoryNode/`:
 
 ### Public Endpoints (No Authentication Required)
 
-- `GET /api/ProductNode/GetAllProductNodes` - Get all nodes
-- `GET /api/ProductNode/GetProductNodeById/{id}` - Get a specific node by ID with its children
-- `GET /api/ProductNode/GetRootNodes` - Get all root (Departement) nodes
-- `GET /api/ProductNode/GetChildren/{parentId}` - Get child nodes of a specific parent
-- `GET /api/ProductNode/GetNodesByType/{nodeType}` - Get nodes of a specific type (Departement, Navigation, or Category)
-- `GET /api/ProductNode/GetCategoryNodes` - Get all Category nodes
+- `GET /api/CategoryNode/GetAllCategoryNodes` - Get all nodes
+- `GET /api/CategoryNode/GetCategoryNodeById/{id}` - Get a specific node by ID with its children
+- `GET /api/CategoryNode/GetRootNodes` - Get all root (Departement) nodes
+- `GET /api/CategoryNode/GetChildren/{parentId}` - Get child nodes of a specific parent
+- `GET /api/CategoryNode/GetNodesByType/{nodeType}` - Get nodes of a specific type (Departement, Navigation, or Category)
+- `GET /api/CategoryNode/GetCategoryNodes` - Get all Category nodes
 
 ### Admin-Only Endpoints (Require Admin Role)
 
-- `POST /api/ProductNode/CreateProductNode` - Create a new node
-- `PUT /api/ProductNode/UpdateProductNode` - Update an existing node
-- `DELETE /api/ProductNode/DeleteProductNode/{id}` - Delete a node (only if it has no children or items)
+- `POST /api/CategoryNode/CreateCategoryNode` - Create a new node
+- `PUT /api/CategoryNode/UpdateCategoryNode` - Update an existing node
+- `DELETE /api/CategoryNode/DeleteCategoryNode/{id}` - Delete a node (only if it has no children or items)
 
 ## Code Structure
 
@@ -107,31 +107,31 @@ All endpoints are available at `/api/ProductNode/`:
 - `Infrastructure/Data/CategoryNode.cs` - Category implementation
 
 ### Repository Layer
-- `Infrastructure/Repositories/Interfaces/IProductNodeRepository.cs` - Repository interface
-- `Infrastructure/Repositories/Implementations/ProductNodeRepository.cs` - Dapper-based implementation
+- `Infrastructure/Repositories/Interfaces/ICategoryNodeRepository.cs` - Repository interface
+- `Infrastructure/Repositories/Implementations/CategoryNodeRepository.cs` - Dapper-based implementation
 
 ### Service Layer
-- `Domain/Services/Interfaces/IProductNodeService.cs` - Service interface
-- `Domain/Services/Implementations/ProductNodeService.cs` - Business logic implementation
+- `Domain/Services/Interfaces/ICategoryNodeService.cs` - Service interface
+- `Domain/Services/Implementations/CategoryNodeService.cs` - Business logic implementation
 
 ### API Layer
-- `API/Controllers/ProductNodeController.cs` - REST API controller
-- `Domain/Models/Requests/CreateProductNodeRequest.cs` - Create request model
-- `Domain/Models/Requests/UpdateProductNodeRequest.cs` - Update request model
-- `Domain/Models/Responses/CreateProductNodeResponse.cs` - Create response model
-- `Domain/Models/Responses/UpdateProductNodeResponse.cs` - Update response model
-- `Domain/Models/Responses/GetProductNodeResponse.cs` - Get response model with children
-- `Domain/Models/Responses/DeleteProductNodeResponse.cs` - Delete response model
+- `API/Controllers/CategoryNodeController.cs` - REST API controller
+- `Domain/Models/Requests/CreateCategoryNodeRequest.cs` - Create request model
+- `Domain/Models/Requests/UpdateCategoryNodeRequest.cs` - Update request model
+- `Domain/Models/Responses/CreateCategoryNodeResponse.cs` - Create response model
+- `Domain/Models/Responses/UpdateCategoryNodeResponse.cs` - Update response model
+- `Domain/Models/Responses/GetCategoryNodeResponse.cs` - Get response model with children
+- `Domain/Models/Responses/DeleteCategoryNodeResponse.cs` - Delete response model
 
 ### Tests
-- `API.Tests/ProductNodeControllerShould.cs` - 17 comprehensive unit tests covering all controller methods
+- `API.Tests/CategoryNodeControllerShould.cs` - 17 comprehensive unit tests covering all controller methods
 
 ## Usage Examples
 
 ### Creating a Departement Node
 
 ```json
-POST /api/ProductNode/CreateProductNode
+POST /api/CategoryNode/CreateCategoryNode
 {
   "name_en": "Electronics",
   "name_fr": "Électronique",
@@ -145,7 +145,7 @@ POST /api/ProductNode/CreateProductNode
 ### Creating a Navigation Node
 
 ```json
-POST /api/ProductNode/CreateProductNode
+POST /api/CategoryNode/CreateCategoryNode
 {
   "name_en": "Home Audio",
   "name_fr": "Audio Maison",
@@ -159,7 +159,7 @@ POST /api/ProductNode/CreateProductNode
 ### Creating a Category Node
 
 ```json
-POST /api/ProductNode/CreateProductNode
+POST /api/CategoryNode/CreateCategoryNode
 {
   "name_en": "Speakers",
   "name_fr": "Haut-parleurs",
@@ -192,7 +192,7 @@ The `SortOrder` field allows custom ordering of nodes within the same level.
 
 Run the tests with:
 ```bash
-dotnet test --filter "FullyQualifiedName~ProductNodeControllerShould"
+dotnet test --filter "FullyQualifiedName~CategoryNodeControllerShould"
 ```
 
 All 17 tests cover:
@@ -210,14 +210,14 @@ All 17 tests cover:
 
 ## Migration Path from Category Table
 
-The existing `Category` table will continue to work alongside the new `ProductNode` table. When ready to migrate:
+The existing `Category` table will continue to work alongside the new `CategoryNode` table. When ready to migrate:
 
-1. Run the migration script to create the `ProductNode` table
+1. Run the migration script to create the `CategoryNode` table
 2. Create a data migration script to:
    - Convert existing root categories to Departement nodes
    - Convert subcategories to either Navigation or Category nodes based on business rules
    - Update Item.CategoryId to reference the new CategoryNode IDs
-3. Update the frontend to use the new ProductNode endpoints
+3. Update the frontend to use the new CategoryNode endpoints
 4. Once migration is complete, the old `Category` table can be deprecated
 
 ## Future Enhancements

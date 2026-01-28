@@ -42,7 +42,7 @@ INSERT INTO @ExpectedTables VALUES
     ('User'), ('Session'), ('Company'), ('Address'), ('PaymentMethod'),
     ('Category'), ('Item'), ('ItemVariant'), ('ItemAttribute'), ('ItemVariantAttribute'),
     ('Order'), ('OrderItem'), ('OrderAddress'), ('OrderPayment'),
-    ('OrderStatus'), ('OrderItemStatus'), ('TaxRate'), ('ProductNode'), ('CategoryMandatoryAttribute');
+    ('OrderStatus'), ('OrderItemStatus'), ('TaxRate'), ('CategoryNode'), ('CategoryMandatoryAttribute');
 
 DECLARE @TableName NVARCHAR(100);
 DECLARE @TableExists BIT;

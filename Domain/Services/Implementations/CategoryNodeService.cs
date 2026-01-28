@@ -8,9 +8,12 @@ using Microsoft.AspNetCore.Http;
 
 namespace Domain.Services.Implementations
 {
-    public class CategoryNodeService(ICategoryNodeRepository categoryNodeRepository) : ICategoryNodeService
+    public class CategoryNodeService(
+        ICategoryNodeRepository categoryNodeRepository,
+        ICategoryMandatoryAttributeRepository categoryMandatoryAttributeRepository) : ICategoryNodeService
     {
         private readonly ICategoryNodeRepository _categoryNodeRepository = categoryNodeRepository;
+        private readonly ICategoryMandatoryAttributeRepository _categoryMandatoryAttributeRepository = categoryMandatoryAttributeRepository;
 
         public async Task<Result<CreateCategoryNodeResponse>> CreateCategoryNodeAsync(CreateCategoryNodeRequest request)
         {
@@ -52,6 +55,36 @@ namespace Domain.Services.Implementations
 
                 var createdNode = await _categoryNodeRepository.AddAsync(node);
 
+                // Create CategoryMandatoryAttributes if this is a Category node and attributes are provided
+                var createdAttributes = new List<CategoryMandatoryAttributeResponseDto>();
+                if (request.NodeType == BaseNode.NodeTypeCategory && 
+                    request.CategoryMandatoryAttributes != null && 
+                    request.CategoryMandatoryAttributes.Any())
+                {
+                    foreach (var attrDto in request.CategoryMandatoryAttributes)
+                    {
+                        var attribute = new CategoryMandatoryAttribute
+                        {
+                            Id = Guid.NewGuid(),
+                            CategoryNodeId = createdNode.Id,
+                            Name_en = attrDto.Name_en,
+                            Name_fr = attrDto.Name_fr,
+                            AttributeType = attrDto.AttributeType,
+                            SortOrder = attrDto.SortOrder
+                        };
+
+                        var createdAttribute = await _categoryMandatoryAttributeRepository.AddAsync(attribute);
+                        createdAttributes.Add(new CategoryMandatoryAttributeResponseDto
+                        {
+                            Id = createdAttribute.Id,
+                            Name_en = createdAttribute.Name_en,
+                            Name_fr = createdAttribute.Name_fr,
+                            AttributeType = createdAttribute.AttributeType,
+                            SortOrder = createdAttribute.SortOrder
+                        });
+                    }
+                }
+
                 var response = new CreateCategoryNodeResponse
                 {
                     Id = createdNode.Id,
@@ -60,7 +93,8 @@ namespace Domain.Services.Implementations
                     NodeType = createdNode.NodeType,
                     ParentId = createdNode.ParentId,
                     IsActive = createdNode.IsActive,
-                    SortOrder = createdNode.SortOrder
+                    SortOrder = createdNode.SortOrder,
+                    CategoryMandatoryAttributes = createdAttributes
                 };
 
                 return Result.Success(response);

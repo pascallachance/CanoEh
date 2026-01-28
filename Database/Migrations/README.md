@@ -41,7 +41,7 @@ sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Migrations/001_Add_Langu
 | 001 | 001_Add_Language_Column_To_User.sql | Adds Language column to User table for multilingual email support | 2025-12-09 |
 | 002 | 002_Add_Email_Website_Columns_To_Company.sql | Adds Email (required) and WebSite (optional) columns to Company table | 2025-12-19 |
 | 003 | 003_Add_Failed_Login_Tracking_To_User.sql | Adds FailedLoginAttempts and LastFailedLoginAttempt columns to prevent brute force attacks | 2026-01-06 |
-| 004 | 004_Add_ProductNode_Table.sql | Adds ProductNode table for hierarchical product structure (Departement, Navigation, Category nodes) | 2026-01-28 |
+| 004 | 004_Add_CategoryNode_Table.sql | Adds CategoryNode table for hierarchical category structure (Departement, Navigation, Category nodes) | 2026-01-28 |
 | 005 | 005_Add_CategoryMandatoryAttribute_Table.sql | Adds CategoryMandatoryAttribute table for category-specific mandatory product attributes | 2026-01-28 |
 
 ## Notes

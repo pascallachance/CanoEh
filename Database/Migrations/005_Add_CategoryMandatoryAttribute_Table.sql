@@ -5,6 +5,15 @@
 -- mandatory attributes that must be provided when creating or editing
 -- products in a specific category.
 --
+-- Schema sync:
+--   - The base schema script (Database/000_Create_Database_Schema.sql) has been
+--     updated to include the dbo.CategoryMandatoryAttribute table definition.
+--
+-- Migration history:
+--   - A corresponding entry has been added to the migrations README/history for
+--     005_Add_CategoryMandatoryAttribute_Table, noting the addition of the
+--     CategoryMandatoryAttribute table and its indexes.
+--
 -- Usage:
 --   sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Migrations/005_Add_CategoryMandatoryAttribute_Table.sql"
 -- =============================================

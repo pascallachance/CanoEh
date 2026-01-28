@@ -296,6 +296,9 @@ namespace Infrastructure.Repositories.Tests
                 }
             }
 
+            // Dispose the repository to release database connections
+            _repository?.Dispose();
+
             GC.SuppressFinalize(this);
         }
     }

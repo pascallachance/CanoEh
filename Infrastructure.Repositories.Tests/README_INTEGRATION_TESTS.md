@@ -54,7 +54,8 @@ dotnet test Infrastructure.Repositories.Tests/Infrastructure.Repositories.Tests.
 
 Integration tests implement `IDisposable` and clean up test data automatically:
 - Test ProductNode records are deleted after each test
-- CategoryMandatoryAttribute records are deleted (CASCADE constraint handles this)
+- CategoryMandatoryAttribute records are explicitly deleted first (to respect FK constraints)
+- The repository instance is disposed to release database connections
 - Cleanup is skipped on non-Windows platforms
 
 ## Adding New Integration Tests
@@ -106,7 +107,7 @@ The `CategoryMandatoryAttributeRepositoryIntegrationShould.cs` file demonstrates
 - **DeleteAttributesByCategoryNodeIdAsync**: Confirms deletion returns correct boolean values
 - **Null handling**: Tests that NULL SortOrder values are handled correctly
 
-These tests caught issues that unit tests with mocks would miss, such as:
+These tests can catch issues that unit tests with mocks would miss, such as:
 - Incorrect SQL ORDER BY clause
 - Wrong column names in queries
 - Dapper mapping configuration issues

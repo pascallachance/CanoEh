@@ -130,7 +130,7 @@ namespace Domain.Services.Implementations
                 // Process each departement
                 foreach (var deptDto in request.Departements)
                 {
-                    var deptResponse = ProcessDepartementNode(deptDto, null, nodesWithAttributes, ref totalNodesCreated);
+                    var deptResponse = ProcessDepartementNode(deptDto, nodesWithAttributes, ref totalNodesCreated);
                     responseDepartements.Add(deptResponse);
                 }
 
@@ -155,7 +155,6 @@ namespace Domain.Services.Implementations
 
         private DepartementNodeResponseDto ProcessDepartementNode(
             DepartementNodeDto deptDto,
-            Guid? parentId,
             List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes)> nodesWithAttributes,
             ref int totalNodesCreated)
         {
@@ -164,7 +163,7 @@ namespace Domain.Services.Implementations
                 Id = Guid.NewGuid(),
                 Name_en = deptDto.Name_en,
                 Name_fr = deptDto.Name_fr,
-                ParentId = parentId,
+                ParentId = null, // Departement nodes never have a parent
                 IsActive = deptDto.IsActive,
                 SortOrder = deptDto.SortOrder,
                 CreatedAt = DateTime.UtcNow

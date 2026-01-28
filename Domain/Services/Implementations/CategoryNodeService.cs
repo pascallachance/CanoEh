@@ -8,27 +8,27 @@ using Microsoft.AspNetCore.Http;
 
 namespace Domain.Services.Implementations
 {
-    public class ProductNodeService(IProductNodeRepository productNodeRepository) : IProductNodeService
+    public class CategoryNodeService(ICategoryNodeRepository categoryNodeRepository) : ICategoryNodeService
     {
-        private readonly IProductNodeRepository _productNodeRepository = productNodeRepository;
+        private readonly ICategoryNodeRepository _categoryNodeRepository = categoryNodeRepository;
 
-        public async Task<Result<CreateProductNodeResponse>> CreateProductNodeAsync(CreateProductNodeRequest request)
+        public async Task<Result<CreateCategoryNodeResponse>> CreateCategoryNodeAsync(CreateCategoryNodeRequest request)
         {
             try
             {
                 var validationResult = request.Validate();
                 if (validationResult.IsFailure)
                 {
-                    return Result.Failure<CreateProductNodeResponse>(validationResult.Error!, validationResult.ErrorCode ?? 400);
+                    return Result.Failure<CreateCategoryNodeResponse>(validationResult.Error!, validationResult.ErrorCode ?? 400);
                 }
 
                 // Validate parent exists if provided
                 if (request.ParentId.HasValue)
                 {
-                    var parentExists = await _productNodeRepository.ExistsAsync(request.ParentId.Value);
+                    var parentExists = await _categoryNodeRepository.ExistsAsync(request.ParentId.Value);
                     if (!parentExists)
                     {
-                        return Result.Failure<CreateProductNodeResponse>(
+                        return Result.Failure<CreateCategoryNodeResponse>(
                             "Parent node does not exist.", 
                             StatusCodes.Status400BadRequest);
                     }
@@ -50,9 +50,9 @@ namespace Domain.Services.Implementations
                 node.SortOrder = request.SortOrder;
                 node.CreatedAt = DateTime.UtcNow;
 
-                var createdNode = await _productNodeRepository.AddAsync(node);
+                var createdNode = await _categoryNodeRepository.AddAsync(node);
 
-                var response = new CreateProductNodeResponse
+                var response = new CreateCategoryNodeResponse
                 {
                     Id = createdNode.Id,
                     Name_en = createdNode.Name_en,
@@ -67,179 +67,179 @@ namespace Domain.Services.Implementations
             }
             catch (Exception ex)
             {
-                return Result.Failure<CreateProductNodeResponse>(
-                    $"An error occurred while creating the product node: {ex.Message}",
+                return Result.Failure<CreateCategoryNodeResponse>(
+                    $"An error occurred while creating the category node: {ex.Message}",
                     StatusCodes.Status500InternalServerError);
             }
         }
 
-        public async Task<Result<IEnumerable<GetProductNodeResponse>>> GetAllProductNodesAsync()
+        public async Task<Result<IEnumerable<GetCategoryNodeResponse>>> GetAllCategoryNodesAsync()
         {
             try
             {
-                var nodes = await _productNodeRepository.GetAllAsync();
-                var response = nodes.Select(MapToGetProductNodeResponse);
+                var nodes = await _categoryNodeRepository.GetAllAsync();
+                var response = nodes.Select(MapToGetCategoryNodeResponse);
                 return Result.Success(response);
             }
             catch (Exception ex)
             {
-                return Result.Failure<IEnumerable<GetProductNodeResponse>>(
-                    $"An error occurred while retrieving product nodes: {ex.Message}",
+                return Result.Failure<IEnumerable<GetCategoryNodeResponse>>(
+                    $"An error occurred while retrieving category nodes: {ex.Message}",
                     StatusCodes.Status500InternalServerError);
             }
         }
 
-        public async Task<Result<GetProductNodeResponse>> GetProductNodeByIdAsync(Guid id)
+        public async Task<Result<GetCategoryNodeResponse>> GetCategoryNodeByIdAsync(Guid id)
         {
             try
             {
                 if (id == Guid.Empty)
                 {
-                    return Result.Failure<GetProductNodeResponse>(
-                        "Product node ID cannot be empty.",
+                    return Result.Failure<GetCategoryNodeResponse>(
+                        "Category node ID cannot be empty.",
                         StatusCodes.Status400BadRequest);
                 }
 
-                var node = await _productNodeRepository.GetNodeByIdAsync(id);
+                var node = await _categoryNodeRepository.GetNodeByIdAsync(id);
                 if (node == null)
                 {
-                    return Result.Failure<GetProductNodeResponse>(
-                        "Product node not found.",
+                    return Result.Failure<GetCategoryNodeResponse>(
+                        "Category node not found.",
                         StatusCodes.Status404NotFound);
                 }
 
                 // Get children
-                var children = await _productNodeRepository.GetChildrenAsync(id);
+                var children = await _categoryNodeRepository.GetChildrenAsync(id);
 
-                var response = MapToGetProductNodeResponse(node, children);
+                var response = MapToGetCategoryNodeResponse(node, children);
                 return Result.Success(response);
             }
             catch (Exception ex)
             {
-                return Result.Failure<GetProductNodeResponse>(
-                    $"An error occurred while retrieving the product node: {ex.Message}",
+                return Result.Failure<GetCategoryNodeResponse>(
+                    $"An error occurred while retrieving the category node: {ex.Message}",
                     StatusCodes.Status500InternalServerError);
             }
         }
 
-        public async Task<Result<IEnumerable<GetProductNodeResponse>>> GetRootNodesAsync()
+        public async Task<Result<IEnumerable<GetCategoryNodeResponse>>> GetRootNodesAsync()
         {
             try
             {
-                var nodes = await _productNodeRepository.GetRootNodesAsync();
-                var response = nodes.Select(MapToGetProductNodeResponse);
+                var nodes = await _categoryNodeRepository.GetRootNodesAsync();
+                var response = nodes.Select(MapToGetCategoryNodeResponse);
                 return Result.Success(response);
             }
             catch (Exception ex)
             {
-                return Result.Failure<IEnumerable<GetProductNodeResponse>>(
+                return Result.Failure<IEnumerable<GetCategoryNodeResponse>>(
                     $"An error occurred while retrieving root nodes: {ex.Message}",
                     StatusCodes.Status500InternalServerError);
             }
         }
 
-        public async Task<Result<IEnumerable<GetProductNodeResponse>>> GetChildrenAsync(Guid parentId)
+        public async Task<Result<IEnumerable<GetCategoryNodeResponse>>> GetChildrenAsync(Guid parentId)
         {
             try
             {
                 if (parentId == Guid.Empty)
                 {
-                    return Result.Failure<IEnumerable<GetProductNodeResponse>>(
+                    return Result.Failure<IEnumerable<GetCategoryNodeResponse>>(
                         "Parent ID cannot be empty.",
                         StatusCodes.Status400BadRequest);
                 }
 
-                var parentExists = await _productNodeRepository.ExistsAsync(parentId);
+                var parentExists = await _categoryNodeRepository.ExistsAsync(parentId);
                 if (!parentExists)
                 {
-                    return Result.Failure<IEnumerable<GetProductNodeResponse>>(
+                    return Result.Failure<IEnumerable<GetCategoryNodeResponse>>(
                         "Parent node does not exist.",
                         StatusCodes.Status404NotFound);
                 }
 
-                var nodes = await _productNodeRepository.GetChildrenAsync(parentId);
-                var response = nodes.Select(MapToGetProductNodeResponse);
+                var nodes = await _categoryNodeRepository.GetChildrenAsync(parentId);
+                var response = nodes.Select(MapToGetCategoryNodeResponse);
                 return Result.Success(response);
             }
             catch (Exception ex)
             {
-                return Result.Failure<IEnumerable<GetProductNodeResponse>>(
+                return Result.Failure<IEnumerable<GetCategoryNodeResponse>>(
                     $"An error occurred while retrieving child nodes: {ex.Message}",
                     StatusCodes.Status500InternalServerError);
             }
         }
 
-        public async Task<Result<IEnumerable<GetProductNodeResponse>>> GetNodesByTypeAsync(string nodeType)
+        public async Task<Result<IEnumerable<GetCategoryNodeResponse>>> GetNodesByTypeAsync(string nodeType)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(nodeType))
                 {
-                    return Result.Failure<IEnumerable<GetProductNodeResponse>>(
+                    return Result.Failure<IEnumerable<GetCategoryNodeResponse>>(
                         "NodeType is required.",
                         StatusCodes.Status400BadRequest);
                 }
 
                 if (nodeType != BaseNode.NodeTypeDepartement && nodeType != BaseNode.NodeTypeNavigation && nodeType != BaseNode.NodeTypeCategory)
                 {
-                    return Result.Failure<IEnumerable<GetProductNodeResponse>>(
+                    return Result.Failure<IEnumerable<GetCategoryNodeResponse>>(
                         $"NodeType must be '{BaseNode.NodeTypeDepartement}', '{BaseNode.NodeTypeNavigation}', or '{BaseNode.NodeTypeCategory}'.",
                         StatusCodes.Status400BadRequest);
                 }
 
-                var nodes = await _productNodeRepository.GetNodesByTypeAsync(nodeType);
-                var response = nodes.Select(MapToGetProductNodeResponse);
+                var nodes = await _categoryNodeRepository.GetNodesByTypeAsync(nodeType);
+                var response = nodes.Select(MapToGetCategoryNodeResponse);
                 return Result.Success(response);
             }
             catch (Exception ex)
             {
-                return Result.Failure<IEnumerable<GetProductNodeResponse>>(
+                return Result.Failure<IEnumerable<GetCategoryNodeResponse>>(
                     $"An error occurred while retrieving nodes by type: {ex.Message}",
                     StatusCodes.Status500InternalServerError);
             }
         }
 
-        public async Task<Result<IEnumerable<GetProductNodeResponse>>> GetCategoryNodesAsync()
+        public async Task<Result<IEnumerable<GetCategoryNodeResponse>>> GetCategoryNodesAsync()
         {
             try
             {
-                var nodes = await _productNodeRepository.GetCategoryNodesAsync();
-                var response = nodes.Select(MapToGetProductNodeResponse);
+                var nodes = await _categoryNodeRepository.GetCategoryNodesAsync();
+                var response = nodes.Select(MapToGetCategoryNodeResponse);
                 return Result.Success(response);
             }
             catch (Exception ex)
             {
-                return Result.Failure<IEnumerable<GetProductNodeResponse>>(
+                return Result.Failure<IEnumerable<GetCategoryNodeResponse>>(
                     $"An error occurred while retrieving category nodes: {ex.Message}",
                     StatusCodes.Status500InternalServerError);
             }
         }
 
-        public async Task<Result<UpdateProductNodeResponse>> UpdateProductNodeAsync(UpdateProductNodeRequest request)
+        public async Task<Result<UpdateCategoryNodeResponse>> UpdateCategoryNodeAsync(UpdateCategoryNodeRequest request)
         {
             try
             {
                 var validationResult = request.Validate();
                 if (validationResult.IsFailure)
                 {
-                    return Result.Failure<UpdateProductNodeResponse>(validationResult.Error!, validationResult.ErrorCode ?? 400);
+                    return Result.Failure<UpdateCategoryNodeResponse>(validationResult.Error!, validationResult.ErrorCode ?? 400);
                 }
 
-                var existingNode = await _productNodeRepository.GetNodeByIdAsync(request.Id);
+                var existingNode = await _categoryNodeRepository.GetNodeByIdAsync(request.Id);
                 if (existingNode == null)
                 {
-                    return Result.Failure<UpdateProductNodeResponse>(
-                        "Product node not found.",
+                    return Result.Failure<UpdateCategoryNodeResponse>(
+                        "Category node not found.",
                         StatusCodes.Status404NotFound);
                 }
 
                 // Validate parent exists if provided
                 if (request.ParentId.HasValue)
                 {
-                    var parentExists = await _productNodeRepository.ExistsAsync(request.ParentId.Value);
+                    var parentExists = await _categoryNodeRepository.ExistsAsync(request.ParentId.Value);
                     if (!parentExists)
                     {
-                        return Result.Failure<UpdateProductNodeResponse>(
+                        return Result.Failure<UpdateCategoryNodeResponse>(
                             "Parent node does not exist.",
                             StatusCodes.Status400BadRequest);
                     }
@@ -252,9 +252,9 @@ namespace Domain.Services.Implementations
                 existingNode.SortOrder = request.SortOrder;
                 existingNode.UpdatedAt = DateTime.UtcNow;
 
-                var updatedNode = await _productNodeRepository.UpdateAsync(existingNode);
+                var updatedNode = await _categoryNodeRepository.UpdateAsync(existingNode);
 
-                var response = new UpdateProductNodeResponse
+                var response = new UpdateCategoryNodeResponse
                 {
                     Id = updatedNode.Id,
                     Name_en = updatedNode.Name_en,
@@ -269,65 +269,65 @@ namespace Domain.Services.Implementations
             }
             catch (InvalidOperationException ex)
             {
-                return Result.Failure<UpdateProductNodeResponse>(
+                return Result.Failure<UpdateCategoryNodeResponse>(
                     ex.Message,
                     StatusCodes.Status400BadRequest);
             }
             catch (Exception ex)
             {
-                return Result.Failure<UpdateProductNodeResponse>(
-                    $"An error occurred while updating the product node: {ex.Message}",
+                return Result.Failure<UpdateCategoryNodeResponse>(
+                    $"An error occurred while updating the category node: {ex.Message}",
                     StatusCodes.Status500InternalServerError);
             }
         }
 
-        public async Task<Result<DeleteProductNodeResponse>> DeleteProductNodeAsync(Guid id)
+        public async Task<Result<DeleteCategoryNodeResponse>> DeleteCategoryNodeAsync(Guid id)
         {
             try
             {
                 if (id == Guid.Empty)
                 {
-                    return Result.Failure<DeleteProductNodeResponse>(
-                        "Product node ID cannot be empty.",
+                    return Result.Failure<DeleteCategoryNodeResponse>(
+                        "Category node ID cannot be empty.",
                         StatusCodes.Status400BadRequest);
                 }
 
-                var node = await _productNodeRepository.GetNodeByIdAsync(id);
+                var node = await _categoryNodeRepository.GetNodeByIdAsync(id);
                 if (node == null)
                 {
-                    return Result.Failure<DeleteProductNodeResponse>(
-                        "Product node not found.",
+                    return Result.Failure<DeleteCategoryNodeResponse>(
+                        "Category node not found.",
                         StatusCodes.Status404NotFound);
                 }
 
-                await _productNodeRepository.DeleteAsync(node);
+                await _categoryNodeRepository.DeleteAsync(node);
 
-                var response = new DeleteProductNodeResponse
+                var response = new DeleteCategoryNodeResponse
                 {
                     Id = id,
                     Success = true,
-                    Message = "Product node deleted successfully."
+                    Message = "Category node deleted successfully."
                 };
 
                 return Result.Success(response);
             }
             catch (InvalidOperationException ex)
             {
-                return Result.Failure<DeleteProductNodeResponse>(
+                return Result.Failure<DeleteCategoryNodeResponse>(
                     ex.Message,
                     StatusCodes.Status400BadRequest);
             }
             catch (Exception ex)
             {
-                return Result.Failure<DeleteProductNodeResponse>(
-                    $"An error occurred while deleting the product node: {ex.Message}",
+                return Result.Failure<DeleteCategoryNodeResponse>(
+                    $"An error occurred while deleting the category node: {ex.Message}",
                     StatusCodes.Status500InternalServerError);
             }
         }
 
-        private static GetProductNodeResponse MapToGetProductNodeResponse(BaseNode node)
+        private static GetCategoryNodeResponse MapToGetCategoryNodeResponse(BaseNode node)
         {
-            return new GetProductNodeResponse
+            return new GetCategoryNodeResponse
             {
                 Id = node.Id,
                 Name_en = node.Name_en,
@@ -336,13 +336,13 @@ namespace Domain.Services.Implementations
                 ParentId = node.ParentId,
                 IsActive = node.IsActive,
                 SortOrder = node.SortOrder,
-                Children = new List<GetProductNodeResponse>()
+                Children = new List<GetCategoryNodeResponse>()
             };
         }
 
-        private static GetProductNodeResponse MapToGetProductNodeResponse(BaseNode node, IEnumerable<BaseNode> children)
+        private static GetCategoryNodeResponse MapToGetCategoryNodeResponse(BaseNode node, IEnumerable<BaseNode> children)
         {
-            return new GetProductNodeResponse
+            return new GetCategoryNodeResponse
             {
                 Id = node.Id,
                 Name_en = node.Name_en,
@@ -351,7 +351,7 @@ namespace Domain.Services.Implementations
                 ParentId = node.ParentId,
                 IsActive = node.IsActive,
                 SortOrder = node.SortOrder,
-                Children = children.Select(MapToGetProductNodeResponse).ToList()
+                Children = children.Select(MapToGetCategoryNodeResponse).ToList()
             };
         }
     }

@@ -103,7 +103,7 @@ public class Program
                                  itemVariantAttributeRepository, connectionString);
         });
         builder.Services.AddScoped<ICategoryService, CategoryService>();
-        builder.Services.AddScoped<IProductNodeService, ProductNodeService>();
+        builder.Services.AddScoped<ICategoryNodeService, CategoryNodeService>();
         builder.Services.AddScoped<ICompanyService, CompanyService>();
         builder.Services.AddScoped<IAddressService, AddressService>();
         builder.Services.AddScoped<IPaymentMethodService, PaymentMethodService>();
@@ -161,11 +161,11 @@ public class Program
             return new CategoryRepository(connectionString);
         });
 
-        builder.Services.AddScoped<IProductNodeRepository>(provider =>
+        builder.Services.AddScoped<ICategoryNodeRepository>(provider =>
         {
             var config = provider.GetRequiredService<IConfiguration>();
             var connectionString = config.GetConnectionString("DefaultConnection");
-            return new ProductNodeRepository(connectionString);
+            return new CategoryNodeRepository(connectionString);
         });
 
         builder.Services.AddScoped<ICompanyRepository>(provider =>

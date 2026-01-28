@@ -1,6 +1,6 @@
 namespace Domain.Models.Responses
 {
-    public class UpdateProductNodeResponse
+    public class CreateCategoryNodeResponse
     {
         public Guid Id { get; set; }
         public string Name_en { get; set; } = string.Empty;

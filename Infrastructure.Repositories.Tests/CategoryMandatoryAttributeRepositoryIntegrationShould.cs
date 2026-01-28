@@ -364,7 +364,7 @@ namespace Infrastructure.Repositories.Tests
         }
 
         /// <summary>
-        /// Creates a test CategoryNode (ProductNode with NodeType='Category') in the database.
+        /// Creates a test CategoryNode (database table ProductNode with NodeType='Category') in the database.
         /// Returns the Id of the created node and tracks it for cleanup.
         /// </summary>
         private async Task<Guid> CreateTestCategoryNodeAsync()
@@ -375,7 +375,7 @@ namespace Infrastructure.Repositories.Tests
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
             
-            // Insert a test ProductNode with NodeType='Category'
+            // Insert a test node into ProductNode table with NodeType='Category'
             var insertQuery = @"
                 INSERT INTO dbo.ProductNode (Id, Name_en, Name_fr, NodeType, ParentId, SortOrder)
                 VALUES (@Id, @Name_en, @Name_fr, @NodeType, NULL, 1)";
@@ -417,7 +417,7 @@ namespace Infrastructure.Repositories.Tests
                     deleteAttrCmd.Parameters.AddWithValue("@CategoryNodeId", categoryNodeId);
                     deleteAttrCmd.ExecuteNonQuery();
                     
-                    // Delete the ProductNode
+                    // Delete the node from ProductNode table
                     var deleteNodeQuery = "DELETE FROM dbo.ProductNode WHERE Id = @Id";
                     using var deleteNodeCmd = new SqlCommand(deleteNodeQuery, connection);
                     deleteNodeCmd.Parameters.AddWithValue("@Id", categoryNodeId);

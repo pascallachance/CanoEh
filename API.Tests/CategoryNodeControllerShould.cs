@@ -10,15 +10,15 @@ using System.Security.Claims;
 
 namespace API.Tests
 {
-    public class ProductNodeControllerShould
+    public class CategoryNodeControllerShould
     {
-        private readonly Mock<IProductNodeService> _mockProductNodeService;
-        private readonly ProductNodeController _controller;
+        private readonly Mock<ICategoryNodeService> _mockCategoryNodeService;
+        private readonly CategoryNodeController _controller;
 
-        public ProductNodeControllerShould()
+        public CategoryNodeControllerShould()
         {
-            _mockProductNodeService = new Mock<IProductNodeService>();
-            _controller = new ProductNodeController(_mockProductNodeService.Object);
+            _mockCategoryNodeService = new Mock<ICategoryNodeService>();
+            _controller = new CategoryNodeController(_mockCategoryNodeService.Object);
         }
 
         private void SetupAdminUser()
@@ -45,11 +45,11 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task CreateProductNode_ReturnOk_WhenDepartementNodeCreatedSuccessfully()
+        public async Task CreateCategoryNode_ReturnOk_WhenDepartementNodeCreatedSuccessfully()
         {
             // Arrange
             SetupAdminUser();
-            var request = new CreateProductNodeRequest
+            var request = new CreateCategoryNodeRequest
             {
                 Name_en = "Electronics Department",
                 Name_fr = "Département Électronique",
@@ -59,7 +59,7 @@ namespace API.Tests
                 SortOrder = 1
             };
 
-            var response = new CreateProductNodeResponse
+            var response = new CreateCategoryNodeResponse
             {
                 Id = Guid.NewGuid(),
                 Name_en = request.Name_en,
@@ -71,11 +71,11 @@ namespace API.Tests
             };
 
             var result = Result.Success(response);
-            _mockProductNodeService.Setup(x => x.CreateProductNodeAsync(It.IsAny<CreateProductNodeRequest>()))
+            _mockCategoryNodeService.Setup(x => x.CreateCategoryNodeAsync(It.IsAny<CreateCategoryNodeRequest>()))
                                .ReturnsAsync(result);
 
             // Act
-            var actionResult = await _controller.CreateProductNode(request);
+            var actionResult = await _controller.CreateCategoryNode(request);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(actionResult);
@@ -83,12 +83,12 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task CreateProductNode_ReturnOk_WhenNavigationNodeCreatedSuccessfully()
+        public async Task CreateCategoryNode_ReturnOk_WhenNavigationNodeCreatedSuccessfully()
         {
             // Arrange
             SetupAdminUser();
             var parentId = Guid.NewGuid();
-            var request = new CreateProductNodeRequest
+            var request = new CreateCategoryNodeRequest
             {
                 Name_en = "Home Audio",
                 Name_fr = "Audio Maison",
@@ -98,7 +98,7 @@ namespace API.Tests
                 SortOrder = 1
             };
 
-            var response = new CreateProductNodeResponse
+            var response = new CreateCategoryNodeResponse
             {
                 Id = Guid.NewGuid(),
                 Name_en = request.Name_en,
@@ -110,11 +110,11 @@ namespace API.Tests
             };
 
             var result = Result.Success(response);
-            _mockProductNodeService.Setup(x => x.CreateProductNodeAsync(It.IsAny<CreateProductNodeRequest>()))
+            _mockCategoryNodeService.Setup(x => x.CreateCategoryNodeAsync(It.IsAny<CreateCategoryNodeRequest>()))
                                .ReturnsAsync(result);
 
             // Act
-            var actionResult = await _controller.CreateProductNode(request);
+            var actionResult = await _controller.CreateCategoryNode(request);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(actionResult);
@@ -122,12 +122,12 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task CreateProductNode_ReturnOk_WhenCategoryNodeCreatedSuccessfully()
+        public async Task CreateCategoryNode_ReturnOk_WhenCategoryNodeCreatedSuccessfully()
         {
             // Arrange
             SetupAdminUser();
             var parentId = Guid.NewGuid();
-            var request = new CreateProductNodeRequest
+            var request = new CreateCategoryNodeRequest
             {
                 Name_en = "Speakers",
                 Name_fr = "Haut-parleurs",
@@ -137,7 +137,7 @@ namespace API.Tests
                 SortOrder = 1
             };
 
-            var response = new CreateProductNodeResponse
+            var response = new CreateCategoryNodeResponse
             {
                 Id = Guid.NewGuid(),
                 Name_en = request.Name_en,
@@ -149,11 +149,11 @@ namespace API.Tests
             };
 
             var result = Result.Success(response);
-            _mockProductNodeService.Setup(x => x.CreateProductNodeAsync(It.IsAny<CreateProductNodeRequest>()))
+            _mockCategoryNodeService.Setup(x => x.CreateCategoryNodeAsync(It.IsAny<CreateCategoryNodeRequest>()))
                                .ReturnsAsync(result);
 
             // Act
-            var actionResult = await _controller.CreateProductNode(request);
+            var actionResult = await _controller.CreateCategoryNode(request);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(actionResult);
@@ -161,11 +161,11 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task CreateProductNode_ReturnBadRequest_WhenValidationFails()
+        public async Task CreateCategoryNode_ReturnBadRequest_WhenValidationFails()
         {
             // Arrange
             SetupAdminUser();
-            var request = new CreateProductNodeRequest
+            var request = new CreateCategoryNodeRequest
             {
                 Name_en = "",
                 Name_fr = "",
@@ -174,12 +174,12 @@ namespace API.Tests
                 IsActive = true
             };
 
-            var result = Result.Failure<CreateProductNodeResponse>("Validation failed.", StatusCodes.Status400BadRequest);
-            _mockProductNodeService.Setup(x => x.CreateProductNodeAsync(It.IsAny<CreateProductNodeRequest>()))
+            var result = Result.Failure<CreateCategoryNodeResponse>("Validation failed.", StatusCodes.Status400BadRequest);
+            _mockCategoryNodeService.Setup(x => x.CreateCategoryNodeAsync(It.IsAny<CreateCategoryNodeRequest>()))
                                .ReturnsAsync(result);
 
             // Act
-            var actionResult = await _controller.CreateProductNode(request);
+            var actionResult = await _controller.CreateCategoryNode(request);
 
             // Assert
             var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
@@ -187,11 +187,11 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task CreateProductNode_ReturnInternalServerError_WhenExceptionThrown()
+        public async Task CreateCategoryNode_ReturnInternalServerError_WhenExceptionThrown()
         {
             // Arrange
             SetupAdminUser();
-            var request = new CreateProductNodeRequest
+            var request = new CreateCategoryNodeRequest
             {
                 Name_en = "Test Node",
                 Name_fr = "Noeud Test",
@@ -200,11 +200,11 @@ namespace API.Tests
                 IsActive = true
             };
 
-            _mockProductNodeService.Setup(x => x.CreateProductNodeAsync(It.IsAny<CreateProductNodeRequest>()))
+            _mockCategoryNodeService.Setup(x => x.CreateCategoryNodeAsync(It.IsAny<CreateCategoryNodeRequest>()))
                                .ThrowsAsync(new Exception("Database error"));
 
             // Act
-            var actionResult = await _controller.CreateProductNode(request);
+            var actionResult = await _controller.CreateCategoryNode(request);
 
             // Assert
             var serverErrorResult = Assert.IsType<ObjectResult>(actionResult);
@@ -212,12 +212,12 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task GetAllProductNodes_ReturnOk_WhenNodesExist()
+        public async Task GetAllCategoryNodes_ReturnOk_WhenNodesExist()
         {
             // Arrange
-            var nodes = new List<GetProductNodeResponse>
+            var nodes = new List<GetCategoryNodeResponse>
             {
-                new GetProductNodeResponse
+                new GetCategoryNodeResponse
                 {
                     Id = Guid.NewGuid(),
                     Name_en = "Electronics",
@@ -226,9 +226,9 @@ namespace API.Tests
                     ParentId = null,
                     IsActive = true,
                     SortOrder = 1,
-                    Children = new List<GetProductNodeResponse>()
+                    Children = new List<GetCategoryNodeResponse>()
                 },
-                new GetProductNodeResponse
+                new GetCategoryNodeResponse
                 {
                     Id = Guid.NewGuid(),
                     Name_en = "Clothing",
@@ -237,16 +237,16 @@ namespace API.Tests
                     ParentId = null,
                     IsActive = true,
                     SortOrder = 2,
-                    Children = new List<GetProductNodeResponse>()
+                    Children = new List<GetCategoryNodeResponse>()
                 }
             };
 
-            var result = Result.Success<IEnumerable<GetProductNodeResponse>>(nodes);
-            _mockProductNodeService.Setup(x => x.GetAllProductNodesAsync())
+            var result = Result.Success<IEnumerable<GetCategoryNodeResponse>>(nodes);
+            _mockCategoryNodeService.Setup(x => x.GetAllCategoryNodesAsync())
                                .ReturnsAsync(result);
 
             // Act
-            var actionResult = await _controller.GetAllProductNodes();
+            var actionResult = await _controller.GetAllCategoryNodes();
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(actionResult);
@@ -254,11 +254,11 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task GetProductNodeById_ReturnOk_WhenNodeExists()
+        public async Task GetCategoryNodeById_ReturnOk_WhenNodeExists()
         {
             // Arrange
             var nodeId = Guid.NewGuid();
-            var node = new GetProductNodeResponse
+            var node = new GetCategoryNodeResponse
             {
                 Id = nodeId,
                 Name_en = "Electronics",
@@ -267,15 +267,15 @@ namespace API.Tests
                 ParentId = null,
                 IsActive = true,
                 SortOrder = 1,
-                Children = new List<GetProductNodeResponse>()
+                Children = new List<GetCategoryNodeResponse>()
             };
 
             var result = Result.Success(node);
-            _mockProductNodeService.Setup(x => x.GetProductNodeByIdAsync(nodeId))
+            _mockCategoryNodeService.Setup(x => x.GetCategoryNodeByIdAsync(nodeId))
                                .ReturnsAsync(result);
 
             // Act
-            var actionResult = await _controller.GetProductNodeById(nodeId);
+            var actionResult = await _controller.GetCategoryNodeById(nodeId);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(actionResult);
@@ -283,16 +283,16 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task GetProductNodeById_ReturnNotFound_WhenNodeDoesNotExist()
+        public async Task GetCategoryNodeById_ReturnNotFound_WhenNodeDoesNotExist()
         {
             // Arrange
             var nodeId = Guid.NewGuid();
-            var result = Result.Failure<GetProductNodeResponse>("Node not found.", StatusCodes.Status404NotFound);
-            _mockProductNodeService.Setup(x => x.GetProductNodeByIdAsync(nodeId))
+            var result = Result.Failure<GetCategoryNodeResponse>("Node not found.", StatusCodes.Status404NotFound);
+            _mockCategoryNodeService.Setup(x => x.GetCategoryNodeByIdAsync(nodeId))
                                .ReturnsAsync(result);
 
             // Act
-            var actionResult = await _controller.GetProductNodeById(nodeId);
+            var actionResult = await _controller.GetCategoryNodeById(nodeId);
 
             // Assert
             var notFoundResult = Assert.IsType<ObjectResult>(actionResult);
@@ -303,9 +303,9 @@ namespace API.Tests
         public async Task GetRootNodes_ReturnOk_WhenRootNodesExist()
         {
             // Arrange
-            var rootNodes = new List<GetProductNodeResponse>
+            var rootNodes = new List<GetCategoryNodeResponse>
             {
-                new GetProductNodeResponse
+                new GetCategoryNodeResponse
                 {
                     Id = Guid.NewGuid(),
                     Name_en = "Electronics",
@@ -314,12 +314,12 @@ namespace API.Tests
                     ParentId = null,
                     IsActive = true,
                     SortOrder = 1,
-                    Children = new List<GetProductNodeResponse>()
+                    Children = new List<GetCategoryNodeResponse>()
                 }
             };
 
-            var result = Result.Success<IEnumerable<GetProductNodeResponse>>(rootNodes);
-            _mockProductNodeService.Setup(x => x.GetRootNodesAsync())
+            var result = Result.Success<IEnumerable<GetCategoryNodeResponse>>(rootNodes);
+            _mockCategoryNodeService.Setup(x => x.GetRootNodesAsync())
                                .ReturnsAsync(result);
 
             // Act
@@ -335,9 +335,9 @@ namespace API.Tests
         {
             // Arrange
             var parentId = Guid.NewGuid();
-            var children = new List<GetProductNodeResponse>
+            var children = new List<GetCategoryNodeResponse>
             {
-                new GetProductNodeResponse
+                new GetCategoryNodeResponse
                 {
                     Id = Guid.NewGuid(),
                     Name_en = "Home Audio",
@@ -346,12 +346,12 @@ namespace API.Tests
                     ParentId = parentId,
                     IsActive = true,
                     SortOrder = 1,
-                    Children = new List<GetProductNodeResponse>()
+                    Children = new List<GetCategoryNodeResponse>()
                 }
             };
 
-            var result = Result.Success<IEnumerable<GetProductNodeResponse>>(children);
-            _mockProductNodeService.Setup(x => x.GetChildrenAsync(parentId))
+            var result = Result.Success<IEnumerable<GetCategoryNodeResponse>>(children);
+            _mockCategoryNodeService.Setup(x => x.GetChildrenAsync(parentId))
                                .ReturnsAsync(result);
 
             // Act
@@ -367,9 +367,9 @@ namespace API.Tests
         {
             // Arrange
             var nodeType = "Departement";
-            var nodes = new List<GetProductNodeResponse>
+            var nodes = new List<GetCategoryNodeResponse>
             {
-                new GetProductNodeResponse
+                new GetCategoryNodeResponse
                 {
                     Id = Guid.NewGuid(),
                     Name_en = "Electronics",
@@ -378,12 +378,12 @@ namespace API.Tests
                     ParentId = null,
                     IsActive = true,
                     SortOrder = 1,
-                    Children = new List<GetProductNodeResponse>()
+                    Children = new List<GetCategoryNodeResponse>()
                 }
             };
 
-            var result = Result.Success<IEnumerable<GetProductNodeResponse>>(nodes);
-            _mockProductNodeService.Setup(x => x.GetNodesByTypeAsync(nodeType))
+            var result = Result.Success<IEnumerable<GetCategoryNodeResponse>>(nodes);
+            _mockCategoryNodeService.Setup(x => x.GetNodesByTypeAsync(nodeType))
                                .ReturnsAsync(result);
 
             // Act
@@ -398,9 +398,9 @@ namespace API.Tests
         public async Task GetCategoryNodes_ReturnOk_WhenCategoryNodesExist()
         {
             // Arrange
-            var categoryNodes = new List<GetProductNodeResponse>
+            var categoryNodes = new List<GetCategoryNodeResponse>
             {
-                new GetProductNodeResponse
+                new GetCategoryNodeResponse
                 {
                     Id = Guid.NewGuid(),
                     Name_en = "Speakers",
@@ -409,12 +409,12 @@ namespace API.Tests
                     ParentId = Guid.NewGuid(),
                     IsActive = true,
                     SortOrder = 1,
-                    Children = new List<GetProductNodeResponse>()
+                    Children = new List<GetCategoryNodeResponse>()
                 }
             };
 
-            var result = Result.Success<IEnumerable<GetProductNodeResponse>>(categoryNodes);
-            _mockProductNodeService.Setup(x => x.GetCategoryNodesAsync())
+            var result = Result.Success<IEnumerable<GetCategoryNodeResponse>>(categoryNodes);
+            _mockCategoryNodeService.Setup(x => x.GetCategoryNodesAsync())
                                .ReturnsAsync(result);
 
             // Act
@@ -426,12 +426,12 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task UpdateProductNode_ReturnOk_WhenNodeUpdatedSuccessfully()
+        public async Task UpdateCategoryNode_ReturnOk_WhenNodeUpdatedSuccessfully()
         {
             // Arrange
             SetupAdminUser();
             var nodeId = Guid.NewGuid();
-            var request = new UpdateProductNodeRequest
+            var request = new UpdateCategoryNodeRequest
             {
                 Id = nodeId,
                 Name_en = "Updated Electronics",
@@ -441,7 +441,7 @@ namespace API.Tests
                 SortOrder = 1
             };
 
-            var response = new UpdateProductNodeResponse
+            var response = new UpdateCategoryNodeResponse
             {
                 Id = nodeId,
                 Name_en = request.Name_en,
@@ -453,11 +453,11 @@ namespace API.Tests
             };
 
             var result = Result.Success(response);
-            _mockProductNodeService.Setup(x => x.UpdateProductNodeAsync(It.IsAny<UpdateProductNodeRequest>()))
+            _mockCategoryNodeService.Setup(x => x.UpdateCategoryNodeAsync(It.IsAny<UpdateCategoryNodeRequest>()))
                                .ReturnsAsync(result);
 
             // Act
-            var actionResult = await _controller.UpdateProductNode(request);
+            var actionResult = await _controller.UpdateCategoryNode(request);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(actionResult);
@@ -465,11 +465,11 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task UpdateProductNode_ReturnNotFound_WhenNodeDoesNotExist()
+        public async Task UpdateCategoryNode_ReturnNotFound_WhenNodeDoesNotExist()
         {
             // Arrange
             SetupAdminUser();
-            var request = new UpdateProductNodeRequest
+            var request = new UpdateCategoryNodeRequest
             {
                 Id = Guid.NewGuid(),
                 Name_en = "Updated Node",
@@ -479,12 +479,12 @@ namespace API.Tests
                 SortOrder = 1
             };
 
-            var result = Result.Failure<UpdateProductNodeResponse>("Node not found.", StatusCodes.Status404NotFound);
-            _mockProductNodeService.Setup(x => x.UpdateProductNodeAsync(It.IsAny<UpdateProductNodeRequest>()))
+            var result = Result.Failure<UpdateCategoryNodeResponse>("Node not found.", StatusCodes.Status404NotFound);
+            _mockCategoryNodeService.Setup(x => x.UpdateCategoryNodeAsync(It.IsAny<UpdateCategoryNodeRequest>()))
                                .ReturnsAsync(result);
 
             // Act
-            var actionResult = await _controller.UpdateProductNode(request);
+            var actionResult = await _controller.UpdateCategoryNode(request);
 
             // Assert
             var notFoundResult = Assert.IsType<ObjectResult>(actionResult);
@@ -492,24 +492,24 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task DeleteProductNode_ReturnOk_WhenNodeDeletedSuccessfully()
+        public async Task DeleteCategoryNode_ReturnOk_WhenNodeDeletedSuccessfully()
         {
             // Arrange
             SetupAdminUser();
             var nodeId = Guid.NewGuid();
-            var response = new DeleteProductNodeResponse
+            var response = new DeleteCategoryNodeResponse
             {
                 Id = nodeId,
                 Success = true,
-                Message = "Product node deleted successfully."
+                Message = "Category node deleted successfully."
             };
 
             var result = Result.Success(response);
-            _mockProductNodeService.Setup(x => x.DeleteProductNodeAsync(nodeId))
+            _mockCategoryNodeService.Setup(x => x.DeleteCategoryNodeAsync(nodeId))
                                .ReturnsAsync(result);
 
             // Act
-            var actionResult = await _controller.DeleteProductNode(nodeId);
+            var actionResult = await _controller.DeleteCategoryNode(nodeId);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(actionResult);
@@ -517,17 +517,17 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task DeleteProductNode_ReturnNotFound_WhenNodeDoesNotExist()
+        public async Task DeleteCategoryNode_ReturnNotFound_WhenNodeDoesNotExist()
         {
             // Arrange
             SetupAdminUser();
             var nodeId = Guid.NewGuid();
-            var result = Result.Failure<DeleteProductNodeResponse>("Node not found.", StatusCodes.Status404NotFound);
-            _mockProductNodeService.Setup(x => x.DeleteProductNodeAsync(nodeId))
+            var result = Result.Failure<DeleteCategoryNodeResponse>("Node not found.", StatusCodes.Status404NotFound);
+            _mockCategoryNodeService.Setup(x => x.DeleteCategoryNodeAsync(nodeId))
                                .ReturnsAsync(result);
 
             // Act
-            var actionResult = await _controller.DeleteProductNode(nodeId);
+            var actionResult = await _controller.DeleteCategoryNode(nodeId);
 
             // Assert
             var notFoundResult = Assert.IsType<ObjectResult>(actionResult);
@@ -535,19 +535,19 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task DeleteProductNode_ReturnBadRequest_WhenNodeHasChildren()
+        public async Task DeleteCategoryNode_ReturnBadRequest_WhenNodeHasChildren()
         {
             // Arrange
             SetupAdminUser();
             var nodeId = Guid.NewGuid();
-            var result = Result.Failure<DeleteProductNodeResponse>(
+            var result = Result.Failure<DeleteCategoryNodeResponse>(
                 "Cannot delete node that has children.", 
                 StatusCodes.Status400BadRequest);
-            _mockProductNodeService.Setup(x => x.DeleteProductNodeAsync(nodeId))
+            _mockCategoryNodeService.Setup(x => x.DeleteCategoryNodeAsync(nodeId))
                                .ReturnsAsync(result);
 
             // Act
-            var actionResult = await _controller.DeleteProductNode(nodeId);
+            var actionResult = await _controller.DeleteCategoryNode(nodeId);
 
             // Assert
             var badRequestResult = Assert.IsType<ObjectResult>(actionResult);

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Domain.Models.Requests
 {
-    public class CreateProductNodeRequest
+    public class CreateCategoryNodeRequest
     {
         public required string Name_en { get; set; }
         public required string Name_fr { get; set; }

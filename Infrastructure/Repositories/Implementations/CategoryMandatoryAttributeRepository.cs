@@ -77,7 +77,7 @@ VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
                 dbConnection.Open();
             }
             
-            var query = "SELECT * FROM dbo.CategoryMandatoryAttribute ORDER BY SortOrder, Name_en";
+            var query = "SELECT * FROM dbo.CategoryMandatoryAttribute ORDER BY COALESCE(SortOrder, 999999), Name_en";
             return await dbConnection.QueryAsync<CategoryMandatoryAttribute>(query);
         }
 
@@ -131,7 +131,7 @@ WHERE Id = @Id";
                 dbConnection.Open();
             }
             
-            var query = "SELECT * FROM dbo.CategoryMandatoryAttribute WHERE CategoryNodeId = @categoryNodeId ORDER BY SortOrder, Name_en";
+            var query = "SELECT * FROM dbo.CategoryMandatoryAttribute WHERE CategoryNodeId = @categoryNodeId ORDER BY COALESCE(SortOrder, 999999), Name_en";
             return await dbConnection.QueryAsync<CategoryMandatoryAttribute>(query, new { categoryNodeId });
         }
 

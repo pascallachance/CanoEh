@@ -24,8 +24,8 @@ BEGIN
         Name_fr NVARCHAR(100) NOT NULL,
         AttributeType NVARCHAR(50) NULL, -- e.g., 'string', 'int', 'enum', etc. (optional)
         SortOrder INT NULL,
-        CONSTRAINT FK_CategoryMandatoryAttribute_CategoryNode
-            FOREIGN KEY (CategoryNodeId) REFERENCES dbo.ProductNode(Id)
+        CONSTRAINT FK_CategoryMandatoryAttribute_ProductNode
+            FOREIGN KEY (CategoryNodeId) REFERENCES dbo.ProductNode(Id) ON DELETE CASCADE
     );
     
     -- Indexes for performance

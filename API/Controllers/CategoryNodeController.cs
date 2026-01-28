@@ -52,6 +52,47 @@ namespace API.Controllers
         }
 
         /// <summary>
+        /// Creates a complete hierarchical structure of category nodes.
+        /// Allows bulk creation of multiple Departement nodes, each containing multiple Navigation nodes,
+        /// which in turn can contain other Navigation nodes or Category nodes.
+        /// All nodes are created in a single transaction - if any node fails validation or creation,
+        /// the entire operation is rolled back.
+        /// </summary>
+        /// <param name="request">The hierarchical structure to create, containing one or more Departement nodes.</param>
+        /// <returns>Returns the created structure with generated IDs or an error response.</returns>
+        [Authorize(Roles = "Admin")]
+        [HttpPost("CreateStructure")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CreateStructure([FromBody] BulkCreateStructureRequest request)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var result = await _categoryNodeService.CreateStructureAsync(request);
+
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
+        }
+
+        /// <summary>
         /// Gets all category nodes.
         /// </summary>
         /// <returns>Returns all category nodes or an error response.</returns>

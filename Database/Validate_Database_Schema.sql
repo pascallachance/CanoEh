@@ -81,7 +81,7 @@ PRINT '';
 PRINT 'Checking Foreign Key Constraints:';
 PRINT '----------------------------------';
 
-DECLARE @ExpectedFKs INT = 18;
+DECLARE @ExpectedFKs INT = 20;
 DECLARE @ActualFKs INT;
 
 SELECT @ActualFKs = COUNT(*) 

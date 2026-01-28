@@ -77,7 +77,7 @@ VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @C
             }
 
             // Check if category node has items
-            if (entity.NodeType == "Category")
+            if (entity.NodeType == BaseNode.NodeTypeCategory)
             {
                 var hasItems = await HasItemsAsync(entity.Id);
                 if (hasItems)
@@ -269,7 +269,7 @@ ORDER BY SortOrder, Name_en";
                 return false;
             }
 
-            var query = "SELECT COUNT(1) FROM dbo.Item WHERE CategoryId = @categoryNodeId AND Deleted = 0";
+            var query = "SELECT COUNT(1) FROM dbo.Item WHERE CategoryID = @categoryNodeId AND Deleted = 0";
             var count = await dbConnection.ExecuteScalarAsync<int>(query, new { categoryNodeId });
             return count > 0;
         }
@@ -294,7 +294,7 @@ ORDER BY SortOrder, Name_en";
 
         public async Task<IEnumerable<BaseNode>> GetCategoryNodesAsync()
         {
-            return await GetNodesByTypeAsync("Category");
+            return await GetNodesByTypeAsync(BaseNode.NodeTypeCategory);
         }
 
         private async Task ValidateNoCircularReferenceAsync(Guid nodeId, Guid proposedParentId)

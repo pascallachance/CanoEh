@@ -55,7 +55,7 @@ sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Migrations/004_Add_Produ
 3. **Category Nodes**:
    - Must have a `ParentId` pointing to either a Departement or Navigation node
    - These are the only nodes that can be assigned to Products
-   - Products reference Category nodes via the `CategoryId` field in the Item table
+   - Products reference Category nodes via the `CategoryID` field in the Item table
 
 ## Example Hierarchy
 

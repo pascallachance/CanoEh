@@ -16,6 +16,7 @@
 | **ItemVariant** | Product variants (SKU, price, stock) | Id (PK), ItemId (FK→Item), Price, StockQuantity, Sku, Offer |
 | **ItemAttribute** | Custom item attributes | Id (PK), ItemID (FK→Item), AttributeName_en/fr, Attributes_en/fr |
 | **ItemVariantAttribute** | Custom variant attributes | Id (PK), ItemVariantID (FK→ItemVariant), AttributeName_en/fr |
+| **ItemVariantExtraAttribute** | Variant-specific attributes (not matrix) | Id (PK), ItemVariantId (FK→ItemVariant), Name_en/fr, Value_en/fr |
 | **OrderStatus** | Lookup: order statuses | ID (PK), StatusCode (unique), Name_en, Name_fr |
 | **OrderItemStatus** | Lookup: order item statuses | ID (PK), StatusCode (unique), Name_en, Name_fr |
 | **Order** | Customer orders | ID (PK), UserID (FK→User), OrderNumber (auto), StatusID (FK) |

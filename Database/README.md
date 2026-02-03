@@ -47,7 +47,8 @@ The CanoEh database is designed for a bilingual (English/French) e-commerce plat
 - **Item**: Products with bilingual names and descriptions
 - **ItemVariant**: Product variants (SKU, price, stock, offers)
 - **ItemAttribute**: Custom attributes for items
-- **ItemVariantAttribute**: Custom attributes for variants
+- **ItemVariantAttribute**: Custom attributes for variants (defines variant combinations)
+- **ItemVariantExtraAttribute**: Extra attributes for variants (not part of variant matrix)
 
 #### Orders
 - **Order**: Customer orders with totals and status

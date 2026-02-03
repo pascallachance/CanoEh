@@ -112,6 +112,12 @@ namespace Domain.Models.Requests
                     {
                         return Result.Failure($"CategoryMandatoryAttribute French name cannot exceed {MaxAttributeNameLength} characters.", StatusCodes.Status400BadRequest);
                     }
+
+                    const int MaxAttributeTypeLength = 50;
+                    if (!string.IsNullOrWhiteSpace(attr.AttributeType) && attr.AttributeType.Length > MaxAttributeTypeLength)
+                    {
+                        return Result.Failure($"CategoryMandatoryAttribute AttributeType cannot exceed {MaxAttributeTypeLength} characters.", StatusCodes.Status400BadRequest);
+                    }
                 }
             }
 
@@ -139,6 +145,12 @@ namespace Domain.Models.Requests
                     if (attr.Name_fr.Length > MaxAttributeNameLength)
                     {
                         return Result.Failure($"CategoryMandatoryExtraAttribute French name cannot exceed {MaxAttributeNameLength} characters.", StatusCodes.Status400BadRequest);
+                    }
+
+                    const int MaxAttributeTypeLength = 50;
+                    if (!string.IsNullOrWhiteSpace(attr.AttributeType) && attr.AttributeType.Length > MaxAttributeTypeLength)
+                    {
+                        return Result.Failure($"CategoryMandatoryExtraAttribute AttributeType cannot exceed {MaxAttributeTypeLength} characters.", StatusCodes.Status400BadRequest);
                     }
                 }
             }

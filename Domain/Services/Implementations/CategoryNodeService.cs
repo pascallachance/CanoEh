@@ -70,18 +70,40 @@ namespace Domain.Services.Implementations
                     }
                 }
 
+                // Prepare CategoryMandatoryExtraAttributes if this is a Category node and extra attributes are provided
+                var extraAttributesToCreate = new List<CategoryMandatoryExtraAttribute>();
+                if (request.NodeType == BaseNode.NodeTypeCategory && 
+                    request.CategoryMandatoryExtraAttributes != null && 
+                    request.CategoryMandatoryExtraAttributes.Any())
+                {
+                    foreach (var extraAttrDto in request.CategoryMandatoryExtraAttributes)
+                    {
+                        extraAttributesToCreate.Add(new CategoryMandatoryExtraAttribute
+                        {
+                            Id = Guid.NewGuid(),
+                            CategoryNodeId = node.Id,
+                            Name_en = extraAttrDto.Name_en,
+                            Name_fr = extraAttrDto.Name_fr,
+                            AttributeType = extraAttrDto.AttributeType,
+                            SortOrder = extraAttrDto.SortOrder
+                        });
+                    }
+                }
+
                 // Create node and attributes in a single transaction
                 BaseNode createdNode;
                 IEnumerable<CategoryMandatoryAttribute> createdAttributes;
+                IEnumerable<CategoryMandatoryExtraAttribute> createdExtraAttributes;
 
-                if (attributesToCreate.Any())
+                if (attributesToCreate.Any() || extraAttributesToCreate.Any())
                 {
-                    (createdNode, createdAttributes) = await _categoryNodeRepository.AddNodeWithAttributesAsync(node, attributesToCreate);
+                    (createdNode, createdAttributes, createdExtraAttributes) = await _categoryNodeRepository.AddNodeWithAttributesAsync(node, attributesToCreate, extraAttributesToCreate);
                 }
                 else
                 {
                     createdNode = await _categoryNodeRepository.AddAsync(node);
                     createdAttributes = new List<CategoryMandatoryAttribute>();
+                    createdExtraAttributes = new List<CategoryMandatoryExtraAttribute>();
                 }
 
                 var response = new CreateCategoryNodeResponse
@@ -94,6 +116,14 @@ namespace Domain.Services.Implementations
                     IsActive = createdNode.IsActive,
                     SortOrder = createdNode.SortOrder,
                     CategoryMandatoryAttributes = createdAttributes.Select(attr => new CategoryMandatoryAttributeResponseDto
+                    {
+                        Id = attr.Id,
+                        Name_en = attr.Name_en,
+                        Name_fr = attr.Name_fr,
+                        AttributeType = attr.AttributeType,
+                        SortOrder = attr.SortOrder
+                    }).ToList(),
+                    CategoryMandatoryExtraAttributes = createdExtraAttributes.Select(attr => new CategoryMandatoryExtraAttributeResponseDto
                     {
                         Id = attr.Id,
                         Name_en = attr.Name_en,
@@ -123,7 +153,7 @@ namespace Domain.Services.Implementations
                     return Result.Failure<BulkCreateCategoryNodesResponse>(validationResult.Error!, validationResult.ErrorCode ?? 400);
                 }
 
-                var nodesWithAttributes = new List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes)>();
+                var nodesWithAttributes = new List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes, IEnumerable<CategoryMandatoryExtraAttribute> extraAttributes)>();
                 var responseDepartements = new List<DepartementNodeResponseDto>();
                 var totalNodesCreated = 0;
 
@@ -158,7 +188,7 @@ namespace Domain.Services.Implementations
 
         private DepartementNodeResponseDto ProcessDepartementNode(
             DepartementNodeDto deptDto,
-            List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes)> nodesWithAttributes,
+            List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes, IEnumerable<CategoryMandatoryExtraAttribute> extraAttributes)> nodesWithAttributes,
             ref int totalNodesCreated)
         {
             var dept = new DepartementNode
@@ -172,7 +202,7 @@ namespace Domain.Services.Implementations
                 CreatedAt = DateTime.UtcNow
             };
 
-            nodesWithAttributes.Add((dept, new List<CategoryMandatoryAttribute>()));
+            nodesWithAttributes.Add((dept, new List<CategoryMandatoryAttribute>(), new List<CategoryMandatoryExtraAttribute>()));
             totalNodesCreated++;
 
             var response = new DepartementNodeResponseDto
@@ -213,7 +243,7 @@ namespace Domain.Services.Implementations
         private NavigationNodeResponseDto ProcessNavigationNode(
             NavigationNodeDto navDto,
             Guid parentId,
-            List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes)> nodesWithAttributes,
+            List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes, IEnumerable<CategoryMandatoryExtraAttribute> extraAttributes)> nodesWithAttributes,
             ref int totalNodesCreated)
         {
             var nav = new NavigationNode
@@ -227,7 +257,7 @@ namespace Domain.Services.Implementations
                 CreatedAt = DateTime.UtcNow
             };
 
-            nodesWithAttributes.Add((nav, new List<CategoryMandatoryAttribute>()));
+            nodesWithAttributes.Add((nav, new List<CategoryMandatoryAttribute>(), new List<CategoryMandatoryExtraAttribute>()));
             totalNodesCreated++;
 
             var response = new NavigationNodeResponseDto
@@ -268,7 +298,7 @@ namespace Domain.Services.Implementations
         private CategoryNodeResponseDto ProcessCategoryNode(
             CategoryNodeDto catDto,
             Guid parentId,
-            List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes)> nodesWithAttributes,
+            List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes, IEnumerable<CategoryMandatoryExtraAttribute> extraAttributes)> nodesWithAttributes,
             ref int totalNodesCreated)
         {
             var cat = new CategoryNode
@@ -299,7 +329,24 @@ namespace Domain.Services.Implementations
                 }
             }
 
-            nodesWithAttributes.Add((cat, attributes));
+            var extraAttributes = new List<CategoryMandatoryExtraAttribute>();
+            if (catDto.CategoryMandatoryExtraAttributes != null && catDto.CategoryMandatoryExtraAttributes.Any())
+            {
+                foreach (var extraAttrDto in catDto.CategoryMandatoryExtraAttributes)
+                {
+                    extraAttributes.Add(new CategoryMandatoryExtraAttribute
+                    {
+                        Id = Guid.NewGuid(),
+                        CategoryNodeId = cat.Id,
+                        Name_en = extraAttrDto.Name_en,
+                        Name_fr = extraAttrDto.Name_fr,
+                        AttributeType = extraAttrDto.AttributeType,
+                        SortOrder = extraAttrDto.SortOrder
+                    });
+                }
+            }
+
+            nodesWithAttributes.Add((cat, attributes, extraAttributes));
             totalNodesCreated++;
 
             var response = new CategoryNodeResponseDto
@@ -311,6 +358,14 @@ namespace Domain.Services.Implementations
                 IsActive = cat.IsActive,
                 SortOrder = cat.SortOrder,
                 CategoryMandatoryAttributes = attributes.Select(attr => new CategoryMandatoryAttributeResponseDto
+                {
+                    Id = attr.Id,
+                    Name_en = attr.Name_en,
+                    Name_fr = attr.Name_fr,
+                    AttributeType = attr.AttributeType,
+                    SortOrder = attr.SortOrder
+                }).ToList(),
+                CategoryMandatoryExtraAttributes = extraAttributes.Select(attr => new CategoryMandatoryExtraAttributeResponseDto
                 {
                     Id = attr.Id,
                     Name_en = attr.Name_en,

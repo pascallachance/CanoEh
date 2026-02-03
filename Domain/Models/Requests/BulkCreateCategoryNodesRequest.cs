@@ -11,6 +11,7 @@ namespace Domain.Models.Requests
         public bool IsActive { get; set; } = true;
         public int? SortOrder { get; set; }
         public List<CreateCategoryMandatoryAttributeDto>? CategoryMandatoryAttributes { get; set; }
+        public List<CreateCategoryMandatoryExtraAttributeDto>? CategoryMandatoryExtraAttributes { get; set; }
     }
 
     public class NavigationNodeDto
@@ -35,6 +36,9 @@ namespace Domain.Models.Requests
 
     public class BulkCreateCategoryNodesRequest
     {
+        private const int MaxAttributeNameLength = 100;
+        private const int MaxAttributeTypeLength = 50;
+
         public List<DepartementNodeDto> Departements { get; set; } = new();
 
         public Result Validate()
@@ -144,7 +148,6 @@ namespace Domain.Models.Requests
                         return Result.Failure("CategoryMandatoryAttribute French name is required.", StatusCodes.Status400BadRequest);
                     }
 
-                    const int MaxAttributeNameLength = 100;
                     if (attr.Name_en.Length > MaxAttributeNameLength)
                     {
                         return Result.Failure($"CategoryMandatoryAttribute English name cannot exceed {MaxAttributeNameLength} characters.", StatusCodes.Status400BadRequest);
@@ -155,10 +158,40 @@ namespace Domain.Models.Requests
                         return Result.Failure($"CategoryMandatoryAttribute French name cannot exceed {MaxAttributeNameLength} characters.", StatusCodes.Status400BadRequest);
                     }
 
-                    const int MaxAttributeTypeLength = 50;
                     if (!string.IsNullOrWhiteSpace(attr.AttributeType) && attr.AttributeType.Length > MaxAttributeTypeLength)
                     {
                         return Result.Failure($"CategoryMandatoryAttribute AttributeType cannot exceed {MaxAttributeTypeLength} characters.", StatusCodes.Status400BadRequest);
+                    }
+                }
+            }
+
+            if (cat.CategoryMandatoryExtraAttributes != null && cat.CategoryMandatoryExtraAttributes.Any())
+            {
+                foreach (var attr in cat.CategoryMandatoryExtraAttributes)
+                {
+                    if (string.IsNullOrWhiteSpace(attr.Name_en))
+                    {
+                        return Result.Failure("CategoryMandatoryExtraAttribute English name is required.", StatusCodes.Status400BadRequest);
+                    }
+
+                    if (string.IsNullOrWhiteSpace(attr.Name_fr))
+                    {
+                        return Result.Failure("CategoryMandatoryExtraAttribute French name is required.", StatusCodes.Status400BadRequest);
+                    }
+
+                    if (attr.Name_en.Length > MaxAttributeNameLength)
+                    {
+                        return Result.Failure($"CategoryMandatoryExtraAttribute English name cannot exceed {MaxAttributeNameLength} characters.", StatusCodes.Status400BadRequest);
+                    }
+
+                    if (attr.Name_fr.Length > MaxAttributeNameLength)
+                    {
+                        return Result.Failure($"CategoryMandatoryExtraAttribute French name cannot exceed {MaxAttributeNameLength} characters.", StatusCodes.Status400BadRequest);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(attr.AttributeType) && attr.AttributeType.Length > MaxAttributeTypeLength)
+                    {
+                        return Result.Failure($"CategoryMandatoryExtraAttribute AttributeType cannot exceed {MaxAttributeTypeLength} characters.", StatusCodes.Status400BadRequest);
                     }
                 }
             }

@@ -16,12 +16,14 @@ namespace Domain.Services.Implementations
         IItemVariantRepository itemVariantRepository,
         IItemAttributeRepository itemAttributeRepository,
         IItemVariantAttributeRepository itemVariantAttributeRepository,
+        IItemVariantExtraAttributeRepository itemVariantExtraAttributeRepository,
         string connectionString) : IItemService
     {
         private readonly IItemRepository _itemRepository = itemRepository;
         private readonly IItemVariantRepository _itemVariantRepository = itemVariantRepository;
         private readonly IItemAttributeRepository _itemAttributeRepository = itemAttributeRepository;
         private readonly IItemVariantAttributeRepository _itemVariantAttributeRepository = itemVariantAttributeRepository;
+        private readonly IItemVariantExtraAttributeRepository _itemVariantExtraAttributeRepository = itemVariantExtraAttributeRepository;
         private readonly string _connectionString = connectionString;
 
         public async Task<Result<CreateItemResponse>> CreateItemAsync(CreateItemRequest createItemRequest)

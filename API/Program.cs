@@ -99,8 +99,9 @@ public class Program
             var itemVariantRepository = provider.GetRequiredService<IItemVariantRepository>();
             var itemAttributeRepository = provider.GetRequiredService<IItemAttributeRepository>();
             var itemVariantAttributeRepository = provider.GetRequiredService<IItemVariantAttributeRepository>();
+            var itemVariantExtraAttributeRepository = provider.GetRequiredService<IItemVariantExtraAttributeRepository>();
             return new ItemService(itemRepository, itemVariantRepository, itemAttributeRepository, 
-                                 itemVariantAttributeRepository, connectionString);
+                                 itemVariantAttributeRepository, itemVariantExtraAttributeRepository, connectionString);
         });
         builder.Services.AddScoped<ICategoryService, CategoryService>();
         builder.Services.AddScoped<ICategoryNodeService, CategoryNodeService>();
@@ -215,6 +216,13 @@ public class Program
             var config = provider.GetRequiredService<IConfiguration>();
             var connectionString = config.GetConnectionString("DefaultConnection");
             return new ItemVariantAttributeRepository(connectionString);
+        });
+
+        builder.Services.AddScoped<IItemVariantExtraAttributeRepository>(provider =>
+        {
+            var config = provider.GetRequiredService<IConfiguration>();
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            return new ItemVariantExtraAttributeRepository(connectionString);
         });
 
         builder.Services.AddScoped<IOrderRepository>(provider =>

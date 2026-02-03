@@ -363,6 +363,31 @@ END
 GO
 
 -- =============================================
+-- Create ItemVariantExtraAttribute Table
+-- =============================================
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ItemVariantExtraAttribute' AND schema_id = SCHEMA_ID('dbo'))
+BEGIN
+    CREATE TABLE dbo.ItemVariantExtraAttribute (
+        Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+        ItemVariantId UNIQUEIDENTIFIER NOT NULL,
+        Name_en NVARCHAR(100) NOT NULL,
+        Name_fr NVARCHAR(100) NULL,
+        Value_en NVARCHAR(200) NULL,
+        Value_fr NVARCHAR(200) NULL,
+        CONSTRAINT FK_ItemVariantExtraAttribute_ItemVariant FOREIGN KEY (ItemVariantId) REFERENCES dbo.ItemVariant(Id)
+    );
+    
+    CREATE INDEX IX_ItemVariantExtraAttribute_ItemVariantId ON dbo.ItemVariantExtraAttribute(ItemVariantId);
+    
+    PRINT 'Table ItemVariantExtraAttribute created successfully.';
+END
+ELSE
+BEGIN
+    PRINT 'Table ItemVariantExtraAttribute already exists.';
+END
+GO
+
+-- =============================================
 -- Create OrderStatus Table (Lookup Table)
 -- =============================================
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'OrderStatus' AND schema_id = SCHEMA_ID('dbo'))

@@ -687,6 +687,34 @@ END
 GO
 
 -- =============================================
+-- Create CategoryMandatoryExtraAttribute Table
+-- =============================================
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CategoryMandatoryExtraAttribute' AND schema_id = SCHEMA_ID('dbo'))
+BEGIN
+    CREATE TABLE dbo.CategoryMandatoryExtraAttribute (
+        Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+        CategoryNodeId UNIQUEIDENTIFIER NOT NULL, -- FK to CategoryNode(Id), must be a CategoryNode
+        Name_en NVARCHAR(100) NOT NULL,
+        Name_fr NVARCHAR(100) NOT NULL,
+        AttributeType NVARCHAR(50) NULL, -- e.g., 'string', 'int', 'enum', etc. (optional)
+        SortOrder INT NULL,
+        CONSTRAINT FK_CategoryMandatoryExtraAttribute_CategoryNode
+            FOREIGN KEY (CategoryNodeId) REFERENCES dbo.CategoryNode(Id) ON DELETE CASCADE
+    );
+    
+    -- Indexes for performance
+    CREATE INDEX IX_CategoryMandatoryExtraAttribute_CategoryNodeId ON dbo.CategoryMandatoryExtraAttribute(CategoryNodeId);
+    CREATE INDEX IX_CategoryMandatoryExtraAttribute_SortOrder ON dbo.CategoryMandatoryExtraAttribute(SortOrder);
+    
+    PRINT 'Table CategoryMandatoryExtraAttribute created successfully.';
+END
+ELSE
+BEGIN
+    PRINT 'Table CategoryMandatoryExtraAttribute already exists.';
+END
+GO
+
+-- =============================================
 -- Final Message
 -- =============================================
 PRINT '';

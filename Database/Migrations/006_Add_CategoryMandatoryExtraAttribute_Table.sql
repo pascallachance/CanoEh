@@ -10,8 +10,8 @@
 --     updated to include the dbo.CategoryMandatoryExtraAttribute table definition.
 --
 -- Migration history:
---   - A corresponding entry should be added to the migrations README/history for
---     006_Add_CategoryMandatoryExtraAttribute_Table, noting the addition of the
+--   - Ensure the migrations README/history documents
+--     006_Add_CategoryMandatoryExtraAttribute_Table, including the addition of the
 --     CategoryMandatoryExtraAttribute table and its indexes.
 --
 -- Usage:

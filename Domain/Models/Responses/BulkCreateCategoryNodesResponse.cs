@@ -9,7 +9,6 @@ namespace Domain.Models.Responses
         public bool IsActive { get; set; }
         public int? SortOrder { get; set; }
         public List<CategoryMandatoryAttributeResponseDto>? CategoryMandatoryAttributes { get; set; }
-        public List<CategoryMandatoryExtraAttributeResponseDto>? CategoryMandatoryExtraAttributes { get; set; }
     }
 
     public class NavigationNodeResponseDto

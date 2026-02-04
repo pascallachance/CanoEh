@@ -13,7 +13,6 @@ namespace API.Tests
         private readonly Mock<IItemVariantRepository> _mockItemVariantRepository;
         private readonly Mock<IItemAttributeRepository> _mockItemAttributeRepository;
         private readonly Mock<IItemVariantAttributeRepository> _mockItemVariantAttributeRepository;
-        private readonly Mock<IItemVariantExtraAttributeRepository> _mockItemVariantExtraAttributeRepository;
         private readonly ItemService _itemService;
 
         public ItemServiceShould()
@@ -22,13 +21,11 @@ namespace API.Tests
             _mockItemVariantRepository = new Mock<IItemVariantRepository>();
             _mockItemAttributeRepository = new Mock<IItemAttributeRepository>();
             _mockItemVariantAttributeRepository = new Mock<IItemVariantAttributeRepository>();
-            _mockItemVariantExtraAttributeRepository = new Mock<IItemVariantExtraAttributeRepository>();
             _itemService = new ItemService(
                 _mockItemRepository.Object, 
                 _mockItemVariantRepository.Object,
                 _mockItemAttributeRepository.Object,
                 _mockItemVariantAttributeRepository.Object,
-                _mockItemVariantExtraAttributeRepository.Object,
                 "Server=(localdb)\\MSSQLLocalDB;Database=CanoEh;Trusted_Connection=True;TrustServerCertificate=True;");
         }
 

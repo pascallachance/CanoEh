@@ -121,7 +121,7 @@ WHERE Id = @Id";
             return entity;
         }
 
-        public async Task<IEnumerable<ItemVariantFeatures>> GetAttributesByItemVariantIdAsync(Guid itemVariantId)
+        public async Task<IEnumerable<ItemVariantFeatures>> GetFeaturesByItemVariantIdAsync(Guid itemVariantId)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -132,7 +132,7 @@ WHERE Id = @Id";
             return await dbConnection.QueryAsync<ItemVariantFeatures>(query, new { itemVariantId });
         }
 
-        public async Task<bool> DeleteAttributesByItemVariantIdAsync(Guid itemVariantId)
+        public async Task<bool> DeleteFeaturesByItemVariantIdAsync(Guid itemVariantId)
         {
             if (dbConnection.State != ConnectionState.Open)
             {

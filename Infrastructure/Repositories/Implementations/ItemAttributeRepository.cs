@@ -20,13 +20,13 @@ namespace Infrastructure.Repositories.Implementations
             }
 
             var query = @"
-INSERT INTO dbo.ItemAttribute (Id, ItemID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
-VALUES (@Id, @ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
+INSERT INTO dbo.ItemAttribute (Id, ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
+VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
 
             var parameters = new
             {
                 entity.Id,
-                entity.ItemID,
+                entity.ItemVariantID,
                 entity.AttributeName_en,
                 entity.AttributeName_fr,
                 entity.Attributes_en,
@@ -103,14 +103,14 @@ VALUES (@Id, @ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Att
             
             var query = @"
 UPDATE dbo.ItemAttribute 
-SET ItemID = @ItemID, AttributeName_en = @AttributeName_en, AttributeName_fr = @AttributeName_fr, 
+SET ItemVariantID = @ItemVariantID, AttributeName_en = @AttributeName_en, AttributeName_fr = @AttributeName_fr, 
     Attributes_en = @Attributes_en, Attributes_fr = @Attributes_fr
 WHERE Id = @Id";
 
             var parameters = new
             {
                 entity.Id,
-                entity.ItemID,
+                entity.ItemVariantID,
                 entity.AttributeName_en,
                 entity.AttributeName_fr,
                 entity.Attributes_en,
@@ -121,26 +121,26 @@ WHERE Id = @Id";
             return entity;
         }
 
-        public async Task<IEnumerable<ItemAttribute>> GetAttributesByItemIdAsync(Guid itemId)
+        public async Task<IEnumerable<ItemAttribute>> GetAttributesByItemVariantIdAsync(Guid itemVariantId)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
                 dbConnection.Open();
             }
             
-            var query = "SELECT * FROM dbo.ItemAttribute WHERE ItemID = @itemId";
-            return await dbConnection.QueryAsync<ItemAttribute>(query, new { itemId });
+            var query = "SELECT * FROM dbo.ItemAttribute WHERE ItemVariantID = @itemVariantId";
+            return await dbConnection.QueryAsync<ItemAttribute>(query, new { itemVariantId });
         }
 
-        public async Task<bool> DeleteAttributesByItemIdAsync(Guid itemId)
+        public async Task<bool> DeleteAttributesByItemVariantIdAsync(Guid itemVariantId)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
                 dbConnection.Open();
             }
             
-            var query = "DELETE FROM dbo.ItemAttribute WHERE ItemID = @itemId";
-            var rowsAffected = await dbConnection.ExecuteAsync(query, new { itemId });
+            var query = "DELETE FROM dbo.ItemAttribute WHERE ItemVariantID = @itemVariantId";
+            var rowsAffected = await dbConnection.ExecuteAsync(query, new { itemVariantId });
             
             return rowsAffected > 0;
         }

@@ -14,6 +14,7 @@ namespace Infrastructure.Data
         public string? ItemVariantName_en { get; set; }
         public string? ItemVariantName_fr { get; set; }
         public List<ItemVariantAttribute> ItemVariantAttributes { get; set; } = [];
+        public List<ItemAttribute> ItemAttributes { get; set; } = [];
         public bool Deleted { get; set; } = false;
         
         // Offer fields

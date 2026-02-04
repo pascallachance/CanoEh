@@ -406,7 +406,6 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 ImageUrl = item.ImageUrl,
                 CategoryID = item.CategoryID,
                 Variants = MapToItemVariantDtos(item.Variants),
-                ItemVariantFeatures = MapToItemVariantFeaturesDtos(item.ItemVariantFeatures),
                 CreatedAt = item.CreatedAt,
                 UpdatedAt = item.UpdatedAt,
                 Deleted = item.Deleted
@@ -451,7 +450,6 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 existingItem.Description_fr = updateItemRequest.Description_fr;
                 existingItem.CategoryID = updateItemRequest.CategoryID;
                 existingItem.Variants = updateItemRequest.Variants;
-                existingItem.ItemVariantFeatures = updateItemRequest.ItemVariantFeatures;
                 existingItem.UpdatedAt = DateTime.UtcNow;
 
                 var updatedItem = await _itemRepository.UpdateAsync(existingItem);
@@ -467,7 +465,6 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     ImageUrl = updatedItem.ImageUrl,
                     CategoryID = updatedItem.CategoryID,
                     Variants = MapToItemVariantDtos(updatedItem.Variants),
-                    ItemVariantFeatures = MapToItemVariantFeaturesDtos(updatedItem.ItemVariantFeatures),
                     CreatedAt = updatedItem.CreatedAt,
                     UpdatedAt = updatedItem.UpdatedAt,
                     Deleted = updatedItem.Deleted

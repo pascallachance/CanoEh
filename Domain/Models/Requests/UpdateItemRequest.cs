@@ -14,7 +14,6 @@ namespace Domain.Models.Requests
         public required string Description_fr { get; set; }
         public Guid CategoryID { get; set; }
         public List<ItemVariant> Variants { get; set; } = new();
-        public List<ItemVariantFeatures> ItemVariantFeatures { get; set; } = new();
 
         public Result Validate()
         {

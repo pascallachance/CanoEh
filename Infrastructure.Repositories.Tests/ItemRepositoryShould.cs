@@ -32,8 +32,7 @@ namespace Infrastructure.Repositories.Tests
                 CategoryID = Guid.NewGuid(),
                 CreatedAt = DateTime.UtcNow,
                 Deleted = false,
-                Variants = new List<ItemVariant>(),
-                ItemVariantFeatures = new List<ItemVariantFeatures>()
+                Variants = new List<ItemVariant>()
             };
         }
 
@@ -52,8 +51,7 @@ namespace Infrastructure.Repositories.Tests
                     CategoryID = Guid.NewGuid(),
                     CreatedAt = DateTime.UtcNow,
                     Deleted = false,
-                    Variants = new List<ItemVariant>(),
-                    ItemVariantFeatures = new List<ItemVariantFeatures>()
+                    Variants = new List<ItemVariant>()
                 },
                 new Item
                 {
@@ -66,8 +64,7 @@ namespace Infrastructure.Repositories.Tests
                     CategoryID = Guid.NewGuid(),
                     CreatedAt = DateTime.UtcNow,
                     Deleted = false,
-                    Variants = new List<ItemVariant>(),
-                    ItemVariantFeatures = new List<ItemVariantFeatures>()
+                    Variants = new List<ItemVariant>()
                 },
                 new Item
                 {
@@ -80,8 +77,7 @@ namespace Infrastructure.Repositories.Tests
                     CategoryID = Guid.NewGuid(),
                     CreatedAt = DateTime.UtcNow,
                     Deleted = false,
-                    Variants = new List<ItemVariant>(),
-                    ItemVariantFeatures = new List<ItemVariantFeatures>()
+                    Variants = new List<ItemVariant>()
                 }
             };
         }
@@ -183,7 +179,6 @@ namespace Infrastructure.Repositories.Tests
             Assert.NotEqual(Guid.Empty, item.CategoryID);
             Assert.False(item.Deleted);
             Assert.NotNull(item.Variants);
-            Assert.NotNull(item.ItemVariantFeatures);
         }
 
         [Fact]
@@ -195,8 +190,6 @@ namespace Infrastructure.Repositories.Tests
             // Assert
             Assert.NotNull(item.Variants);
             Assert.Empty(item.Variants);
-            Assert.NotNull(item.ItemVariantFeatures);
-            Assert.Empty(item.ItemVariantFeatures);
             Assert.Equal(string.Empty, item.Name_en);
             Assert.Equal(string.Empty, item.Name_fr);
             Assert.False(item.Deleted);
@@ -242,6 +235,8 @@ namespace Infrastructure.Repositories.Tests
             // Assert
             Assert.NotNull(variant.ItemVariantAttributes);
             Assert.Empty(variant.ItemVariantAttributes);
+            Assert.NotNull(variant.ItemVariantFeatures);
+            Assert.Empty(variant.ItemVariantFeatures);
             Assert.Equal(0m, variant.Price);
             Assert.Equal(0, variant.StockQuantity);
             Assert.Null(variant.ItemVariantName_en);
@@ -256,7 +251,7 @@ namespace Infrastructure.Repositories.Tests
             var attribute = new ItemVariantFeatures
             {
                 Id = Guid.NewGuid(),
-                ItemID = Guid.NewGuid(),
+                ItemVariantID = Guid.NewGuid(),
                 AttributeName_en = "Color",
                 AttributeName_fr = "Couleur",
                 Attributes_en = "Blue",
@@ -265,7 +260,7 @@ namespace Infrastructure.Repositories.Tests
 
             // Assert
             Assert.NotEqual(Guid.Empty, attribute.Id);
-            Assert.NotEqual(Guid.Empty, attribute.ItemID);
+            Assert.NotEqual(Guid.Empty, attribute.ItemVariantID);
             Assert.Equal("Color", attribute.AttributeName_en);
             Assert.Equal("Couleur", attribute.AttributeName_fr);
             Assert.Equal("Blue", attribute.Attributes_en);
@@ -280,7 +275,7 @@ namespace Infrastructure.Repositories.Tests
 
             // Assert
             Assert.Equal(Guid.Empty, attribute.Id);
-            Assert.Equal(Guid.Empty, attribute.ItemID);
+            Assert.Equal(Guid.Empty, attribute.ItemVariantID);
             Assert.Equal(string.Empty, attribute.AttributeName_en);
             Assert.Null(attribute.AttributeName_fr);
             Assert.Equal(string.Empty, attribute.Attributes_en);
@@ -296,18 +291,20 @@ namespace Infrastructure.Repositories.Tests
             // Integration tests with a real database would be needed to verify:
             // - The early return logic when no items are found
             // - The batched queries and dictionary lookups work correctly
-            // - ItemVariants, ItemVariantAttributes, and ItemVariantFeatures are properly loaded
+            // - ItemVariants, ItemVariantAttributes, and ItemVariantFeatures (on variants) are properly loaded
             var methodInfo = _itemRepository.GetType().GetMethod("GetBySellerIdAsync");
             
             // Assert
             Assert.NotNull(methodInfo);
             Assert.Equal(typeof(Task<IEnumerable<Item>>), methodInfo.ReturnType);
             
-            // Verify method parameter
+            // Verify method parameters
             var parameters = methodInfo.GetParameters();
-            Assert.Single(parameters);
+            Assert.Equal(2, parameters.Length);
             Assert.Equal("sellerId", parameters[0].Name);
             Assert.Equal(typeof(Guid), parameters[0].ParameterType);
+            Assert.Equal("includeDeleted", parameters[1].Name);
+            Assert.Equal(typeof(bool), parameters[1].ParameterType);
         }
 
         [Fact]
@@ -332,7 +329,7 @@ namespace Infrastructure.Repositories.Tests
             // - The SQL randomization logic using NEWID()
             // - The CTE filtering for items with images
             // - The batched queries and dictionary lookups work correctly
-            // - ItemVariants, ItemVariantAttributes, and ItemVariantFeatures are properly loaded
+            // - ItemVariants, ItemVariantAttributes, and ItemVariantFeatures (on variants) are properly loaded
             var methodInfo = _itemRepository.GetType().GetMethod("GetSuggestedProductsAsync");
             
             // Assert
@@ -392,7 +389,6 @@ namespace Infrastructure.Repositories.Tests
                             Deleted = false
                         }
                     },
-                    ItemVariantFeatures = new List<ItemVariantFeatures>(),
                     CreatedAt = DateTime.UtcNow,
                     Deleted = false
                 }

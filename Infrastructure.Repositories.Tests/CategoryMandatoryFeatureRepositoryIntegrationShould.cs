@@ -17,26 +17,26 @@ namespace Infrastructure.Repositories.Tests
     }
 
     /// <summary>
-    /// Integration tests for CategoryMandatoryAttributeRepository that validate
+    /// Integration tests for CategoryMandatoryFeatureRepository that validate
     /// the actual SQL/Dapper implementation against a real database.
     /// These tests use LocalDB to execute queries end-to-end.
     /// Note: These tests are skipped on non-Windows platforms where LocalDB is not available.
     /// </summary>
     [Collection("Database")]
-    public class CategoryMandatoryAttributeRepositoryIntegrationShould : IDisposable
+    public class CategoryMandatoryFeatureRepositoryIntegrationShould : IDisposable
     {
         private readonly string _connectionString;
-        private readonly CategoryMandatoryAttributeRepository? _repository;
+        private readonly CategoryMandatoryFeatureRepository? _repository;
         private readonly List<Guid> _testCategoryNodeIds;
 
-        public CategoryMandatoryAttributeRepositoryIntegrationShould()
+        public CategoryMandatoryFeatureRepositoryIntegrationShould()
         {
             _connectionString = "Server=(localdb)\\MSSQLLocalDB;Database=CanoEh;Trusted_Connection=True;";
             _testCategoryNodeIds = new List<Guid>();
             
             if (IsLocalDbAvailable())
             {
-                _repository = new CategoryMandatoryAttributeRepository(_connectionString);
+                _repository = new CategoryMandatoryFeatureRepository(_connectionString);
             }
         }
 
@@ -49,7 +49,7 @@ namespace Infrastructure.Repositories.Tests
         }
 
         [Fact]
-        public async Task GetAttributesByCategoryNodeIdAsync_ShouldReturnAttributesOrderedBySortOrder_WhenAttributesExist()
+        public async Task GetFeaturesByCategoryNodeIdAsync_ShouldReturnAttributesOrderedBySortOrder_WhenAttributesExist()
         {
             if (!IsLocalDbAvailable())
             {
@@ -59,7 +59,7 @@ namespace Infrastructure.Repositories.Tests
             
             // Arrange
             var categoryNodeId = await CreateTestCategoryNodeAsync();
-            var attribute1 = new CategoryMandatoryAttribute
+            var attribute1 = new CategoryMandatoryFeature
             {
                 Id = Guid.NewGuid(),
                 CategoryNodeId = categoryNodeId,
@@ -68,7 +68,7 @@ namespace Infrastructure.Repositories.Tests
                 AttributeType = "string",
                 SortOrder = 2
             };
-            var attribute2 = new CategoryMandatoryAttribute
+            var attribute2 = new CategoryMandatoryFeature
             {
                 Id = Guid.NewGuid(),
                 CategoryNodeId = categoryNodeId,
@@ -77,7 +77,7 @@ namespace Infrastructure.Repositories.Tests
                 AttributeType = "enum",
                 SortOrder = 1
             };
-            var attribute3 = new CategoryMandatoryAttribute
+            var attribute3 = new CategoryMandatoryFeature
             {
                 Id = Guid.NewGuid(),
                 CategoryNodeId = categoryNodeId,
@@ -92,7 +92,7 @@ namespace Infrastructure.Repositories.Tests
             await _repository!.AddAsync(attribute3);
 
             // Act
-            var result = await _repository!.GetAttributesByCategoryNodeIdAsync(categoryNodeId);
+            var result = await _repository!.GetFeaturesByCategoryNodeIdAsync(categoryNodeId);
 
             // Assert
             Assert.NotNull(result);
@@ -109,7 +109,7 @@ namespace Infrastructure.Repositories.Tests
         }
 
         [Fact]
-        public async Task GetAttributesByCategoryNodeIdAsync_ShouldReturnEmpty_WhenNoAttributesExist()
+        public async Task GetFeaturesByCategoryNodeIdAsync_ShouldReturnEmpty_WhenNoAttributesExist()
         {
             if (!IsLocalDbAvailable())
             {
@@ -121,7 +121,7 @@ namespace Infrastructure.Repositories.Tests
             var categoryNodeId = await CreateTestCategoryNodeAsync();
 
             // Act
-            var result = await _repository!.GetAttributesByCategoryNodeIdAsync(categoryNodeId);
+            var result = await _repository!.GetFeaturesByCategoryNodeIdAsync(categoryNodeId);
 
             // Assert
             Assert.NotNull(result);
@@ -129,7 +129,7 @@ namespace Infrastructure.Repositories.Tests
         }
 
         [Fact]
-        public async Task DeleteAttributesByCategoryNodeIdAsync_ShouldReturnTrue_WhenAttributesDeleted()
+        public async Task DeleteFeaturesByCategoryNodeIdAsync_ShouldReturnTrue_WhenAttributesDeleted()
         {
             if (!IsLocalDbAvailable())
             {
@@ -139,7 +139,7 @@ namespace Infrastructure.Repositories.Tests
             
             // Arrange
             var categoryNodeId = await CreateTestCategoryNodeAsync();
-            var attribute1 = new CategoryMandatoryAttribute
+            var attribute1 = new CategoryMandatoryFeature
             {
                 Id = Guid.NewGuid(),
                 CategoryNodeId = categoryNodeId,
@@ -148,7 +148,7 @@ namespace Infrastructure.Repositories.Tests
                 AttributeType = "string",
                 SortOrder = 1
             };
-            var attribute2 = new CategoryMandatoryAttribute
+            var attribute2 = new CategoryMandatoryFeature
             {
                 Id = Guid.NewGuid(),
                 CategoryNodeId = categoryNodeId,
@@ -162,18 +162,18 @@ namespace Infrastructure.Repositories.Tests
             await _repository!.AddAsync(attribute2);
 
             // Act
-            var result = await _repository!.DeleteAttributesByCategoryNodeIdAsync(categoryNodeId);
+            var result = await _repository!.DeleteFeaturesByCategoryNodeIdAsync(categoryNodeId);
 
             // Assert
             Assert.True(result);
 
             // Verify deletion
-            var remainingAttributes = await _repository!.GetAttributesByCategoryNodeIdAsync(categoryNodeId);
+            var remainingAttributes = await _repository!.GetFeaturesByCategoryNodeIdAsync(categoryNodeId);
             Assert.Empty(remainingAttributes);
         }
 
         [Fact]
-        public async Task DeleteAttributesByCategoryNodeIdAsync_ShouldReturnFalse_WhenNoAttributesFound()
+        public async Task DeleteFeaturesByCategoryNodeIdAsync_ShouldReturnFalse_WhenNoAttributesFound()
         {
             if (!IsLocalDbAvailable())
             {
@@ -185,14 +185,14 @@ namespace Infrastructure.Repositories.Tests
             var categoryNodeId = await CreateTestCategoryNodeAsync();
 
             // Act
-            var result = await _repository!.DeleteAttributesByCategoryNodeIdAsync(categoryNodeId);
+            var result = await _repository!.DeleteFeaturesByCategoryNodeIdAsync(categoryNodeId);
 
             // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public async Task GetAttributesByCategoryNodeIdAsync_ShouldHandleNullSortOrder_ByPlacingAtEnd()
+        public async Task GetFeaturesByCategoryNodeIdAsync_ShouldHandleNullSortOrder_ByPlacingAtEnd()
         {
             if (!IsLocalDbAvailable())
             {
@@ -202,7 +202,7 @@ namespace Infrastructure.Repositories.Tests
             
             // Arrange
             var categoryNodeId = await CreateTestCategoryNodeAsync();
-            var attribute1 = new CategoryMandatoryAttribute
+            var attribute1 = new CategoryMandatoryFeature
             {
                 Id = Guid.NewGuid(),
                 CategoryNodeId = categoryNodeId,
@@ -211,7 +211,7 @@ namespace Infrastructure.Repositories.Tests
                 AttributeType = "string",
                 SortOrder = 1
             };
-            var attribute2 = new CategoryMandatoryAttribute
+            var attribute2 = new CategoryMandatoryFeature
             {
                 Id = Guid.NewGuid(),
                 CategoryNodeId = categoryNodeId,
@@ -225,7 +225,7 @@ namespace Infrastructure.Repositories.Tests
             await _repository!.AddAsync(attribute2);
 
             // Act
-            var result = await _repository!.GetAttributesByCategoryNodeIdAsync(categoryNodeId);
+            var result = await _repository!.GetFeaturesByCategoryNodeIdAsync(categoryNodeId);
 
             // Assert
             Assert.NotNull(result);
@@ -242,7 +242,7 @@ namespace Infrastructure.Repositories.Tests
         }
 
         [Fact]
-        public async Task GetAttributesByCategoryNodeIdAsync_ShouldSortByNameWhenSortOrderIsSame()
+        public async Task GetFeaturesByCategoryNodeIdAsync_ShouldSortByNameWhenSortOrderIsSame()
         {
             if (!IsLocalDbAvailable())
             {
@@ -252,7 +252,7 @@ namespace Infrastructure.Repositories.Tests
             
             // Arrange
             var categoryNodeId = await CreateTestCategoryNodeAsync();
-            var attribute1 = new CategoryMandatoryAttribute
+            var attribute1 = new CategoryMandatoryFeature
             {
                 Id = Guid.NewGuid(),
                 CategoryNodeId = categoryNodeId,
@@ -261,7 +261,7 @@ namespace Infrastructure.Repositories.Tests
                 AttributeType = "string",
                 SortOrder = 1
             };
-            var attribute2 = new CategoryMandatoryAttribute
+            var attribute2 = new CategoryMandatoryFeature
             {
                 Id = Guid.NewGuid(),
                 CategoryNodeId = categoryNodeId,
@@ -270,7 +270,7 @@ namespace Infrastructure.Repositories.Tests
                 AttributeType = "string",
                 SortOrder = 1
             };
-            var attribute3 = new CategoryMandatoryAttribute
+            var attribute3 = new CategoryMandatoryFeature
             {
                 Id = Guid.NewGuid(),
                 CategoryNodeId = categoryNodeId,
@@ -285,7 +285,7 @@ namespace Infrastructure.Repositories.Tests
             await _repository!.AddAsync(attribute3);
 
             // Act
-            var result = await _repository!.GetAttributesByCategoryNodeIdAsync(categoryNodeId);
+            var result = await _repository!.GetFeaturesByCategoryNodeIdAsync(categoryNodeId);
 
             // Assert
             Assert.NotNull(result);
@@ -302,7 +302,7 @@ namespace Infrastructure.Repositories.Tests
         }
 
         [Fact]
-        public async Task GetAttributesByCategoryNodeIdAsync_ShouldSortByNameWhenMultipleNullSortOrders()
+        public async Task GetFeaturesByCategoryNodeIdAsync_ShouldSortByNameWhenMultipleNullSortOrders()
         {
             if (!IsLocalDbAvailable())
             {
@@ -312,7 +312,7 @@ namespace Infrastructure.Repositories.Tests
             
             // Arrange
             var categoryNodeId = await CreateTestCategoryNodeAsync();
-            var attribute1 = new CategoryMandatoryAttribute
+            var attribute1 = new CategoryMandatoryFeature
             {
                 Id = Guid.NewGuid(),
                 CategoryNodeId = categoryNodeId,
@@ -321,7 +321,7 @@ namespace Infrastructure.Repositories.Tests
                 AttributeType = "string",
                 SortOrder = null
             };
-            var attribute2 = new CategoryMandatoryAttribute
+            var attribute2 = new CategoryMandatoryFeature
             {
                 Id = Guid.NewGuid(),
                 CategoryNodeId = categoryNodeId,
@@ -330,7 +330,7 @@ namespace Infrastructure.Repositories.Tests
                 AttributeType = "string",
                 SortOrder = null
             };
-            var attribute3 = new CategoryMandatoryAttribute
+            var attribute3 = new CategoryMandatoryFeature
             {
                 Id = Guid.NewGuid(),
                 CategoryNodeId = categoryNodeId,
@@ -345,7 +345,7 @@ namespace Infrastructure.Repositories.Tests
             await _repository!.AddAsync(attribute3);
 
             // Act
-            var result = await _repository!.GetAttributesByCategoryNodeIdAsync(categoryNodeId);
+            var result = await _repository!.GetFeaturesByCategoryNodeIdAsync(categoryNodeId);
 
             // Assert
             Assert.NotNull(result);
@@ -411,7 +411,7 @@ namespace Infrastructure.Repositories.Tests
                     using var connection = new SqlConnection(_connectionString);
                     connection.Open();
                     
-                    // Delete CategoryMandatoryAttributes first (FK constraint)
+                    // Delete CategoryMandatoryFeatures first (FK constraint)
                     var deleteAttributesQuery = "DELETE FROM dbo.CategoryMandatoryAttribute WHERE CategoryNodeId = @CategoryNodeId";
                     using var deleteAttrCmd = new SqlCommand(deleteAttributesQuery, connection);
                     deleteAttrCmd.Parameters.AddWithValue("@CategoryNodeId", categoryNodeId);

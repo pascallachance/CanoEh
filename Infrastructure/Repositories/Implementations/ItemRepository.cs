@@ -198,11 +198,6 @@ WHERE Id = @Id";
             
             var itemIds = items.Select(i => i.Id).ToList();
             
-            // Get all ItemAttributes for the items and group by ItemID for O(1) lookup
-            var itemAttributeQuery = "SELECT * FROM dbo.ItemAttribute WHERE ItemID IN @itemIds";
-            var itemAttributes = (await dbConnection.QueryAsync<ItemAttribute>(itemAttributeQuery, new { itemIds })).ToList();
-            var itemAttributesByItemId = itemAttributes.GroupBy(ia => ia.ItemID).ToDictionary(g => g.Key, g => g.ToList());
-            
             // Get all ItemVariants for the items (optionally include deleted variants)
             var variantQuery = includeDeleted
                 ? "SELECT * FROM dbo.ItemVariant WHERE ItemId IN @itemIds"
@@ -219,18 +214,23 @@ WHERE Id = @Id";
                 var variantAttributes = (await dbConnection.QueryAsync<ItemVariantAttribute>(variantAttributeQuery, new { variantIds })).ToList();
                 var variantAttributesByVariantId = variantAttributes.GroupBy(va => va.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
                 
-                // Assign ItemVariantAttributes to their respective ItemVariants using dictionary lookup
+                // Get all ItemVariantFeatures for the variants and group by ItemVariantID for O(1) lookup
+                var variantFeaturesQuery = "SELECT * FROM dbo.ItemVariantFeatures WHERE ItemVariantID IN @variantIds";
+                var variantFeatures = (await dbConnection.QueryAsync<ItemVariantFeatures>(variantFeaturesQuery, new { variantIds })).ToList();
+                var variantFeaturesByVariantId = variantFeatures.GroupBy(vf => vf.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
+                
+                // Assign ItemVariantAttributes and ItemVariantFeatures to their respective ItemVariants using dictionary lookup
                 foreach (var variant in variants)
                 {
                     variant.ItemVariantAttributes = variantAttributesByVariantId.TryGetValue(variant.Id, out var attrs) ? attrs : new List<ItemVariantAttribute>();
+                    variant.ItemVariantFeatures = variantFeaturesByVariantId.TryGetValue(variant.Id, out var features) ? features : new List<ItemVariantFeatures>();
                 }
             }
             
-            // Assign ItemVariants and ItemAttributes to their respective Items using dictionary lookup
+            // Assign ItemVariants to their respective Items using dictionary lookup
             foreach (var item in items)
             {
                 item.Variants = variantsByItemId.TryGetValue(item.Id, out var vars) ? vars : new List<ItemVariant>();
-                item.ItemAttributes = itemAttributesByItemId.TryGetValue(item.Id, out var attrs) ? attrs : new List<ItemAttribute>();
             }
             
             return items;
@@ -258,11 +258,6 @@ WHERE Id = @Id";
             
             var itemIds = items.Select(i => i.Id).ToList();
             
-            // Get all ItemAttributes for the items and group by ItemID for O(1) lookup
-            var itemAttributeQuery = "SELECT * FROM dbo.ItemAttribute WHERE ItemID IN @itemIds";
-            var itemAttributes = (await dbConnection.QueryAsync<ItemAttribute>(itemAttributeQuery, new { itemIds })).ToList();
-            var itemAttributesByItemId = itemAttributes.GroupBy(ia => ia.ItemID).ToDictionary(g => g.Key, g => g.ToList());
-            
             // Get all ItemVariants for the items (exclude deleted variants)
             var variantQuery = "SELECT * FROM dbo.ItemVariant WHERE ItemId IN @itemIds AND Deleted = 0";
             var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { itemIds })).ToList();
@@ -277,18 +272,23 @@ WHERE Id = @Id";
                 var variantAttributes = (await dbConnection.QueryAsync<ItemVariantAttribute>(variantAttributeQuery, new { variantIds })).ToList();
                 var variantAttributesByVariantId = variantAttributes.GroupBy(va => va.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
                 
-                // Assign ItemVariantAttributes to their respective ItemVariants using dictionary lookup
+                // Get all ItemVariantFeatures for the variants and group by ItemVariantID for O(1) lookup
+                var variantFeaturesQuery = "SELECT * FROM dbo.ItemVariantFeatures WHERE ItemVariantID IN @variantIds";
+                var variantFeatures = (await dbConnection.QueryAsync<ItemVariantFeatures>(variantFeaturesQuery, new { variantIds })).ToList();
+                var variantFeaturesByVariantId = variantFeatures.GroupBy(vf => vf.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
+                
+                // Assign ItemVariantAttributes and ItemVariantFeatures to their respective ItemVariants using dictionary lookup
                 foreach (var variant in variants)
                 {
                     variant.ItemVariantAttributes = variantAttributesByVariantId.TryGetValue(variant.Id, out var attrs) ? attrs : new List<ItemVariantAttribute>();
+                    variant.ItemVariantFeatures = variantFeaturesByVariantId.TryGetValue(variant.Id, out var features) ? features : new List<ItemVariantFeatures>();
                 }
             }
             
-            // Assign ItemVariants and ItemAttributes to their respective Items using dictionary lookup
+            // Assign ItemVariants to their respective Items using dictionary lookup
             foreach (var item in items)
             {
                 item.Variants = variantsByItemId.TryGetValue(item.Id, out var vars) ? vars : new List<ItemVariant>();
-                item.ItemAttributes = itemAttributesByItemId.TryGetValue(item.Id, out var attrs) ? attrs : new List<ItemAttribute>();
             }
             
             return items;
@@ -325,11 +325,6 @@ WHERE Id = @Id";
             
             var itemIds = items.Select(i => i.Id).ToList();
             
-            // Get all ItemAttributes for the items and group by ItemID for O(1) lookup
-            var itemAttributeQuery = "SELECT * FROM dbo.ItemAttribute WHERE ItemID IN @itemIds";
-            var itemAttributes = (await dbConnection.QueryAsync<ItemAttribute>(itemAttributeQuery, new { itemIds })).ToList();
-            var itemAttributesByItemId = itemAttributes.GroupBy(ia => ia.ItemID).ToDictionary(g => g.Key, g => g.ToList());
-            
             // Get all ItemVariants for the items (exclude deleted variants)
             var variantQuery = "SELECT * FROM dbo.ItemVariant WHERE ItemId IN @itemIds AND Deleted = 0";
             var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { itemIds })).ToList();
@@ -344,18 +339,23 @@ WHERE Id = @Id";
                 var variantAttributes = (await dbConnection.QueryAsync<ItemVariantAttribute>(variantAttributeQuery, new { variantIds })).ToList();
                 var variantAttributesByVariantId = variantAttributes.GroupBy(va => va.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
                 
-                // Assign ItemVariantAttributes to their respective ItemVariants using dictionary lookup
+                // Get all ItemVariantFeatures for the variants and group by ItemVariantID for O(1) lookup
+                var variantFeaturesQuery = "SELECT * FROM dbo.ItemVariantFeatures WHERE ItemVariantID IN @variantIds";
+                var variantFeatures = (await dbConnection.QueryAsync<ItemVariantFeatures>(variantFeaturesQuery, new { variantIds })).ToList();
+                var variantFeaturesByVariantId = variantFeatures.GroupBy(vf => vf.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
+                
+                // Assign ItemVariantAttributes and ItemVariantFeatures to their respective ItemVariants using dictionary lookup
                 foreach (var variant in variants)
                 {
                     variant.ItemVariantAttributes = variantAttributesByVariantId.TryGetValue(variant.Id, out var attrs) ? attrs : new List<ItemVariantAttribute>();
+                    variant.ItemVariantFeatures = variantFeaturesByVariantId.TryGetValue(variant.Id, out var features) ? features : new List<ItemVariantFeatures>();
                 }
             }
             
-            // Assign ItemVariants and ItemAttributes to their respective Items using dictionary lookup
+            // Assign ItemVariants to their respective Items using dictionary lookup
             foreach (var item in items)
             {
                 item.Variants = variantsByItemId.TryGetValue(item.Id, out var vars) ? vars : new List<ItemVariant>();
-                item.ItemAttributes = itemAttributesByItemId.TryGetValue(item.Id, out var attrs) ? attrs : new List<ItemAttribute>();
             }
             
             return items;
@@ -398,11 +398,6 @@ WHERE Id = @Id";
             
             var itemIds = items.Select(i => i.Id).ToList();
             
-            // Get all ItemAttributes for the items and group by ItemID for O(1) lookup
-            var itemAttributeQuery = "SELECT * FROM dbo.ItemAttribute WHERE ItemID IN @itemIds";
-            var itemAttributes = (await dbConnection.QueryAsync<ItemAttribute>(itemAttributeQuery, new { itemIds })).ToList();
-            var itemAttributesByItemId = itemAttributes.GroupBy(ia => ia.ItemID).ToDictionary(g => g.Key, g => g.ToList());
-            
             // Get ItemVariants with offers (exclude deleted variants)
             // Only include variants that have an offer within the date range
             var variantQuery = @"
@@ -426,18 +421,23 @@ WHERE Id = @Id";
                 var variantAttributes = (await dbConnection.QueryAsync<ItemVariantAttribute>(variantAttributeQuery, new { variantIds })).ToList();
                 var variantAttributesByVariantId = variantAttributes.GroupBy(va => va.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
                 
-                // Assign ItemVariantAttributes to their respective ItemVariants using dictionary lookup
+                // Get all ItemVariantFeatures for the variants and group by ItemVariantID for O(1) lookup
+                var variantFeaturesQuery = "SELECT * FROM dbo.ItemVariantFeatures WHERE ItemVariantID IN @variantIds";
+                var variantFeatures = (await dbConnection.QueryAsync<ItemVariantFeatures>(variantFeaturesQuery, new { variantIds })).ToList();
+                var variantFeaturesByVariantId = variantFeatures.GroupBy(vf => vf.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
+                
+                // Assign ItemVariantAttributes and ItemVariantFeatures to their respective ItemVariants using dictionary lookup
                 foreach (var variant in variants)
                 {
                     variant.ItemVariantAttributes = variantAttributesByVariantId.TryGetValue(variant.Id, out var attrs) ? attrs : new List<ItemVariantAttribute>();
+                    variant.ItemVariantFeatures = variantFeaturesByVariantId.TryGetValue(variant.Id, out var features) ? features : new List<ItemVariantFeatures>();
                 }
             }
             
-            // Assign ItemVariants and ItemAttributes to their respective Items using dictionary lookup
+            // Assign ItemVariants to their respective Items using dictionary lookup
             foreach (var item in items)
             {
                 item.Variants = variantsByItemId.TryGetValue(item.Id, out var vars) ? vars : new List<ItemVariant>();
-                item.ItemAttributes = itemAttributesByItemId.TryGetValue(item.Id, out var attrs) ? attrs : new List<ItemAttribute>();
             }
             
             return items;

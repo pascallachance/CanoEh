@@ -5,9 +5,9 @@ using Infrastructure.Repositories.Interfaces;
 
 namespace Infrastructure.Repositories.Implementations
 {
-    public class ItemAttributeRepository(string connectionString) : GenericRepository<ItemAttribute>(connectionString), IItemAttributeRepository
+    public class ItemVariantFeaturesRepository(string connectionString) : GenericRepository<ItemVariantFeatures>(connectionString), IItemVariantFeaturesRepository
     {
-        public override async Task<ItemAttribute> AddAsync(ItemAttribute entity)
+        public override async Task<ItemVariantFeatures> AddAsync(ItemVariantFeatures entity)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -20,13 +20,13 @@ namespace Infrastructure.Repositories.Implementations
             }
 
             var query = @"
-INSERT INTO dbo.ItemAttribute (Id, ItemID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
-VALUES (@Id, @ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
+INSERT INTO dbo.ItemAttribute (Id, ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
+VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
 
             var parameters = new
             {
                 entity.Id,
-                entity.ItemID,
+                entity.ItemVariantID,
                 entity.AttributeName_en,
                 entity.AttributeName_fr,
                 entity.Attributes_en,
@@ -37,13 +37,13 @@ VALUES (@Id, @ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Att
             return entity;
         }
 
-        public override async Task<int> CountAsync(Func<ItemAttribute, bool> predicate)
+        public override async Task<int> CountAsync(Func<ItemVariantFeatures, bool> predicate)
         {
             var items = await GetAllAsync();
             return items.Count(predicate);
         }
 
-        public override async Task DeleteAsync(ItemAttribute entity)
+        public override async Task DeleteAsync(ItemVariantFeatures entity)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -64,13 +64,13 @@ VALUES (@Id, @ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Att
             return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.ItemAttribute WHERE Id = @id", new { id });
         }
 
-        public override async Task<IEnumerable<ItemAttribute>> FindAsync(Func<ItemAttribute, bool> predicate)
+        public override async Task<IEnumerable<ItemVariantFeatures>> FindAsync(Func<ItemVariantFeatures, bool> predicate)
         {
             var items = await GetAllAsync();
             return items.Where(predicate);
         }
 
-        public override async Task<IEnumerable<ItemAttribute>> GetAllAsync()
+        public override async Task<IEnumerable<ItemVariantFeatures>> GetAllAsync()
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -78,10 +78,10 @@ VALUES (@Id, @ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Att
             }
             
             var query = "SELECT * FROM dbo.ItemAttribute";
-            return await dbConnection.QueryAsync<ItemAttribute>(query);
+            return await dbConnection.QueryAsync<ItemVariantFeatures>(query);
         }
 
-        public override async Task<ItemAttribute> GetByIdAsync(Guid id)
+        public override async Task<ItemVariantFeatures> GetByIdAsync(Guid id)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -89,12 +89,12 @@ VALUES (@Id, @ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Att
             }
             
             var query = "SELECT * FROM dbo.ItemAttribute WHERE Id = @id";
-            var result = await dbConnection.QueryFirstOrDefaultAsync<ItemAttribute>(query, new { id });
+            var result = await dbConnection.QueryFirstOrDefaultAsync<ItemVariantFeatures>(query, new { id });
             
-            return result ?? throw new InvalidOperationException($"ItemAttribute with id {id} not found");
+            return result ?? throw new InvalidOperationException($"ItemVariantFeatures with id {id} not found");
         }
 
-        public override async Task<ItemAttribute> UpdateAsync(ItemAttribute entity)
+        public override async Task<ItemVariantFeatures> UpdateAsync(ItemVariantFeatures entity)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -103,14 +103,14 @@ VALUES (@Id, @ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Att
             
             var query = @"
 UPDATE dbo.ItemAttribute 
-SET ItemID = @ItemID, AttributeName_en = @AttributeName_en, AttributeName_fr = @AttributeName_fr, 
+SET ItemVariantID = @ItemVariantID, AttributeName_en = @AttributeName_en, AttributeName_fr = @AttributeName_fr, 
     Attributes_en = @Attributes_en, Attributes_fr = @Attributes_fr
 WHERE Id = @Id";
 
             var parameters = new
             {
                 entity.Id,
-                entity.ItemID,
+                entity.ItemVariantID,
                 entity.AttributeName_en,
                 entity.AttributeName_fr,
                 entity.Attributes_en,
@@ -121,26 +121,26 @@ WHERE Id = @Id";
             return entity;
         }
 
-        public async Task<IEnumerable<ItemAttribute>> GetAttributesByItemIdAsync(Guid itemId)
+        public async Task<IEnumerable<ItemVariantFeatures>> GetFeaturesByItemVariantIdAsync(Guid itemVariantId)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
                 dbConnection.Open();
             }
             
-            var query = "SELECT * FROM dbo.ItemAttribute WHERE ItemID = @itemId";
-            return await dbConnection.QueryAsync<ItemAttribute>(query, new { itemId });
+            var query = "SELECT * FROM dbo.ItemAttribute WHERE ItemVariantID = @itemVariantId";
+            return await dbConnection.QueryAsync<ItemVariantFeatures>(query, new { itemVariantId });
         }
 
-        public async Task<bool> DeleteAttributesByItemIdAsync(Guid itemId)
+        public async Task<bool> DeleteFeaturesByItemVariantIdAsync(Guid itemVariantId)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
                 dbConnection.Open();
             }
             
-            var query = "DELETE FROM dbo.ItemAttribute WHERE ItemID = @itemId";
-            var rowsAffected = await dbConnection.ExecuteAsync(query, new { itemId });
+            var query = "DELETE FROM dbo.ItemAttribute WHERE ItemVariantID = @itemVariantId";
+            var rowsAffected = await dbConnection.ExecuteAsync(query, new { itemVariantId });
             
             return rowsAffected > 0;
         }

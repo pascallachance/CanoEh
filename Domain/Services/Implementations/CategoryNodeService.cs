@@ -50,60 +50,38 @@ namespace Domain.Services.Implementations
                 node.SortOrder = request.SortOrder;
                 node.CreatedAt = DateTime.UtcNow;
 
-                // Prepare CategoryMandatoryAttributes if this is a Category node and attributes are provided
-                var attributesToCreate = new List<CategoryMandatoryAttribute>();
+                // Prepare CategoryMandatoryFeatures if this is a Category node and features are provided
+                var featuresToCreate = new List<CategoryMandatoryFeature>();
                 if (request.NodeType == BaseNode.NodeTypeCategory && 
-                    request.CategoryMandatoryAttributes != null && 
-                    request.CategoryMandatoryAttributes.Any())
+                    request.CategoryMandatoryFeatures != null && 
+                    request.CategoryMandatoryFeatures.Any())
                 {
-                    foreach (var attrDto in request.CategoryMandatoryAttributes)
+                    foreach (var featureDto in request.CategoryMandatoryFeatures)
                     {
-                        attributesToCreate.Add(new CategoryMandatoryAttribute
+                        featuresToCreate.Add(new CategoryMandatoryFeature
                         {
                             Id = Guid.NewGuid(),
                             CategoryNodeId = node.Id,
-                            Name_en = attrDto.Name_en,
-                            Name_fr = attrDto.Name_fr,
-                            AttributeType = attrDto.AttributeType,
-                            SortOrder = attrDto.SortOrder
+                            Name_en = featureDto.Name_en,
+                            Name_fr = featureDto.Name_fr,
+                            AttributeType = featureDto.AttributeType,
+                            SortOrder = featureDto.SortOrder
                         });
                     }
                 }
 
-                // Prepare CategoryMandatoryExtraAttributes if this is a Category node and extra attributes are provided
-                var extraAttributesToCreate = new List<CategoryMandatoryExtraAttribute>();
-                if (request.NodeType == BaseNode.NodeTypeCategory && 
-                    request.CategoryMandatoryExtraAttributes != null && 
-                    request.CategoryMandatoryExtraAttributes.Any())
-                {
-                    foreach (var extraAttrDto in request.CategoryMandatoryExtraAttributes)
-                    {
-                        extraAttributesToCreate.Add(new CategoryMandatoryExtraAttribute
-                        {
-                            Id = Guid.NewGuid(),
-                            CategoryNodeId = node.Id,
-                            Name_en = extraAttrDto.Name_en,
-                            Name_fr = extraAttrDto.Name_fr,
-                            AttributeType = extraAttrDto.AttributeType,
-                            SortOrder = extraAttrDto.SortOrder
-                        });
-                    }
-                }
-
-                // Create node and attributes in a single transaction
+                // Create node and features in a single transaction
                 BaseNode createdNode;
-                IEnumerable<CategoryMandatoryAttribute> createdAttributes;
-                IEnumerable<CategoryMandatoryExtraAttribute> createdExtraAttributes;
+                IEnumerable<CategoryMandatoryFeature> createdFeatures;
 
-                if (attributesToCreate.Any() || extraAttributesToCreate.Any())
+                if (featuresToCreate.Any())
                 {
-                    (createdNode, createdAttributes, createdExtraAttributes) = await _categoryNodeRepository.AddNodeWithAttributesAsync(node, attributesToCreate, extraAttributesToCreate);
+                    (createdNode, createdFeatures) = await _categoryNodeRepository.AddNodeWithFeaturesAsync(node, featuresToCreate);
                 }
                 else
                 {
                     createdNode = await _categoryNodeRepository.AddAsync(node);
-                    createdAttributes = new List<CategoryMandatoryAttribute>();
-                    createdExtraAttributes = new List<CategoryMandatoryExtraAttribute>();
+                    createdFeatures = new List<CategoryMandatoryFeature>();
                 }
 
                 var response = new CreateCategoryNodeResponse
@@ -115,21 +93,13 @@ namespace Domain.Services.Implementations
                     ParentId = createdNode.ParentId,
                     IsActive = createdNode.IsActive,
                     SortOrder = createdNode.SortOrder,
-                    CategoryMandatoryAttributes = createdAttributes.Select(attr => new CategoryMandatoryAttributeResponseDto
+                    CategoryMandatoryFeatures = createdFeatures.Select(feature => new CategoryMandatoryFeatureResponseDto
                     {
-                        Id = attr.Id,
-                        Name_en = attr.Name_en,
-                        Name_fr = attr.Name_fr,
-                        AttributeType = attr.AttributeType,
-                        SortOrder = attr.SortOrder
-                    }).ToList(),
-                    CategoryMandatoryExtraAttributes = createdExtraAttributes.Select(attr => new CategoryMandatoryExtraAttributeResponseDto
-                    {
-                        Id = attr.Id,
-                        Name_en = attr.Name_en,
-                        Name_fr = attr.Name_fr,
-                        AttributeType = attr.AttributeType,
-                        SortOrder = attr.SortOrder
+                        Id = feature.Id,
+                        Name_en = feature.Name_en,
+                        Name_fr = feature.Name_fr,
+                        AttributeType = feature.AttributeType,
+                        SortOrder = feature.SortOrder
                     }).ToList()
                 };
 
@@ -153,19 +123,19 @@ namespace Domain.Services.Implementations
                     return Result.Failure<BulkCreateCategoryNodesResponse>(validationResult.Error!, validationResult.ErrorCode ?? 400);
                 }
 
-                var nodesWithAttributes = new List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes, IEnumerable<CategoryMandatoryExtraAttribute> extraAttributes)>();
+                var nodesWithFeatures = new List<(BaseNode node, IEnumerable<CategoryMandatoryFeature> features)>();
                 var responseDepartements = new List<DepartementNodeResponseDto>();
                 var totalNodesCreated = 0;
 
                 // Process each departement
                 foreach (var deptDto in request.Departements)
                 {
-                    var deptResponse = ProcessDepartementNode(deptDto, nodesWithAttributes, ref totalNodesCreated);
+                    var deptResponse = ProcessDepartementNode(deptDto, nodesWithFeatures, ref totalNodesCreated);
                     responseDepartements.Add(deptResponse);
                 }
 
                 // Create all nodes in a single transaction
-                await _categoryNodeRepository.AddMultipleNodesWithAttributesAsync(nodesWithAttributes);
+                await _categoryNodeRepository.AddMultipleNodesWithFeaturesAsync(nodesWithFeatures);
 
                 var response = new BulkCreateCategoryNodesResponse
                 {
@@ -188,7 +158,7 @@ namespace Domain.Services.Implementations
 
         private DepartementNodeResponseDto ProcessDepartementNode(
             DepartementNodeDto deptDto,
-            List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes, IEnumerable<CategoryMandatoryExtraAttribute> extraAttributes)> nodesWithAttributes,
+            List<(BaseNode node, IEnumerable<CategoryMandatoryFeature> features)> nodesWithFeatures,
             ref int totalNodesCreated)
         {
             var dept = new DepartementNode
@@ -202,7 +172,7 @@ namespace Domain.Services.Implementations
                 CreatedAt = DateTime.UtcNow
             };
 
-            nodesWithAttributes.Add((dept, new List<CategoryMandatoryAttribute>(), new List<CategoryMandatoryExtraAttribute>()));
+            nodesWithFeatures.Add((dept, new List<CategoryMandatoryFeature>()));
             totalNodesCreated++;
 
             var response = new DepartementNodeResponseDto
@@ -222,7 +192,7 @@ namespace Domain.Services.Implementations
             {
                 foreach (var navDto in deptDto.NavigationNodes)
                 {
-                    var navResponse = ProcessNavigationNode(navDto, dept.Id, nodesWithAttributes, ref totalNodesCreated);
+                    var navResponse = ProcessNavigationNode(navDto, dept.Id, nodesWithFeatures, ref totalNodesCreated);
                     response.NavigationNodes.Add(navResponse);
                 }
             }
@@ -232,7 +202,7 @@ namespace Domain.Services.Implementations
             {
                 foreach (var catDto in deptDto.CategoryNodes)
                 {
-                    var catResponse = ProcessCategoryNode(catDto, dept.Id, nodesWithAttributes, ref totalNodesCreated);
+                    var catResponse = ProcessCategoryNode(catDto, dept.Id, nodesWithFeatures, ref totalNodesCreated);
                     response.CategoryNodes.Add(catResponse);
                 }
             }
@@ -243,7 +213,7 @@ namespace Domain.Services.Implementations
         private NavigationNodeResponseDto ProcessNavigationNode(
             NavigationNodeDto navDto,
             Guid parentId,
-            List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes, IEnumerable<CategoryMandatoryExtraAttribute> extraAttributes)> nodesWithAttributes,
+            List<(BaseNode node, IEnumerable<CategoryMandatoryFeature> features)> nodesWithFeatures,
             ref int totalNodesCreated)
         {
             var nav = new NavigationNode
@@ -257,7 +227,7 @@ namespace Domain.Services.Implementations
                 CreatedAt = DateTime.UtcNow
             };
 
-            nodesWithAttributes.Add((nav, new List<CategoryMandatoryAttribute>(), new List<CategoryMandatoryExtraAttribute>()));
+            nodesWithFeatures.Add((nav, new List<CategoryMandatoryFeature>()));
             totalNodesCreated++;
 
             var response = new NavigationNodeResponseDto
@@ -277,7 +247,7 @@ namespace Domain.Services.Implementations
             {
                 foreach (var childNavDto in navDto.NavigationNodes)
                 {
-                    var childNavResponse = ProcessNavigationNode(childNavDto, nav.Id, nodesWithAttributes, ref totalNodesCreated);
+                    var childNavResponse = ProcessNavigationNode(childNavDto, nav.Id, nodesWithFeatures, ref totalNodesCreated);
                     response.NavigationNodes.Add(childNavResponse);
                 }
             }
@@ -287,7 +257,7 @@ namespace Domain.Services.Implementations
             {
                 foreach (var catDto in navDto.CategoryNodes)
                 {
-                    var catResponse = ProcessCategoryNode(catDto, nav.Id, nodesWithAttributes, ref totalNodesCreated);
+                    var catResponse = ProcessCategoryNode(catDto, nav.Id, nodesWithFeatures, ref totalNodesCreated);
                     response.CategoryNodes.Add(catResponse);
                 }
             }
@@ -298,7 +268,7 @@ namespace Domain.Services.Implementations
         private CategoryNodeResponseDto ProcessCategoryNode(
             CategoryNodeDto catDto,
             Guid parentId,
-            List<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes, IEnumerable<CategoryMandatoryExtraAttribute> extraAttributes)> nodesWithAttributes,
+            List<(BaseNode node, IEnumerable<CategoryMandatoryFeature> features)> nodesWithFeatures,
             ref int totalNodesCreated)
         {
             var cat = new CategoryNode
@@ -312,41 +282,24 @@ namespace Domain.Services.Implementations
                 CreatedAt = DateTime.UtcNow
             };
 
-            var attributes = new List<CategoryMandatoryAttribute>();
-            if (catDto.CategoryMandatoryAttributes != null && catDto.CategoryMandatoryAttributes.Any())
+            var features = new List<CategoryMandatoryFeature>();
+            if (catDto.CategoryMandatoryFeatures != null && catDto.CategoryMandatoryFeatures.Any())
             {
-                foreach (var attrDto in catDto.CategoryMandatoryAttributes)
+                foreach (var featureDto in catDto.CategoryMandatoryFeatures)
                 {
-                    attributes.Add(new CategoryMandatoryAttribute
+                    features.Add(new CategoryMandatoryFeature
                     {
                         Id = Guid.NewGuid(),
                         CategoryNodeId = cat.Id,
-                        Name_en = attrDto.Name_en,
-                        Name_fr = attrDto.Name_fr,
-                        AttributeType = attrDto.AttributeType,
-                        SortOrder = attrDto.SortOrder
+                        Name_en = featureDto.Name_en,
+                        Name_fr = featureDto.Name_fr,
+                        AttributeType = featureDto.AttributeType,
+                        SortOrder = featureDto.SortOrder
                     });
                 }
             }
 
-            var extraAttributes = new List<CategoryMandatoryExtraAttribute>();
-            if (catDto.CategoryMandatoryExtraAttributes != null && catDto.CategoryMandatoryExtraAttributes.Any())
-            {
-                foreach (var extraAttrDto in catDto.CategoryMandatoryExtraAttributes)
-                {
-                    extraAttributes.Add(new CategoryMandatoryExtraAttribute
-                    {
-                        Id = Guid.NewGuid(),
-                        CategoryNodeId = cat.Id,
-                        Name_en = extraAttrDto.Name_en,
-                        Name_fr = extraAttrDto.Name_fr,
-                        AttributeType = extraAttrDto.AttributeType,
-                        SortOrder = extraAttrDto.SortOrder
-                    });
-                }
-            }
-
-            nodesWithAttributes.Add((cat, attributes, extraAttributes));
+            nodesWithFeatures.Add((cat, features));
             totalNodesCreated++;
 
             var response = new CategoryNodeResponseDto
@@ -357,21 +310,13 @@ namespace Domain.Services.Implementations
                 NodeType = cat.NodeType,
                 IsActive = cat.IsActive,
                 SortOrder = cat.SortOrder,
-                CategoryMandatoryAttributes = attributes.Select(attr => new CategoryMandatoryAttributeResponseDto
+                CategoryMandatoryFeatures = features.Select(feature => new CategoryMandatoryFeatureResponseDto
                 {
-                    Id = attr.Id,
-                    Name_en = attr.Name_en,
-                    Name_fr = attr.Name_fr,
-                    AttributeType = attr.AttributeType,
-                    SortOrder = attr.SortOrder
-                }).ToList(),
-                CategoryMandatoryExtraAttributes = extraAttributes.Select(attr => new CategoryMandatoryExtraAttributeResponseDto
-                {
-                    Id = attr.Id,
-                    Name_en = attr.Name_en,
-                    Name_fr = attr.Name_fr,
-                    AttributeType = attr.AttributeType,
-                    SortOrder = attr.SortOrder
+                    Id = feature.Id,
+                    Name_en = feature.Name_en,
+                    Name_fr = feature.Name_fr,
+                    AttributeType = feature.AttributeType,
+                    SortOrder = feature.SortOrder
                 }).ToList()
             };
 

@@ -1,12 +1,10 @@
 namespace Infrastructure.Data
 {
     /// <summary>
-    /// Represents a mandatory extra attribute for a CategoryNode.
-    /// These extra attributes are required when creating or editing item variants in a category.
-    /// They differ from CategoryMandatoryAttribute in that they are used for variant-level details
-    /// such as SKU, Dimensions, etc.
+    /// Represents a mandatory feature for a CategoryNode.
+    /// These features are required when creating or editing products in a category.
     /// </summary>
-    public class CategoryMandatoryExtraAttribute
+    public class CategoryMandatoryFeature
     {
         public Guid Id { get; set; }
         public Guid CategoryNodeId { get; set; }

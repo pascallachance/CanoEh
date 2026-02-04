@@ -97,11 +97,10 @@ public class Program
             var connectionString = config.GetConnectionString("DefaultConnection");
             var itemRepository = provider.GetRequiredService<IItemRepository>();
             var itemVariantRepository = provider.GetRequiredService<IItemVariantRepository>();
-            var itemAttributeRepository = provider.GetRequiredService<IItemAttributeRepository>();
+            var itemVariantFeaturesRepository = provider.GetRequiredService<IItemVariantFeaturesRepository>();
             var itemVariantAttributeRepository = provider.GetRequiredService<IItemVariantAttributeRepository>();
-            var itemVariantExtraAttributeRepository = provider.GetRequiredService<IItemVariantExtraAttributeRepository>();
-            return new ItemService(itemRepository, itemVariantRepository, itemAttributeRepository, 
-                                 itemVariantAttributeRepository, itemVariantExtraAttributeRepository, connectionString);
+            return new ItemService(itemRepository, itemVariantRepository, itemVariantFeaturesRepository, 
+                                 itemVariantAttributeRepository, connectionString);
         });
         builder.Services.AddScoped<ICategoryService, CategoryService>();
         builder.Services.AddScoped<ICategoryNodeService, CategoryNodeService>();
@@ -169,11 +168,11 @@ public class Program
             return new CategoryNodeRepository(connectionString);
         });
 
-        builder.Services.AddScoped<ICategoryMandatoryAttributeRepository>(provider =>
+        builder.Services.AddScoped<ICategoryMandatoryFeatureRepository>(provider =>
         {
             var config = provider.GetRequiredService<IConfiguration>();
             var connectionString = config.GetConnectionString("DefaultConnection");
-            return new CategoryMandatoryAttributeRepository(connectionString);
+            return new CategoryMandatoryFeatureRepository(connectionString);
         });
 
         builder.Services.AddScoped<ICompanyRepository>(provider =>
@@ -204,11 +203,11 @@ public class Program
             return new TaxRateRepository(connectionString);
         });
 
-        builder.Services.AddScoped<IItemAttributeRepository>(provider =>
+        builder.Services.AddScoped<IItemVariantFeaturesRepository>(provider =>
         {
             var config = provider.GetRequiredService<IConfiguration>();
             var connectionString = config.GetConnectionString("DefaultConnection");
-            return new ItemAttributeRepository(connectionString);
+            return new ItemVariantFeaturesRepository(connectionString);
         });
 
         builder.Services.AddScoped<IItemVariantAttributeRepository>(provider =>
@@ -216,13 +215,6 @@ public class Program
             var config = provider.GetRequiredService<IConfiguration>();
             var connectionString = config.GetConnectionString("DefaultConnection");
             return new ItemVariantAttributeRepository(connectionString);
-        });
-
-        builder.Services.AddScoped<IItemVariantExtraAttributeRepository>(provider =>
-        {
-            var config = provider.GetRequiredService<IConfiguration>();
-            var connectionString = config.GetConnectionString("DefaultConnection");
-            return new ItemVariantExtraAttributeRepository(connectionString);
         });
 
         builder.Services.AddScoped<IOrderRepository>(provider =>

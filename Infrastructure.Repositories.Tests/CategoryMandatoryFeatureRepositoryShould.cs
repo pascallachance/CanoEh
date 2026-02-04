@@ -6,18 +6,18 @@ using Moq;
 
 namespace Infrastructure.Repositories.Tests
 {
-    public class CategoryMandatoryAttributeRepositoryShould : BaseRepositoryShould<CategoryMandatoryAttribute>
+    public class CategoryMandatoryFeatureRepositoryShould : BaseRepositoryShould<CategoryMandatoryFeature>
     {
-        private readonly Mock<ICategoryMandatoryAttributeRepository> _mockRepository;
+        private readonly Mock<ICategoryMandatoryFeatureRepository> _mockRepository;
 
-        public CategoryMandatoryAttributeRepositoryShould()
+        public CategoryMandatoryFeatureRepositoryShould()
         {
-            _mockRepository = new Mock<ICategoryMandatoryAttributeRepository>();
+            _mockRepository = new Mock<ICategoryMandatoryFeatureRepository>();
         }
 
-        protected override CategoryMandatoryAttribute CreateValidEntity()
+        protected override CategoryMandatoryFeature CreateValidEntity()
         {
-            return new CategoryMandatoryAttribute
+            return new CategoryMandatoryFeature
             {
                 Id = Guid.NewGuid(),
                 CategoryNodeId = Guid.NewGuid(),
@@ -28,12 +28,12 @@ namespace Infrastructure.Repositories.Tests
             };
         }
 
-        protected override IEnumerable<CategoryMandatoryAttribute> CreateMultipleValidEntities()
+        protected override IEnumerable<CategoryMandatoryFeature> CreateMultipleValidEntities()
         {
             var categoryNodeId = Guid.NewGuid();
-            return new List<CategoryMandatoryAttribute>
+            return new List<CategoryMandatoryFeature>
             {
-                new CategoryMandatoryAttribute
+                new CategoryMandatoryFeature
                 {
                     Id = Guid.NewGuid(),
                     CategoryNodeId = categoryNodeId,
@@ -42,7 +42,7 @@ namespace Infrastructure.Repositories.Tests
                     AttributeType = "string",
                     SortOrder = 1
                 },
-                new CategoryMandatoryAttribute
+                new CategoryMandatoryFeature
                 {
                     Id = Guid.NewGuid(),
                     CategoryNodeId = categoryNodeId,
@@ -51,7 +51,7 @@ namespace Infrastructure.Repositories.Tests
                     AttributeType = "enum",
                     SortOrder = 2
                 },
-                new CategoryMandatoryAttribute
+                new CategoryMandatoryFeature
                 {
                     Id = Guid.NewGuid(),
                     CategoryNodeId = categoryNodeId,
@@ -64,75 +64,75 @@ namespace Infrastructure.Repositories.Tests
         }
 
         [Fact]
-        public async Task GetAttributesByCategoryNodeIdAsync_ShouldReturnAttributes_WhenAttributesExist()
+        public async Task GetFeaturesByCategoryNodeIdAsync_ShouldReturnAttributes_WhenAttributesExist()
         {
             // Arrange
             var categoryNodeId = Guid.NewGuid();
             var attributes = CreateMultipleValidEntities();
 
-            _mockRepository.Setup(repo => repo.GetAttributesByCategoryNodeIdAsync(categoryNodeId))
+            _mockRepository.Setup(repo => repo.GetFeaturesByCategoryNodeIdAsync(categoryNodeId))
                           .ReturnsAsync(attributes);
 
             // Act
-            var result = await _mockRepository.Object.GetAttributesByCategoryNodeIdAsync(categoryNodeId);
+            var result = await _mockRepository.Object.GetFeaturesByCategoryNodeIdAsync(categoryNodeId);
 
             // Assert
             Assert.NotNull(result);
             Assert.Equal(attributes.Count(), result.Count());
-            _mockRepository.Verify(repo => repo.GetAttributesByCategoryNodeIdAsync(categoryNodeId), Times.Once);
+            _mockRepository.Verify(repo => repo.GetFeaturesByCategoryNodeIdAsync(categoryNodeId), Times.Once);
         }
 
         [Fact]
-        public async Task GetAttributesByCategoryNodeIdAsync_ShouldReturnEmpty_WhenNoAttributesExist()
+        public async Task GetFeaturesByCategoryNodeIdAsync_ShouldReturnEmpty_WhenNoAttributesExist()
         {
             // Arrange
             var categoryNodeId = Guid.NewGuid();
-            var emptyList = new List<CategoryMandatoryAttribute>();
+            var emptyList = new List<CategoryMandatoryFeature>();
 
-            _mockRepository.Setup(repo => repo.GetAttributesByCategoryNodeIdAsync(categoryNodeId))
+            _mockRepository.Setup(repo => repo.GetFeaturesByCategoryNodeIdAsync(categoryNodeId))
                           .ReturnsAsync(emptyList);
 
             // Act
-            var result = await _mockRepository.Object.GetAttributesByCategoryNodeIdAsync(categoryNodeId);
+            var result = await _mockRepository.Object.GetFeaturesByCategoryNodeIdAsync(categoryNodeId);
 
             // Assert
             Assert.NotNull(result);
             Assert.Empty(result);
-            _mockRepository.Verify(repo => repo.GetAttributesByCategoryNodeIdAsync(categoryNodeId), Times.Once);
+            _mockRepository.Verify(repo => repo.GetFeaturesByCategoryNodeIdAsync(categoryNodeId), Times.Once);
         }
 
         [Fact]
-        public async Task DeleteAttributesByCategoryNodeIdAsync_ShouldReturnTrue_WhenAttributesDeleted()
+        public async Task DeleteFeaturesByCategoryNodeIdAsync_ShouldReturnTrue_WhenAttributesDeleted()
         {
             // Arrange
             var categoryNodeId = Guid.NewGuid();
 
-            _mockRepository.Setup(repo => repo.DeleteAttributesByCategoryNodeIdAsync(categoryNodeId))
+            _mockRepository.Setup(repo => repo.DeleteFeaturesByCategoryNodeIdAsync(categoryNodeId))
                           .ReturnsAsync(true);
 
             // Act
-            var result = await _mockRepository.Object.DeleteAttributesByCategoryNodeIdAsync(categoryNodeId);
+            var result = await _mockRepository.Object.DeleteFeaturesByCategoryNodeIdAsync(categoryNodeId);
 
             // Assert
             Assert.True(result);
-            _mockRepository.Verify(repo => repo.DeleteAttributesByCategoryNodeIdAsync(categoryNodeId), Times.Once);
+            _mockRepository.Verify(repo => repo.DeleteFeaturesByCategoryNodeIdAsync(categoryNodeId), Times.Once);
         }
 
         [Fact]
-        public async Task DeleteAttributesByCategoryNodeIdAsync_ShouldReturnFalse_WhenNoAttributesFound()
+        public async Task DeleteFeaturesByCategoryNodeIdAsync_ShouldReturnFalse_WhenNoAttributesFound()
         {
             // Arrange
             var categoryNodeId = Guid.NewGuid();
 
-            _mockRepository.Setup(repo => repo.DeleteAttributesByCategoryNodeIdAsync(categoryNodeId))
+            _mockRepository.Setup(repo => repo.DeleteFeaturesByCategoryNodeIdAsync(categoryNodeId))
                           .ReturnsAsync(false);
 
             // Act
-            var result = await _mockRepository.Object.DeleteAttributesByCategoryNodeIdAsync(categoryNodeId);
+            var result = await _mockRepository.Object.DeleteFeaturesByCategoryNodeIdAsync(categoryNodeId);
 
             // Assert
             Assert.False(result);
-            _mockRepository.Verify(repo => repo.DeleteAttributesByCategoryNodeIdAsync(categoryNodeId), Times.Once);
+            _mockRepository.Verify(repo => repo.DeleteFeaturesByCategoryNodeIdAsync(categoryNodeId), Times.Once);
         }
     }
 }

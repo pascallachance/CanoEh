@@ -296,10 +296,9 @@ ORDER BY SortOrder, Name_en";
             return await GetNodesByTypeAsync(BaseNode.NodeTypeCategory);
         }
 
-        public async Task<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes, IEnumerable<CategoryMandatoryExtraAttribute> extraAttributes)> AddNodeWithAttributesAsync(
+        public async Task<(BaseNode node, IEnumerable<CategoryMandatoryFeature> features)> AddNodeWithFeaturesAsync(
             BaseNode node, 
-            IEnumerable<CategoryMandatoryAttribute> attributes,
-            IEnumerable<CategoryMandatoryExtraAttribute> extraAttributes)
+            IEnumerable<CategoryMandatoryFeature> features)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -345,58 +344,33 @@ VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @C
 
                 await dbConnection.ExecuteAsync(nodeQuery, nodeParameters, transaction);
 
-                // Insert the CategoryMandatoryAttributes if any
-                var createdAttributes = new List<CategoryMandatoryAttribute>();
-                if (attributes != null && attributes.Any())
+                // Insert the CategoryMandatoryFeatures if any
+                var createdFeatures = new List<CategoryMandatoryFeature>();
+                if (features != null && features.Any())
                 {
-                    var attributeQuery = @"
-INSERT INTO dbo.CategoryMandatoryAttribute (Id, CategoryNodeId, Name_en, Name_fr, AttributeType, SortOrder)
+                    var featureQuery = @"
+INSERT INTO dbo.CategoryMandatoryFeature (Id, CategoryNodeId, Name_en, Name_fr, AttributeType, SortOrder)
 VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
 
-                    foreach (var attribute in attributes)
+                    foreach (var feature in features)
                     {
-                        var attributeParameters = new
+                        var featureParameters = new
                         {
-                            attribute.Id,
-                            attribute.CategoryNodeId,
-                            attribute.Name_en,
-                            attribute.Name_fr,
-                            attribute.AttributeType,
-                            attribute.SortOrder
+                            feature.Id,
+                            feature.CategoryNodeId,
+                            feature.Name_en,
+                            feature.Name_fr,
+                            feature.AttributeType,
+                            feature.SortOrder
                         };
 
-                        await dbConnection.ExecuteAsync(attributeQuery, attributeParameters, transaction);
-                        createdAttributes.Add(attribute);
-                    }
-                }
-
-                // Insert the CategoryMandatoryExtraAttributes if any
-                var createdExtraAttributes = new List<CategoryMandatoryExtraAttribute>();
-                if (extraAttributes != null && extraAttributes.Any())
-                {
-                    var extraAttributeQuery = @"
-INSERT INTO dbo.CategoryMandatoryExtraAttribute (Id, CategoryNodeId, Name_en, Name_fr, AttributeType, SortOrder)
-VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
-
-                    foreach (var extraAttribute in extraAttributes)
-                    {
-                        var extraAttributeParameters = new
-                        {
-                            extraAttribute.Id,
-                            extraAttribute.CategoryNodeId,
-                            extraAttribute.Name_en,
-                            extraAttribute.Name_fr,
-                            extraAttribute.AttributeType,
-                            extraAttribute.SortOrder
-                        };
-
-                        await dbConnection.ExecuteAsync(extraAttributeQuery, extraAttributeParameters, transaction);
-                        createdExtraAttributes.Add(extraAttribute);
+                        await dbConnection.ExecuteAsync(featureQuery, featureParameters, transaction);
+                        createdFeatures.Add(feature);
                     }
                 }
 
                 transaction.Commit();
-                return (node, createdAttributes, createdExtraAttributes);
+                return (node, createdFeatures);
             }
             catch
             {
@@ -405,8 +379,8 @@ VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
             }
         }
 
-        public async Task<IEnumerable<BaseNode>> AddMultipleNodesWithAttributesAsync(
-            IEnumerable<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes, IEnumerable<CategoryMandatoryExtraAttribute> extraAttributes)> nodesWithAttributes)
+        public async Task<IEnumerable<BaseNode>> AddMultipleNodesWithFeaturesAsync(
+            IEnumerable<(BaseNode node, IEnumerable<CategoryMandatoryFeature> features)> nodesWithFeatures)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -418,10 +392,9 @@ VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
             {
                 var createdNodes = new List<BaseNode>();
                 var allNodeParameters = new List<object>();
-                var allAttributeParameters = new List<object>();
-                var allExtraAttributeParameters = new List<object>();
+                var allFeatureParameters = new List<object>();
 
-                foreach (var (node, attributes, extraAttributes) in nodesWithAttributes)
+                foreach (var (node, features) in nodesWithFeatures)
                 {
                     // Validate node type
                     if (node.NodeType != BaseNode.NodeTypeDepartement && node.NodeType != BaseNode.NodeTypeNavigation && node.NodeType != BaseNode.NodeTypeCategory)
@@ -453,26 +426,15 @@ VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
                         node.CreatedAt
                     });
 
-                    // Collect attribute parameters for batch insert
-                    allAttributeParameters.AddRange(attributes.Select(attribute => new
+                    // Collect feature parameters for batch insert
+                    allFeatureParameters.AddRange(features.Select(feature => new
                     {
-                        attribute.Id,
-                        attribute.CategoryNodeId,
-                        attribute.Name_en,
-                        attribute.Name_fr,
-                        attribute.AttributeType,
-                        attribute.SortOrder
-                    }));
-
-                    // Collect extra attribute parameters for batch insert
-                    allExtraAttributeParameters.AddRange(extraAttributes.Select(extraAttribute => new
-                    {
-                        extraAttribute.Id,
-                        extraAttribute.CategoryNodeId,
-                        extraAttribute.Name_en,
-                        extraAttribute.Name_fr,
-                        extraAttribute.AttributeType,
-                        extraAttribute.SortOrder
+                        feature.Id,
+                        feature.CategoryNodeId,
+                        feature.Name_en,
+                        feature.Name_fr,
+                        feature.AttributeType,
+                        feature.SortOrder
                     }));
 
                     createdNodes.Add(node);
@@ -488,24 +450,14 @@ VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @C
                     await dbConnection.ExecuteAsync(nodeQuery, allNodeParameters, transaction);
                 }
 
-                // Batch insert all attributes in a single database roundtrip
-                if (allAttributeParameters.Any())
+                // Batch insert all features in a single database roundtrip
+                if (allFeatureParameters.Any())
                 {
-                    var attributeQuery = @"
-INSERT INTO dbo.CategoryMandatoryAttribute (Id, CategoryNodeId, Name_en, Name_fr, AttributeType, SortOrder)
+                    var featureQuery = @"
+INSERT INTO dbo.CategoryMandatoryFeature (Id, CategoryNodeId, Name_en, Name_fr, AttributeType, SortOrder)
 VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
                     
-                    await dbConnection.ExecuteAsync(attributeQuery, allAttributeParameters, transaction);
-                }
-
-                // Batch insert all extra attributes in a single database roundtrip
-                if (allExtraAttributeParameters.Any())
-                {
-                    var extraAttributeQuery = @"
-INSERT INTO dbo.CategoryMandatoryExtraAttribute (Id, CategoryNodeId, Name_en, Name_fr, AttributeType, SortOrder)
-VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
-                    
-                    await dbConnection.ExecuteAsync(extraAttributeQuery, allExtraAttributeParameters, transaction);
+                    await dbConnection.ExecuteAsync(featureQuery, allFeatureParameters, transaction);
                 }
 
                 transaction.Commit();

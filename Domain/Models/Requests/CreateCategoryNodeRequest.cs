@@ -4,15 +4,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Domain.Models.Requests
 {
-    public class CreateCategoryMandatoryAttributeDto
-    {
-        public required string Name_en { get; set; }
-        public required string Name_fr { get; set; }
-        public string? AttributeType { get; set; }
-        public int? SortOrder { get; set; }
-    }
-
-    public class CreateCategoryMandatoryExtraAttributeDto
+    public class CreateCategoryMandatoryFeatureDto
     {
         public required string Name_en { get; set; }
         public required string Name_fr { get; set; }
@@ -31,8 +23,7 @@ namespace Domain.Models.Requests
         public Guid? ParentId { get; set; }
         public bool IsActive { get; set; } = true;
         public int? SortOrder { get; set; }
-        public List<CreateCategoryMandatoryAttributeDto>? CategoryMandatoryAttributes { get; set; }
-        public List<CreateCategoryMandatoryExtraAttributeDto>? CategoryMandatoryExtraAttributes { get; set; }
+        public List<CreateCategoryMandatoryFeatureDto>? CategoryMandatoryFeatures { get; set; }
 
         public Result Validate()
         {
@@ -78,78 +69,40 @@ namespace Domain.Models.Requests
                 return Result.Failure($"{NodeType} nodes must have a parent.", StatusCodes.Status400BadRequest);
             }
 
-            // CategoryMandatoryAttributes can only be provided for Category nodes
-            if (CategoryMandatoryAttributes != null && CategoryMandatoryAttributes.Any() && NodeType != BaseNode.NodeTypeCategory)
+            // CategoryMandatoryFeatures can only be provided for Category nodes
+            if (CategoryMandatoryFeatures != null && CategoryMandatoryFeatures.Any() && NodeType != BaseNode.NodeTypeCategory)
             {
-                return Result.Failure("CategoryMandatoryAttributes can only be provided when creating a Category node.", StatusCodes.Status400BadRequest);
+                return Result.Failure("CategoryMandatoryFeatures can only be provided when creating a Category node.", StatusCodes.Status400BadRequest);
             }
 
-            // CategoryMandatoryExtraAttributes can only be provided for Category nodes
-            if (CategoryMandatoryExtraAttributes != null && CategoryMandatoryExtraAttributes.Any() && NodeType != BaseNode.NodeTypeCategory)
+            // Validate CategoryMandatoryFeatures if provided
+            if (CategoryMandatoryFeatures != null && CategoryMandatoryFeatures.Any())
             {
-                return Result.Failure("CategoryMandatoryExtraAttributes can only be provided when creating a Category node.", StatusCodes.Status400BadRequest);
-            }
-
-            // Validate CategoryMandatoryAttributes if provided
-            if (CategoryMandatoryAttributes != null && CategoryMandatoryAttributes.Any())
-            {
-                foreach (var attr in CategoryMandatoryAttributes)
+                foreach (var feature in CategoryMandatoryFeatures)
                 {
-                    if (string.IsNullOrWhiteSpace(attr.Name_en))
+                    if (string.IsNullOrWhiteSpace(feature.Name_en))
                     {
-                        return Result.Failure("CategoryMandatoryAttribute English name is required.", StatusCodes.Status400BadRequest);
+                        return Result.Failure("CategoryMandatoryFeature English name is required.", StatusCodes.Status400BadRequest);
                     }
                     
-                    if (string.IsNullOrWhiteSpace(attr.Name_fr))
+                    if (string.IsNullOrWhiteSpace(feature.Name_fr))
                     {
-                        return Result.Failure("CategoryMandatoryAttribute French name is required.", StatusCodes.Status400BadRequest);
+                        return Result.Failure("CategoryMandatoryFeature French name is required.", StatusCodes.Status400BadRequest);
                     }
 
-                    if (attr.Name_en.Length > MaxAttributeNameLength)
+                    if (feature.Name_en.Length > MaxAttributeNameLength)
                     {
-                        return Result.Failure($"CategoryMandatoryAttribute English name cannot exceed {MaxAttributeNameLength} characters.", StatusCodes.Status400BadRequest);
+                        return Result.Failure($"CategoryMandatoryFeature English name cannot exceed {MaxAttributeNameLength} characters.", StatusCodes.Status400BadRequest);
                     }
 
-                    if (attr.Name_fr.Length > MaxAttributeNameLength)
+                    if (feature.Name_fr.Length > MaxAttributeNameLength)
                     {
-                        return Result.Failure($"CategoryMandatoryAttribute French name cannot exceed {MaxAttributeNameLength} characters.", StatusCodes.Status400BadRequest);
+                        return Result.Failure($"CategoryMandatoryFeature French name cannot exceed {MaxAttributeNameLength} characters.", StatusCodes.Status400BadRequest);
                     }
 
-                    if (!string.IsNullOrWhiteSpace(attr.AttributeType) && attr.AttributeType.Length > MaxAttributeTypeLength)
+                    if (!string.IsNullOrWhiteSpace(feature.AttributeType) && feature.AttributeType.Length > MaxAttributeTypeLength)
                     {
-                        return Result.Failure($"CategoryMandatoryAttribute AttributeType cannot exceed {MaxAttributeTypeLength} characters.", StatusCodes.Status400BadRequest);
-                    }
-                }
-            }
-
-            // Validate CategoryMandatoryExtraAttributes if provided
-            if (CategoryMandatoryExtraAttributes != null && CategoryMandatoryExtraAttributes.Any())
-            {
-                foreach (var attr in CategoryMandatoryExtraAttributes)
-                {
-                    if (string.IsNullOrWhiteSpace(attr.Name_en))
-                    {
-                        return Result.Failure("CategoryMandatoryExtraAttribute English name is required.", StatusCodes.Status400BadRequest);
-                    }
-                    
-                    if (string.IsNullOrWhiteSpace(attr.Name_fr))
-                    {
-                        return Result.Failure("CategoryMandatoryExtraAttribute French name is required.", StatusCodes.Status400BadRequest);
-                    }
-
-                    if (attr.Name_en.Length > MaxAttributeNameLength)
-                    {
-                        return Result.Failure($"CategoryMandatoryExtraAttribute English name cannot exceed {MaxAttributeNameLength} characters.", StatusCodes.Status400BadRequest);
-                    }
-
-                    if (attr.Name_fr.Length > MaxAttributeNameLength)
-                    {
-                        return Result.Failure($"CategoryMandatoryExtraAttribute French name cannot exceed {MaxAttributeNameLength} characters.", StatusCodes.Status400BadRequest);
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(attr.AttributeType) && attr.AttributeType.Length > MaxAttributeTypeLength)
-                    {
-                        return Result.Failure($"CategoryMandatoryExtraAttribute AttributeType cannot exceed {MaxAttributeTypeLength} characters.", StatusCodes.Status400BadRequest);
+                        return Result.Failure($"CategoryMandatoryFeature AttributeType cannot exceed {MaxAttributeTypeLength} characters.", StatusCodes.Status400BadRequest);
                     }
                 }
             }

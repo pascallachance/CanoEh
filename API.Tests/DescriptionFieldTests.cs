@@ -24,7 +24,7 @@ namespace API.Tests
                 Description_fr = description_fr,
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>(),
+                ItemVariantFeatures = new List<ItemVariantFeatures>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false
@@ -51,7 +51,7 @@ namespace API.Tests
                 Description_fr = null, // Should be allowed
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>(),
+                ItemVariantFeatures = new List<ItemVariantFeatures>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false
@@ -79,7 +79,7 @@ namespace API.Tests
                 Description_fr = description_fr,
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<CreateItemVariantRequest>(),
-                ItemAttributes = new List<CreateItemAttributeRequest>()
+                ItemVariantFeatures = new List<CreateItemVariantFeaturesRequest>()
             };
 
             // Assert
@@ -105,7 +105,7 @@ namespace API.Tests
                 Description_fr = description_fr,
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>()
+                ItemVariantFeatures = new List<ItemVariantFeatures>()
             };
 
             // Assert
@@ -131,7 +131,7 @@ namespace API.Tests
                 Description_fr = description_fr,
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariantDto>(),
-                ItemAttributes = new List<ItemAttributeDto>(),
+                ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false

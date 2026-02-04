@@ -313,27 +313,27 @@ END
 GO
 
 -- =============================================
--- Create ItemAttribute Table
+-- Create ItemVariantFeatures Table (renamed from ItemAttribute)
 -- =============================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ItemAttribute' AND schema_id = SCHEMA_ID('dbo'))
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ItemVariantFeatures' AND schema_id = SCHEMA_ID('dbo'))
 BEGIN
-    CREATE TABLE dbo.ItemAttribute (
+    CREATE TABLE dbo.ItemVariantFeatures (
         Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-        ItemID UNIQUEIDENTIFIER NOT NULL,
+        ItemVariantID UNIQUEIDENTIFIER NOT NULL,
         AttributeName_en NVARCHAR(255) NOT NULL,
         AttributeName_fr NVARCHAR(255) NULL,
         Attributes_en NVARCHAR(MAX) NOT NULL,
         Attributes_fr NVARCHAR(MAX) NULL,
-        CONSTRAINT FK_ItemAttribute_Item FOREIGN KEY (ItemID) REFERENCES dbo.Item(Id)
+        CONSTRAINT FK_ItemVariantFeatures_ItemVariant FOREIGN KEY (ItemVariantID) REFERENCES dbo.ItemVariant(Id)
     );
     
-    CREATE INDEX IX_ItemAttribute_ItemID ON dbo.ItemAttribute(ItemID);
+    CREATE INDEX IX_ItemVariantFeatures_ItemVariantID ON dbo.ItemVariantFeatures(ItemVariantID);
     
-    PRINT 'Table ItemAttribute created successfully.';
+    PRINT 'Table ItemVariantFeatures created successfully.';
 END
 ELSE
 BEGIN
-    PRINT 'Table ItemAttribute already exists.';
+    PRINT 'Table ItemVariantFeatures already exists.';
 END
 GO
 
@@ -359,31 +359,6 @@ END
 ELSE
 BEGIN
     PRINT 'Table ItemVariantAttribute already exists.';
-END
-GO
-
--- =============================================
--- Create ItemVariantExtraAttribute Table
--- =============================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ItemVariantExtraAttribute' AND schema_id = SCHEMA_ID('dbo'))
-BEGIN
-    CREATE TABLE dbo.ItemVariantExtraAttribute (
-        Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-        ItemVariantId UNIQUEIDENTIFIER NOT NULL,
-        Name_en NVARCHAR(100) NOT NULL,
-        Name_fr NVARCHAR(100) NULL,
-        Value_en NVARCHAR(200) NULL,
-        Value_fr NVARCHAR(200) NULL,
-        CONSTRAINT FK_ItemVariantExtraAttribute_ItemVariant FOREIGN KEY (ItemVariantId) REFERENCES dbo.ItemVariant(Id)
-    );
-    
-    CREATE INDEX IX_ItemVariantExtraAttribute_ItemVariantId ON dbo.ItemVariantExtraAttribute(ItemVariantId);
-    
-    PRINT 'Table ItemVariantExtraAttribute created successfully.';
-END
-ELSE
-BEGIN
-    PRINT 'Table ItemVariantExtraAttribute already exists.';
 END
 GO
 
@@ -659,58 +634,30 @@ END
 GO
 
 -- =============================================
--- Create CategoryMandatoryAttribute Table
+-- Create CategoryMandatoryFeature Table (renamed from CategoryMandatoryAttribute)
 -- =============================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CategoryMandatoryAttribute' AND schema_id = SCHEMA_ID('dbo'))
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CategoryMandatoryFeature' AND schema_id = SCHEMA_ID('dbo'))
 BEGIN
-    CREATE TABLE dbo.CategoryMandatoryAttribute (
+    CREATE TABLE dbo.CategoryMandatoryFeature (
         Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
         CategoryNodeId UNIQUEIDENTIFIER NOT NULL, -- FK to CategoryNode(Id), must be a CategoryNode
         Name_en NVARCHAR(100) NOT NULL,
         Name_fr NVARCHAR(100) NOT NULL,
         AttributeType NVARCHAR(50) NULL, -- e.g., 'string', 'int', 'enum', etc. (optional)
         SortOrder INT NULL,
-        CONSTRAINT FK_CategoryMandatoryAttribute_CategoryNode
+        CONSTRAINT FK_CategoryMandatoryFeature_CategoryNode
             FOREIGN KEY (CategoryNodeId) REFERENCES dbo.CategoryNode(Id) ON DELETE CASCADE
     );
     
     -- Indexes for performance
-    CREATE INDEX IX_CategoryMandatoryAttribute_CategoryNodeId ON dbo.CategoryMandatoryAttribute(CategoryNodeId);
-    CREATE INDEX IX_CategoryMandatoryAttribute_SortOrder ON dbo.CategoryMandatoryAttribute(SortOrder);
+    CREATE INDEX IX_CategoryMandatoryFeature_CategoryNodeId ON dbo.CategoryMandatoryFeature(CategoryNodeId);
+    CREATE INDEX IX_CategoryMandatoryFeature_SortOrder ON dbo.CategoryMandatoryFeature(SortOrder);
     
-    PRINT 'Table CategoryMandatoryAttribute created successfully.';
+    PRINT 'Table CategoryMandatoryFeature created successfully.';
 END
 ELSE
 BEGIN
-    PRINT 'Table CategoryMandatoryAttribute already exists.';
-END
-GO
-
--- =============================================
--- Create CategoryMandatoryExtraAttribute Table
--- =============================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CategoryMandatoryExtraAttribute' AND schema_id = SCHEMA_ID('dbo'))
-BEGIN
-    CREATE TABLE dbo.CategoryMandatoryExtraAttribute (
-        Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-        CategoryNodeId UNIQUEIDENTIFIER NOT NULL, -- FK to CategoryNode(Id), must be a CategoryNode
-        Name_en NVARCHAR(100) NOT NULL,
-        Name_fr NVARCHAR(100) NOT NULL,
-        AttributeType NVARCHAR(50) NULL, -- e.g., 'string', 'int', 'enum', etc. (optional)
-        SortOrder INT NULL,
-        CONSTRAINT FK_CategoryMandatoryExtraAttribute_CategoryNode
-            FOREIGN KEY (CategoryNodeId) REFERENCES dbo.CategoryNode(Id) ON DELETE CASCADE
-    );
-    
-    -- Indexes for performance
-    CREATE INDEX IX_CategoryMandatoryExtraAttribute_CategoryNodeId ON dbo.CategoryMandatoryExtraAttribute(CategoryNodeId);
-    CREATE INDEX IX_CategoryMandatoryExtraAttribute_SortOrder ON dbo.CategoryMandatoryExtraAttribute(SortOrder);
-    
-    PRINT 'Table CategoryMandatoryExtraAttribute created successfully.';
-END
-ELSE
-BEGIN
-    PRINT 'Table CategoryMandatoryExtraAttribute already exists.';
+    PRINT 'Table CategoryMandatoryFeature already exists.';
 END
 GO
 

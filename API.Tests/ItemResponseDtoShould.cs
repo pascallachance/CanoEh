@@ -31,11 +31,11 @@ namespace API.Tests
         }
 
         [Fact]
-        public void ItemAttributeDto_NotExposeItemID_Property()
+        public void ItemVariantFeaturesDto_NotExposeItemID_Property()
         {
-            // Verify ItemAttributeDto does not have an ItemID property
+            // Verify ItemVariantFeaturesDto does not have an ItemID property
             // since it's redundant when nested under an Item
-            var itemAttrType = typeof(ItemAttributeDto);
+            var itemAttrType = typeof(ItemVariantFeaturesDto);
             var itemIdProperty = itemAttrType.GetProperty("ItemID");
             
             Assert.Null(itemIdProperty);
@@ -75,10 +75,10 @@ namespace API.Tests
         }
 
         [Fact]
-        public void ItemAttributeDto_HaveExpectedProperties()
+        public void ItemVariantFeaturesDto_HaveExpectedProperties()
         {
-            // Verify ItemAttributeDto has all expected properties except the excluded ItemID
-            var itemAttrType = typeof(ItemAttributeDto);
+            // Verify ItemVariantFeaturesDto has all expected properties except the excluded ItemID
+            var itemAttrType = typeof(ItemVariantFeaturesDto);
             
             Assert.NotNull(itemAttrType.GetProperty("Id"));
             Assert.NotNull(itemAttrType.GetProperty("AttributeName_en"));

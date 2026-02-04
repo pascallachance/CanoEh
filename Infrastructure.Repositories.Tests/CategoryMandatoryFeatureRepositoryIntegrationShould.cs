@@ -412,7 +412,7 @@ namespace Infrastructure.Repositories.Tests
                     connection.Open();
                     
                     // Delete CategoryMandatoryFeatures first (FK constraint)
-                    var deleteAttributesQuery = "DELETE FROM dbo.CategoryMandatoryFeature WHERE CategoryNodeId = @CategoryNodeId";
+                    var deleteAttributesQuery = "DELETE FROM dbo.CategoryMandatoryAttribute WHERE CategoryNodeId = @CategoryNodeId";
                     using var deleteAttrCmd = new SqlCommand(deleteAttributesQuery, connection);
                     deleteAttrCmd.Parameters.AddWithValue("@CategoryNodeId", categoryNodeId);
                     deleteAttrCmd.ExecuteNonQuery();

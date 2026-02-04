@@ -17,6 +17,7 @@ namespace Domain.Models.Responses
         public string? ItemVariantName_en { get; set; }
         public string? ItemVariantName_fr { get; set; }
         public List<ItemVariantAttributeDto> ItemVariantAttributes { get; set; } = [];
+        public List<ItemVariantFeaturesDto> ItemVariantFeatures { get; set; } = [];
         public bool Deleted { get; set; }
         
         // Offer fields

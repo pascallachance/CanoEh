@@ -101,50 +101,7 @@ VALUES (
                         throw new InvalidOperationException($"Failed to insert Item: {ex.Message}", ex);
                     }
 
-                    // 2. Insert ItemVariantFeatures
-                    var itemVariantFeatures = new List<ItemVariantFeatures>();
-                    if (itemVariantFeaturesRequests.Any())
-                    {
-                        try
-                        {
-                            var itemVariantFeaturesQuery = @"
-INSERT INTO dbo.ItemAttribute (ItemID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
-OUTPUT INSERTED.Id
-VALUES (@ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
-
-                            foreach (var attributeRequest in itemVariantFeaturesRequests)
-                            {
-                                var attributeId = await connection.ExecuteScalarAsync<Guid>(itemVariantFeaturesQuery, new
-                                {
-                                    ItemID = item.Id,
-                                    attributeRequest.AttributeName_en,
-                                    attributeRequest.AttributeName_fr,
-                                    attributeRequest.Attributes_en,
-                                    attributeRequest.Attributes_fr
-                                }, transaction);
-
-                                itemVariantFeatures.Add(new ItemVariantFeatures
-                                {
-                                    Id = attributeId,
-                                    ItemID = item.Id,
-                                    AttributeName_en = attributeRequest.AttributeName_en,
-                                    AttributeName_fr = attributeRequest.AttributeName_fr,
-                                    Attributes_en = attributeRequest.Attributes_en,
-                                    Attributes_fr = attributeRequest.Attributes_fr
-                                });
-                            }
-                        }
-                        catch (SqlException sqlEx)
-                        {
-                            throw new InvalidOperationException($"Database error inserting ItemVariantFeatures: {sqlEx.Message}", sqlEx);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new InvalidOperationException($"Failed to insert ItemVariantFeatures: {ex.Message}", ex);
-                        }
-                    }
-
-                    // 3. Insert ItemVariants
+                    // 2. Insert ItemVariants
                     var itemVariants = new List<ItemVariant>();
                     var itemVariantAttributes = new List<ItemVariantAttribute>();
                     if (itemVariantRequests.Any())
@@ -224,7 +181,7 @@ VALUES (
                                 };
                                 itemVariants.Add(variant);
 
-                                // 4. Insert ItemVariantAttributes for this variant
+                                // 3. Insert ItemVariantAttributes for this variant
                                 if (variantRequest.ItemVariantAttributes.Any())
                                 {
                                     try
@@ -277,18 +234,64 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                         }
                     }
 
+                    // 4. Insert ItemVariantFeatures (assign to first variant for backward compatibility)
+                    var itemVariantFeatures = new List<ItemVariantFeatures>();
+                    if (itemVariantFeaturesRequests.Any() && itemVariants.Any())
+                    {
+                        try
+                        {
+                            var firstVariantId = itemVariants[0].Id;
+                            var itemVariantFeaturesQuery = @"
+INSERT INTO dbo.ItemVariantFeatures (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
+OUTPUT INSERTED.Id
+VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
+
+                            foreach (var attributeRequest in itemVariantFeaturesRequests)
+                            {
+                                var attributeId = await connection.ExecuteScalarAsync<Guid>(itemVariantFeaturesQuery, new
+                                {
+                                    ItemVariantID = firstVariantId,
+                                    attributeRequest.AttributeName_en,
+                                    attributeRequest.AttributeName_fr,
+                                    attributeRequest.Attributes_en,
+                                    attributeRequest.Attributes_fr
+                                }, transaction);
+
+                                itemVariantFeatures.Add(new ItemVariantFeatures
+                                {
+                                    Id = attributeId,
+                                    ItemVariantID = firstVariantId,
+                                    AttributeName_en = attributeRequest.AttributeName_en,
+                                    AttributeName_fr = attributeRequest.AttributeName_fr,
+                                    Attributes_en = attributeRequest.Attributes_en,
+                                    Attributes_fr = attributeRequest.Attributes_fr
+                                });
+                            }
+                        }
+                        catch (SqlException sqlEx)
+                        {
+                            throw new InvalidOperationException($"Database error inserting ItemVariantFeatures: {sqlEx.Message}", sqlEx);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new InvalidOperationException($"Failed to insert ItemVariantFeatures: {ex.Message}", ex);
+                        }
+                    }
+
                     // Commit transaction - all operations succeeded
                     await transaction.CommitAsync();
 
-                    // Set the collections on the item for the response
-                    item.ItemVariantFeatures = itemVariantFeatures;
+                    // Set the collections on the items and variants for the response
                     item.Variants = itemVariants;
                     
-                    // Set ItemVariantAttributes on each variant
+                    // Set ItemVariantAttributes and ItemVariantFeatures on each variant
                     foreach (var variant in itemVariants)
                     {
                         variant.ItemVariantAttributes = itemVariantAttributes
                             .Where(va => va.ItemVariantID == variant.Id)
+                            .ToList();
+                        variant.ItemVariantFeatures = itemVariantFeatures
+                            .Where(vf => vf.ItemVariantID == variant.Id)
                             .ToList();
                     }
 
@@ -303,7 +306,6 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                         ImageUrl = item.ImageUrl,
                         CategoryID = item.CategoryID,
                         Variants = MapToItemVariantDtos(item.Variants),
-                        ItemVariantFeatures = MapToItemVariantFeaturesDtos(item.ItemVariantFeatures),
                         CreatedAt = item.CreatedAt,
                         UpdatedAt = item.UpdatedAt,
                         Deleted = item.Deleted
@@ -767,6 +769,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 ItemVariantName_en = variant.ItemVariantName_en,
                 ItemVariantName_fr = variant.ItemVariantName_fr,
                 ItemVariantAttributes = variant.ItemVariantAttributes?.Select(MapToItemVariantAttributeDto).ToList() ?? [],
+                ItemVariantFeatures = variant.ItemVariantFeatures?.Select(MapToItemVariantFeaturesDto).ToList() ?? [],
                 Deleted = variant.Deleted,
                 Offer = variant.Offer,
                 OfferStart = variant.OfferStart,

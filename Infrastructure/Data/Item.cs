@@ -11,7 +11,6 @@ namespace Infrastructure.Data
         public string? ImageUrl { get; set; }
         public Guid CategoryID { get; set; }
         public List<ItemVariant> Variants { get; set; } = new();
-        public List<ItemVariantFeatures> ItemVariantFeatures { get; set; } = new();
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         public bool Deleted { get; set; } = false;

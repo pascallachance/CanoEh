@@ -349,7 +349,7 @@ VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @C
                 if (features != null && features.Any())
                 {
                     var featureQuery = @"
-INSERT INTO dbo.CategoryMandatoryAttribute (Id, CategoryNodeId, Name_en, Name_fr, AttributeType, SortOrder)
+INSERT INTO dbo.CategoryMandatoryFeature (Id, CategoryNodeId, Name_en, Name_fr, AttributeType, SortOrder)
 VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
 
                     foreach (var feature in features)
@@ -454,7 +454,7 @@ VALUES (@Id, @Name_en, @Name_fr, @NodeType, @ParentId, @IsActive, @SortOrder, @C
                 if (allFeatureParameters.Any())
                 {
                     var featureQuery = @"
-INSERT INTO dbo.CategoryMandatoryAttribute (Id, CategoryNodeId, Name_en, Name_fr, AttributeType, SortOrder)
+INSERT INTO dbo.CategoryMandatoryFeature (Id, CategoryNodeId, Name_en, Name_fr, AttributeType, SortOrder)
 VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
                     
                     await dbConnection.ExecuteAsync(featureQuery, allFeatureParameters, transaction);

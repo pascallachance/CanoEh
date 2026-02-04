@@ -82,7 +82,12 @@ BEGIN
         ALTER TABLE dbo.ItemAttribute ADD ItemVariantID UNIQUEIDENTIFIER NULL;
         PRINT 'Added column ItemVariantID to ItemAttribute';
     END
+END
+GO
 
+-- Continue Step 3: Migrate data from ItemID to ItemVariantID
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'ItemAttribute' AND schema_id = SCHEMA_ID('dbo'))
+BEGIN
     -- Migrate data: For each ItemAttribute, assign it to the first variant of its item
     -- Note: This is a best-effort migration. Manual review may be needed for multi-variant items.
     UPDATE ia

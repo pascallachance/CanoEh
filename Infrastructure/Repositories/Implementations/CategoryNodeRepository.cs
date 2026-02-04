@@ -296,7 +296,7 @@ ORDER BY SortOrder, Name_en";
             return await GetNodesByTypeAsync(BaseNode.NodeTypeCategory);
         }
 
-        public async Task<(BaseNode node, IEnumerable<CategoryMandatoryFeature> features)> AddNodeWithAttributesAsync(
+        public async Task<(BaseNode node, IEnumerable<CategoryMandatoryFeature> features)> AddNodeWithFeaturesAsync(
             BaseNode node, 
             IEnumerable<CategoryMandatoryFeature> features)
         {
@@ -379,7 +379,7 @@ VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
             }
         }
 
-        public async Task<IEnumerable<BaseNode>> AddMultipleNodesWithAttributesAsync(
+        public async Task<IEnumerable<BaseNode>> AddMultipleNodesWithFeaturesAsync(
             IEnumerable<(BaseNode node, IEnumerable<CategoryMandatoryFeature> features)> nodesWithFeatures)
         {
             if (dbConnection.State != ConnectionState.Open)

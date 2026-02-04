@@ -76,7 +76,7 @@ namespace Domain.Services.Implementations
 
                 if (featuresToCreate.Any())
                 {
-                    (createdNode, createdFeatures) = await _categoryNodeRepository.AddNodeWithAttributesAsync(node, featuresToCreate);
+                    (createdNode, createdFeatures) = await _categoryNodeRepository.AddNodeWithFeaturesAsync(node, featuresToCreate);
                 }
                 else
                 {
@@ -135,7 +135,7 @@ namespace Domain.Services.Implementations
                 }
 
                 // Create all nodes in a single transaction
-                await _categoryNodeRepository.AddMultipleNodesWithAttributesAsync(nodesWithFeatures);
+                await _categoryNodeRepository.AddMultipleNodesWithFeaturesAsync(nodesWithFeatures);
 
                 var response = new BulkCreateCategoryNodesResponse
                 {

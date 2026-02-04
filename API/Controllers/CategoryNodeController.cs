@@ -18,7 +18,7 @@ namespace API.Controllers
         /// which will be created in the same operation and linked to the new Category node.
         /// </summary>
         /// <param name="request">The category node details to create, optionally including CategoryMandatoryFeatures for Category nodes.</param>
-        /// <returns>Returns the created category node with any created mandatory attributes or an error response.</returns>
+        /// <returns>Returns the created category node with any created mandatory features or an error response.</returns>
         [Authorize(Roles = "Admin")]
         [HttpPost("CreateCategoryNode")]
         [ProducesResponseType(StatusCodes.Status200OK)]

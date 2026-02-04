@@ -8,7 +8,7 @@ namespace Domain.Models.Responses
         public string NodeType { get; set; } = "Category";
         public bool IsActive { get; set; }
         public int? SortOrder { get; set; }
-        public List<CategoryMandatoryAttributeResponseDto>? CategoryMandatoryAttributes { get; set; }
+        public List<CategoryMandatoryFeatureResponseDto>? CategoryMandatoryFeatures { get; set; }
     }
 
     public class NavigationNodeResponseDto

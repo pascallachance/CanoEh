@@ -11,10 +11,10 @@ namespace Infrastructure.Repositories.Interfaces
         Task<bool> HasItemsAsync(Guid categoryNodeId); // Check if a CategoryNode has items
         Task<IEnumerable<BaseNode>> GetNodesByTypeAsync(string nodeType);
         Task<IEnumerable<BaseNode>> GetCategoryNodesAsync(); // Get all CategoryNode items
-        Task<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes)> AddNodeWithAttributesAsync(
+        Task<(BaseNode node, IEnumerable<CategoryMandatoryFeature> features)> AddNodeWithAttributesAsync(
             BaseNode node, 
-            IEnumerable<CategoryMandatoryAttribute> attributes);
+            IEnumerable<CategoryMandatoryFeature> features);
         Task<IEnumerable<BaseNode>> AddMultipleNodesWithAttributesAsync(
-            IEnumerable<(BaseNode node, IEnumerable<CategoryMandatoryAttribute> attributes)> nodesWithAttributes);
+            IEnumerable<(BaseNode node, IEnumerable<CategoryMandatoryFeature> features)> nodesWithFeatures);
     }
 }

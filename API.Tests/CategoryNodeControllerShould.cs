@@ -795,9 +795,9 @@ namespace API.Tests
                                     {
                                         Name_en = "Laptops",
                                         Name_fr = "Ordinateurs portables",
-                                        CategoryMandatoryAttributes = new List<CreateCategoryMandatoryAttributeDto>
+                                        CategoryMandatoryFeatures = new List<CreateCategoryMandatoryFeatureDto>
                                         {
-                                            new CreateCategoryMandatoryAttributeDto
+                                            new CreateCategoryMandatoryFeatureDto
                                             {
                                                 Name_en = "Brand",
                                                 Name_fr = "Marque",
@@ -813,7 +813,7 @@ namespace API.Tests
             };
 
             var result = Result.Failure<BulkCreateCategoryNodesResponse>(
-                "CategoryMandatoryAttribute AttributeType cannot exceed 50 characters.",
+                "CategoryMandatoryFeature AttributeType cannot exceed 50 characters.",
                 StatusCodes.Status400BadRequest);
             _mockCategoryNodeService.Setup(x => x.BulkCreateCategoryNodesAsync(It.IsAny<BulkCreateCategoryNodesRequest>()))
                                .ReturnsAsync(result);

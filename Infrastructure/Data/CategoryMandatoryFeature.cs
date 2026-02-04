@@ -1,10 +1,10 @@
 namespace Infrastructure.Data
 {
     /// <summary>
-    /// Represents a mandatory attribute for a CategoryNode.
-    /// These attributes are required when creating or editing products in a category.
+    /// Represents a mandatory feature for a CategoryNode.
+    /// These features are required when creating or editing products in a category.
     /// </summary>
-    public class CategoryMandatoryAttribute
+    public class CategoryMandatoryFeature
     {
         public Guid Id { get; set; }
         public Guid CategoryNodeId { get; set; }

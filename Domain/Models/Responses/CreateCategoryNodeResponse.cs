@@ -1,6 +1,6 @@
 namespace Domain.Models.Responses
 {
-    public class CategoryMandatoryAttributeResponseDto
+    public class CategoryMandatoryFeatureResponseDto
     {
         public Guid Id { get; set; }
         public string Name_en { get; set; } = string.Empty;
@@ -18,6 +18,6 @@ namespace Domain.Models.Responses
         public Guid? ParentId { get; set; }
         public bool IsActive { get; set; }
         public int? SortOrder { get; set; }
-        public List<CategoryMandatoryAttributeResponseDto> CategoryMandatoryAttributes { get; set; } = new();
+        public List<CategoryMandatoryFeatureResponseDto> CategoryMandatoryFeatures { get; set; } = new();
     }
 }

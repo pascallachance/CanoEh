@@ -5,9 +5,9 @@ using Infrastructure.Repositories.Interfaces;
 
 namespace Infrastructure.Repositories.Implementations
 {
-    public class CategoryMandatoryAttributeRepository(string connectionString) : GenericRepository<CategoryMandatoryAttribute>(connectionString), ICategoryMandatoryAttributeRepository
+    public class CategoryMandatoryFeatureRepository(string connectionString) : GenericRepository<CategoryMandatoryFeature>(connectionString), ICategoryMandatoryFeatureRepository
     {
-        public override async Task<CategoryMandatoryAttribute> AddAsync(CategoryMandatoryAttribute entity)
+        public override async Task<CategoryMandatoryFeature> AddAsync(CategoryMandatoryFeature entity)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -37,13 +37,13 @@ VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
             return entity;
         }
 
-        public override async Task<int> CountAsync(Func<CategoryMandatoryAttribute, bool> predicate)
+        public override async Task<int> CountAsync(Func<CategoryMandatoryFeature, bool> predicate)
         {
-            var attributes = await GetAllAsync();
-            return attributes.Count(predicate);
+            var features = await GetAllAsync();
+            return features.Count(predicate);
         }
 
-        public override async Task DeleteAsync(CategoryMandatoryAttribute entity)
+        public override async Task DeleteAsync(CategoryMandatoryFeature entity)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -64,13 +64,13 @@ VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
             return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.CategoryMandatoryAttribute WHERE Id = @id", new { id });
         }
 
-        public override async Task<IEnumerable<CategoryMandatoryAttribute>> FindAsync(Func<CategoryMandatoryAttribute, bool> predicate)
+        public override async Task<IEnumerable<CategoryMandatoryFeature>> FindAsync(Func<CategoryMandatoryFeature, bool> predicate)
         {
-            var attributes = await GetAllAsync();
-            return attributes.Where(predicate);
+            var features = await GetAllAsync();
+            return features.Where(predicate);
         }
 
-        public override async Task<IEnumerable<CategoryMandatoryAttribute>> GetAllAsync()
+        public override async Task<IEnumerable<CategoryMandatoryFeature>> GetAllAsync()
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -78,10 +78,10 @@ VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
             }
             
             var query = "SELECT * FROM dbo.CategoryMandatoryAttribute ORDER BY CASE WHEN SortOrder IS NULL THEN 1 ELSE 0 END, SortOrder, Name_en";
-            return await dbConnection.QueryAsync<CategoryMandatoryAttribute>(query);
+            return await dbConnection.QueryAsync<CategoryMandatoryFeature>(query);
         }
 
-        public override async Task<CategoryMandatoryAttribute> GetByIdAsync(Guid id)
+        public override async Task<CategoryMandatoryFeature> GetByIdAsync(Guid id)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -89,12 +89,12 @@ VALUES (@Id, @CategoryNodeId, @Name_en, @Name_fr, @AttributeType, @SortOrder)";
             }
             
             var query = "SELECT * FROM dbo.CategoryMandatoryAttribute WHERE Id = @id";
-            var result = await dbConnection.QueryFirstOrDefaultAsync<CategoryMandatoryAttribute>(query, new { id });
+            var result = await dbConnection.QueryFirstOrDefaultAsync<CategoryMandatoryFeature>(query, new { id });
             
-            return result ?? throw new InvalidOperationException($"CategoryMandatoryAttribute with id {id} not found");
+            return result ?? throw new InvalidOperationException($"CategoryMandatoryFeature with id {id} not found");
         }
 
-        public override async Task<CategoryMandatoryAttribute> UpdateAsync(CategoryMandatoryAttribute entity)
+        public override async Task<CategoryMandatoryFeature> UpdateAsync(CategoryMandatoryFeature entity)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -124,7 +124,7 @@ WHERE Id = @Id";
             return entity;
         }
 
-        public async Task<IEnumerable<CategoryMandatoryAttribute>> GetAttributesByCategoryNodeIdAsync(Guid categoryNodeId)
+        public async Task<IEnumerable<CategoryMandatoryFeature>> GetFeaturesByCategoryNodeIdAsync(Guid categoryNodeId)
         {
             if (dbConnection.State != ConnectionState.Open)
             {
@@ -132,10 +132,10 @@ WHERE Id = @Id";
             }
             
             var query = "SELECT * FROM dbo.CategoryMandatoryAttribute WHERE CategoryNodeId = @categoryNodeId ORDER BY CASE WHEN SortOrder IS NULL THEN 1 ELSE 0 END, SortOrder, Name_en";
-            return await dbConnection.QueryAsync<CategoryMandatoryAttribute>(query, new { categoryNodeId });
+            return await dbConnection.QueryAsync<CategoryMandatoryFeature>(query, new { categoryNodeId });
         }
 
-        public async Task<bool> DeleteAttributesByCategoryNodeIdAsync(Guid categoryNodeId)
+        public async Task<bool> DeleteFeaturesByCategoryNodeIdAsync(Guid categoryNodeId)
         {
             if (dbConnection.State != ConnectionState.Open)
             {

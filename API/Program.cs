@@ -168,11 +168,11 @@ public class Program
             return new CategoryNodeRepository(connectionString);
         });
 
-        builder.Services.AddScoped<ICategoryMandatoryAttributeRepository>(provider =>
+        builder.Services.AddScoped<ICategoryMandatoryFeatureRepository>(provider =>
         {
             var config = provider.GetRequiredService<IConfiguration>();
             var connectionString = config.GetConnectionString("DefaultConnection");
-            return new CategoryMandatoryAttributeRepository(connectionString);
+            return new CategoryMandatoryFeatureRepository(connectionString);
         });
 
         builder.Services.AddScoped<ICompanyRepository>(provider =>

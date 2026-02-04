@@ -1,6 +1,6 @@
 namespace Domain.Models.Requests
 {
-    public class CreateItemAttributeRequest
+    public class CreateItemVariantFeaturesRequest
     {
         public string AttributeName_en { get; set; } = string.Empty;
         public string? AttributeName_fr { get; set; }

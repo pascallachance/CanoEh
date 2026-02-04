@@ -14,13 +14,13 @@ namespace Domain.Services.Implementations
     public class ItemService(
         IItemRepository itemRepository, 
         IItemVariantRepository itemVariantRepository,
-        IItemAttributeRepository itemAttributeRepository,
+        IItemVariantFeaturesRepository itemVariantFeaturesRepository,
         IItemVariantAttributeRepository itemVariantAttributeRepository,
         string connectionString) : IItemService
     {
         private readonly IItemRepository _itemRepository = itemRepository;
         private readonly IItemVariantRepository _itemVariantRepository = itemVariantRepository;
-        private readonly IItemAttributeRepository _itemAttributeRepository = itemAttributeRepository;
+        private readonly IItemVariantFeaturesRepository _itemVariantFeaturesRepository = itemVariantFeaturesRepository;
         private readonly IItemVariantAttributeRepository _itemVariantAttributeRepository = itemVariantAttributeRepository;
         private readonly string _connectionString = connectionString;
 
@@ -50,8 +50,8 @@ namespace Domain.Services.Implementations
                     Deleted = false
                 };
 
-                // Prepare ItemAttributes (Id and ItemID will be set after Item is inserted)
-                var itemAttributeRequests = createItemRequest.ItemAttributes.ToList();
+                // Prepare ItemVariantFeatures (Id and ItemID will be set after Item is inserted)
+                var itemVariantFeaturesRequests = createItemRequest.ItemVariantFeatures.ToList();
 
                 // Prepare ItemVariants and ItemVariantAttributes (Ids will be set after insertion)
                 var itemVariantRequests = createItemRequest.Variants.ToList();
@@ -101,20 +101,20 @@ VALUES (
                         throw new InvalidOperationException($"Failed to insert Item: {ex.Message}", ex);
                     }
 
-                    // 2. Insert ItemAttributes
-                    var itemAttributes = new List<ItemAttribute>();
-                    if (itemAttributeRequests.Any())
+                    // 2. Insert ItemVariantFeatures
+                    var itemVariantFeatures = new List<ItemVariantFeatures>();
+                    if (itemVariantFeaturesRequests.Any())
                     {
                         try
                         {
-                            var itemAttributeQuery = @"
+                            var itemVariantFeaturesQuery = @"
 INSERT INTO dbo.ItemAttribute (ItemID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
 OUTPUT INSERTED.Id
 VALUES (@ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
 
-                            foreach (var attributeRequest in itemAttributeRequests)
+                            foreach (var attributeRequest in itemVariantFeaturesRequests)
                             {
-                                var attributeId = await connection.ExecuteScalarAsync<Guid>(itemAttributeQuery, new
+                                var attributeId = await connection.ExecuteScalarAsync<Guid>(itemVariantFeaturesQuery, new
                                 {
                                     ItemID = item.Id,
                                     attributeRequest.AttributeName_en,
@@ -123,7 +123,7 @@ VALUES (@ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attribut
                                     attributeRequest.Attributes_fr
                                 }, transaction);
 
-                                itemAttributes.Add(new ItemAttribute
+                                itemVariantFeatures.Add(new ItemVariantFeatures
                                 {
                                     Id = attributeId,
                                     ItemID = item.Id,
@@ -136,11 +136,11 @@ VALUES (@ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attribut
                         }
                         catch (SqlException sqlEx)
                         {
-                            throw new InvalidOperationException($"Database error inserting ItemAttributes: {sqlEx.Message}", sqlEx);
+                            throw new InvalidOperationException($"Database error inserting ItemVariantFeatures: {sqlEx.Message}", sqlEx);
                         }
                         catch (Exception ex)
                         {
-                            throw new InvalidOperationException($"Failed to insert ItemAttributes: {ex.Message}", ex);
+                            throw new InvalidOperationException($"Failed to insert ItemVariantFeatures: {ex.Message}", ex);
                         }
                     }
 
@@ -281,7 +281,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     await transaction.CommitAsync();
 
                     // Set the collections on the item for the response
-                    item.ItemAttributes = itemAttributes;
+                    item.ItemVariantFeatures = itemVariantFeatures;
                     item.Variants = itemVariants;
                     
                     // Set ItemVariantAttributes on each variant
@@ -303,7 +303,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                         ImageUrl = item.ImageUrl,
                         CategoryID = item.CategoryID,
                         Variants = MapToItemVariantDtos(item.Variants),
-                        ItemAttributes = MapToItemAttributeDtos(item.ItemAttributes),
+                        ItemVariantFeatures = MapToItemVariantFeaturesDtos(item.ItemVariantFeatures),
                         CreatedAt = item.CreatedAt,
                         UpdatedAt = item.UpdatedAt,
                         Deleted = item.Deleted
@@ -404,7 +404,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 ImageUrl = item.ImageUrl,
                 CategoryID = item.CategoryID,
                 Variants = MapToItemVariantDtos(item.Variants),
-                ItemAttributes = MapToItemAttributeDtos(item.ItemAttributes),
+                ItemVariantFeatures = MapToItemVariantFeaturesDtos(item.ItemVariantFeatures),
                 CreatedAt = item.CreatedAt,
                 UpdatedAt = item.UpdatedAt,
                 Deleted = item.Deleted
@@ -449,7 +449,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 existingItem.Description_fr = updateItemRequest.Description_fr;
                 existingItem.CategoryID = updateItemRequest.CategoryID;
                 existingItem.Variants = updateItemRequest.Variants;
-                existingItem.ItemAttributes = updateItemRequest.ItemAttributes;
+                existingItem.ItemVariantFeatures = updateItemRequest.ItemVariantFeatures;
                 existingItem.UpdatedAt = DateTime.UtcNow;
 
                 var updatedItem = await _itemRepository.UpdateAsync(existingItem);
@@ -465,7 +465,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     ImageUrl = updatedItem.ImageUrl,
                     CategoryID = updatedItem.CategoryID,
                     Variants = MapToItemVariantDtos(updatedItem.Variants),
-                    ItemAttributes = MapToItemAttributeDtos(updatedItem.ItemAttributes),
+                    ItemVariantFeatures = MapToItemVariantFeaturesDtos(updatedItem.ItemVariantFeatures),
                     CreatedAt = updatedItem.CreatedAt,
                     UpdatedAt = updatedItem.UpdatedAt,
                     Deleted = updatedItem.Deleted
@@ -774,9 +774,9 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             };
         }
 
-        private static ItemAttributeDto MapToItemAttributeDto(ItemAttribute attribute)
+        private static ItemVariantFeaturesDto MapToItemVariantFeaturesDto(ItemVariantFeatures attribute)
         {
-            return new ItemAttributeDto
+            return new ItemVariantFeaturesDto
             {
                 Id = attribute.Id,
                 AttributeName_en = attribute.AttributeName_en,
@@ -795,13 +795,13 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             return variants.Select(MapToItemVariantDto).ToList();
         }
 
-        private static List<ItemAttributeDto> MapToItemAttributeDtos(List<ItemAttribute>? attributes)
+        private static List<ItemVariantFeaturesDto> MapToItemVariantFeaturesDtos(List<ItemVariantFeatures>? attributes)
         {
             if (attributes == null || attributes.Count == 0)
             {
                 return [];
             }
-            return attributes.Select(MapToItemAttributeDto).ToList();
+            return attributes.Select(MapToItemVariantFeaturesDto).ToList();
         }
 
         public async Task<Result<IEnumerable<GetItemResponse>>> GetRecentlyAddedProductsAsync(int count = 100)

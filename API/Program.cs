@@ -97,9 +97,9 @@ public class Program
             var connectionString = config.GetConnectionString("DefaultConnection");
             var itemRepository = provider.GetRequiredService<IItemRepository>();
             var itemVariantRepository = provider.GetRequiredService<IItemVariantRepository>();
-            var itemAttributeRepository = provider.GetRequiredService<IItemAttributeRepository>();
+            var itemVariantFeaturesRepository = provider.GetRequiredService<IItemVariantFeaturesRepository>();
             var itemVariantAttributeRepository = provider.GetRequiredService<IItemVariantAttributeRepository>();
-            return new ItemService(itemRepository, itemVariantRepository, itemAttributeRepository, 
+            return new ItemService(itemRepository, itemVariantRepository, itemVariantFeaturesRepository, 
                                  itemVariantAttributeRepository, connectionString);
         });
         builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -203,11 +203,11 @@ public class Program
             return new TaxRateRepository(connectionString);
         });
 
-        builder.Services.AddScoped<IItemAttributeRepository>(provider =>
+        builder.Services.AddScoped<IItemVariantFeaturesRepository>(provider =>
         {
             var config = provider.GetRequiredService<IConfiguration>();
             var connectionString = config.GetConnectionString("DefaultConnection");
-            return new ItemAttributeRepository(connectionString);
+            return new ItemVariantFeaturesRepository(connectionString);
         });
 
         builder.Services.AddScoped<IItemVariantAttributeRepository>(provider =>

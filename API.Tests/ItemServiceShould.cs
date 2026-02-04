@@ -11,7 +11,7 @@ namespace API.Tests
     {
         private readonly Mock<IItemRepository> _mockItemRepository;
         private readonly Mock<IItemVariantRepository> _mockItemVariantRepository;
-        private readonly Mock<IItemAttributeRepository> _mockItemAttributeRepository;
+        private readonly Mock<IItemVariantFeaturesRepository> _mockItemVariantFeaturesRepository;
         private readonly Mock<IItemVariantAttributeRepository> _mockItemVariantAttributeRepository;
         private readonly ItemService _itemService;
 
@@ -19,12 +19,12 @@ namespace API.Tests
         {
             _mockItemRepository = new Mock<IItemRepository>();
             _mockItemVariantRepository = new Mock<IItemVariantRepository>();
-            _mockItemAttributeRepository = new Mock<IItemAttributeRepository>();
+            _mockItemVariantFeaturesRepository = new Mock<IItemVariantFeaturesRepository>();
             _mockItemVariantAttributeRepository = new Mock<IItemVariantAttributeRepository>();
             _itemService = new ItemService(
                 _mockItemRepository.Object, 
                 _mockItemVariantRepository.Object,
-                _mockItemAttributeRepository.Object,
+                _mockItemVariantFeaturesRepository.Object,
                 _mockItemVariantAttributeRepository.Object,
                 "Server=(localdb)\\MSSQLLocalDB;Database=CanoEh;Trusted_Connection=True;TrustServerCertificate=True;");
         }
@@ -42,7 +42,7 @@ namespace API.Tests
                 Description_fr = "Test Description FR",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<CreateItemVariantRequest>(),
-                ItemAttributes = new List<CreateItemAttributeRequest>()
+                ItemVariantFeatures = new List<CreateItemVariantFeaturesRequest>()
             };
 
             // Act
@@ -69,7 +69,7 @@ namespace API.Tests
                 Description_fr = "Test Description FR",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<CreateItemVariantRequest>(),
-                ItemAttributes = new List<CreateItemAttributeRequest>()
+                ItemVariantFeatures = new List<CreateItemVariantFeaturesRequest>()
             };
 
             // Act
@@ -96,7 +96,7 @@ namespace API.Tests
                     Description_fr = "Test item 1 description FR",
                     CategoryID = Guid.NewGuid(),
                     Variants = new List<ItemVariant>(),
-                    ItemAttributes = new List<ItemAttribute>(),
+                    ItemVariantFeatures = new List<ItemVariantFeatures>(),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null,
                     Deleted = false
@@ -130,7 +130,7 @@ namespace API.Tests
                 Description_fr = "Test item description FR",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>(),
+                ItemVariantFeatures = new List<ItemVariantFeatures>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false
@@ -179,7 +179,7 @@ namespace API.Tests
                 Description_fr = "Updated Description FR",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>()
+                ItemVariantFeatures = new List<ItemVariantFeatures>()
             };
 
             var existingItem = new Item
@@ -192,7 +192,7 @@ namespace API.Tests
                 Description_fr = "Original Description FR",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>(),
+                ItemVariantFeatures = new List<ItemVariantFeatures>(),
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
                 UpdatedAt = null,
                 Deleted = false
@@ -208,7 +208,7 @@ namespace API.Tests
                 Description_fr = updateItemRequest.Description_fr,
                 CategoryID = updateItemRequest.CategoryID,
                 Variants = updateItemRequest.Variants,
-                ItemAttributes = updateItemRequest.ItemAttributes,
+                ItemVariantFeatures = updateItemRequest.ItemVariantFeatures,
                 CreatedAt = existingItem.CreatedAt,
                 UpdatedAt = DateTime.UtcNow,
                 Deleted = false
@@ -243,7 +243,7 @@ namespace API.Tests
                 Description_fr = "Updated Description FR",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>()
+                ItemVariantFeatures = new List<ItemVariantFeatures>()
             };
 
             _mockItemRepository.Setup(x => x.GetItemByIdAsync(updateItemRequest.Id))
@@ -273,7 +273,7 @@ namespace API.Tests
                 Description_fr = "Test item description FR",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>(),
+                ItemVariantFeatures = new List<ItemVariantFeatures>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false
@@ -378,7 +378,7 @@ namespace API.Tests
                         ItemVariantAttributes = new List<CreateItemVariantAttributeRequest>()
                     }
                 },
-                ItemAttributes = new List<CreateItemAttributeRequest>()
+                ItemVariantFeatures = new List<CreateItemVariantFeaturesRequest>()
             };
 
             // Act
@@ -400,7 +400,7 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task CreateItemAsync_MapsItemAttributesCorrectly_WhenAttributesProvided()
+        public async Task CreateItemAsync_MapsItemVariantFeaturesCorrectly_WhenAttributesProvided()
         {
             // Arrange
             var createItemRequest = new CreateItemRequest
@@ -412,9 +412,9 @@ namespace API.Tests
                 Description_fr = "Test Description FR",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<CreateItemVariantRequest>(),
-                ItemAttributes = new List<CreateItemAttributeRequest>
+                ItemVariantFeatures = new List<CreateItemVariantFeaturesRequest>
                 {
-                    new CreateItemAttributeRequest
+                    new CreateItemVariantFeaturesRequest
                     {
                         AttributeName_en = "Material",
                         AttributeName_fr = "Materiaux",
@@ -430,9 +430,9 @@ namespace API.Tests
             // Assert
             Assert.True(result.IsSuccess);
             Assert.NotNull(result.Value);
-            Assert.NotNull(result.Value.ItemAttributes);
-            Assert.Single(result.Value.ItemAttributes);
-            var attribute = result.Value.ItemAttributes.First();
+            Assert.NotNull(result.Value.ItemVariantFeatures);
+            Assert.Single(result.Value.ItemVariantFeatures);
+            var attribute = result.Value.ItemVariantFeatures.First();
             Assert.Equal("Material", attribute.AttributeName_en);
             Assert.Equal("Materiaux", attribute.AttributeName_fr);
             Assert.Equal("Cotton", attribute.Attributes_en);
@@ -479,7 +479,7 @@ namespace API.Tests
                         }
                     }
                 },
-                ItemAttributes = new List<CreateItemAttributeRequest>()
+                ItemVariantFeatures = new List<CreateItemVariantFeaturesRequest>()
             };
 
             // Act
@@ -511,7 +511,7 @@ namespace API.Tests
         // In actual database failure scenarios during the transaction, the service will now return
         // specific error messages like:
         // - "Failed to insert Item: {details}" - when Item insertion fails
-        // - "Failed to insert ItemAttributes: {details}" - when ItemAttributes insertion fails  
+        // - "Failed to insert ItemVariantFeatures: {details}" - when ItemVariantFeatures insertion fails  
         // - "Failed to insert ItemVariant: {details}" - when ItemVariant insertion fails
         // - "Failed to insert ItemVariantAttributes: {details}" - when ItemVariantAttributes insertion fails
         //
@@ -535,7 +535,7 @@ namespace API.Tests
                     Description_fr = "Test item 1 description FR",
                     CategoryID = Guid.NewGuid(),
                     Variants = new List<ItemVariant>(),
-                    ItemAttributes = new List<ItemAttribute>(),
+                    ItemVariantFeatures = new List<ItemVariantFeatures>(),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null,
                     Deleted = false
@@ -550,7 +550,7 @@ namespace API.Tests
                     Description_fr = "Test item 2 description FR",
                     CategoryID = Guid.NewGuid(),
                     Variants = new List<ItemVariant>(),
-                    ItemAttributes = new List<ItemAttribute>(),
+                    ItemVariantFeatures = new List<ItemVariantFeatures>(),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null,
                     Deleted = false
@@ -968,7 +968,7 @@ namespace API.Tests
                 Description_fr = "Test item description FR",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>(),
+                ItemVariantFeatures = new List<ItemVariantFeatures>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = true // Item is deleted
@@ -1022,7 +1022,7 @@ namespace API.Tests
                 Description_fr = "Test item description FR",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>(),
+                ItemVariantFeatures = new List<ItemVariantFeatures>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false // Item is not deleted
@@ -1065,7 +1065,7 @@ namespace API.Tests
                 Description_fr = "Test item description FR",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>(),
+                ItemVariantFeatures = new List<ItemVariantFeatures>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false
@@ -1197,7 +1197,7 @@ namespace API.Tests
                             Deleted = false
                         }
                     },
-                    ItemAttributes = new List<ItemAttribute>(),
+                    ItemVariantFeatures = new List<ItemVariantFeatures>(),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null,
                     Deleted = false
@@ -1212,7 +1212,7 @@ namespace API.Tests
                     Description_fr = "Test Description FR",
                     CategoryID = Guid.NewGuid(),
                     Variants = new List<ItemVariant>(),
-                    ItemAttributes = new List<ItemAttribute>(),
+                    ItemVariantFeatures = new List<ItemVariantFeatures>(),
                     CreatedAt = DateTime.UtcNow.AddMinutes(-1),
                     UpdatedAt = null,
                     Deleted = false
@@ -1331,9 +1331,9 @@ namespace API.Tests
                             Deleted = false
                         }
                     },
-                    ItemAttributes = new List<ItemAttribute>
+                    ItemVariantFeatures = new List<ItemVariantFeatures>
                     {
-                        new ItemAttribute
+                        new ItemVariantFeatures
                         {
                             Id = attributeId,
                             ItemID = itemId,
@@ -1361,7 +1361,7 @@ namespace API.Tests
             Assert.Equal(itemId, item.Id);
             Assert.Equal("Test Item", item.Name_en);
             Assert.Single(item.Variants);
-            Assert.Single(item.ItemAttributes);
+            Assert.Single(item.ItemVariantFeatures);
             Assert.Equal(variantId, item.Variants[0].Id);
             Assert.Equal(19.99m, item.Variants[0].Price);
             Assert.Single(item.Variants[0].ItemVariantAttributes);
@@ -1398,7 +1398,7 @@ namespace API.Tests
                             Deleted = false
                         }
                     },
-                    ItemAttributes = new List<ItemAttribute>(),
+                    ItemVariantFeatures = new List<ItemVariantFeatures>(),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null,
                     Deleted = false
@@ -1427,7 +1427,7 @@ namespace API.Tests
                             Deleted = false
                         }
                     },
-                    ItemAttributes = new List<ItemAttribute>(),
+                    ItemVariantFeatures = new List<ItemVariantFeatures>(),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null,
                     Deleted = false
@@ -1546,9 +1546,9 @@ namespace API.Tests
                             Deleted = false
                         }
                     },
-                    ItemAttributes = new List<ItemAttribute>
+                    ItemVariantFeatures = new List<ItemVariantFeatures>
                     {
-                        new ItemAttribute
+                        new ItemVariantFeatures
                         {
                             Id = attributeId,
                             ItemID = itemId,
@@ -1576,7 +1576,7 @@ namespace API.Tests
             Assert.Equal(itemId, item.Id);
             Assert.Equal("Suggested Test Item", item.Name_en);
             Assert.Single(item.Variants);
-            Assert.Single(item.ItemAttributes);
+            Assert.Single(item.ItemVariantFeatures);
             Assert.Equal(variantId, item.Variants[0].Id);
             Assert.Equal(29.99m, item.Variants[0].Price);
             Assert.Single(item.Variants[0].ItemVariantAttributes);

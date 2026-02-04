@@ -42,7 +42,7 @@ namespace API.Tests
                 Description_fr = "Test Description FR",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<CreateItemVariantRequest>(),
-                ItemAttributes = new List<CreateItemAttributeRequest>()
+                ItemVariantFeatures = new List<CreateItemVariantFeaturesRequest>()
             };
 
             var createItemResponse = new CreateItemResponse
@@ -55,7 +55,7 @@ namespace API.Tests
                 Description_fr = createItemRequest.Description_fr,
                 CategoryID = createItemRequest.CategoryID,
                 Variants = new List<ItemVariantDto>(),
-                ItemAttributes = new List<ItemAttributeDto>(),
+                ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false
@@ -86,7 +86,7 @@ namespace API.Tests
                 Description_fr = "Test Description FR",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<CreateItemVariantRequest>(),
-                ItemAttributes = new List<CreateItemAttributeRequest>()
+                ItemVariantFeatures = new List<CreateItemVariantFeaturesRequest>()
             };
 
             var result = Result.Failure<CreateItemResponse>("Validation failed.", StatusCodes.Status400BadRequest);
@@ -117,7 +117,7 @@ namespace API.Tests
                     Description_fr = "Test Description FR",
                     CategoryID = Guid.NewGuid(),
                     Variants = new List<ItemVariantDto>(),
-                    ItemAttributes = new List<ItemAttributeDto>(),
+                    ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null,
                     Deleted = false
@@ -151,7 +151,7 @@ namespace API.Tests
                 Description_fr = "Test Description FR",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariantDto>(),
-                ItemAttributes = new List<ItemAttributeDto>(),
+                ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 Deleted = false
@@ -200,7 +200,7 @@ namespace API.Tests
                 Description_fr = "Test Description FR",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>()
+                ItemVariantFeatures = new List<ItemVariantFeatures>()
             };
 
             var updateItemResponse = new UpdateItemResponse
@@ -213,7 +213,7 @@ namespace API.Tests
                 Description_fr = updateItemRequest.Description_fr,
                 CategoryID = updateItemRequest.CategoryID,
                 Variants = new List<ItemVariantDto>(),
-                ItemAttributes = new List<ItemAttributeDto>(),
+                ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
                 UpdatedAt = DateTime.UtcNow,
                 Deleted = false
@@ -245,7 +245,7 @@ namespace API.Tests
                 Description_fr = "Test Description FR",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>()
+                ItemVariantFeatures = new List<ItemVariantFeatures>()
             };
 
             var result = Result.Failure<UpdateItemResponse>("Item not found.", StatusCodes.Status404NotFound);
@@ -297,7 +297,7 @@ namespace API.Tests
                 Description_fr = "Description",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariantDto>(),
-                ItemAttributes = new List<ItemAttributeDto>(),
+                ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
                 CreatedAt = DateTime.UtcNow,
                 Deleted = false
             };
@@ -398,7 +398,7 @@ namespace API.Tests
                 Description_fr = "Description",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariantDto>(),
-                ItemAttributes = new List<ItemAttributeDto>(),
+                ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
                 CreatedAt = DateTime.UtcNow,
                 Deleted = false
             };
@@ -480,7 +480,7 @@ namespace API.Tests
                     Description_fr = "Test Description FR",
                     CategoryID = Guid.NewGuid(),
                     Variants = new List<ItemVariantDto>(),
-                    ItemAttributes = new List<ItemAttributeDto>(),
+                    ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null,
                     Deleted = false
@@ -572,7 +572,7 @@ namespace API.Tests
                 Description_fr = "Description",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariantDto>(),
-                ItemAttributes = new List<ItemAttributeDto>(),
+                ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
                 CreatedAt = DateTime.UtcNow,
                 Deleted = true
             };
@@ -670,7 +670,7 @@ namespace API.Tests
                 Description_fr = "Description",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariantDto>(),
-                ItemAttributes = new List<ItemAttributeDto>(),
+                ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
                 CreatedAt = DateTime.UtcNow,
                 Deleted = false // Not deleted
             };
@@ -759,7 +759,7 @@ namespace API.Tests
                 Description_fr = "Description",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariantDto>(),
-                ItemAttributes = new List<ItemAttributeDto>(),
+                ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
                 CreatedAt = DateTime.UtcNow,
                 Deleted = false
             };
@@ -860,7 +860,7 @@ namespace API.Tests
                 Description_fr = "Description",
                 CategoryID = Guid.NewGuid(),
                 Variants = new List<ItemVariantDto>(),
-                ItemAttributes = new List<ItemAttributeDto>(),
+                ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
                 CreatedAt = DateTime.UtcNow,
                 Deleted = false
             };
@@ -941,7 +941,7 @@ namespace API.Tests
                             Deleted = false
                         }
                     },
-                    ItemAttributes = new List<ItemAttributeDto>(),
+                    ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null,
                     Deleted = false
@@ -956,7 +956,7 @@ namespace API.Tests
                     Description_fr = "Test Description FR",
                     CategoryID = Guid.NewGuid(),
                     Variants = new List<ItemVariantDto>(),
-                    ItemAttributes = new List<ItemAttributeDto>(),
+                    ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
                     CreatedAt = DateTime.UtcNow.AddMinutes(-1),
                     UpdatedAt = null,
                     Deleted = false
@@ -1074,7 +1074,7 @@ namespace API.Tests
                             Deleted = false
                         }
                     },
-                    ItemAttributes = new List<ItemAttributeDto>(),
+                    ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null,
                     Deleted = false

@@ -33,7 +33,7 @@ namespace Infrastructure.Repositories.Tests
                 CreatedAt = DateTime.UtcNow,
                 Deleted = false,
                 Variants = new List<ItemVariant>(),
-                ItemAttributes = new List<ItemAttribute>()
+                ItemVariantFeatures = new List<ItemVariantFeatures>()
             };
         }
 
@@ -53,7 +53,7 @@ namespace Infrastructure.Repositories.Tests
                     CreatedAt = DateTime.UtcNow,
                     Deleted = false,
                     Variants = new List<ItemVariant>(),
-                    ItemAttributes = new List<ItemAttribute>()
+                    ItemVariantFeatures = new List<ItemVariantFeatures>()
                 },
                 new Item
                 {
@@ -67,7 +67,7 @@ namespace Infrastructure.Repositories.Tests
                     CreatedAt = DateTime.UtcNow,
                     Deleted = false,
                     Variants = new List<ItemVariant>(),
-                    ItemAttributes = new List<ItemAttribute>()
+                    ItemVariantFeatures = new List<ItemVariantFeatures>()
                 },
                 new Item
                 {
@@ -81,7 +81,7 @@ namespace Infrastructure.Repositories.Tests
                     CreatedAt = DateTime.UtcNow,
                     Deleted = false,
                     Variants = new List<ItemVariant>(),
-                    ItemAttributes = new List<ItemAttribute>()
+                    ItemVariantFeatures = new List<ItemVariantFeatures>()
                 }
             };
         }
@@ -183,7 +183,7 @@ namespace Infrastructure.Repositories.Tests
             Assert.NotEqual(Guid.Empty, item.CategoryID);
             Assert.False(item.Deleted);
             Assert.NotNull(item.Variants);
-            Assert.NotNull(item.ItemAttributes);
+            Assert.NotNull(item.ItemVariantFeatures);
         }
 
         [Fact]
@@ -195,8 +195,8 @@ namespace Infrastructure.Repositories.Tests
             // Assert
             Assert.NotNull(item.Variants);
             Assert.Empty(item.Variants);
-            Assert.NotNull(item.ItemAttributes);
-            Assert.Empty(item.ItemAttributes);
+            Assert.NotNull(item.ItemVariantFeatures);
+            Assert.Empty(item.ItemVariantFeatures);
             Assert.Equal(string.Empty, item.Name_en);
             Assert.Equal(string.Empty, item.Name_fr);
             Assert.False(item.Deleted);
@@ -250,10 +250,10 @@ namespace Infrastructure.Repositories.Tests
         }
 
         [Fact]
-        public void ItemAttribute_ShouldHaveCorrectProperties()
+        public void ItemVariantFeatures_ShouldHaveCorrectProperties()
         {
             // Arrange & Act
-            var attribute = new ItemAttribute
+            var attribute = new ItemVariantFeatures
             {
                 Id = Guid.NewGuid(),
                 ItemID = Guid.NewGuid(),
@@ -273,10 +273,10 @@ namespace Infrastructure.Repositories.Tests
         }
 
         [Fact]
-        public void ItemAttribute_ShouldInitializeCorrectly()
+        public void ItemVariantFeatures_ShouldInitializeCorrectly()
         {
             // Arrange & Act
-            var attribute = new ItemAttribute();
+            var attribute = new ItemVariantFeatures();
 
             // Assert
             Assert.Equal(Guid.Empty, attribute.Id);
@@ -296,7 +296,7 @@ namespace Infrastructure.Repositories.Tests
             // Integration tests with a real database would be needed to verify:
             // - The early return logic when no items are found
             // - The batched queries and dictionary lookups work correctly
-            // - ItemVariants, ItemVariantAttributes, and ItemAttributes are properly loaded
+            // - ItemVariants, ItemVariantAttributes, and ItemVariantFeatures are properly loaded
             var methodInfo = _itemRepository.GetType().GetMethod("GetBySellerIdAsync");
             
             // Assert
@@ -332,7 +332,7 @@ namespace Infrastructure.Repositories.Tests
             // - The SQL randomization logic using NEWID()
             // - The CTE filtering for items with images
             // - The batched queries and dictionary lookups work correctly
-            // - ItemVariants, ItemVariantAttributes, and ItemAttributes are properly loaded
+            // - ItemVariants, ItemVariantAttributes, and ItemVariantFeatures are properly loaded
             var methodInfo = _itemRepository.GetType().GetMethod("GetSuggestedProductsAsync");
             
             // Assert
@@ -392,7 +392,7 @@ namespace Infrastructure.Repositories.Tests
                             Deleted = false
                         }
                     },
-                    ItemAttributes = new List<ItemAttribute>(),
+                    ItemVariantFeatures = new List<ItemVariantFeatures>(),
                     CreatedAt = DateTime.UtcNow,
                     Deleted = false
                 }

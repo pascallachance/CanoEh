@@ -11,7 +11,7 @@ namespace Domain.Models.Responses
         public string? ImageUrl { get; set; }
         public Guid CategoryID { get; set; }
         public List<ItemVariantDto> Variants { get; set; } = new();
-        public List<ItemAttributeDto> ItemAttributes { get; set; } = new();
+        public List<ItemVariantFeaturesDto> ItemVariantFeatures { get; set; } = new();
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool Deleted { get; set; }

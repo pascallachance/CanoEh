@@ -124,7 +124,7 @@ interface ApiItem {
     description_fr?: string;
     categoryID: string;
     variants: ApiItemVariant[];
-    itemAttributes: ApiItemAttribute[];
+    itemAttributes?: ApiItemAttribute[];
     createdAt: string;
     updatedAt?: string;
     deleted: boolean;
@@ -673,7 +673,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         // Step 2: Category and item attributes
         const step2Data = {
             categoryId: item.categoryID,
-            itemAttributes: item.itemAttributes.map(attr => ({
+            itemAttributes: (item.itemAttributes || []).map(attr => ({
                 name_en: attr.attributeName_en,
                 name_fr: attr.attributeName_fr || '',
                 value_en: attr.attributes_en && attr.attributes_en.trim() !== '' ? attr.attributes_en.split(',').map(v => v.trim()) : [],

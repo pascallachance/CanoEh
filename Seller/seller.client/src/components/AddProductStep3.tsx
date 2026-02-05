@@ -639,11 +639,11 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                             </div>
                                         </div>
                                         <div className="variant-field variant-field-images">
-                                            <label className="variant-field-label">Images</label>
-                                            <div className="variant-field-content">
+                                            <div className="variant-field-label" id={`images-label-${variant.id}`}>Images</div>
+                                            <div className="variant-field-content" role="group" aria-labelledby={`images-label-${variant.id}`}>
                                                 <div className="images-row">
                                                     <div className="image-upload-group">
-                                                        <div className="image-upload-label">Thumbnail</div>
+                                                        <label className="image-upload-label" htmlFor={`thumbnail-${variant.id}`}>Thumbnail</label>
                                                         <div className="file-input-wrapper">
                                                             <input
                                                                 type="file"
@@ -679,7 +679,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                         </div>
                                                     </div>
                                                     <div className="image-upload-group">
-                                                        <div className="image-upload-label">Product Images</div>
+                                                        <label className="image-upload-label" htmlFor={`images-${variant.id}`}>Product Images</label>
                                                         <div className="file-input-wrapper">
                                                             <input
                                                                 type="file"

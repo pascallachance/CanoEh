@@ -49,13 +49,6 @@ interface BilingualValue {
     fr: string;
 }
 
-interface BilingualItemAttribute {
-    name_en: string;
-    name_fr: string;
-    value_en: string;
-    value_fr: string;
-}
-
 interface ItemVariant {
     id: string;
     attributes_en: Record<string, string>;
@@ -101,18 +94,11 @@ interface ApiItemVariant {
     itemVariantName_en?: string;
     itemVariantName_fr?: string;
     itemVariantAttributes: ApiItemVariantAttribute[];
+    itemVariantFeatures?: ApiItemVariantAttribute[]; // Same structure as attributes
     deleted: boolean;
     offer?: number;
     offerStart?: string;
     offerEnd?: string;
-}
-
-interface ApiItemAttribute {
-    id: string;
-    attributeName_en: string;
-    attributeName_fr?: string;
-    attributes_en: string;
-    attributes_fr?: string;
 }
 
 interface ApiItem {
@@ -124,7 +110,6 @@ interface ApiItem {
     description_fr?: string;
     categoryID: string;
     variants: ApiItemVariant[];
-    itemAttributes?: ApiItemAttribute[];
     createdAt: string;
     updatedAt?: string;
     deleted: boolean;
@@ -167,8 +152,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         description: '',
         description_fr: '',
         categoryId: '',
-        attributes: [] as QuickProductAttribute[],
-        itemAttributes: [] as BilingualItemAttribute[]
+        attributes: [] as QuickProductAttribute[]
     });
     const [newAttribute, setNewAttribute] = useState({ 
         name_en: '', 
@@ -177,13 +161,6 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     });
     const [attributeError, setAttributeError] = useState('');
     
-    // State for the new bilingual item attributes
-    const [newItemAttribute, setNewItemAttribute] = useState({
-        name_en: '',
-        name_fr: '',
-        value_en: '',
-        value_fr: ''
-    });
     const [variants, setVariants] = useState<ItemVariant[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     
@@ -359,12 +336,6 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         
         return false;
     }, [newItem.name, newItem.name_fr, newItem.description, newItem.description_fr, newItem.categoryId, variants]);
-
-    // Memoized disabled state for "Add Attribute" button to avoid re-computation on every render
-    const isAddAttributeDisabled = useMemo(() => {
-        return !newItemAttribute.name_en || !newItemAttribute.name_fr || 
-               !newItemAttribute.value_en || !newItemAttribute.value_fr;
-    }, [newItemAttribute.name_en, newItemAttribute.name_fr, newItemAttribute.value_en, newItemAttribute.value_fr]);
 
     // Fetch categories on component mount
     const fetchCategories = async () => {
@@ -730,19 +701,52 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 values: attr.values  // Keep the new format with paired values
             }));
 
-        // Step 2: Category, item attributes, variant attributes, and variant features
+        // Extract unique variant feature names from all variants, preserving the order from the first variant
+        const featuresMap = new Map<string, {
+            name_en: string;
+            name_fr: string;
+            values: Array<{ en: string; fr: string }>;
+        }>();
+        const featureOrderMap = new Map<string, number>();
+
+        // Process all variants to extract unique feature combinations
+        activeVariants.forEach((variant, variantIndex) => {
+            (variant.itemVariantFeatures || []).forEach((feature, featureIndex) => {
+                const key = feature.attributeName_en;
+                
+                // Set order based on first variant
+                if (variantIndex === 0 && !featureOrderMap.has(key)) {
+                    featureOrderMap.set(key, featureIndex);
+                }
+                
+                if (!featuresMap.has(key)) {
+                    featuresMap.set(key, {
+                        name_en: feature.attributeName_en,
+                        name_fr: feature.attributeName_fr || '',
+                        values: []
+                    });
+                }
+            });
+        });
+
+        // Convert to ItemAttribute array (features don't have predefined values, just names)
+        const variantFeatures: ItemAttribute[] = Array.from(featuresMap.entries())
+            .sort(([keyA], [keyB]) => {
+                const orderA = featureOrderMap.get(keyA) ?? 999;
+                const orderB = featureOrderMap.get(keyB) ?? 999;
+                return orderA - orderB;
+            })
+            .map(([, feature]) => ({
+                name_en: feature.name_en,
+                name_fr: feature.name_fr,
+                values: []  // Features don't have predefined values
+            }));
+
+        // Step 2: Category, variant attributes, and variant features
         const step2Data = {
             categoryId: item.categoryID,
-            itemAttributes: (item.itemAttributes || []).map(attr => ({
-                name_en: attr.attributeName_en,
-                name_fr: attr.attributeName_fr || '',
-                value_en: attr.attributes_en && attr.attributes_en.trim() !== '' ? attr.attributes_en.split(',').map(v => v.trim()) : [],
-                value_fr: attr.attributes_fr && attr.attributes_fr.trim() !== '' ? attr.attributes_fr.split(',').map(v => v.trim()) : []
-            })),
             variantAttributes,
-            // Variant features: Extract from API response once backend supports storing them
-            // For now, empty array as this is a new feature
-            variantFeatures: []
+            variantFeatures
         };
 
         // Prepare existing variants data to pass to Step 3
@@ -755,7 +759,8 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
             productIdentifierValue: variant.productIdentifierValue,
             thumbnailUrl: variant.thumbnailUrl,
             imageUrls: variant.imageUrls,
-            itemVariantAttributes: variant.itemVariantAttributes
+            itemVariantAttributes: variant.itemVariantAttributes,
+            itemVariantFeatures: variant.itemVariantFeatures || []
         }));
 
         // Call the onEditProduct callback with the parsed data
@@ -1079,31 +1084,6 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         }
     };
 
-    const addItemAttribute = () => {
-        if (!newItemAttribute.name_en || !newItemAttribute.name_fr || 
-            !newItemAttribute.value_en || !newItemAttribute.value_fr) {
-            return; // Don't add if any field is empty
-        }
-
-        setNewItem(prev => ({
-            ...prev,
-            itemAttributes: [...prev.itemAttributes, { ...newItemAttribute }]
-        }));
-        setNewItemAttribute({
-            name_en: '',
-            name_fr: '',
-            value_en: '',
-            value_fr: ''
-        });
-    };
-
-    const removeItemAttribute = (index: number) => {
-        setNewItem(prev => ({
-            ...prev,
-            itemAttributes: prev.itemAttributes.filter((_, i) => i !== index)
-        }));
-    };
-
     const addAttribute = () => {
         // Clear any previous error
         setAttributeError('');
@@ -1398,12 +1378,6 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                         };
                     }) : [],
                     Deleted: false
-                })),
-                ItemAttributes: newItem.itemAttributes.map(attr => ({
-                    AttributeName_en: attr.name_en,
-                    AttributeName_fr: attr.name_fr,
-                    Attributes_en: attr.value_en,
-                    Attributes_fr: attr.value_fr
                 }))
             };
 
@@ -1491,8 +1465,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                     description: '', 
                     description_fr: '', 
                     categoryId: '', 
-                    attributes: [],
-                    itemAttributes: []
+                    attributes: []
                 });
                 setVariants([]);
                 setEditingItemId(null);
@@ -1590,99 +1563,6 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                                 </option>
                             ))}
                         </select>
-                    </div>
-
-                    <div className="item-attributes-section">
-                        <h4>{t('products.itemAttributesTitle')}</h4>
-                        <div className="products-form-group">
-                            <div className="attribute-input-row">
-                                <div className="attribute-input-group">
-                                    <label className="products-form-label">
-                                        {t('products.attributeNameEn')}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={newItemAttribute.name_en}
-                                        onChange={(e) => setNewItemAttribute(prev => ({ ...prev, name_en: e.target.value }))}
-                                        className="products-form-input"
-                                        placeholder={t('placeholder.attributeNameEn')}
-                                    />
-                                </div>
-                                <div className="attribute-input-group">
-                                    <label className="products-form-label">
-                                        {t('products.attributeValueEn')}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={newItemAttribute.value_en}
-                                        onChange={(e) => setNewItemAttribute(prev => ({ ...prev, value_en: e.target.value }))}
-                                        className="products-form-input"
-                                        placeholder={t('placeholder.attributeValueEn')}
-                                    />
-                                </div>
-                            </div>
-                            <div className="attribute-input-row">
-                                <div className="attribute-input-group">
-                                    <label className="products-form-label">
-                                        {t('products.attributeNameFr')}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={newItemAttribute.name_fr}
-                                        onChange={(e) => setNewItemAttribute(prev => ({ ...prev, name_fr: e.target.value }))}
-                                        className="products-form-input"
-                                        placeholder={t('placeholder.attributeNameFr')}
-                                    />
-                                </div>
-                                <div className="attribute-input-group">
-                                    <label className="products-form-label">
-                                        {t('products.attributeValueFr')}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={newItemAttribute.value_fr}
-                                        onChange={(e) => setNewItemAttribute(prev => ({ ...prev, value_fr: e.target.value }))}
-                                        className="products-form-input"
-                                        placeholder={t('placeholder.attributeValueFr')}
-                                    />
-                                </div>
-                            </div>
-                            <div className="attribute-actions">
-                                <button
-                                    onClick={addItemAttribute}
-                                    className="products-add-attribute-button"
-                                    disabled={isAddAttributeDisabled}
-                                >
-                                    {t('products.addNewAttribute')}
-                                </button>
-                            </div>
-                        </div>
-
-                        {newItem.itemAttributes.length > 0 && (
-                            <div className="added-item-attributes">
-                                <h5>{t('products.attributes')}</h5>
-                                {newItem.itemAttributes.map((attr, index) => (
-                                    <div key={index} className="item-attribute-display">
-                                        <div className="attribute-display-content">
-                                            <div className="attribute-lang-pair">
-                                                <strong>{t('products.attributeNameEn')}:</strong> {attr.name_en} | 
-                                                <strong> {t('products.attributeValueEn')}:</strong> {attr.value_en}
-                                            </div>
-                                            <div className="attribute-lang-pair">
-                                                <strong>{t('products.attributeNameFr')}:</strong> {attr.name_fr} | 
-                                                <strong> {t('products.attributeValueFr')}:</strong> {attr.value_fr}
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={() => removeItemAttribute(index)}
-                                            className="products-remove-attribute-button"
-                                        >
-                                            {t('products.removeAttribute')}
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                     </div>
 
                     <div className="products-variants-section">
@@ -1957,8 +1837,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                                     description: '', 
                                     description_fr: '', 
                                     categoryId: '', 
-                                    attributes: [],
-                                    itemAttributes: []
+                                    attributes: []
                                 });
                                 setVariants([]);
                                 if (onViewModeChange) {

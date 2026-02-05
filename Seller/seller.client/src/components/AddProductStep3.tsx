@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Fragment } from 'react';
 import './AddProductStep3.css';
 import { ApiClient } from '../utils/apiClient';
 import { formatVariantAttribute } from '../utils/bilingualArrayUtils';
@@ -368,12 +368,6 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                     };
                 }) : [],
                 Deleted: false
-            })),
-            ItemAttributes: step2Data.itemAttributes.map(attr => ({
-                AttributeName_en: attr.name_en,
-                AttributeName_fr: attr.name_fr,
-                Attributes_en: Array.isArray(attr.value_en) ? attr.value_en.join(', ') : attr.value_en,
-                Attributes_fr: Array.isArray(attr.value_fr) ? attr.value_fr.join(', ') : attr.value_fr
             }))
         };
 
@@ -562,14 +556,6 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                             </div>
                                         </th>
                                     ))}
-                                    {step2Data.variantFeatures.map(feature => (
-                                        <th key={`${feature.name_en}-${feature.name_fr}`}>
-                                            <div className="header-bilingual">
-                                                <div><strong>EN:</strong> {feature.name_en}</div>
-                                                <div><strong>FR:</strong> {feature.name_fr}</div>
-                                            </div>
-                                        </th>
-                                    ))}
                                     <th>SKU *</th>
                                     <th>Product ID Type</th>
                                     <th>Product ID Value</th>
@@ -581,7 +567,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                             </thead>
                             <tbody>
                                 {variants.map(variant => (
-                                    <tr key={variant.id}>
+                                    <Fragment key={variant.id}>
+                                        <tr>
                                         {step2Data.variantAttributes.map(attr => {
                                             const formatted = formatVariantAttribute(attr.name_en, attr.name_fr, variant.attributes_en, variant.attributes_fr);
                                             return (
@@ -593,42 +580,6 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 </td>
                                             );
                                         })}
-                                        {step2Data.variantFeatures.map(feature => (
-                                            <td key={`${feature.name_en}-${feature.name_fr}`}>
-                                                <div className="cell-bilingual">
-                                                    <div>
-                                                        <input
-                                                            type="text"
-                                                            value={variant.features_en[feature.name_en] || ''}
-                                                            onChange={(e) => updateVariantFeature(
-                                                                variant.id,
-                                                                feature.name_en,
-                                                                feature.name_fr,
-                                                                e.target.value,
-                                                                variant.features_fr[feature.name_fr] || ''
-                                                            )}
-                                                            className="variant-input"
-                                                            placeholder={`EN: ${feature.name_en}`}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <input
-                                                            type="text"
-                                                            value={variant.features_fr[feature.name_fr] || ''}
-                                                            onChange={(e) => updateVariantFeature(
-                                                                variant.id,
-                                                                feature.name_en,
-                                                                feature.name_fr,
-                                                                variant.features_en[feature.name_en] || '',
-                                                                e.target.value
-                                                            )}
-                                                            className="variant-input"
-                                                            placeholder={`FR: ${feature.name_fr}`}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        ))}
                                         <td>
                                             <input
                                                 type="text"
@@ -740,6 +691,57 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                             </div>
                                         </td>
                                     </tr>
+                                    {step2Data.variantFeatures.length > 0 && (
+                                        <tr className="variant-features-row">
+                                            <td colSpan={step2Data.variantAttributes.length + 7}>
+                                                <div className="variant-features-container">
+                                                    <h4 className="variant-features-title">Variant Features</h4>
+                                                    <div className="variant-features-grid">
+                                                        {step2Data.variantFeatures.map(feature => (
+                                                            <div key={`${feature.name_en}-${feature.name_fr}`} className="variant-feature-field">
+                                                                <label className="feature-label" id={`feature-label-${variant.id}-${feature.name_en}`}>
+                                                                    <strong>EN:</strong> {feature.name_en} / <strong>FR:</strong> {feature.name_fr}
+                                                                </label>
+                                                                <div className="feature-inputs">
+                                                                    <input
+                                                                        type="text"
+                                                                        value={variant.features_en[feature.name_en] || ''}
+                                                                        onChange={(e) => updateVariantFeature(
+                                                                            variant.id,
+                                                                            feature.name_en,
+                                                                            feature.name_fr,
+                                                                            e.target.value,
+                                                                            variant.features_fr[feature.name_fr] || ''
+                                                                        )}
+                                                                        className="variant-input feature-input-en"
+                                                                        placeholder={`EN: ${feature.name_en}`}
+                                                                        aria-label={`${feature.name_en} (English)`}
+                                                                        aria-describedby={`feature-label-${variant.id}-${feature.name_en}`}
+                                                                    />
+                                                                    <input
+                                                                        type="text"
+                                                                        value={variant.features_fr[feature.name_fr] || ''}
+                                                                        onChange={(e) => updateVariantFeature(
+                                                                            variant.id,
+                                                                            feature.name_en,
+                                                                            feature.name_fr,
+                                                                            variant.features_en[feature.name_en] || '',
+                                                                            e.target.value
+                                                                        )}
+                                                                        className="variant-input feature-input-fr"
+                                                                        placeholder={`FR: ${feature.name_fr}`}
+                                                                        aria-label={`${feature.name_fr} (French)`}
+                                                                        aria-describedby={`feature-label-${variant.id}-${feature.name_en}`}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                    </Fragment>
                                 ))}
                             </tbody>
                         </table>

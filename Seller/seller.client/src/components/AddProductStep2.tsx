@@ -5,13 +5,6 @@ import type { AddProductStep1Data } from './AddProductStep1';
 import StepIndicator from './StepIndicator';
 import BilingualTagInput, { type BilingualValue } from './BilingualTagInput';
 
-export interface BilingualItemAttribute {
-    name_en: string;
-    name_fr: string;
-    value_en: string[];
-    value_fr: string[];
-}
-
 export interface ItemAttribute {
     name_en: string;
     name_fr: string;
@@ -20,7 +13,6 @@ export interface ItemAttribute {
 
 export interface AddProductStep2Data {
     categoryId: string;
-    itemAttributes: BilingualItemAttribute[];
     variantAttributes: ItemAttribute[];
     variantFeatures: ItemAttribute[];
 }
@@ -48,20 +40,12 @@ interface Category {
 function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep2Props) {
     const [formData, setFormData] = useState<AddProductStep2Data>(initialData || {
         categoryId: '',
-        itemAttributes: [],
         variantAttributes: [],
         variantFeatures: []
     });
 
     const [categories, setCategories] = useState<Category[]>([]);
     const [errors, setErrors] = useState<{ categoryId?: string; variantAttributes?: string }>({});
-    
-    // State for the new bilingual item attributes
-    const [newItemAttribute, setNewItemAttribute] = useState({
-        name_en: '',
-        name_fr: '',
-        values: [] as BilingualValue[]
-    });
     
     // State for variant attributes
     const [newVariantAttribute, setNewVariantAttribute] = useState({
@@ -78,7 +62,6 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
     });
     
     // State to track if we're editing an existing attribute
-    const [editingItemAttrIndex, setEditingItemAttrIndex] = useState<number | null>(null);
     const [editingVariantAttrIndex, setEditingVariantAttrIndex] = useState<number | null>(null);
     const [editingFeatureIndex, setEditingFeatureIndex] = useState<number | null>(null);
 
@@ -164,96 +147,6 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
         if (errors.categoryId) {
             setErrors(prev => ({ ...prev, categoryId: undefined }));
         }
-    };
-
-    // Item Attributes handlers
-    const addItemAttribute = () => {
-        if (!newItemAttribute.name_en || !newItemAttribute.name_fr || 
-            newItemAttribute.values.length === 0) {
-            return;
-        }
-
-        // Convert BilingualValue[] to separate arrays for storage
-        const value_en = newItemAttribute.values.map(v => v.en);
-        const value_fr = newItemAttribute.values.map(v => v.fr);
-
-        if (editingItemAttrIndex !== null) {
-            // Update existing attribute
-            setFormData(prev => ({
-                ...prev,
-                itemAttributes: prev.itemAttributes.map((attr, i) => 
-                    i === editingItemAttrIndex ? {
-                        name_en: newItemAttribute.name_en,
-                        name_fr: newItemAttribute.name_fr,
-                        value_en,
-                        value_fr
-                    } : attr
-                )
-            }));
-            setEditingItemAttrIndex(null);
-        } else {
-            // Add new attribute
-            setFormData(prev => ({
-                ...prev,
-                itemAttributes: [...prev.itemAttributes, {
-                    name_en: newItemAttribute.name_en,
-                    name_fr: newItemAttribute.name_fr,
-                    value_en,
-                    value_fr
-                }]
-            }));
-        }
-        
-        setNewItemAttribute({
-            name_en: '',
-            name_fr: '',
-            values: []
-        });
-    };
-
-    const removeItemAttribute = (index: number) => {
-        if (editingItemAttrIndex === index) {
-            setEditingItemAttrIndex(null);
-            setNewItemAttribute({
-                name_en: '',
-                name_fr: '',
-                values: []
-            });
-        } else if (editingItemAttrIndex !== null && index < editingItemAttrIndex) {
-            setEditingItemAttrIndex(editingItemAttrIndex - 1);
-        }
-        
-        setFormData(prev => ({
-            ...prev,
-            itemAttributes: prev.itemAttributes.filter((_, i) => i !== index)
-        }));
-    };
-    
-    const editItemAttribute = (index: number) => {
-        if (editingItemAttrIndex !== null && editingItemAttrIndex !== index) {
-            const confirmSwitch = window.confirm(
-                'You are currently editing another attribute. Switching will discard any unsaved changes to that attribute. Do you want to continue?'
-            );
-            if (!confirmSwitch) {
-                return;
-            }
-        }
-        
-        const attr = formData.itemAttributes[index];
-        
-        // Convert the separate arrays back to BilingualValue[]
-        const values: BilingualValue[] = attr.value_en.map((en, i) => ({
-            en,
-            fr: attr.value_fr[i]
-        }));
-        
-        setNewItemAttribute({
-            name_en: attr.name_en,
-            name_fr: attr.name_fr,
-            values
-        });
-        
-        setEditingItemAttrIndex(index);
     };
 
     // Variant Attributes handlers
@@ -452,9 +345,6 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
             onNext(formData);
         }
     };
-
-    const isAddItemAttributeDisabled = !newItemAttribute.name_en || !newItemAttribute.name_fr || 
-                                        newItemAttribute.values.length === 0;
     
     const isAddVariantAttributeDisabled = !newVariantAttribute.name_en || !newVariantAttribute.name_fr || 
                                            newVariantAttribute.values.length === 0;
@@ -697,111 +587,6 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                                 </button>
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Item Attributes Section */}
-                        <div className="item-attributes-section full-width">
-                            <h4>Item Attributes (Optional)</h4>
-                            <p className="section-description">
-                                Add attributes that apply to all variants of this item (e.g., Brand, Material, Warranty).
-                            </p>
-                            
-                            <div className="attribute-input-container">
-                                <div className="attribute-names">
-                                    <div className="attribute-input-group">
-                                        <label>Attribute Name (English)</label>
-                                        <input
-                                            type="text"
-                                            value={newItemAttribute.name_en}
-                                            onChange={(e) => setNewItemAttribute(prev => ({ ...prev, name_en: e.target.value }))}
-                                            placeholder="e.g., Brand"
-                                        />
-                                    </div>
-                                    <div className="attribute-input-group">
-                                        <label>Attribute Name (French)</label>
-                                        <input
-                                            type="text"
-                                            value={newItemAttribute.name_fr}
-                                            onChange={(e) => setNewItemAttribute(prev => ({ ...prev, name_fr: e.target.value }))}
-                                            placeholder="e.g., Marque"
-                                        />
-                                    </div>
-                                </div>
-                                
-                                <div className="attribute-values">
-                                    <BilingualTagInput
-                                        values={newItemAttribute.values}
-                                        onValuesChange={(values) => setNewItemAttribute(prev => ({ ...prev, values }))}
-                                        placeholderEn="e.g., Nike"
-                                        placeholderFr="e.g., Nike"
-                                        labelEn="Values (English)"
-                                        labelFr="Values (French)"
-                                        id="item_attribute_values"
-                                    />
-                                </div>
-                                
-                                <div className="attribute-actions">
-                                    <button
-                                        type="button"
-                                        onClick={addItemAttribute}
-                                        className="add-attribute-btn"
-                                        disabled={isAddItemAttributeDisabled}
-                                    >
-                                        {editingItemAttrIndex !== null ? 'Update Attribute' : 'Add Attribute'}
-                                    </button>
-                                    {editingItemAttrIndex !== null && (
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setEditingItemAttrIndex(null);
-                                                setNewItemAttribute({
-                                                    name_en: '',
-                                                    name_fr: '',
-                                                    values: []
-                                                });
-                                            }}
-                                            className="cancel-edit-btn"
-                                        >
-                                            Cancel
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-
-                            {formData.itemAttributes.length > 0 && (
-                                <div className="added-item-attributes">
-                                    <h5>Added Item Attributes</h5>
-                                    {formData.itemAttributes.map((attr, index) => (
-                                        <div key={index} className="item-attribute-display">
-                                            <div className="attribute-display-content">
-                                                <div className="attribute-lang-pair">
-                                                    <strong>EN</strong> {attr.name_en}: {attr.value_en.join(',')}
-                                                </div>
-                                                <div className="attribute-lang-pair">
-                                                    <strong>FR</strong> {attr.name_fr}: {attr.value_fr.join(',')}
-                                                </div>
-                                            </div>
-                                            <div className="attribute-action-buttons">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => editItemAttribute(index)}
-                                                    className="edit-attribute-btn"
-                                                    disabled={editingItemAttrIndex === index}
-                                                >
-                                                    {editingItemAttrIndex === index ? 'Editing...' : 'Edit'}
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeItemAttribute(index)}
-                                                    className="remove-attribute-btn"
-                                                >
-                                                    Remove
-                                                </button>
-                                            </div>
-                        </div>
                                     ))}
                                 </div>
                             )}

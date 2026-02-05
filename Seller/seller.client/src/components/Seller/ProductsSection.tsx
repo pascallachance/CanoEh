@@ -701,7 +701,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 values: attr.values  // Keep the new format with paired values
             }));
 
-        // Extract variant features from first variant (features should be same structure for all variants)
+        // Extract unique variant feature names from all variants, preserving the order from the first variant
         const featuresMap = new Map<string, {
             name_en: string;
             name_fr: string;

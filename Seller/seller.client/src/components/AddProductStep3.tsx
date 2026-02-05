@@ -699,7 +699,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                     <div className="variant-features-grid">
                                                         {step2Data.variantFeatures.map(feature => (
                                                             <div key={`${feature.name_en}-${feature.name_fr}`} className="variant-feature-field">
-                                                                <label className="feature-label">
+                                                                <label className="feature-label" id={`feature-label-${variant.id}-${feature.name_en}`}>
                                                                     <strong>EN:</strong> {feature.name_en} / <strong>FR:</strong> {feature.name_fr}
                                                                 </label>
                                                                 <div className="feature-inputs">
@@ -715,6 +715,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                         )}
                                                                         className="variant-input feature-input-en"
                                                                         placeholder={`EN: ${feature.name_en}`}
+                                                                        aria-label={`${feature.name_en} (English)`}
+                                                                        aria-describedby={`feature-label-${variant.id}-${feature.name_en}`}
                                                                     />
                                                                     <input
                                                                         type="text"
@@ -728,6 +730,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                         )}
                                                                         className="variant-input feature-input-fr"
                                                                         placeholder={`FR: ${feature.name_fr}`}
+                                                                        aria-label={`${feature.name_fr} (French)`}
+                                                                        aria-describedby={`feature-label-${variant.id}-${feature.name_en}`}
                                                                     />
                                                                 </div>
                                                             </div>

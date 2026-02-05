@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import './AddProductStep4.css';
+import './AddProductStep3.css';
 import { ApiClient } from '../utils/apiClient';
 import { formatVariantAttribute } from '../utils/bilingualArrayUtils';
 import { toAbsoluteUrl, toAbsoluteUrlArray } from '../utils/urlUtils';
@@ -525,8 +525,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
     };
 
     return (
-        <div className="add-product-step4-container">
-            <div className="add-product-step4-content">
+        <div className="add-product-step3-container">
+            <div className="add-product-step3-content">
                 <header className="step-header">
                     <h1>{editMode ? 'Edit Product' : 'Add New Product'}</h1>
                     <StepIndicator 

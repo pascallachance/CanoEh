@@ -12,9 +12,17 @@ export interface BilingualItemAttribute {
     value_fr: string[];
 }
 
+export interface ItemAttribute {
+    name_en: string;
+    name_fr: string;
+    values: BilingualValue[];
+}
+
 export interface AddProductStep2Data {
     categoryId: string;
     itemAttributes: BilingualItemAttribute[];
+    variantAttributes: ItemAttribute[];
+    variantFeatures: ItemAttribute[];
 }
 
 interface AddProductStep2Props {
@@ -40,11 +48,13 @@ interface Category {
 function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep2Props) {
     const [formData, setFormData] = useState<AddProductStep2Data>(initialData || {
         categoryId: '',
-        itemAttributes: []
+        itemAttributes: [],
+        variantAttributes: [],
+        variantFeatures: []
     });
 
     const [categories, setCategories] = useState<Category[]>([]);
-    const [errors, setErrors] = useState<{ categoryId?: string }>({});
+    const [errors, setErrors] = useState<{ categoryId?: string; variantAttributes?: string }>({});
     
     // State for the new bilingual item attributes
     const [newItemAttribute, setNewItemAttribute] = useState({
@@ -53,8 +63,24 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
         values: [] as BilingualValue[]
     });
     
+    // State for variant attributes
+    const [newVariantAttribute, setNewVariantAttribute] = useState({
+        name_en: '',
+        name_fr: '',
+        values: [] as BilingualValue[]
+    });
+    
+    // State for variant features
+    const [newVariantFeature, setNewVariantFeature] = useState({
+        name_en: '',
+        name_fr: '',
+        values: [] as BilingualValue[]
+    });
+    
     // State to track if we're editing an existing attribute
-    const [editingIndex, setEditingIndex] = useState<number | null>(null);
+    const [editingItemAttrIndex, setEditingItemAttrIndex] = useState<number | null>(null);
+    const [editingVariantAttrIndex, setEditingVariantAttrIndex] = useState<number | null>(null);
+    const [editingFeatureIndex, setEditingFeatureIndex] = useState<number | null>(null);
 
     // Fetch categories on component mount
     useEffect(() => {
@@ -119,10 +145,14 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
     }, [onCancel]);
 
     const validateForm = (): boolean => {
-        const newErrors: { categoryId?: string } = {};
+        const newErrors: { categoryId?: string; variantAttributes?: string } = {};
 
         if (!formData.categoryId) {
             newErrors.categoryId = 'Category is required';
+        }
+
+        if (formData.variantAttributes.length === 0 && !editMode) {
+            newErrors.variantAttributes = 'Please add at least one variant attribute to continue.';
         }
 
         setErrors(newErrors);
@@ -136,6 +166,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
         }
     };
 
+    // Item Attributes handlers
     const addItemAttribute = () => {
         if (!newItemAttribute.name_en || !newItemAttribute.name_fr || 
             newItemAttribute.values.length === 0) {
@@ -146,12 +177,12 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
         const value_en = newItemAttribute.values.map(v => v.en);
         const value_fr = newItemAttribute.values.map(v => v.fr);
 
-        if (editingIndex !== null) {
+        if (editingItemAttrIndex !== null) {
             // Update existing attribute
             setFormData(prev => ({
                 ...prev,
                 itemAttributes: prev.itemAttributes.map((attr, i) => 
-                    i === editingIndex ? {
+                    i === editingItemAttrIndex ? {
                         name_en: newItemAttribute.name_en,
                         name_fr: newItemAttribute.name_fr,
                         value_en,
@@ -159,7 +190,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                     } : attr
                 )
             }));
-            setEditingIndex(null);
+            setEditingItemAttrIndex(null);
         } else {
             // Add new attribute
             setFormData(prev => ({
@@ -181,17 +212,15 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
     };
 
     const removeItemAttribute = (index: number) => {
-        // If we're editing this attribute, cancel the edit
-        if (editingIndex === index) {
-            setEditingIndex(null);
+        if (editingItemAttrIndex === index) {
+            setEditingItemAttrIndex(null);
             setNewItemAttribute({
                 name_en: '',
                 name_fr: '',
                 values: []
             });
-        } else if (editingIndex !== null && index < editingIndex) {
-            // Adjust editingIndex if removing an attribute before the one being edited
-            setEditingIndex(editingIndex - 1);
+        } else if (editingItemAttrIndex !== null && index < editingItemAttrIndex) {
+            setEditingItemAttrIndex(editingItemAttrIndex - 1);
         }
         
         setFormData(prev => ({
@@ -201,8 +230,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
     };
     
     const editItemAttribute = (index: number) => {
-        // If already editing a different attribute, confirm before switching
-        if (editingIndex !== null && editingIndex !== index) {
+        if (editingItemAttrIndex !== null && editingItemAttrIndex !== index) {
             const confirmSwitch = window.confirm(
                 'You are currently editing another attribute. Switching will discard any unsaved changes to that attribute. Do you want to continue?'
             );
@@ -225,7 +253,197 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
             values
         });
         
-        setEditingIndex(index);
+        setEditingItemAttrIndex(index);
+    };
+
+    // Variant Attributes handlers
+    const addVariantAttribute = () => {
+        if (!newVariantAttribute.name_en || !newVariantAttribute.name_fr || 
+            newVariantAttribute.values.length === 0) {
+            return;
+        }
+
+        // Validate all values have both en and fr
+        const hasIncompleteValues = newVariantAttribute.values.some(v => !v.en || !v.fr);
+        if (hasIncompleteValues) {
+            return;
+        }
+
+        // Check for duplicate attribute names
+        const isDuplicate = formData.variantAttributes.some((attr, index) =>
+            index !== editingVariantAttrIndex && (
+                attr.name_en.toLowerCase() === newVariantAttribute.name_en.toLowerCase() ||
+                attr.name_fr.toLowerCase() === newVariantAttribute.name_fr.toLowerCase()
+            )
+        );
+
+        if (isDuplicate) {
+            return;
+        }
+
+        if (editingVariantAttrIndex !== null) {
+            // Update existing attribute
+            setFormData(prev => ({
+                ...prev,
+                variantAttributes: prev.variantAttributes.map((attr, i) =>
+                    i === editingVariantAttrIndex ? {
+                        name_en: newVariantAttribute.name_en,
+                        name_fr: newVariantAttribute.name_fr,
+                        values: newVariantAttribute.values
+                    } : attr
+                )
+            }));
+            setEditingVariantAttrIndex(null);
+        } else {
+            // Add new attribute
+            setFormData(prev => ({
+                ...prev,
+                variantAttributes: [...prev.variantAttributes, {
+                    name_en: newVariantAttribute.name_en,
+                    name_fr: newVariantAttribute.name_fr,
+                    values: newVariantAttribute.values
+                }]
+            }));
+        }
+        
+        // Clear error when an attribute is added
+        if (errors.variantAttributes) {
+            setErrors(prev => ({ ...prev, variantAttributes: undefined }));
+        }
+        
+        setNewVariantAttribute({
+            name_en: '',
+            name_fr: '',
+            values: []
+        });
+    };
+
+    const removeVariantAttribute = (index: number) => {
+        if (editingVariantAttrIndex === index) {
+            setEditingVariantAttrIndex(null);
+            setNewVariantAttribute({
+                name_en: '',
+                name_fr: '',
+                values: []
+            });
+        } else if (editingVariantAttrIndex !== null && index < editingVariantAttrIndex) {
+            setEditingVariantAttrIndex(editingVariantAttrIndex - 1);
+        }
+        
+        setFormData(prev => ({
+            ...prev,
+            variantAttributes: prev.variantAttributes.filter((_, i) => i !== index)
+        }));
+    };
+    
+    const editVariantAttribute = (index: number) => {
+        if (editingVariantAttrIndex !== null && editingVariantAttrIndex !== index) {
+            const confirmSwitch = window.confirm(
+                'You are currently editing another attribute. Switching will discard any unsaved changes to that attribute. Do you want to continue?'
+            );
+            if (!confirmSwitch) {
+                return;
+            }
+        }
+        
+        const attr = formData.variantAttributes[index];
+        
+        setNewVariantAttribute({
+            name_en: attr.name_en,
+            name_fr: attr.name_fr,
+            values: attr.values
+        });
+        
+        setEditingVariantAttrIndex(index);
+    };
+
+    // Variant Features handlers
+    const addVariantFeature = () => {
+        if (!newVariantFeature.name_en || !newVariantFeature.name_fr) {
+            return;
+        }
+
+        // Check for duplicate feature names
+        const isDuplicate = formData.variantFeatures.some((feat, index) =>
+            index !== editingFeatureIndex && (
+                feat.name_en.toLowerCase() === newVariantFeature.name_en.toLowerCase() ||
+                feat.name_fr.toLowerCase() === newVariantFeature.name_fr.toLowerCase()
+            )
+        );
+
+        if (isDuplicate) {
+            return;
+        }
+
+        if (editingFeatureIndex !== null) {
+            // Update existing feature
+            setFormData(prev => ({
+                ...prev,
+                variantFeatures: prev.variantFeatures.map((feat, i) =>
+                    i === editingFeatureIndex ? {
+                        name_en: newVariantFeature.name_en,
+                        name_fr: newVariantFeature.name_fr,
+                        values: newVariantFeature.values
+                    } : feat
+                )
+            }));
+            setEditingFeatureIndex(null);
+        } else {
+            // Add new feature
+            setFormData(prev => ({
+                ...prev,
+                variantFeatures: [...prev.variantFeatures, {
+                    name_en: newVariantFeature.name_en,
+                    name_fr: newVariantFeature.name_fr,
+                    values: newVariantFeature.values
+                }]
+            }));
+        }
+        
+        setNewVariantFeature({
+            name_en: '',
+            name_fr: '',
+            values: []
+        });
+    };
+
+    const removeVariantFeature = (index: number) => {
+        if (editingFeatureIndex === index) {
+            setEditingFeatureIndex(null);
+            setNewVariantFeature({
+                name_en: '',
+                name_fr: '',
+                values: []
+            });
+        } else if (editingFeatureIndex !== null && index < editingFeatureIndex) {
+            setEditingFeatureIndex(editingFeatureIndex - 1);
+        }
+        
+        setFormData(prev => ({
+            ...prev,
+            variantFeatures: prev.variantFeatures.filter((_, i) => i !== index)
+        }));
+    };
+    
+    const editVariantFeature = (index: number) => {
+        if (editingFeatureIndex !== null && editingFeatureIndex !== index) {
+            const confirmSwitch = window.confirm(
+                'You are currently editing another feature. Switching will discard any unsaved changes to that feature. Do you want to continue?'
+            );
+            if (!confirmSwitch) {
+                return;
+            }
+        }
+        
+        const feat = formData.variantFeatures[index];
+        
+        setNewVariantFeature({
+            name_en: feat.name_en,
+            name_fr: feat.name_fr,
+            values: feat.values
+        });
+        
+        setEditingFeatureIndex(index);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -235,8 +453,13 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
         }
     };
 
-    const isAddAttributeDisabled = !newItemAttribute.name_en || !newItemAttribute.name_fr || 
-                                    newItemAttribute.values.length === 0;
+    const isAddItemAttributeDisabled = !newItemAttribute.name_en || !newItemAttribute.name_fr || 
+                                        newItemAttribute.values.length === 0;
+    
+    const isAddVariantAttributeDisabled = !newVariantAttribute.name_en || !newVariantAttribute.name_fr || 
+                                           newVariantAttribute.values.length === 0;
+    
+    const isAddVariantFeatureDisabled = !newVariantFeature.name_en || !newVariantFeature.name_fr;
 
     return (
         <div className="add-product-step2-container">
@@ -245,16 +468,17 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                     <h1>{editMode ? 'Edit Product' : 'Add New Product'}</h1>
                     <StepIndicator 
                         currentStep={2}
-                        totalSteps={4}
+                        totalSteps={3}
                         onStepClick={onStepNavigate}
                         completedSteps={completedSteps || [1]}
                     />
-                    <h2>Step 2: Category and Item Attributes</h2>
-                    <p>Select a category and add item-specific attributes (optional).</p>
+                    <h2>Step 2: Category, Variant Attributes and Features</h2>
+                    <p>Select a category, define variant attributes (required), and optionally add item attributes and variant features.</p>
                 </header>
 
                 <form className="product-form" onSubmit={handleSubmit}>
                     <div className="form-grid">
+                        {/* Category Selection */}
                         <div className="form-group full-width">
                             <label htmlFor="categoryId">Category *</label>
                             <select
@@ -275,6 +499,210 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                             )}
                         </div>
 
+                        {/* Variant Attributes Section */}
+                        <div className="variant-attributes-section full-width">
+                            <h4>Variant Attributes *</h4>
+                            <p className="section-description">
+                                <strong>At least one variant attribute is required.</strong> Add attributes that create different variants of your product (e.g., Size, Color). Each combination of values will generate a unique variant in the next step.
+                            </p>
+                            {errors.variantAttributes && (
+                                <div className="error-message" role="alert">
+                                    {errors.variantAttributes}
+                                </div>
+                            )}
+                            
+                            <div className="attribute-input-container">
+                                <div className="attribute-names">
+                                    <div className="attribute-input-group">
+                                        <label>Attribute Name (English)</label>
+                                        <input
+                                            type="text"
+                                            value={newVariantAttribute.name_en}
+                                            onChange={(e) => setNewVariantAttribute(prev => ({ ...prev, name_en: e.target.value }))}
+                                            placeholder="e.g., Size"
+                                        />
+                                    </div>
+                                    <div className="attribute-input-group">
+                                        <label>Attribute Name (French)</label>
+                                        <input
+                                            type="text"
+                                            value={newVariantAttribute.name_fr}
+                                            onChange={(e) => setNewVariantAttribute(prev => ({ ...prev, name_fr: e.target.value }))}
+                                            placeholder="e.g., Taille"
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div className="attribute-values">
+                                    <BilingualTagInput
+                                        values={newVariantAttribute.values}
+                                        onValuesChange={(values) => setNewVariantAttribute(prev => ({ ...prev, values }))}
+                                        placeholderEn="e.g., Small, Medium, Large"
+                                        placeholderFr="e.g., Petit, Moyen, Grand"
+                                        labelEn="Values (English)"
+                                        labelFr="Values (French)"
+                                        id="variant_attribute_values"
+                                    />
+                                </div>
+                                
+                                <div className="attribute-actions">
+                                    <button
+                                        type="button"
+                                        onClick={addVariantAttribute}
+                                        className="add-attribute-btn"
+                                        disabled={isAddVariantAttributeDisabled}
+                                    >
+                                        {editingVariantAttrIndex !== null ? 'Update Attribute' : 'Add Attribute'}
+                                    </button>
+                                    {editingVariantAttrIndex !== null && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setEditingVariantAttrIndex(null);
+                                                setNewVariantAttribute({
+                                                    name_en: '',
+                                                    name_fr: '',
+                                                    values: []
+                                                });
+                                            }}
+                                            className="cancel-edit-btn"
+                                        >
+                                            Cancel
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {formData.variantAttributes.length > 0 && (
+                                <div className="added-attributes">
+                                    <h5>Added Variant Attributes</h5>
+                                    {formData.variantAttributes.map((attr, index) => (
+                                        <div key={index} className="attribute-display">
+                                            <div className="attribute-info">
+                                                <div className="attribute-lang-pair">
+                                                    <strong>EN</strong> {attr.name_en}: {attr.values.map(v => v.en).join(',')}
+                                                </div>
+                                                <div className="attribute-lang-pair">
+                                                    <strong>FR</strong> {attr.name_fr}: {attr.values.map(v => v.fr).join(',')}
+                                                </div>
+                                            </div>
+                                            <div className="attribute-action-buttons">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => editVariantAttribute(index)}
+                                                    className="edit-attribute-btn"
+                                                    disabled={editingVariantAttrIndex === index}
+                                                >
+                                                    {editingVariantAttrIndex === index ? 'Editing...' : 'Edit'}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeVariantAttribute(index)}
+                                                    className="remove-attribute-btn"
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Variant Features Section */}
+                        <div className="item-attributes-section full-width">
+                            <h4>Variant Features (Optional)</h4>
+                            <p className="section-description">
+                                Add features that can vary by variant but don't create new variants (e.g., Weight, Dimensions). You can specify different values for each variant in the next step.
+                            </p>
+                            
+                            <div className="attribute-input-container">
+                                <div className="attribute-names">
+                                    <div className="attribute-input-group">
+                                        <label>Feature Name (English)</label>
+                                        <input
+                                            type="text"
+                                            value={newVariantFeature.name_en}
+                                            onChange={(e) => setNewVariantFeature(prev => ({ ...prev, name_en: e.target.value }))}
+                                            placeholder="e.g., Weight"
+                                        />
+                                    </div>
+                                    <div className="attribute-input-group">
+                                        <label>Feature Name (French)</label>
+                                        <input
+                                            type="text"
+                                            value={newVariantFeature.name_fr}
+                                            onChange={(e) => setNewVariantFeature(prev => ({ ...prev, name_fr: e.target.value }))}
+                                            placeholder="e.g., Poids"
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div className="attribute-actions">
+                                    <button
+                                        type="button"
+                                        onClick={addVariantFeature}
+                                        className="add-attribute-btn"
+                                        disabled={isAddVariantFeatureDisabled}
+                                    >
+                                        {editingFeatureIndex !== null ? 'Update Feature' : 'Add Feature'}
+                                    </button>
+                                    {editingFeatureIndex !== null && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setEditingFeatureIndex(null);
+                                                setNewVariantFeature({
+                                                    name_en: '',
+                                                    name_fr: '',
+                                                    values: []
+                                                });
+                                            }}
+                                            className="cancel-edit-btn"
+                                        >
+                                            Cancel
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {formData.variantFeatures.length > 0 && (
+                                <div className="added-item-attributes">
+                                    <h5>Added Variant Features</h5>
+                                    {formData.variantFeatures.map((feat, index) => (
+                                        <div key={index} className="item-attribute-display">
+                                            <div className="attribute-display-content">
+                                                <div className="attribute-lang-pair">
+                                                    <strong>EN</strong> {feat.name_en}
+                                                </div>
+                                                <div className="attribute-lang-pair">
+                                                    <strong>FR</strong> {feat.name_fr}
+                                                </div>
+                                            </div>
+                                            <div className="attribute-action-buttons">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => editVariantFeature(index)}
+                                                    className="edit-attribute-btn"
+                                                    disabled={editingFeatureIndex === index}
+                                                >
+                                                    {editingFeatureIndex === index ? 'Editing...' : 'Edit'}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeVariantFeature(index)}
+                                                    className="remove-attribute-btn"
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Item Attributes Section */}
                         <div className="item-attributes-section full-width">
                             <h4>Item Attributes (Optional)</h4>
                             <p className="section-description">
@@ -311,7 +739,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                         placeholderFr="e.g., Nike"
                                         labelEn="Values (English)"
                                         labelFr="Values (French)"
-                                        id="attribute_values"
+                                        id="item_attribute_values"
                                     />
                                 </div>
                                 
@@ -320,15 +748,15 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                         type="button"
                                         onClick={addItemAttribute}
                                         className="add-attribute-btn"
-                                        disabled={isAddAttributeDisabled}
+                                        disabled={isAddItemAttributeDisabled}
                                     >
-                                        {editingIndex !== null ? 'Update Attribute' : 'Add Attribute'}
+                                        {editingItemAttrIndex !== null ? 'Update Attribute' : 'Add Attribute'}
                                     </button>
-                                    {editingIndex !== null && (
+                                    {editingItemAttrIndex !== null && (
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                setEditingIndex(null);
+                                                setEditingItemAttrIndex(null);
                                                 setNewItemAttribute({
                                                     name_en: '',
                                                     name_fr: '',
@@ -345,7 +773,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
 
                             {formData.itemAttributes.length > 0 && (
                                 <div className="added-item-attributes">
-                                    <h5>Added Attributes</h5>
+                                    <h5>Added Item Attributes</h5>
                                     {formData.itemAttributes.map((attr, index) => (
                                         <div key={index} className="item-attribute-display">
                                             <div className="attribute-display-content">
@@ -361,9 +789,9 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                                     type="button"
                                                     onClick={() => editItemAttribute(index)}
                                                     className="edit-attribute-btn"
-                                                    disabled={editingIndex === index}
+                                                    disabled={editingItemAttrIndex === index}
                                                 >
-                                                    {editingIndex === index ? 'Editing...' : 'Edit'}
+                                                    {editingItemAttrIndex === index ? 'Editing...' : 'Edit'}
                                                 </button>
                                                 <button
                                                     type="button"
@@ -373,7 +801,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                                     Remove
                                                 </button>
                                             </div>
-                                        </div>
+                        </div>
                                     ))}
                                 </div>
                             )}

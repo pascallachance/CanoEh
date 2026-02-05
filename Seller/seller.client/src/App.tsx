@@ -11,7 +11,6 @@ import CompanyCreatedSuccess from './components/CompanyCreatedSuccess';
 import AddProductStep1 from './components/AddProductStep1';
 import AddProductStep2 from './components/AddProductStep2';
 import AddProductStep3 from './components/AddProductStep3';
-import AddProductStep4 from './components/AddProductStep4';
 import Seller from './components/Seller/Seller';
 import { ApiClient } from './utils/apiClient';
 import { NotificationProvider } from './contexts/NotificationContext';
@@ -21,7 +20,6 @@ import type { CreateCompanyStep1Data } from './components/CreateCompanyStep1';
 import type { CreateCompanyStep2Data } from './components/CreateCompanyStep2';
 import type { AddProductStep1Data } from './components/AddProductStep1';
 import type { AddProductStep2Data } from './components/AddProductStep2';
-import type { AddProductStep3Data } from './components/AddProductStep3';
 
 interface Company {
     id: string;
@@ -45,13 +43,11 @@ function AppContent() {
     // Product creation state
     const [productStep1Data, setProductStep1Data] = useState<AddProductStep1Data | null>(null);
     const [productStep2Data, setProductStep2Data] = useState<AddProductStep2Data | null>(null);
-    const [productStep3Data, setProductStep3Data] = useState<AddProductStep3Data | null>(null);
     
     // Product editing state
     const [editingItemId, setEditingItemId] = useState<string | null>(null);
     const [editProductStep1Data, setEditProductStep1Data] = useState<AddProductStep1Data | null>(null);
     const [editProductStep2Data, setEditProductStep2Data] = useState<AddProductStep2Data | null>(null);
-    const [editProductStep3Data, setEditProductStep3Data] = useState<AddProductStep3Data | null>(null);
     const [editProductExistingVariants, setEditProductExistingVariants] = useState<any[] | null>(null);
     
     const navigate = useNavigate();
@@ -67,7 +63,6 @@ function AppContent() {
         if (!location.pathname.startsWith('/add-product')) {
             setProductStep1Data(null);
             setProductStep2Data(null);
-            setProductStep3Data(null);
         }
     }, [location.pathname]);
 
@@ -77,7 +72,6 @@ function AppContent() {
             setEditingItemId(null);
             setEditProductStep1Data(null);
             setEditProductStep2Data(null);
-            setEditProductStep3Data(null);
             setEditProductExistingVariants(null);
         }
     }, [location.pathname]);
@@ -260,17 +254,8 @@ function AppContent() {
         navigate('/add-product');
     };
 
-    const handleProductStep3Next = (data: AddProductStep3Data) => {
-        setProductStep3Data(data);
-        navigate('/add-product/step4');
-    };
-
     const handleProductStep3Back = () => {
         navigate('/add-product/step2');
-    };
-
-    const handleProductStep4Back = () => {
-        navigate('/add-product/step3');
     };
 
     const handleProductSubmit = () => {
@@ -282,11 +267,10 @@ function AppContent() {
     };
 
     // Edit product handlers
-    const handleEditProductStart = (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, step3Data: AddProductStep3Data, existingVariants: any[]) => {
+    const handleEditProductStart = (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, existingVariants: any[]) => {
         setEditingItemId(itemId);
         setEditProductStep1Data(step1Data);
         setEditProductStep2Data(step2Data);
-        setEditProductStep3Data(step3Data);
         setEditProductExistingVariants(existingVariants);
         navigate('/edit-product');
     };
@@ -300,7 +284,6 @@ function AppContent() {
         setEditingItemId(null);
         setEditProductStep1Data(null);
         setEditProductStep2Data(null);
-        setEditProductStep3Data(null);
         setEditProductExistingVariants(null);
         navigate('/seller', { state: { section: 'products' } });
     };
@@ -314,17 +297,8 @@ function AppContent() {
         navigate('/edit-product');
     };
 
-    const handleEditProductStep3Next = (data: AddProductStep3Data) => {
-        setEditProductStep3Data(data);
-        navigate('/edit-product/step4');
-    };
-
     const handleEditProductStep3Back = () => {
         navigate('/edit-product/step2');
-    };
-
-    const handleEditProductStep4Back = () => {
-        navigate('/edit-product/step3');
     };
 
     const handleEditProductSubmit = () => {
@@ -356,13 +330,6 @@ function AppContent() {
                     console.warn('Cannot navigate to step 3: Previous step data is missing');
                 }
                 break;
-            case 4:
-                if (editProductStep1Data && editProductStep2Data && editProductStep3Data) {
-                    navigate('/edit-product/step4');
-                } else {
-                    console.warn('Cannot navigate to step 4: Previous step data is missing');
-                }
-                break;
         }
     };
 
@@ -371,10 +338,9 @@ function AppContent() {
         const completed: number[] = [];
         if (editProductStep1Data) completed.push(1);
         if (editProductStep2Data) completed.push(2);
-        if (editProductStep3Data) completed.push(3);
-        // In edit mode, if all previous steps exist, step 4 is also completed
-        if (editProductStep1Data && editProductStep2Data && editProductStep3Data) {
-            completed.push(4);
+        // In edit mode, if all previous steps exist, step 3 is also completed
+        if (editProductStep1Data && editProductStep2Data) {
+            completed.push(3);
         }
         return completed;
     };
@@ -506,28 +472,11 @@ function AppContent() {
                 <ProtectedRoute>
                     {productStep1Data && productStep2Data ? (
                         <AddProductStep3
-                            onNext={handleProductStep3Next}
+                            onSubmit={handleProductSubmit}
                             onBack={handleProductStep3Back}
                             onCancel={handleProductStep1Cancel}
                             step1Data={productStep1Data}
                             step2Data={productStep2Data}
-                            initialData={productStep3Data || undefined}
-                        />
-                    ) : (
-                        <Navigate to="/add-product" replace />
-                    )}
-                </ProtectedRoute>
-            } />
-            <Route path="/add-product/step4" element={
-                <ProtectedRoute>
-                    {productStep1Data && productStep2Data && productStep3Data ? (
-                        <AddProductStep4
-                            onSubmit={handleProductSubmit}
-                            onBack={handleProductStep4Back}
-                            onCancel={handleProductStep1Cancel}
-                            step1Data={productStep1Data}
-                            step2Data={productStep2Data}
-                            step3Data={productStep3Data}
                             companies={companies}
                         />
                     ) : (
@@ -571,33 +520,13 @@ function AppContent() {
             } />
             <Route path="/edit-product/step3" element={
                 <ProtectedRoute>
-                    {editProductStep1Data && editProductStep2Data && editProductStep3Data ? (
+                    {editProductStep1Data && editProductStep2Data && editingItemId ? (
                         <AddProductStep3
-                            onNext={handleEditProductStep3Next}
+                            onSubmit={handleEditProductSubmit}
                             onBack={handleEditProductStep3Back}
                             onCancel={handleEditProductStep1Cancel}
                             step1Data={editProductStep1Data}
                             step2Data={editProductStep2Data}
-                            initialData={editProductStep3Data}
-                            editMode={true}
-                            onStepNavigate={handleEditProductStepNavigate}
-                            completedSteps={getEditModeCompletedSteps()}
-                        />
-                    ) : (
-                        <Navigate to="/edit-product" replace />
-                    )}
-                </ProtectedRoute>
-            } />
-            <Route path="/edit-product/step4" element={
-                <ProtectedRoute>
-                    {editProductStep1Data && editProductStep2Data && editProductStep3Data && editingItemId ? (
-                        <AddProductStep4
-                            onSubmit={handleEditProductSubmit}
-                            onBack={handleEditProductStep4Back}
-                            onCancel={handleEditProductStep1Cancel}
-                            step1Data={editProductStep1Data}
-                            step2Data={editProductStep2Data}
-                            step3Data={editProductStep3Data}
                             companies={companies}
                             editMode={true}
                             itemId={editingItemId}

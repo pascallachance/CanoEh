@@ -11,7 +11,6 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import type { PeriodType } from './AnalyticsPeriodSelector';
 import type { AddProductStep1Data } from '../AddProductStep1';
 import type { AddProductStep2Data } from '../AddProductStep2';
-import type { AddProductStep3Data } from '../AddProductStep3';
 
 type SellerSection = 'analytics' | 'products' | 'orders' | 'company';
 
@@ -48,7 +47,7 @@ interface NavigationState {
 interface SellerProps {
     companies: Company[];
     onLogout: () => void;
-    onEditProduct: (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, step3Data: AddProductStep3Data, existingVariants: any[]) => void;
+    onEditProduct: (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, existingVariants: any[]) => void;
     onCompanyUpdate?: (updatedCompany: Company) => void;
 }
 

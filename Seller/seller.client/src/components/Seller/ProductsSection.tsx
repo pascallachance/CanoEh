@@ -10,7 +10,7 @@ import {
 import { formatDate, toUTCISOString } from '../../utils/dateUtils';
 import type { AddProductStep1Data } from '../AddProductStep1';
 import type { AddProductStep2Data } from '../AddProductStep2';
-import type { AddProductStep3Data, ItemAttribute } from '../AddProductStep3';
+import type { ItemAttribute } from '../AddProductStep2';
 import BilingualTagInput from '../BilingualTagInput';
 
 
@@ -28,7 +28,7 @@ interface ProductsSectionProps {
     companies: Company[];
     viewMode?: 'list' | 'add' | 'edit';
     onViewModeChange?: (mode: 'list' | 'add' | 'edit') => void;
-    onEditProduct?: (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, step3Data: AddProductStep3Data, existingVariants: any[]) => void;
+    onEditProduct?: (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, existingVariants: any[]) => void;
     onManageOffersStateChange?: (isLoading: boolean, hasItems: boolean) => void;
 }
 
@@ -670,18 +670,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
             description_fr: item.description_fr || ''
         };
 
-        // Step 2: Category and item attributes
-        const step2Data = {
-            categoryId: item.categoryID,
-            itemAttributes: (item.itemAttributes || []).map(attr => ({
-                name_en: attr.attributeName_en,
-                name_fr: attr.attributeName_fr || '',
-                value_en: attr.attributes_en && attr.attributes_en.trim() !== '' ? attr.attributes_en.split(',').map(v => v.trim()) : [],
-                value_fr: attr.attributes_fr && attr.attributes_fr.trim() !== '' ? attr.attributes_fr.split(',').map(v => v.trim()) : []
-            }))
-        };
-
-        // Step 3: Variant attributes - need to reconstruct from variant data
+        // Extract variant attributes from variant data
         // To preserve order, we'll use the order from the first variant and build a map
         const attributeOrderMap = new Map<string, number>();
         const attributesMap = new Map<string, {
@@ -729,7 +718,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         });
 
         // Convert to ItemAttribute array in the correct order
-        const attributes: ItemAttribute[] = Array.from(attributesMap.entries())
+        const variantAttributes: ItemAttribute[] = Array.from(attributesMap.entries())
             .sort(([keyA], [keyB]) => {
                 const orderA = attributeOrderMap.get(keyA) ?? 999;
                 const orderB = attributeOrderMap.get(keyB) ?? 999;
@@ -741,11 +730,20 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 values: attr.values  // Keep the new format with paired values
             }));
 
-        const step3Data = {
-            attributes
+        // Step 2: Category, item attributes, variant attributes, and variant features
+        const step2Data = {
+            categoryId: item.categoryID,
+            itemAttributes: (item.itemAttributes || []).map(attr => ({
+                name_en: attr.attributeName_en,
+                name_fr: attr.attributeName_fr || '',
+                value_en: attr.attributes_en && attr.attributes_en.trim() !== '' ? attr.attributes_en.split(',').map(v => v.trim()) : [],
+                value_fr: attr.attributes_fr && attr.attributes_fr.trim() !== '' ? attr.attributes_fr.split(',').map(v => v.trim()) : []
+            })),
+            variantAttributes,
+            variantFeatures: [] // TODO: Extract variant features if they exist in the data
         };
 
-        // Prepare existing variants data to pass to Step 4
+        // Prepare existing variants data to pass to Step 3
         const existingVariants = activeVariants.map(variant => ({
             id: variant.id,
             sku: variant.sku,
@@ -759,7 +757,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         }));
 
         // Call the onEditProduct callback with the parsed data
-        onEditProduct(item.id, step1Data, step2Data, step3Data, existingVariants);
+        onEditProduct(item.id, step1Data, step2Data, existingVariants);
     };
 
     // Handle deleting an item

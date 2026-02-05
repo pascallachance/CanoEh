@@ -87,7 +87,7 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onSt
                     <h1>{editMode ? 'Edit Product' : 'Add New Product'}</h1>
                     <StepIndicator 
                         currentStep={1}
-                        totalSteps={4}
+                        totalSteps={3}
                         onStepClick={onStepNavigate}
                         completedSteps={completedSteps || []}
                     />

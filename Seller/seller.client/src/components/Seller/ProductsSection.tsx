@@ -671,6 +671,8 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         };
 
         // Step 2: Category and item attributes
+        // Note: itemAttributes may be undefined as the schema was refactored (migration 007)
+        // to move item attributes to ItemVariantFeatures at the variant level
         const step2Data = {
             categoryId: item.categoryID,
             itemAttributes: (item.itemAttributes || []).map(attr => ({

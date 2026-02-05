@@ -387,65 +387,156 @@
     }
 }
 
-/* Variant Features Vertical Layout */
-.variant-features-row {
-    background: #f8f9fa;
+/* Vertical Card Layout for Variants */
+.variants-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 }
 
-.variant-features-container {
-    padding: 1rem;
-    border-top: 2px solid #dee2e6;
+.variant-card {
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.variant-features-title {
-    color: #2c3e50;
-    margin-bottom: 1rem;
+.variant-card-header {
     font-size: 1.1rem;
     font-weight: 600;
+    color: #2c3e50;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #3498db;
 }
 
-.variant-features-grid {
+.variant-section {
+    margin-bottom: 1.5rem;
+}
+
+.variant-section:last-child {
+    margin-bottom: 0;
+}
+
+.variant-section-title {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.variant-fields {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1rem;
 }
 
-.variant-feature-field {
+.variant-field {
     display: flex;
     flex-direction: column;
 }
 
-.feature-label {
+.variant-field-label {
     font-weight: 600;
-    color: #333;
+    color: #495057;
     margin-bottom: 0.5rem;
     font-size: 0.9rem;
 }
 
-.feature-inputs {
+.file-input-wrapper {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
-.feature-input-en,
-.feature-input-fr {
-    padding: 8px 10px;
-    border: 2px solid #e1e1e1;
-    border-radius: 5px;
+.file-input-wrapper .file-label {
+    padding: 8px 16px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
     font-size: 14px;
-    transition: border-color 0.3s ease;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    text-align: center;
 }
 
-.feature-input-en:focus,
-.feature-input-fr:focus {
+.file-input-wrapper .file-label:hover {
+    background: #2980b9;
+}
+
+.feature-inputs-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.feature-inputs-vertical input {
+    width: 100%;
+}
+
+/* Shared styles for variant inputs and image uploads */
+.variant-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 2px solid #e1e1e1;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.variant-input:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
 }
 
+.variant-input.required {
+    border-color: #f39c12;
+    background: #fef5e7;
+}
+
+.variant-input.invalid {
+    border-color: #c33;
+    background: #fee;
+}
+
+.variant-input:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.file-input {
+    display: none;
+}
+
+.image-preview {
+    margin-top: 0.5rem;
+}
+
+.thumbnail-preview {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+.images-preview {
+    margin-top: 0.5rem;
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+}
+
 @media (max-width: 768px) {
-    .variant-features-grid {
+    .variant-fields {
         grid-template-columns: 1fr;
     }
 }

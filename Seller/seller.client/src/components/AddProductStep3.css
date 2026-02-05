@@ -449,3 +449,102 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Vertical Card Layout for Variants */
+.variants-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.variant-card {
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.variant-card-header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #3498db;
+}
+
+.variant-section {
+    margin-bottom: 1.5rem;
+}
+
+.variant-section:last-child {
+    margin-bottom: 0;
+}
+
+.variant-section-title {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.variant-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.variant-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.variant-field-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.file-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.file-input-wrapper .file-label {
+    padding: 8px 16px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    text-align: center;
+}
+
+.file-input-wrapper .file-label:hover {
+    background: #2980b9;
+}
+
+.feature-inputs-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.feature-inputs-vertical input {
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .variant-fields {
+        grid-template-columns: 1fr;
+    }
+}

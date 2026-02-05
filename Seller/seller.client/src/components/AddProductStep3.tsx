@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, Fragment } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import './AddProductStep3.css';
 import { ApiClient } from '../utils/apiClient';
 import { formatVariantAttribute } from '../utils/bilingualArrayUtils';
@@ -544,43 +544,28 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                         <p><strong>{variants.length}</strong> variant{variants.length !== 1 ? 's' : ''} generated</p>
                     </div>
 
-                    <div className="variants-table-container">
-                        <table className="variants-table">
-                            <thead>
-                                <tr>
-                                    {step2Data.variantAttributes.map(attr => (
-                                        <th key={`${attr.name_en}-${attr.name_fr}`}>
-                                            <div className="header-bilingual">
-                                                <div><strong>EN:</strong> {attr.name_en}</div>
-                                                <div><strong>FR:</strong> {attr.name_fr}</div>
-                                            </div>
-                                        </th>
-                                    ))}
-                                    <th>SKU *</th>
-                                    <th>Product ID Type</th>
-                                    <th>Product ID Value</th>
-                                    <th>Price *</th>
-                                    <th>Stock</th>
-                                    <th>Thumbnail</th>
-                                    <th>Images</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {variants.map(variant => (
-                                    <Fragment key={variant.id}>
-                                        <tr>
-                                        {step2Data.variantAttributes.map(attr => {
-                                            const formatted = formatVariantAttribute(attr.name_en, attr.name_fr, variant.attributes_en, variant.attributes_fr);
-                                            return (
-                                                <td key={`${attr.name_en}-${attr.name_fr}`}>
-                                                    <div className="cell-bilingual">
-                                                        <div><strong>EN:</strong> {formatted.en}</div>
-                                                        <div><strong>FR:</strong> {formatted.fr}</div>
-                                                    </div>
-                                                </td>
-                                            );
-                                        })}
-                                        <td>
+                    <div className="variants-cards-container">
+                        {variants.map(variant => (
+                            <div key={variant.id} className="variant-card">
+                                {/* Variant Attributes Header */}
+                                <div className="variant-card-header">
+                                    {step2Data.variantAttributes.map((attr, index) => {
+                                        const formatted = formatVariantAttribute(attr.name_en, attr.name_fr, variant.attributes_en, variant.attributes_fr);
+                                        return (
+                                            <span key={`${attr.name_en}-${attr.name_fr}`}>
+                                                {index > 0 && ' / '}
+                                                <strong>{attr.name_en}</strong> ({formatted.en}) / <strong>{attr.name_fr}</strong> ({formatted.fr})
+                                            </span>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Attributes Section */}
+                                <div className="variant-section">
+                                    <h4 className="variant-section-title">Attributes</h4>
+                                    <div className="variant-fields">
+                                        <div className="variant-field">
+                                            <label className="variant-field-label">SKU *</label>
                                             <input
                                                 type="text"
                                                 value={variant.sku}
@@ -589,8 +574,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 placeholder="SKU *"
                                                 required
                                             />
-                                        </td>
-                                        <td>
+                                        </div>
+                                        <div className="variant-field">
+                                            <label className="variant-field-label">Product ID Type</label>
                                             <select
                                                 value={variant.productIdentifierType || ''}
                                                 onChange={(e) => updateVariant(variant.id, 'productIdentifierType', e.target.value)}
@@ -602,8 +588,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                     </option>
                                                 ))}
                                             </select>
-                                        </td>
-                                        <td>
+                                        </div>
+                                        <div className="variant-field">
+                                            <label className="variant-field-label">Product ID Value</label>
                                             <input
                                                 type="text"
                                                 value={variant.productIdentifierValue || ''}
@@ -612,8 +599,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 placeholder="ID Value"
                                                 disabled={!variant.productIdentifierType}
                                             />
-                                        </td>
-                                        <td>
+                                        </div>
+                                        <div className="variant-field">
+                                            <label className="variant-field-label">Price *</label>
                                             <input
                                                 type="number"
                                                 value={variant.price}
@@ -623,8 +611,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 min="0.01"
                                                 placeholder="0.01"
                                             />
-                                        </td>
-                                        <td>
+                                        </div>
+                                        <div className="variant-field">
+                                            <label className="variant-field-label">Stock</label>
                                             <input
                                                 type="number"
                                                 value={variant.stock}
@@ -633,9 +622,10 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 min="0"
                                                 placeholder="0"
                                             />
-                                        </td>
-                                        <td>
-                                            <div className="file-input-container">
+                                        </div>
+                                        <div className="variant-field">
+                                            <label className="variant-field-label">Thumbnail</label>
+                                            <div className="file-input-wrapper">
                                                 <input
                                                     type="file"
                                                     accept="image/*"
@@ -645,7 +635,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                     aria-label="Upload thumbnail image for variant"
                                                 />
                                                 <label htmlFor={`thumbnail-${variant.id}`} className="file-label">
-                                                    Choose
+                                                    Choose Image
                                                 </label>
                                                 {variant.thumbnailUrl && (
                                                     <div className="image-preview">
@@ -668,9 +658,10 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                     </div>
                                                 )}
                                             </div>
-                                        </td>
-                                        <td>
-                                            <div className="file-input-container">
+                                        </div>
+                                        <div className="variant-field">
+                                            <label className="variant-field-label">Images</label>
+                                            <div className="file-input-wrapper">
                                                 <input
                                                     type="file"
                                                     accept="image/*"
@@ -681,7 +672,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                     aria-label="Upload product images for variant"
                                                 />
                                                 <label htmlFor={`images-${variant.id}`} className="file-label">
-                                                    Choose
+                                                    Choose Images
                                                 </label>
                                                 {variant.imageUrls && variant.imageUrls.length > 0 && (
                                                     <div className="images-preview">
@@ -689,62 +680,57 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                     </div>
                                                 )}
                                             </div>
-                                        </td>
-                                    </tr>
-                                    {step2Data.variantFeatures.length > 0 && (
-                                        <tr className="variant-features-row">
-                                            <td colSpan={step2Data.variantAttributes.length + 7}>
-                                                <div className="variant-features-container">
-                                                    <h4 className="variant-features-title">Variant Features</h4>
-                                                    <div className="variant-features-grid">
-                                                        {step2Data.variantFeatures.map(feature => (
-                                                            <div key={`${feature.name_en}-${feature.name_fr}`} className="variant-feature-field">
-                                                                <label className="feature-label" id={`feature-label-${variant.id}-${feature.name_en}`}>
-                                                                    <strong>EN:</strong> {feature.name_en} / <strong>FR:</strong> {feature.name_fr}
-                                                                </label>
-                                                                <div className="feature-inputs">
-                                                                    <input
-                                                                        type="text"
-                                                                        value={variant.features_en[feature.name_en] || ''}
-                                                                        onChange={(e) => updateVariantFeature(
-                                                                            variant.id,
-                                                                            feature.name_en,
-                                                                            feature.name_fr,
-                                                                            e.target.value,
-                                                                            variant.features_fr[feature.name_fr] || ''
-                                                                        )}
-                                                                        className="variant-input feature-input-en"
-                                                                        placeholder={`EN: ${feature.name_en}`}
-                                                                        aria-label={`${feature.name_en} (English)`}
-                                                                        aria-describedby={`feature-label-${variant.id}-${feature.name_en}`}
-                                                                    />
-                                                                    <input
-                                                                        type="text"
-                                                                        value={variant.features_fr[feature.name_fr] || ''}
-                                                                        onChange={(e) => updateVariantFeature(
-                                                                            variant.id,
-                                                                            feature.name_en,
-                                                                            feature.name_fr,
-                                                                            variant.features_en[feature.name_en] || '',
-                                                                            e.target.value
-                                                                        )}
-                                                                        className="variant-input feature-input-fr"
-                                                                        placeholder={`FR: ${feature.name_fr}`}
-                                                                        aria-label={`${feature.name_fr} (French)`}
-                                                                        aria-describedby={`feature-label-${variant.id}-${feature.name_en}`}
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Features Section */}
+                                {step2Data.variantFeatures.length > 0 && (
+                                    <div className="variant-section">
+                                        <h4 className="variant-section-title">Features</h4>
+                                        <div className="variant-fields">
+                                            {step2Data.variantFeatures.map(feature => (
+                                                <div key={`${feature.name_en}-${feature.name_fr}`} className="variant-field">
+                                                    <label className="variant-field-label">
+                                                        {feature.name_en} / {feature.name_fr}
+                                                    </label>
+                                                    <div className="feature-inputs-vertical">
+                                                        <input
+                                                            type="text"
+                                                            value={variant.features_en[feature.name_en] || ''}
+                                                            onChange={(e) => updateVariantFeature(
+                                                                variant.id,
+                                                                feature.name_en,
+                                                                feature.name_fr,
+                                                                e.target.value,
+                                                                variant.features_fr[feature.name_fr] || ''
+                                                            )}
+                                                            className="variant-input"
+                                                            placeholder={`EN: ${feature.name_en}`}
+                                                            aria-label={`${feature.name_en} (English)`}
+                                                        />
+                                                        <input
+                                                            type="text"
+                                                            value={variant.features_fr[feature.name_fr] || ''}
+                                                            onChange={(e) => updateVariantFeature(
+                                                                variant.id,
+                                                                feature.name_en,
+                                                                feature.name_fr,
+                                                                variant.features_en[feature.name_en] || '',
+                                                                e.target.value
+                                                            )}
+                                                            className="variant-input"
+                                                            placeholder={`FR: ${feature.name_fr}`}
+                                                            aria-label={`${feature.name_fr} (French)`}
+                                                        />
                                                     </div>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                    )}
-                                    </Fragment>
-                                ))}
-                            </tbody>
-                        </table>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </div>
 

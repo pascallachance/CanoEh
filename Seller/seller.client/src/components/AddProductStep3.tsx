@@ -5,8 +5,7 @@ import { formatVariantAttribute } from '../utils/bilingualArrayUtils';
 import { toAbsoluteUrl, toAbsoluteUrlArray } from '../utils/urlUtils';
 import { useNotifications } from '../contexts/useNotifications';
 import type { AddProductStep1Data } from './AddProductStep1';
-import type { AddProductStep2Data, ItemAttribute } from './AddProductStep2';
-import type { BilingualValue } from './BilingualTagInput';
+import type { AddProductStep2Data } from './AddProductStep2';
 import StepIndicator from './StepIndicator';
 
 interface ItemVariant {

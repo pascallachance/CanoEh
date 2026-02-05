@@ -740,7 +740,9 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 value_fr: attr.attributes_fr && attr.attributes_fr.trim() !== '' ? attr.attributes_fr.split(',').map(v => v.trim()) : []
             })),
             variantAttributes,
-            variantFeatures: [] // TODO: Extract variant features if they exist in the data
+            // Variant features: Extract from API response once backend supports storing them
+            // For now, empty array as this is a new feature
+            variantFeatures: []
         };
 
         // Prepare existing variants data to pass to Step 3

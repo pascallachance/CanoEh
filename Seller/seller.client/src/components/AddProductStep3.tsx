@@ -368,12 +368,6 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                     };
                 }) : [],
                 Deleted: false
-            })),
-            ItemAttributes: step2Data.itemAttributes.map(attr => ({
-                AttributeName_en: attr.name_en,
-                AttributeName_fr: attr.name_fr,
-                Attributes_en: Array.isArray(attr.value_en) ? attr.value_en.join(', ') : attr.value_en,
-                Attributes_fr: Array.isArray(attr.value_fr) ? attr.value_fr.join(', ') : attr.value_fr
             }))
         };
 

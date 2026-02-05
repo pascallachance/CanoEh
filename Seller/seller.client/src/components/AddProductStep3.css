@@ -386,3 +386,66 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Variant Features Vertical Layout */
+.variant-features-row {
+    background: #f8f9fa;
+}
+
+.variant-features-container {
+    padding: 1rem;
+    border-top: 2px solid #dee2e6;
+}
+
+.variant-features-title {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.variant-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.variant-feature-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.feature-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.feature-input-en,
+.feature-input-fr {
+    padding: 8px 10px;
+    border: 2px solid #e1e1e1;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.feature-input-en:focus,
+.feature-input-fr:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+@media (max-width: 768px) {
+    .variant-features-grid {
+        grid-template-columns: 1fr;
+    }
+}

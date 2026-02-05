@@ -101,14 +101,6 @@ interface ApiItemVariant {
     offerEnd?: string;
 }
 
-interface ApiItemAttribute {
-    id: string;
-    attributeName_en: string;
-    attributeName_fr?: string;
-    attributes_en: string;
-    attributes_fr?: string;
-}
-
 interface ApiItem {
     id: string;
     sellerID: string;
@@ -344,12 +336,6 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         
         return false;
     }, [newItem.name, newItem.name_fr, newItem.description, newItem.description_fr, newItem.categoryId, variants]);
-
-    // Memoized disabled state for "Add Attribute" button to avoid re-computation on every render
-    const isAddAttributeDisabled = useMemo(() => {
-        return !newItemAttribute.name_en || !newItemAttribute.name_fr || 
-               !newItemAttribute.value_en || !newItemAttribute.value_fr;
-    }, [newItemAttribute.name_en, newItemAttribute.name_fr, newItemAttribute.value_en, newItemAttribute.value_fr]);
 
     // Fetch categories on component mount
     const fetchCategories = async () => {

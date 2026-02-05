@@ -565,9 +565,10 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                     <h4 className="variant-section-title">Attributes</h4>
                                     <div className="variant-fields">
                                         <div className="variant-field">
-                                            <label className="variant-field-label">SKU *</label>
+                                            <label className="variant-field-label" htmlFor={`sku-${variant.id}`}>SKU *</label>
                                             <input
                                                 type="text"
+                                                id={`sku-${variant.id}`}
                                                 value={variant.sku}
                                                 onChange={(e) => updateVariant(variant.id, 'sku', e.target.value)}
                                                 className={`variant-input ${!variant.sku.trim() ? 'required' : ''}`}
@@ -576,8 +577,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                             />
                                         </div>
                                         <div className="variant-field">
-                                            <label className="variant-field-label">Product ID Type</label>
+                                            <label className="variant-field-label" htmlFor={`product-id-type-${variant.id}`}>Product ID Type</label>
                                             <select
+                                                id={`product-id-type-${variant.id}`}
                                                 value={variant.productIdentifierType || ''}
                                                 onChange={(e) => updateVariant(variant.id, 'productIdentifierType', e.target.value)}
                                                 className="variant-input"
@@ -590,9 +592,10 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                             </select>
                                         </div>
                                         <div className="variant-field">
-                                            <label className="variant-field-label">Product ID Value</label>
+                                            <label className="variant-field-label" htmlFor={`product-id-value-${variant.id}`}>Product ID Value</label>
                                             <input
                                                 type="text"
+                                                id={`product-id-value-${variant.id}`}
                                                 value={variant.productIdentifierValue || ''}
                                                 onChange={(e) => updateVariant(variant.id, 'productIdentifierValue', e.target.value)}
                                                 className="variant-input"
@@ -601,9 +604,10 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                             />
                                         </div>
                                         <div className="variant-field">
-                                            <label className="variant-field-label">Price *</label>
+                                            <label className="variant-field-label" htmlFor={`price-${variant.id}`}>Price *</label>
                                             <input
                                                 type="number"
+                                                id={`price-${variant.id}`}
                                                 value={variant.price}
                                                 onChange={(e) => updateVariant(variant.id, 'price', parseFloat(e.target.value) || 0)}
                                                 className={`variant-input ${variant.price <= 0 ? 'invalid' : ''}`}
@@ -613,9 +617,10 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                             />
                                         </div>
                                         <div className="variant-field">
-                                            <label className="variant-field-label">Stock</label>
+                                            <label className="variant-field-label" htmlFor={`stock-${variant.id}`}>Stock</label>
                                             <input
                                                 type="number"
+                                                id={`stock-${variant.id}`}
                                                 value={variant.stock}
                                                 onChange={(e) => updateVariant(variant.id, 'stock', parseInt(e.target.value) || 0)}
                                                 className="variant-input"
@@ -624,7 +629,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                             />
                                         </div>
                                         <div className="variant-field">
-                                            <label className="variant-field-label">Thumbnail</label>
+                                            <label className="variant-field-label" htmlFor={`thumbnail-${variant.id}`}>Thumbnail</label>
                                             <div className="file-input-wrapper">
                                                 <input
                                                     type="file"
@@ -660,7 +665,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                             </div>
                                         </div>
                                         <div className="variant-field">
-                                            <label className="variant-field-label">Images</label>
+                                            <label className="variant-field-label" htmlFor={`images-${variant.id}`}>Images</label>
                                             <div className="file-input-wrapper">
                                                 <input
                                                     type="file"
@@ -691,7 +696,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                         <div className="variant-fields">
                                             {step2Data.variantFeatures.map(feature => (
                                                 <div key={`${feature.name_en}-${feature.name_fr}`} className="variant-field">
-                                                    <label className="variant-field-label">
+                                                    <label className="variant-field-label" id={`feature-label-${variant.id}-${feature.name_en}`}>
                                                         {feature.name_en} / {feature.name_fr}
                                                     </label>
                                                     <div className="feature-inputs-vertical">
@@ -708,6 +713,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                             className="variant-input"
                                                             placeholder={`EN: ${feature.name_en}`}
                                                             aria-label={`${feature.name_en} (English)`}
+                                                            aria-describedby={`feature-label-${variant.id}-${feature.name_en}`}
                                                         />
                                                         <input
                                                             type="text"
@@ -722,6 +728,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                             className="variant-input"
                                                             placeholder={`FR: ${feature.name_fr}`}
                                                             aria-label={`${feature.name_fr} (French)`}
+                                                            aria-describedby={`feature-label-${variant.id}-${feature.name_en}`}
                                                         />
                                                     </div>
                                                 </div>

@@ -365,12 +365,12 @@
 
 .back-btn:hover:not(:disabled),
 .next-btn:hover:not(:disabled),
-.submit-btn:hover:not(.disabled) {
+.submit-btn:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
 }
 
-.submit-btn.disabled,
+.submit-btn:disabled,
 .back-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;

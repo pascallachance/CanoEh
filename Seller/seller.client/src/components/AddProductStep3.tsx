@@ -328,6 +328,23 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
 
     // Helper function to build item request (shared between create and update)
     const buildItemRequest = (sellerId: string, itemId?: string) => {
+        // Collect ItemVariantFeatures from the first variant (or use empty array if no variants)
+        // Backend expects ItemVariantFeatures at the top level, not inside each variant
+        const itemVariantFeatures: any[] = [];
+        if (variants.length > 0 && variants[0].features_en) {
+            Object.entries(variants[0].features_en).forEach(([featureNameEn, featureValueEn]) => {
+                const foundFeature = step2Data.variantFeatures.find(feat => feat.name_en === featureNameEn);
+                const featureNameFr = foundFeature?.name_fr || null;
+                const featureValueFr = featureNameFr && variants[0].features_fr ? variants[0].features_fr[featureNameFr] : null;
+                itemVariantFeatures.push({
+                    AttributeName_en: featureNameEn,
+                    AttributeName_fr: featureNameFr,
+                    Attributes_en: featureValueEn,
+                    Attributes_fr: featureValueFr
+                });
+            });
+        }
+
         const request: any = {
             SellerID: sellerId,
             Name_en: step1Data.name,
@@ -335,6 +352,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             Description_en: step1Data.description,
             Description_fr: step1Data.description_fr,
             CategoryID: step2Data.categoryId,
+            ItemVariantFeatures: itemVariantFeatures,
             Variants: variants.map(variant => ({
                 Price: variant.price,
                 StockQuantity: variant.stock,
@@ -354,17 +372,6 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                         AttributeName_fr: attrNameFr,
                         Attributes_en: attrValueEn,
                         Attributes_fr: attrValueFr
-                    };
-                }) : [],
-                ItemVariantFeatures: variant.features_en ? Object.entries(variant.features_en).map(([featureNameEn, featureValueEn]) => {
-                    const foundFeature = step2Data.variantFeatures.find(feat => feat.name_en === featureNameEn);
-                    const featureNameFr = foundFeature?.name_fr || null;
-                    const featureValueFr = featureNameFr && variant.features_fr ? variant.features_fr[featureNameFr] : null;
-                    return {
-                        FeatureName_en: featureNameEn,
-                        FeatureName_fr: featureNameFr,
-                        Features_en: featureValueEn,
-                        Features_fr: featureValueFr
                     };
                 }) : [],
                 Deleted: false

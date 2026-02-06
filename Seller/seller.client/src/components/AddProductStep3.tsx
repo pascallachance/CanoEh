@@ -566,124 +566,141 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                     <div className="variant-fields">
                                         <div className="variant-field">
                                             <label className="variant-field-label" htmlFor={`sku-${variant.id}`}>SKU *</label>
-                                            <input
-                                                type="text"
-                                                id={`sku-${variant.id}`}
-                                                value={variant.sku}
-                                                onChange={(e) => updateVariant(variant.id, 'sku', e.target.value)}
-                                                className={`variant-input ${!variant.sku.trim() ? 'required' : ''}`}
-                                                placeholder="SKU *"
-                                                required
-                                            />
-                                        </div>
-                                        <div className="variant-field">
-                                            <label className="variant-field-label" htmlFor={`product-id-type-${variant.id}`}>Product ID Type</label>
-                                            <select
-                                                id={`product-id-type-${variant.id}`}
-                                                value={variant.productIdentifierType || ''}
-                                                onChange={(e) => updateVariant(variant.id, 'productIdentifierType', e.target.value)}
-                                                className="variant-input"
-                                            >
-                                                {identifierTypes.map(type => (
-                                                    <option key={type.value} value={type.value}>
-                                                        {type.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div className="variant-field">
-                                            <label className="variant-field-label" htmlFor={`product-id-value-${variant.id}`}>Product ID Value</label>
-                                            <input
-                                                type="text"
-                                                id={`product-id-value-${variant.id}`}
-                                                value={variant.productIdentifierValue || ''}
-                                                onChange={(e) => updateVariant(variant.id, 'productIdentifierValue', e.target.value)}
-                                                className="variant-input"
-                                                placeholder="ID Value"
-                                                disabled={!variant.productIdentifierType}
-                                            />
-                                        </div>
-                                        <div className="variant-field">
-                                            <label className="variant-field-label" htmlFor={`price-${variant.id}`}>Price *</label>
-                                            <input
-                                                type="number"
-                                                id={`price-${variant.id}`}
-                                                value={variant.price}
-                                                onChange={(e) => updateVariant(variant.id, 'price', parseFloat(e.target.value) || 0)}
-                                                className={`variant-input ${variant.price <= 0 ? 'invalid' : ''}`}
-                                                step="0.01"
-                                                min="0.01"
-                                                placeholder="0.01"
-                                            />
-                                        </div>
-                                        <div className="variant-field">
-                                            <label className="variant-field-label" htmlFor={`stock-${variant.id}`}>Stock</label>
-                                            <input
-                                                type="number"
-                                                id={`stock-${variant.id}`}
-                                                value={variant.stock}
-                                                onChange={(e) => updateVariant(variant.id, 'stock', parseInt(e.target.value) || 0)}
-                                                className="variant-input"
-                                                min="0"
-                                                placeholder="0"
-                                            />
-                                        </div>
-                                        <div className="variant-field">
-                                            <label className="variant-field-label" htmlFor={`thumbnail-${variant.id}`}>Thumbnail</label>
-                                            <div className="file-input-wrapper">
+                                            <div className="variant-field-content">
                                                 <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={(e) => handleThumbnailChange(variant.id, e.target.files?.[0] || null)}
-                                                    className="file-input"
-                                                    id={`thumbnail-${variant.id}`}
-                                                    aria-label="Upload thumbnail image for variant"
+                                                    type="text"
+                                                    id={`sku-${variant.id}`}
+                                                    value={variant.sku}
+                                                    onChange={(e) => updateVariant(variant.id, 'sku', e.target.value)}
+                                                    className={`variant-input ${!variant.sku.trim() ? 'required' : ''}`}
+                                                    placeholder="SKU *"
+                                                    required
                                                 />
-                                                <label htmlFor={`thumbnail-${variant.id}`} className="file-label">
-                                                    Choose Image
-                                                </label>
-                                                {variant.thumbnailUrl && (
-                                                    <div className="image-preview">
-                                                        <img 
-                                                            src={variant.thumbnailUrl} 
-                                                            alt="Thumbnail" 
-                                                            className="thumbnail-preview"
-                                                            onLoad={() => {
-                                                                if (import.meta.env.DEV) {
-                                                                    console.log('[AddProductStep3] Thumbnail loaded successfully:', variant.thumbnailUrl);
-                                                                }
-                                                            }}
-                                                            onError={(e) => {
-                                                                if (import.meta.env.DEV) {
-                                                                    console.error('[AddProductStep3] Thumbnail failed to load:', variant.thumbnailUrl);
-                                                                    console.error('[AddProductStep3] Image error type:', e.type);
-                                                                }
-                                                            }}
-                                                        />
-                                                    </div>
-                                                )}
                                             </div>
                                         </div>
                                         <div className="variant-field">
-                                            <label className="variant-field-label" htmlFor={`images-${variant.id}`}>Images</label>
-                                            <div className="file-input-wrapper">
+                                            <label className="variant-field-label" htmlFor={`product-id-type-${variant.id}`}>Product ID Type</label>
+                                            <div className="variant-field-content">
+                                                <select
+                                                    id={`product-id-type-${variant.id}`}
+                                                    value={variant.productIdentifierType || ''}
+                                                    onChange={(e) => updateVariant(variant.id, 'productIdentifierType', e.target.value)}
+                                                    className="variant-input"
+                                                >
+                                                    {identifierTypes.map(type => (
+                                                        <option key={type.value} value={type.value}>
+                                                            {type.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="variant-field">
+                                            <label className="variant-field-label" htmlFor={`product-id-value-${variant.id}`}>Product ID Value</label>
+                                            <div className="variant-field-content">
                                                 <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    multiple
-                                                    onChange={(e) => handleImagesChange(variant.id, e.target.files)}
-                                                    className="file-input"
-                                                    id={`images-${variant.id}`}
-                                                    aria-label="Upload product images for variant"
+                                                    type="text"
+                                                    id={`product-id-value-${variant.id}`}
+                                                    value={variant.productIdentifierValue || ''}
+                                                    onChange={(e) => updateVariant(variant.id, 'productIdentifierValue', e.target.value)}
+                                                    className="variant-input"
+                                                    placeholder="ID Value"
+                                                    disabled={!variant.productIdentifierType}
                                                 />
-                                                <label htmlFor={`images-${variant.id}`} className="file-label">
-                                                    Choose Images
-                                                </label>
-                                                {variant.imageUrls && variant.imageUrls.length > 0 && (
-                                                    <div className="images-preview">
-                                                        <small>{variant.imageUrls.length} image{variant.imageUrls.length !== 1 ? 's' : ''}</small>
+                                            </div>
+                                        </div>
+                                        <div className="variant-field">
+                                            <label className="variant-field-label" htmlFor={`price-${variant.id}`}>Price *</label>
+                                            <div className="variant-field-content">
+                                                <input
+                                                    type="number"
+                                                    id={`price-${variant.id}`}
+                                                    value={variant.price}
+                                                    onChange={(e) => updateVariant(variant.id, 'price', parseFloat(e.target.value) || 0)}
+                                                    className={`variant-input ${variant.price <= 0 ? 'invalid' : ''}`}
+                                                    step="0.01"
+                                                    min="0.01"
+                                                    placeholder="0.01"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="variant-field">
+                                            <label className="variant-field-label" htmlFor={`stock-${variant.id}`}>Stock</label>
+                                            <div className="variant-field-content">
+                                                <input
+                                                    type="number"
+                                                    id={`stock-${variant.id}`}
+                                                    value={variant.stock}
+                                                    onChange={(e) => updateVariant(variant.id, 'stock', parseInt(e.target.value) || 0)}
+                                                    className="variant-input"
+                                                    min="0"
+                                                    placeholder="0"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="variant-field variant-field-images">
+                                            <div className="variant-field-label" id={`images-label-${variant.id}`}>Images</div>
+                                            <div className="variant-field-content" role="group" aria-labelledby={`images-label-${variant.id}`}>
+                                                <div className="images-row">
+                                                    <div className="image-upload-group">
+                                                        <label className="image-upload-label" htmlFor={`thumbnail-${variant.id}`}>Thumbnail</label>
+                                                        <div className="file-input-wrapper">
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                onChange={(e) => handleThumbnailChange(variant.id, e.target.files?.[0] || null)}
+                                                                className="file-input"
+                                                                id={`thumbnail-${variant.id}`}
+                                                                aria-label="Upload thumbnail image for variant"
+                                                            />
+                                                            <label htmlFor={`thumbnail-${variant.id}`} className="file-label">
+                                                                Choose Image
+                                                            </label>
+                                                            {variant.thumbnailUrl && (
+                                                                <div className="image-preview">
+                                                                    <img 
+                                                                        src={variant.thumbnailUrl} 
+                                                                        alt="Thumbnail" 
+                                                                        className="thumbnail-preview"
+                                                                        onLoad={() => {
+                                                                            if (import.meta.env.DEV) {
+                                                                                console.log('[AddProductStep3] Thumbnail loaded successfully:', variant.thumbnailUrl);
+                                                                            }
+                                                                        }}
+                                                                        onError={(e) => {
+                                                                            if (import.meta.env.DEV) {
+                                                                                console.error('[AddProductStep3] Thumbnail failed to load:', variant.thumbnailUrl);
+                                                                                console.error('[AddProductStep3] Image error type:', e.type);
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                )}
+                                                    <div className="image-upload-group">
+                                                        <label className="image-upload-label" htmlFor={`images-${variant.id}`}>Product Images</label>
+                                                        <div className="file-input-wrapper">
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                multiple
+                                                                onChange={(e) => handleImagesChange(variant.id, e.target.files)}
+                                                                className="file-input"
+                                                                id={`images-${variant.id}`}
+                                                                aria-label="Upload product images for variant"
+                                                            />
+                                                            <label htmlFor={`images-${variant.id}`} className="file-label">
+                                                                Choose Images
+                                                            </label>
+                                                            {variant.imageUrls && variant.imageUrls.length > 0 && (
+                                                                <div className="images-preview">
+                                                                    <small>{variant.imageUrls.length} image{variant.imageUrls.length !== 1 ? 's' : ''}</small>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -699,37 +716,39 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                     <label className="variant-field-label" id={`feature-label-${variant.id}-${feature.name_en}`}>
                                                         {feature.name_en} / {feature.name_fr}
                                                     </label>
-                                                    <div className="feature-inputs-vertical">
-                                                        <input
-                                                            type="text"
-                                                            value={variant.features_en[feature.name_en] || ''}
-                                                            onChange={(e) => updateVariantFeature(
-                                                                variant.id,
-                                                                feature.name_en,
-                                                                feature.name_fr,
-                                                                e.target.value,
-                                                                variant.features_fr[feature.name_fr] || ''
-                                                            )}
-                                                            className="variant-input"
-                                                            placeholder={`EN: ${feature.name_en}`}
-                                                            aria-label={`${feature.name_en} (English)`}
-                                                            aria-describedby={`feature-label-${variant.id}-${feature.name_en}`}
-                                                        />
-                                                        <input
-                                                            type="text"
-                                                            value={variant.features_fr[feature.name_fr] || ''}
-                                                            onChange={(e) => updateVariantFeature(
-                                                                variant.id,
-                                                                feature.name_en,
-                                                                feature.name_fr,
-                                                                variant.features_en[feature.name_en] || '',
-                                                                e.target.value
-                                                            )}
-                                                            className="variant-input"
-                                                            placeholder={`FR: ${feature.name_fr}`}
-                                                            aria-label={`${feature.name_fr} (French)`}
-                                                            aria-describedby={`feature-label-${variant.id}-${feature.name_en}`}
-                                                        />
+                                                    <div className="variant-field-content">
+                                                        <div className="feature-inputs-vertical">
+                                                            <input
+                                                                type="text"
+                                                                value={variant.features_en[feature.name_en] || ''}
+                                                                onChange={(e) => updateVariantFeature(
+                                                                    variant.id,
+                                                                    feature.name_en,
+                                                                    feature.name_fr,
+                                                                    e.target.value,
+                                                                    variant.features_fr[feature.name_fr] || ''
+                                                                )}
+                                                                className="variant-input"
+                                                                placeholder={`EN: ${feature.name_en}`}
+                                                                aria-label={`${feature.name_en} (English)`}
+                                                                aria-describedby={`feature-label-${variant.id}-${feature.name_en}`}
+                                                            />
+                                                            <input
+                                                                type="text"
+                                                                value={variant.features_fr[feature.name_fr] || ''}
+                                                                onChange={(e) => updateVariantFeature(
+                                                                    variant.id,
+                                                                    feature.name_en,
+                                                                    feature.name_fr,
+                                                                    variant.features_en[feature.name_en] || '',
+                                                                    e.target.value
+                                                                )}
+                                                                className="variant-input"
+                                                                placeholder={`FR: ${feature.name_fr}`}
+                                                                aria-label={`${feature.name_fr} (French)`}
+                                                                aria-describedby={`feature-label-${variant.id}-${feature.name_en}`}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}

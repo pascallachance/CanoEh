@@ -438,14 +438,42 @@
 
 .variant-field {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: start;
+    gap: 1rem;
 }
 
 .variant-field-label {
     font-weight: 600;
     color: #495057;
-    margin-bottom: 0.5rem;
     font-size: 0.9rem;
+    min-width: 140px;
+    padding-top: 0.5rem;
+    text-align: left;
+}
+
+.variant-field-content {
+    flex: 1;
+}
+
+.images-row {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.image-upload-group {
+    flex: 1;
+}
+
+.image-upload-label {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.variant-field-images {
+    grid-column: 1 / -1;
 }
 
 .file-input-wrapper {
@@ -538,5 +566,20 @@
 @media (max-width: 768px) {
     .variant-fields {
         grid-template-columns: 1fr;
+    }
+    
+    .variant-field {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .variant-field-label {
+        min-width: auto;
+        padding-top: 0;
+        margin-bottom: 0.5rem;
+    }
+    
+    .images-row {
+        flex-direction: column;
     }
 }

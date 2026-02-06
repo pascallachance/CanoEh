@@ -344,7 +344,8 @@
 }
 
 .back-btn,
-.next-btn {
+.next-btn,
+.submit-btn {
     width: 100%;
     padding: 8px 16px 8px 16px;
     background: linear-gradient(135deg, #f00 0%, #f00 100%);
@@ -363,9 +364,15 @@
 }
 
 .back-btn:hover,
-.next-btn:hover {
+.next-btn:hover,
+.submit-btn:hover:not(.disabled) {
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.submit-btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* Responsive design */

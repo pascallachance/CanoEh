@@ -23,6 +23,8 @@ interface ItemVariant {
     imageUrls?: string[];
     thumbnailFile?: File;
     imageFiles?: File[];
+    videoUrl?: string;
+    videoFile?: File;
 }
 
 interface ApiResponseVariant {
@@ -171,6 +173,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                         }
                     });
                 }
+                if (variant.videoUrl && variant.videoUrl.startsWith('blob:')) {
+                    URL.revokeObjectURL(variant.videoUrl);
+                }
             });
         };
     }, [variants]);
@@ -191,7 +196,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 thumbnailUrl: '',
                 imageUrls: [],
                 thumbnailFile: undefined,
-                imageFiles: []
+                imageFiles: [],
+                videoUrl: '',
+                videoFile: undefined
             }];
         }
 
@@ -238,7 +245,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             thumbnailUrl: '',
             imageUrls: [],
             thumbnailFile: undefined,
-            imageFiles: []
+            imageFiles: [],
+            videoUrl: '',
+            videoFile: undefined
         }));
     };
 
@@ -314,6 +323,88 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 v.id === variantId ? { ...v, imageUrls: [], imageFiles: [] } : v
             ));
         }
+    };
+
+    // Helper function to remove a specific image from product images
+    const handleRemoveImage = (variantId: string, imageIndex: number) => {
+        setVariants(prev => prev.map(v => {
+            if (v.id === variantId) {
+                const newImageUrls = [...(v.imageUrls || [])];
+                const newImageFiles = [...(v.imageFiles || [])];
+                
+                // Revoke the blob URL before removing
+                if (newImageUrls[imageIndex]?.startsWith('blob:')) {
+                    URL.revokeObjectURL(newImageUrls[imageIndex]);
+                }
+                
+                newImageUrls.splice(imageIndex, 1);
+                newImageFiles.splice(imageIndex, 1);
+                
+                return { ...v, imageUrls: newImageUrls, imageFiles: newImageFiles };
+            }
+            return v;
+        }));
+    };
+
+    // Helper function to remove thumbnail
+    const handleRemoveThumbnail = (variantId: string) => {
+        const currentVariant = variants.find(v => v.id === variantId);
+        if (currentVariant?.thumbnailUrl && currentVariant.thumbnailUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(currentVariant.thumbnailUrl);
+        }
+        setVariants(prev => prev.map(v => 
+            v.id === variantId ? { ...v, thumbnailUrl: '', thumbnailFile: undefined } : v
+        ));
+    };
+
+    // Helper function to reorder images
+    const handleMoveImage = (variantId: string, fromIndex: number, toIndex: number) => {
+        setVariants(prev => prev.map(v => {
+            if (v.id === variantId) {
+                const newImageUrls = [...(v.imageUrls || [])];
+                const newImageFiles = [...(v.imageFiles || [])];
+                
+                // Move the items
+                const [movedUrl] = newImageUrls.splice(fromIndex, 1);
+                const [movedFile] = newImageFiles.splice(fromIndex, 1);
+                
+                newImageUrls.splice(toIndex, 0, movedUrl);
+                newImageFiles.splice(toIndex, 0, movedFile);
+                
+                return { ...v, imageUrls: newImageUrls, imageFiles: newImageFiles };
+            }
+            return v;
+        }));
+    };
+
+    // Helper function to handle video file selection
+    const handleVideoChange = (variantId: string, file: File | null) => {
+        const currentVariant = variants.find(v => v.id === variantId);
+        if (currentVariant?.videoUrl && currentVariant.videoUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(currentVariant.videoUrl);
+        }
+
+        if (file) {
+            const url = URL.createObjectURL(file);
+            setVariants(prev => prev.map(v => 
+                v.id === variantId ? { ...v, videoUrl: url, videoFile: file } : v
+            ));
+        } else {
+            setVariants(prev => prev.map(v => 
+                v.id === variantId ? { ...v, videoUrl: '', videoFile: undefined } : v
+            ));
+        }
+    };
+
+    // Helper function to remove video
+    const handleRemoveVideo = (variantId: string) => {
+        const currentVariant = variants.find(v => v.id === variantId);
+        if (currentVariant?.videoUrl && currentVariant.videoUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(currentVariant.videoUrl);
+        }
+        setVariants(prev => prev.map(v => 
+            v.id === variantId ? { ...v, videoUrl: '', videoFile: undefined } : v
+        ));
     };
 
     // Validation logic
@@ -660,68 +751,157 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 />
                                             </div>
                                         </div>
-                                        <div className="variant-field variant-field-images">
-                                            <div className="variant-field-label" id={`images-label-${variant.id}`}>Images</div>
-                                            <div className="variant-field-content" role="group" aria-labelledby={`images-label-${variant.id}`}>
-                                                <div className="images-row">
-                                                    <div className="image-upload-group">
-                                                        <label className="image-upload-label" htmlFor={`thumbnail-${variant.id}`}>Thumbnail</label>
-                                                        <div className="file-input-wrapper">
-                                                            <input
-                                                                type="file"
-                                                                accept="image/*"
-                                                                onChange={(e) => handleThumbnailChange(variant.id, e.target.files?.[0] || null)}
-                                                                className="file-input"
-                                                                id={`thumbnail-${variant.id}`}
-                                                                aria-label="Upload thumbnail image for variant"
+                                        {/* Thumbnail Section */}
+                                        <div className="variant-field variant-field-media">
+                                            <div className="media-upload-row">
+                                                <label className="media-label" htmlFor={`thumbnail-${variant.id}`}>Thumbnail</label>
+                                                <div className="media-controls">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => handleThumbnailChange(variant.id, e.target.files?.[0] || null)}
+                                                        className="file-input"
+                                                        id={`thumbnail-${variant.id}`}
+                                                        aria-label="Upload thumbnail image for variant"
+                                                    />
+                                                    <label htmlFor={`thumbnail-${variant.id}`} className="file-label">
+                                                        Choose Image
+                                                    </label>
+                                                </div>
+                                                <div className="media-preview">
+                                                    {variant.thumbnailUrl && (
+                                                        <div className="image-preview-item">
+                                                            <img 
+                                                                src={variant.thumbnailUrl} 
+                                                                alt="Thumbnail" 
+                                                                className="thumbnail-preview"
+                                                                onLoad={() => {
+                                                                    if (import.meta.env.DEV) {
+                                                                        console.log('[AddProductStep3] Thumbnail loaded successfully:', variant.thumbnailUrl);
+                                                                    }
+                                                                }}
+                                                                onError={(e) => {
+                                                                    if (import.meta.env.DEV) {
+                                                                        console.error('[AddProductStep3] Thumbnail failed to load:', variant.thumbnailUrl);
+                                                                        console.error('[AddProductStep3] Image error type:', e.type);
+                                                                    }
+                                                                }}
                                                             />
-                                                            <label htmlFor={`thumbnail-${variant.id}`} className="file-label">
-                                                                Choose Image
-                                                            </label>
-                                                            {variant.thumbnailUrl && (
-                                                                <div className="image-preview">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleRemoveThumbnail(variant.id)}
+                                                                className="remove-media-btn"
+                                                                title="Remove thumbnail"
+                                                            >
+                                                                ×
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Product Images Section */}
+                                        <div className="variant-field variant-field-media">
+                                            <div className="media-upload-row">
+                                                <label className="media-label" htmlFor={`images-${variant.id}`}>Product Images</label>
+                                                <div className="media-controls">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        multiple
+                                                        onChange={(e) => handleImagesChange(variant.id, e.target.files)}
+                                                        className="file-input"
+                                                        id={`images-${variant.id}`}
+                                                        aria-label="Upload product images for variant"
+                                                    />
+                                                    <label htmlFor={`images-${variant.id}`} className="file-label">
+                                                        Choose Images
+                                                    </label>
+                                                </div>
+                                                <div className="media-preview">
+                                                    {variant.imageUrls && variant.imageUrls.length > 0 && (
+                                                        <div className="images-grid">
+                                                            {variant.imageUrls.map((url, index) => (
+                                                                <div key={index} className="image-preview-item">
                                                                     <img 
-                                                                        src={variant.thumbnailUrl} 
-                                                                        alt="Thumbnail" 
+                                                                        src={url} 
+                                                                        alt={`Product image ${index + 1}`} 
                                                                         className="thumbnail-preview"
-                                                                        onLoad={() => {
-                                                                            if (import.meta.env.DEV) {
-                                                                                console.log('[AddProductStep3] Thumbnail loaded successfully:', variant.thumbnailUrl);
-                                                                            }
-                                                                        }}
-                                                                        onError={(e) => {
-                                                                            if (import.meta.env.DEV) {
-                                                                                console.error('[AddProductStep3] Thumbnail failed to load:', variant.thumbnailUrl);
-                                                                                console.error('[AddProductStep3] Image error type:', e.type);
-                                                                            }
-                                                                        }}
                                                                     />
+                                                                    <div className="image-actions">
+                                                                        {index > 0 && (
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => handleMoveImage(variant.id, index, index - 1)}
+                                                                                className="move-btn"
+                                                                                title="Move left"
+                                                                            >
+                                                                                ←
+                                                                            </button>
+                                                                        )}
+                                                                        {index < variant.imageUrls!.length - 1 && (
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => handleMoveImage(variant.id, index, index + 1)}
+                                                                                className="move-btn"
+                                                                                title="Move right"
+                                                                            >
+                                                                                →
+                                                                            </button>
+                                                                        )}
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => handleRemoveImage(variant.id, index)}
+                                                                            className="remove-media-btn"
+                                                                            title="Remove image"
+                                                                        >
+                                                                            ×
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
-                                                            )}
+                                                            ))}
                                                         </div>
-                                                    </div>
-                                                    <div className="image-upload-group">
-                                                        <label className="image-upload-label" htmlFor={`images-${variant.id}`}>Product Images</label>
-                                                        <div className="file-input-wrapper">
-                                                            <input
-                                                                type="file"
-                                                                accept="image/*"
-                                                                multiple
-                                                                onChange={(e) => handleImagesChange(variant.id, e.target.files)}
-                                                                className="file-input"
-                                                                id={`images-${variant.id}`}
-                                                                aria-label="Upload product images for variant"
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Video Section */}
+                                        <div className="variant-field variant-field-media">
+                                            <div className="media-upload-row">
+                                                <label className="media-label" htmlFor={`video-${variant.id}`}>Video</label>
+                                                <div className="media-controls">
+                                                    <input
+                                                        type="file"
+                                                        accept="video/*"
+                                                        onChange={(e) => handleVideoChange(variant.id, e.target.files?.[0] || null)}
+                                                        className="file-input"
+                                                        id={`video-${variant.id}`}
+                                                        aria-label="Upload video for variant"
+                                                    />
+                                                    <label htmlFor={`video-${variant.id}`} className="file-label">
+                                                        Choose Video
+                                                    </label>
+                                                </div>
+                                                <div className="media-preview">
+                                                    {variant.videoUrl && (
+                                                        <div className="video-preview-item">
+                                                            <video 
+                                                                src={variant.videoUrl} 
+                                                                className="video-preview"
+                                                                controls
                                                             />
-                                                            <label htmlFor={`images-${variant.id}`} className="file-label">
-                                                                Choose Images
-                                                            </label>
-                                                            {variant.imageUrls && variant.imageUrls.length > 0 && (
-                                                                <div className="images-preview">
-                                                                    <small>{variant.imageUrls.length} image{variant.imageUrls.length !== 1 ? 's' : ''}</small>
-                                                                </div>
-                                                            )}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleRemoveVideo(variant.id)}
+                                                                className="remove-media-btn"
+                                                                title="Remove video"
+                                                            >
+                                                                ×
+                                                            </button>
                                                         </div>
-                                                    </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

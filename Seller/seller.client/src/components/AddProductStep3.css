@@ -363,14 +363,15 @@
     background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
 }
 
-.back-btn:hover,
+.back-btn:hover:not(:disabled),
 .next-btn:hover,
 .submit-btn:hover:not(.disabled) {
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
 }
 
-.submit-btn.disabled {
+.submit-btn.disabled,
+.back-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }

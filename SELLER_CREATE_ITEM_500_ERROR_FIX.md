@@ -60,12 +60,15 @@ Modified `/Seller/seller.client/src/components/AddProductStep3.tsx`:
 
 ```javascript
 const buildItemRequest = (sellerId: string, itemId?: string) => {
-    // Collect ItemVariantFeatures from the first variant (or use empty array if no variants)
+    // Collect ItemVariantFeatures from the first variant that has features (or use empty array if none)
     // Backend expects ItemVariantFeatures at the top level, not inside each variant.
-    // Note: Backend assigns features to the first variant (ItemService.cs line 243)
+    // Note: Backend currently assigns features to the first variant; keep this in sync with ItemService behavior.
     const itemVariantFeatures: any[] = [];
-    if (variants.length > 0 && variants[0].features_en) {
-        Object.entries(variants[0].features_en).forEach(([featureNameEn, featureValueEn]) => {
+    const sourceVariantForFeatures = variants.find(
+        v => v.features_en && Object.keys(v.features_en).length > 0
+    );
+    if (sourceVariantForFeatures && sourceVariantForFeatures.features_en) {
+        Object.entries(sourceVariantForFeatures.features_en).forEach(([featureNameEn, featureValueEn]) => {
             const foundFeature = step2Data.variantFeatures.find(feat => feat.name_en === featureNameEn);
             const featureNameFr = foundFeature?.name_fr || null;
             const featureValueFr = featureNameFr && variants[0].features_fr ? variants[0].features_fr[featureNameFr] : null;
@@ -173,7 +176,7 @@ curl -k -X POST https://localhost:7182/api/Item/CreateItem \
 
 ## Backend Behavior Note
 
-The backend (ItemService.cs, line 243) assigns ItemVariantFeatures to the first variant:
+In the backend item creation logic (see ItemService.cs), ItemVariantFeatures are assigned to the first variant:
 ```csharp
 if (itemVariantFeaturesRequests.Any() && itemVariants.Any())
 {

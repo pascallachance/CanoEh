@@ -328,15 +328,29 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
 
     // Helper function to build item request (shared between create and update)
     const buildItemRequest = (sellerId: string, itemId?: string) => {
-        // Collect ItemVariantFeatures from the first variant (or use empty array if no variants)
+        // Define interface for ItemVariantFeatures to match backend contract
+        interface ItemVariantFeature {
+            AttributeName_en: string;
+            AttributeName_fr: string | null;
+            Attributes_en: string;
+            Attributes_fr: string | null;
+        }
+
+        // Collect ItemVariantFeatures from the first variant that has features (or use empty array if none)
         // Backend expects ItemVariantFeatures at the top level, not inside each variant.
-        // Note: Backend assigns features to the first variant (ItemService.cs line 243)
-        const itemVariantFeatures: any[] = [];
-        if (variants.length > 0 && variants[0].features_en) {
-            Object.entries(variants[0].features_en).forEach(([featureNameEn, featureValueEn]) => {
+        // Note: Backend currently assigns features to the first variant; keep this in sync with ItemService behavior.
+        const itemVariantFeatures: ItemVariantFeature[] = [];
+        const sourceVariantForFeatures = variants.find(
+            v => v.features_en && Object.keys(v.features_en).length > 0
+        );
+        if (sourceVariantForFeatures && sourceVariantForFeatures.features_en) {
+            Object.entries(sourceVariantForFeatures.features_en).forEach(([featureNameEn, featureValueEn]) => {
                 const foundFeature = step2Data.variantFeatures.find(feat => feat.name_en === featureNameEn);
                 const featureNameFr = foundFeature?.name_fr || null;
-                const featureValueFr = featureNameFr && variants[0].features_fr ? variants[0].features_fr[featureNameFr] : null;
+                const featureValueFr =
+                    featureNameFr && sourceVariantForFeatures.features_fr
+                        ? sourceVariantForFeatures.features_fr[featureNameFr]
+                        : null;
                 itemVariantFeatures.push({
                     AttributeName_en: featureNameEn,
                     AttributeName_fr: featureNameFr,

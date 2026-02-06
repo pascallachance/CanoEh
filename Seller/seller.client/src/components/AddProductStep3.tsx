@@ -328,6 +328,38 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
 
     // Helper function to build item request (shared between create and update)
     const buildItemRequest = (sellerId: string, itemId?: string) => {
+        // Define interface for ItemVariantFeatures to match backend contract
+        interface ItemVariantFeature {
+            AttributeName_en: string;
+            AttributeName_fr: string | null;
+            Attributes_en: string;
+            Attributes_fr: string | null;
+        }
+
+        // Collect ItemVariantFeatures from the first variant that has features (or use empty array if none)
+        // Backend expects ItemVariantFeatures at the top level, not inside each variant.
+        // Note: Backend currently assigns features to the first variant; keep this in sync with ItemService behavior.
+        const itemVariantFeatures: ItemVariantFeature[] = [];
+        const sourceVariantForFeatures = variants.find(
+            v => v.features_en && Object.keys(v.features_en).length > 0
+        );
+        if (sourceVariantForFeatures && sourceVariantForFeatures.features_en) {
+            Object.entries(sourceVariantForFeatures.features_en).forEach(([featureNameEn, featureValueEn]) => {
+                const foundFeature = step2Data.variantFeatures.find(feat => feat.name_en === featureNameEn);
+                const featureNameFr = foundFeature?.name_fr || null;
+                const featureValueFr =
+                    featureNameFr && sourceVariantForFeatures.features_fr
+                        ? sourceVariantForFeatures.features_fr[featureNameFr]
+                        : null;
+                itemVariantFeatures.push({
+                    AttributeName_en: featureNameEn,
+                    AttributeName_fr: featureNameFr,
+                    Attributes_en: featureValueEn,
+                    Attributes_fr: featureValueFr
+                });
+            });
+        }
+
         const request: any = {
             SellerID: sellerId,
             Name_en: step1Data.name,
@@ -335,6 +367,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             Description_en: step1Data.description,
             Description_fr: step1Data.description_fr,
             CategoryID: step2Data.categoryId,
+            ItemVariantFeatures: itemVariantFeatures,
             Variants: variants.map(variant => ({
                 Price: variant.price,
                 StockQuantity: variant.stock,
@@ -354,17 +387,6 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                         AttributeName_fr: attrNameFr,
                         Attributes_en: attrValueEn,
                         Attributes_fr: attrValueFr
-                    };
-                }) : [],
-                ItemVariantFeatures: variant.features_en ? Object.entries(variant.features_en).map(([featureNameEn, featureValueEn]) => {
-                    const foundFeature = step2Data.variantFeatures.find(feat => feat.name_en === featureNameEn);
-                    const featureNameFr = foundFeature?.name_fr || null;
-                    const featureValueFr = featureNameFr && variant.features_fr ? variant.features_fr[featureNameFr] : null;
-                    return {
-                        FeatureName_en: featureNameEn,
-                        FeatureName_fr: featureNameFr,
-                        Features_en: featureValueEn,
-                        Features_fr: featureValueFr
                     };
                 }) : [],
                 Deleted: false

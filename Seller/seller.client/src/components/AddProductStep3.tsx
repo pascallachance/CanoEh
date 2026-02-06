@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import './AddProductStep3.css';
 import { ApiClient } from '../utils/apiClient';
 import { formatVariantAttribute } from '../utils/bilingualArrayUtils';
@@ -53,6 +53,12 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
     const [variants, setVariants] = useState<ItemVariant[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string>('');
+    const variantsRef = useRef<ItemVariant[]>([]);
+
+    // Keep ref in sync with variants state
+    useEffect(() => {
+        variantsRef.current = variants;
+    }, [variants]);
 
     // Handle escape key to cancel
     useEffect(() => {
@@ -159,10 +165,10 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
         }
     }, [step2Data, editMode, existingVariants]);
 
-    // Cleanup object URLs on component unmount
+    // Cleanup object URLs on component unmount only
     useEffect(() => {
         return () => {
-            variants.forEach(variant => {
+            variantsRef.current.forEach(variant => {
                 if (variant.thumbnailUrl && variant.thumbnailUrl.startsWith('blob:')) {
                     URL.revokeObjectURL(variant.thumbnailUrl);
                 }
@@ -178,7 +184,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 }
             });
         };
-    }, [variants]);
+    }, []); // Empty deps - only runs on unmount
 
     const generateVariants = (): ItemVariant[] => {
         if (step2Data.variantAttributes.length === 0) {
@@ -364,12 +370,20 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 const newImageUrls = [...(v.imageUrls || [])];
                 const newImageFiles = [...(v.imageFiles || [])];
                 
-                // Move the items
+                // Always move the URL
                 const [movedUrl] = newImageUrls.splice(fromIndex, 1);
-                const [movedFile] = newImageFiles.splice(fromIndex, 1);
+                
+                // Only move the file if there is one at the given index
+                const hasMovedFile = fromIndex < newImageFiles.length;
+                let movedFile: File | undefined;
+                if (hasMovedFile) {
+                    [movedFile] = newImageFiles.splice(fromIndex, 1);
+                }
                 
                 newImageUrls.splice(toIndex, 0, movedUrl);
-                newImageFiles.splice(toIndex, 0, movedFile);
+                if (hasMovedFile && movedFile) {
+                    newImageFiles.splice(toIndex, 0, movedFile);
+                }
                 
                 return { ...v, imageUrls: newImageUrls, imageFiles: newImageFiles };
             }
@@ -377,7 +391,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
         }));
     };
 
-    // Helper function to handle video file selection
+    // Video upload handlers - disabled pending backend support
+    // Uncomment when backend supports video uploads via /api/Item/UploadVideo endpoint
+    /*
     const handleVideoChange = (variantId: string, file: File | null) => {
         const currentVariant = variants.find(v => v.id === variantId);
         if (currentVariant?.videoUrl && currentVariant.videoUrl.startsWith('blob:')) {
@@ -396,7 +412,6 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
         }
     };
 
-    // Helper function to remove video
     const handleRemoveVideo = (variantId: string) => {
         const currentVariant = variants.find(v => v.id === variantId);
         if (currentVariant?.videoUrl && currentVariant.videoUrl.startsWith('blob:')) {
@@ -406,6 +421,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             v.id === variantId ? { ...v, videoUrl: '', videoFile: undefined } : v
         ));
     };
+    */
 
     // Validation logic
     const isFormInvalid = useMemo(() => {
@@ -792,6 +808,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                 onClick={() => handleRemoveThumbnail(variant.id)}
                                                                 className="remove-media-btn"
                                                                 title="Remove thumbnail"
+                                                                aria-label="Remove thumbnail"
                                                             >
                                                                 ×
                                                             </button>
@@ -829,6 +846,15 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                         alt={`Product image ${index + 1}`} 
                                                                         className="thumbnail-preview"
                                                                     />
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleRemoveImage(variant.id, index)}
+                                                                        className="remove-media-btn"
+                                                                        title="Remove image"
+                                                                        aria-label={`Remove product image ${index + 1}`}
+                                                                    >
+                                                                        ×
+                                                                    </button>
                                                                     <div className="image-actions">
                                                                         {index > 0 && (
                                                                             <button
@@ -836,6 +862,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                                 onClick={() => handleMoveImage(variant.id, index, index - 1)}
                                                                                 className="move-btn"
                                                                                 title="Move left"
+                                                                                aria-label={`Move image ${index + 1} left`}
                                                                             >
                                                                                 ←
                                                                             </button>
@@ -846,18 +873,11 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                                 onClick={() => handleMoveImage(variant.id, index, index + 1)}
                                                                                 className="move-btn"
                                                                                 title="Move right"
+                                                                                aria-label={`Move image ${index + 1} right`}
                                                                             >
                                                                                 →
                                                                             </button>
                                                                         )}
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => handleRemoveImage(variant.id, index)}
-                                                                            className="remove-media-btn"
-                                                                            title="Remove image"
-                                                                        >
-                                                                            ×
-                                                                        </button>
                                                                     </div>
                                                                 </div>
                                                             ))}
@@ -867,7 +887,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                             </div>
                                         </div>
 
-                                        {/* Video Section */}
+                                        {/* Video Section - DISABLED: Backend video upload endpoint not yet implemented */}
+                                        {/* Uncomment when backend supports video uploads via /api/Item/UploadVideo endpoint */}
+                                        {/* 
                                         <div className="variant-field variant-field-media">
                                             <div className="media-upload-row">
                                                 <label className="media-label" htmlFor={`video-${variant.id}`}>Video</label>
@@ -897,6 +919,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                 onClick={() => handleRemoveVideo(variant.id)}
                                                                 className="remove-media-btn"
                                                                 title="Remove video"
+                                                                aria-label="Remove video"
                                                             >
                                                                 ×
                                                             </button>
@@ -905,6 +928,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 </div>
                                             </div>
                                         </div>
+                                        */}
                                     </div>
                                 </div>
 

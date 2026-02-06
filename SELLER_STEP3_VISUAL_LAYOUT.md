@@ -36,17 +36,12 @@
 ├─────────────────────────────────────────────────────────────────────────┤
 │ Product   │ Choose       │ ┌──────┐  ┌──────┐  ┌──────┐                │
 │ Images    │ Images       │ │  ×   │  │  ×   │  │  ×   │                │
+│           │              │ │[60x60]│  │[60x60]│  │[60x60]│              │
 │           │              │ │ ←  → │  │ ←  → │  │  ←   │                │
 │           │              │ └──────┘  └──────┘  └──────┘                │
-│           │              │ [60x60]   [60x60]   [60x60]                 │
-├─────────────────────────────────────────────────────────────────────────┤
-│ Video     │ Choose Video │ ┌──────────┐                                │
-│           │              │ │    ×     │                                │
-│           │              │ ├──────────┤                                │
-│           │              │ │ [VIDEO]  │ 120x90 with controls           │
-│           │              │ │  PREVIEW │                                │
-│           │              │ └──────────┘                                │
 └─────────────────────────────────────────────────────────────────────────┘
+
+Note: Video section is currently disabled pending backend support.
 ```
 
 **Improvements:**
@@ -75,17 +70,19 @@ Label: "Product Images"
 Button: "Choose Images" (multiple file selection, max 10)
 Preview: Horizontal grid of 60x60px squares
 Actions per image:
-  - Remove button (×) in top-right corner
-  - Left arrow (←) - moves image left (hidden on first image)
-  - Right arrow (→) - moves image right (hidden on last image)
+  - Remove button (×) in top-right corner of image
+  - Left arrow (←) - moves image left (bottom bar, hidden on first image)
+  - Right arrow (→) - moves image right (bottom bar, hidden on last image)
 ```
 
 ### 3. Video Row
 ```
-Label: "Video"
-Button: "Choose Video" (single file selection)
-Preview: 120x90px video element with native controls
-Actions: Remove button (×) in top-right corner
+Currently disabled pending backend video upload support.
+When enabled:
+  Label: "Video"
+  Button: "Choose Video" (single file selection)
+  Preview: 120x90px video element with native controls
+  Actions: Remove button (×) in top-right corner
 ```
 
 

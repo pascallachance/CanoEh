@@ -962,15 +962,16 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                     .flatMap(item => item.variants)
                     .find(v => v.id === variantId);
                 
-                // Use changed offer or fall back to existing offer value
-                const offerValue = changes.offer !== undefined ? changes.offer : variant?.offer;
+                // Use changed value or fall back to existing value from variant
+                // Use 'in' operator to distinguish between "not changed" and "explicitly set to undefined"
+                const offerValue = 'offer' in changes ? changes.offer : variant?.offer;
                 
                 // For dates, if changed use the new value (convert from YYYY-MM-DD to ISO)
                 // Otherwise use the existing value from variant (already ISO string)
-                const offerStartValue = changes.offerStart !== undefined 
+                const offerStartValue = 'offerStart' in changes
                     ? toISODateOrUndefined(changes.offerStart)
                     : variant?.offerStart;
-                const offerEndValue = changes.offerEnd !== undefined 
+                const offerEndValue = 'offerEnd' in changes
                     ? toISODateOrUndefined(changes.offerEnd)
                     : variant?.offerEnd;
                 

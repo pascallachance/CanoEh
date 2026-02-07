@@ -872,7 +872,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 setShowManageOffers(true);
                 setOfferChanges(new Map());
             } catch (error) {
-                console.error('Error fetching seller items before opening manage offers:', error);
+                console.error('Error fetching seller items for manage offers view:', error);
                 // Provide user feedback and do not open on failure
                 showError(t('products.list.error'));
             }

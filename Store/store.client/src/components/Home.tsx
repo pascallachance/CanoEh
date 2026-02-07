@@ -669,11 +669,7 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages,
                                         <div className="item-name">{itemNames[index]}</div>
                                     )}
                                 </>
-                            ) : (
-                                <div className="item-image-placeholder">
-                                    Item {item}
-                                </div>
-                            )}
+                            ) : null}
                         </div>
                     );
                 })}

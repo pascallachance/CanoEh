@@ -45,20 +45,6 @@
     margin-bottom: 2rem;
 }
 
-.section-info {
-    background: #e8f4fd;
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
-    border-left: 4px solid #3498db;
-}
-
-.section-info p {
-    color: #2c3e50;
-    margin-bottom: 0.5rem;
-    font-size: 0.95rem;
-}
-
 .example-text {
     color: #666;
     font-style: italic;
@@ -441,7 +427,7 @@
     display: flex;
     flex-direction: row;
     align-items: start;
-    gap: 1rem;
+    gap: 0.5rem;
 }
 
 .variant-field-label {
@@ -464,7 +450,7 @@
 
 .media-upload-row {
     display: flex;
-    gap: 1rem;
+    gap: 0.5rem;
     align-items: flex-start;
 }
 
@@ -474,6 +460,7 @@
     font-size: 0.9rem;
     min-width: 140px;
     padding-top: 0.5rem;
+    text-align: left;
 }
 
 .media-controls {

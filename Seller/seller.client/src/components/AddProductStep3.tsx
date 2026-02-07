@@ -22,7 +22,7 @@ interface ItemVariant {
     thumbnailUrl?: string;
     imageUrls?: string[];
     thumbnailFile?: File;
-    imageFiles?: File[];
+    imageFiles?: (File | null)[]; // Allow null for server-hosted images to keep alignment with imageUrls
     videoUrl?: string;
     videoFile?: File;
 }
@@ -294,40 +294,55 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
 
     // Helper function to handle product images file selection
     const handleImagesChange = (variantId: string, files: FileList | null) => {
-        const currentVariant = variants.find(v => v.id === variantId);
-        if (currentVariant?.imageUrls) {
-            currentVariant.imageUrls.forEach(url => {
-                if (url.startsWith('blob:')) {
-                    URL.revokeObjectURL(url);
-                }
-            });
-        }
-
         if (files && files.length > 0) {
-            const fileArray = Array.from(files).slice(0, 10);
-            const urls: string[] = [];
+            const currentVariant = variants.find(v => v.id === variantId);
+            const existingUrls = currentVariant?.imageUrls || [];
+            const existingFiles = currentVariant?.imageFiles || [];
+            
+            // Calculate how many more images we can add (max 10 total)
+            const remainingSlots = 10 - existingUrls.length;
+            if (remainingSlots <= 0) {
+                console.warn('Maximum of 10 images already reached');
+                showError('You can upload a maximum of 10 images for this product variant.');
+                return;
+            }
+            
+            const fileArray = Array.from(files).slice(0, remainingSlots);
+            
+            // If more files were selected than could be added, notify the seller that some were ignored
+            if (files.length > remainingSlots) {
+                showError(`You can upload a maximum of 10 images for this product variant. Only ${remainingSlots} of the selected images were added.`);
+            }
+            
+            const newUrls: string[] = [];
             try {
                 fileArray.forEach(file => {
-                    urls.push(URL.createObjectURL(file));
+                    newUrls.push(URL.createObjectURL(file));
                 });
+                
+                // Append new images to existing ones
+                // Keep imageFiles aligned with imageUrls by padding with null for server-hosted images
+                // This ensures handleRemoveImage, handleMoveImage, and uploadVariantImages work correctly
+                const paddedExistingFiles: (File | null)[] = existingUrls.map((url, idx) => 
+                    existingFiles[idx] || null
+                );
+                
                 setVariants(prev => prev.map(v => 
-                    v.id === variantId ? { ...v, imageUrls: urls, imageFiles: fileArray } : v
+                    v.id === variantId ? { 
+                        ...v, 
+                        imageUrls: [...existingUrls, ...newUrls], 
+                        imageFiles: [...paddedExistingFiles, ...fileArray] 
+                    } : v
                 ));
             } catch (error) {
-                urls.forEach(url => {
+                // Clean up created URLs on error
+                newUrls.forEach(url => {
                     if (url.startsWith('blob:')) {
                         URL.revokeObjectURL(url);
                     }
                 });
                 console.error('Error creating object URLs:', error);
-                setVariants(prev => prev.map(v => 
-                    v.id === variantId ? { ...v, imageUrls: [], imageFiles: [] } : v
-                ));
             }
-        } else {
-            setVariants(prev => prev.map(v => 
-                v.id === variantId ? { ...v, imageUrls: [], imageFiles: [] } : v
-            ));
         }
     };
 
@@ -370,18 +385,14 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 const newImageUrls = [...(v.imageUrls || [])];
                 const newImageFiles = [...(v.imageFiles || [])];
                 
-                // Always move the URL
+                // Move URL (always present)
                 const [movedUrl] = newImageUrls.splice(fromIndex, 1);
-                
-                // Only move the file if there is one at the given index
-                const hasMovedFile = fromIndex < newImageFiles.length;
-                let movedFile: File | undefined;
-                if (hasMovedFile) {
-                    [movedFile] = newImageFiles.splice(fromIndex, 1);
-                }
-                
                 newImageUrls.splice(toIndex, 0, movedUrl);
-                if (hasMovedFile && movedFile) {
+                
+                // Move corresponding file (may be null for server-hosted images)
+                // Since arrays are now aligned 1:1, we can safely move at the same index
+                if (newImageFiles.length > fromIndex) {
+                    const [movedFile] = newImageFiles.splice(fromIndex, 1);
                     newImageFiles.splice(toIndex, 0, movedFile);
                 }
                 
@@ -539,12 +550,22 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
         }
 
         // Upload product images if present
+        // imageFiles array is aligned 1:1 with imageUrls, with null entries for server-hosted images
+        // Only upload non-null File entries, using their index in imageUrls as imageNumber
         if (variant.imageFiles && variant.imageFiles.length > 0) {
             for (let imageIndex = 0; imageIndex < variant.imageFiles.length; imageIndex++) {
+                const file = variant.imageFiles[imageIndex];
+                
+                // Skip null entries (server-hosted images that don't need re-uploading)
+                if (!file) {
+                    continue;
+                }
+                
                 try {
                     const formData = new FormData();
-                    formData.append('file', variant.imageFiles[imageIndex]);
+                    formData.append('file', file);
 
+                    // Use imageIndex + 1 as imageNumber to match the position in imageUrls array
                     const uploadResponse = await fetch(
                         `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/UploadImage?variantId=${apiVariantId}&imageType=image&imageNumber=${imageIndex + 1}`,
                         {
@@ -669,10 +690,6 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 )}
 
                 <div className="variants-section">
-                    <div className="section-info">
-                        <p><strong>{variants.length}</strong> variant{variants.length !== 1 ? 's' : ''} generated</p>
-                    </div>
-
                     <div className="variants-cards-container">
                         {variants.map(variant => (
                             <div key={variant.id} className="variant-card">

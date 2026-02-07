@@ -31,7 +31,6 @@ interface ProductsSectionProps {
     companies: Company[];
     viewMode?: 'list' | 'add' | 'edit';
     onViewModeChange?: (mode: 'list' | 'add' | 'edit') => void;
-    onEditProduct?: (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, existingVariants: any[]) => void;
     onManageOffersStateChange?: (isLoading: boolean, hasItems: boolean) => void;
 }
 
@@ -121,7 +120,7 @@ interface ApiItem {
 }
 
 const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
-    ({ companies, viewMode = 'list', onViewModeChange, onEditProduct, onManageOffersStateChange }, ref) => {
+    ({ companies, viewMode = 'list', onViewModeChange, onManageOffersStateChange }, ref) => {
     const [categories, setCategories] = useState<Category[]>([]);
     const { language, t } = useLanguage();
     const { showError, showSuccess } = useNotifications();
@@ -699,16 +698,16 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     };
 
     // Handlers for inline add/edit product workflow
-    const handleOpenAddProduct = () => {
+    const handleOpenAddProduct = useCallback(() => {
         setInlineProductMode('add');
         setProductWorkflowStep(1);
         setProductStep1Data(null);
         setProductStep2Data(null);
         setEditingItemIdInline(null);
         setEditProductExistingVariants(null);
-    };
+    }, []);
 
-    const handleOpenEditProduct = (itemId: string) => {
+    const handleOpenEditProduct = useCallback((itemId: string) => {
         // Find the item to edit
         const item = sellerItems.find(i => i.id === itemId);
         if (!item) {
@@ -839,7 +838,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         setProductStep2Data(step2Data);
         setEditingItemIdInline(itemId);
         setEditProductExistingVariants(existingVariants);
-    };
+    }, [sellerItems, showError, t]);
 
     const handleProductStep1Next = (data: AddProductStep1Data) => {
         setProductStep1Data(data);
@@ -897,7 +896,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     };
 
     // Handle opening manage offers modal
-    const handleOpenManageOffers = () => {
+    const handleOpenManageOffers = useCallback(() => {
         void (async () => {
             try {
                 // Refresh data to ensure we show the latest offers
@@ -910,7 +909,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 showError(t('products.list.error'));
             }
         })();
-    };
+    }, [fetchSellerItems, showError, t]);
     
     // Expose methods and state to parent component
     useImperativeHandle(ref, () => ({

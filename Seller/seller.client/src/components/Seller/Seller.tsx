@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import './Seller.css';
 import ProductsSection from './ProductsSection';
 import type { ProductsSectionRef } from './ProductsSection';
@@ -65,7 +65,6 @@ function Seller({ companies, onLogout, onCompanyUpdate }: SellerProps) {
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
     const [isManageOffersDisabled, setIsManageOffersDisabled] = useState(true);
     const { language, setLanguage, t } = useLanguage();
-    const navigate = useNavigate();
     const productsSectionRef = useRef<ProductsSectionRef>(null);
     // Track the last navigation key we processed to avoid reprocessing
     // Empty string ensures first real navigation will always be different

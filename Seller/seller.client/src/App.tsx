@@ -267,6 +267,9 @@ function AppContent() {
     };
 
     // Edit product handlers
+    // NOTE: handleEditProductStart is kept for backward compatibility with direct route access
+    // but is no longer called by the Seller component (edit is now inline)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleEditProductStart = (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, existingVariants: any[]) => {
         setEditingItemId(itemId);
         setEditProductStep1Data(step1Data);

@@ -294,40 +294,42 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
 
     // Helper function to handle product images file selection
     const handleImagesChange = (variantId: string, files: FileList | null) => {
-        const currentVariant = variants.find(v => v.id === variantId);
-        if (currentVariant?.imageUrls) {
-            currentVariant.imageUrls.forEach(url => {
-                if (url.startsWith('blob:')) {
-                    URL.revokeObjectURL(url);
-                }
-            });
-        }
-
         if (files && files.length > 0) {
-            const fileArray = Array.from(files).slice(0, 10);
-            const urls: string[] = [];
+            const currentVariant = variants.find(v => v.id === variantId);
+            const existingUrls = currentVariant?.imageUrls || [];
+            const existingFiles = currentVariant?.imageFiles || [];
+            
+            // Calculate how many more images we can add (max 10 total)
+            const remainingSlots = 10 - existingUrls.length;
+            if (remainingSlots <= 0) {
+                console.warn('Maximum of 10 images already reached');
+                return;
+            }
+            
+            const fileArray = Array.from(files).slice(0, remainingSlots);
+            const newUrls: string[] = [];
             try {
                 fileArray.forEach(file => {
-                    urls.push(URL.createObjectURL(file));
+                    newUrls.push(URL.createObjectURL(file));
                 });
+                
+                // Append new images to existing ones
                 setVariants(prev => prev.map(v => 
-                    v.id === variantId ? { ...v, imageUrls: urls, imageFiles: fileArray } : v
+                    v.id === variantId ? { 
+                        ...v, 
+                        imageUrls: [...existingUrls, ...newUrls], 
+                        imageFiles: [...existingFiles, ...fileArray] 
+                    } : v
                 ));
             } catch (error) {
-                urls.forEach(url => {
+                // Clean up created URLs on error
+                newUrls.forEach(url => {
                     if (url.startsWith('blob:')) {
                         URL.revokeObjectURL(url);
                     }
                 });
                 console.error('Error creating object URLs:', error);
-                setVariants(prev => prev.map(v => 
-                    v.id === variantId ? { ...v, imageUrls: [], imageFiles: [] } : v
-                ));
             }
-        } else {
-            setVariants(prev => prev.map(v => 
-                v.id === variantId ? { ...v, imageUrls: [], imageFiles: [] } : v
-            ));
         }
     };
 
@@ -669,10 +671,6 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 )}
 
                 <div className="variants-section">
-                    <div className="section-info">
-                        <p><strong>{variants.length}</strong> variant{variants.length !== 1 ? 's' : ''} generated</p>
-                    </div>
-
                     <div className="variants-cards-container">
                         {variants.map(variant => (
                             <div key={variant.id} className="variant-card">

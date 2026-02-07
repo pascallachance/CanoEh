@@ -12,6 +12,9 @@ import type { AddProductStep1Data } from '../AddProductStep1';
 import type { AddProductStep2Data } from '../AddProductStep2';
 import type { ItemAttribute } from '../AddProductStep2';
 import BilingualTagInput from '../BilingualTagInput';
+import AddProductStep1 from '../AddProductStep1';
+import AddProductStep2 from '../AddProductStep2';
+import AddProductStep3 from '../AddProductStep3';
 
 
 interface Company {
@@ -34,6 +37,8 @@ interface ProductsSectionProps {
 
 export interface ProductsSectionRef {
     openManageOffers: () => void;
+    openAddProduct: () => void;
+    openEditProduct: (itemId: string) => void;
     isLoadingItems: boolean;
     hasItems: boolean;
 }
@@ -176,6 +181,14 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     const [showManageOffersModal, setShowManageOffersModal] = useState(false);
     const [offerChanges, setOfferChanges] = useState<Map<string, { offer?: number; offerStart?: string; offerEnd?: string }>>(new Map());
     const [isSavingOffers, setIsSavingOffers] = useState(false);
+    
+    // State for inline add/edit product workflow
+    const [inlineProductMode, setInlineProductMode] = useState<'none' | 'add' | 'edit'>('none');
+    const [productWorkflowStep, setProductWorkflowStep] = useState<number>(1);
+    const [productStep1Data, setProductStep1Data] = useState<AddProductStep1Data | null>(null);
+    const [productStep2Data, setProductStep2Data] = useState<AddProductStep2Data | null>(null);
+    const [editingItemIdInline, setEditingItemIdInline] = useState<string | null>(null);
+    const [editProductExistingVariants, setEditProductExistingVariants] = useState<any[] | null>(null);
     
     // Refs for accessibility
     const modalRef = useRef<HTMLDivElement>(null);
@@ -629,142 +642,8 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
 
     // Handle editing an item
     const handleEditItem = (item: ApiItem) => {
-        if (!onEditProduct) {
-            return;
-        }
-
-        // Step 1: Basic item info
-        const step1Data = {
-            name: item.name_en,
-            name_fr: item.name_fr,
-            description: item.description_en || '',
-            description_fr: item.description_fr || ''
-        };
-
-        // Extract variant attributes from variant data
-        // To preserve order, we'll use the order from the first variant and build a map
-        const attributeOrderMap = new Map<string, number>();
-        const attributesMap = new Map<string, {
-            name_en: string;
-            name_fr: string;
-            values: Array<{ en: string; fr: string }>;
-        }>();
-
-        // Get active variants
-        const activeVariants = item.variants.filter(v => !v.deleted);
-
-        // Process all variants to extract unique attribute combinations
-        // Preserve the order by using first variant's attribute order
-        activeVariants.forEach((variant, variantIndex) => {
-            variant.itemVariantAttributes.forEach((attr, attrIndex) => {
-                const key = attr.attributeName_en;
-                
-                // Set order based on first variant
-                if (variantIndex === 0 && !attributeOrderMap.has(key)) {
-                    attributeOrderMap.set(key, attrIndex);
-                }
-                
-                if (!attributesMap.has(key)) {
-                    attributesMap.set(key, {
-                        name_en: attr.attributeName_en,
-                        name_fr: attr.attributeName_fr || '',
-                        values: []
-                    });
-                }
-                
-                const attrData = attributesMap.get(key)!;
-                const valuePair = {
-                    en: attr.attributes_en,
-                    fr: attr.attributes_fr || ''
-                };
-                
-                // Only add if not already present (check both en and fr)
-                const alreadyExists = attrData.values.some(
-                    v => v.en === valuePair.en && v.fr === valuePair.fr
-                );
-                if (!alreadyExists) {
-                    attrData.values.push(valuePair);
-                }
-            });
-        });
-
-        // Convert to ItemAttribute array in the correct order
-        const variantAttributes: ItemAttribute[] = Array.from(attributesMap.entries())
-            .sort(([keyA], [keyB]) => {
-                const orderA = attributeOrderMap.get(keyA) ?? 999;
-                const orderB = attributeOrderMap.get(keyB) ?? 999;
-                return orderA - orderB;
-            })
-            .map(([, attr]) => ({
-                name_en: attr.name_en,
-                name_fr: attr.name_fr,
-                values: attr.values  // Keep the new format with paired values
-            }));
-
-        // Extract unique variant feature names from all variants, preserving the order from the first variant
-        const featuresMap = new Map<string, {
-            name_en: string;
-            name_fr: string;
-            values: Array<{ en: string; fr: string }>;
-        }>();
-        const featureOrderMap = new Map<string, number>();
-
-        // Process all variants to extract unique feature combinations
-        activeVariants.forEach((variant, variantIndex) => {
-            (variant.itemVariantFeatures || []).forEach((feature, featureIndex) => {
-                const key = feature.attributeName_en;
-                
-                // Set order based on first variant
-                if (variantIndex === 0 && !featureOrderMap.has(key)) {
-                    featureOrderMap.set(key, featureIndex);
-                }
-                
-                if (!featuresMap.has(key)) {
-                    featuresMap.set(key, {
-                        name_en: feature.attributeName_en,
-                        name_fr: feature.attributeName_fr || '',
-                        values: []
-                    });
-                }
-            });
-        });
-
-        // Convert to ItemAttribute array (features don't have predefined values, just names)
-        const variantFeatures: ItemAttribute[] = Array.from(featuresMap.entries())
-            .sort(([keyA], [keyB]) => {
-                const orderA = featureOrderMap.get(keyA) ?? 999;
-                const orderB = featureOrderMap.get(keyB) ?? 999;
-                return orderA - orderB;
-            })
-            .map(([, feature]) => ({
-                name_en: feature.name_en,
-                name_fr: feature.name_fr,
-                values: []  // Features don't have predefined values
-            }));
-
-        // Step 2: Category, variant attributes, and variant features
-        const step2Data = {
-            categoryId: item.categoryID,
-            variantAttributes,
-            variantFeatures
-        };
-
-        // Prepare existing variants data to pass to Step 3
-        const existingVariants = activeVariants.map(variant => ({
-            id: variant.id,
-            sku: variant.sku,
-            price: variant.price,
-            stockQuantity: variant.stockQuantity,
-            productIdentifierType: variant.productIdentifierType,
-            productIdentifierValue: variant.productIdentifierValue,
-            thumbnailUrl: variant.thumbnailUrl,
-            imageUrls: variant.imageUrls,
-            itemVariantAttributes: variant.itemVariantAttributes,
-            itemVariantFeatures: variant.itemVariantFeatures || []
-        }));
-
-        // Call the onEditProduct callback with the parsed data
-        onEditProduct(item.id, step1Data, step2Data, existingVariants);
+        // Use inline edit mode instead of navigating to separate route
+        handleOpenEditProduct(item.id);
     };
 
     // Handle deleting an item
@@ -819,6 +698,204 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         setItemToDelete(null);
     };
 
+    // Handlers for inline add/edit product workflow
+    const handleOpenAddProduct = () => {
+        setInlineProductMode('add');
+        setProductWorkflowStep(1);
+        setProductStep1Data(null);
+        setProductStep2Data(null);
+        setEditingItemIdInline(null);
+        setEditProductExistingVariants(null);
+    };
+
+    const handleOpenEditProduct = (itemId: string) => {
+        // Find the item to edit
+        const item = sellerItems.find(i => i.id === itemId);
+        if (!item) {
+            showError(t('products.itemNotFound'));
+            return;
+        }
+
+        // Prepare step1 data
+        const step1Data = {
+            name: item.name_en,
+            name_fr: item.name_fr,
+            description: item.description_en || '',
+            description_fr: item.description_fr || ''
+        };
+
+        // Extract variant attributes and features (same logic as handleEditItem)
+        const attributeOrderMap = new Map<string, number>();
+        const attributesMap = new Map<string, {
+            name_en: string;
+            name_fr: string;
+            values: Array<{ en: string; fr: string }>;
+        }>();
+
+        const activeVariants = item.variants.filter(v => !v.deleted);
+
+        activeVariants.forEach((variant, variantIndex) => {
+            variant.itemVariantAttributes.forEach((attr, attrIndex) => {
+                const key = attr.attributeName_en;
+                
+                if (variantIndex === 0 && !attributeOrderMap.has(key)) {
+                    attributeOrderMap.set(key, attrIndex);
+                }
+                
+                if (!attributesMap.has(key)) {
+                    attributesMap.set(key, {
+                        name_en: attr.attributeName_en,
+                        name_fr: attr.attributeName_fr || '',
+                        values: []
+                    });
+                }
+                
+                const attrData = attributesMap.get(key)!;
+                const valuePair = {
+                    en: attr.attributes_en,
+                    fr: attr.attributes_fr || ''
+                };
+                
+                const alreadyExists = attrData.values.some(
+                    v => v.en === valuePair.en && v.fr === valuePair.fr
+                );
+                if (!alreadyExists) {
+                    attrData.values.push(valuePair);
+                }
+            });
+        });
+
+        const variantAttributes: ItemAttribute[] = Array.from(attributesMap.entries())
+            .sort(([keyA], [keyB]) => {
+                const orderA = attributeOrderMap.get(keyA) ?? 999;
+                const orderB = attributeOrderMap.get(keyB) ?? 999;
+                return orderA - orderB;
+            })
+            .map(([, attr]) => ({
+                name_en: attr.name_en,
+                name_fr: attr.name_fr,
+                values: attr.values
+            }));
+
+        const featuresMap = new Map<string, {
+            name_en: string;
+            name_fr: string;
+            values: Array<{ en: string; fr: string }>;
+        }>();
+        const featureOrderMap = new Map<string, number>();
+
+        activeVariants.forEach((variant, variantIndex) => {
+            (variant.itemVariantFeatures || []).forEach((feature, featureIndex) => {
+                const key = feature.attributeName_en;
+                
+                if (variantIndex === 0 && !featureOrderMap.has(key)) {
+                    featureOrderMap.set(key, featureIndex);
+                }
+                
+                if (!featuresMap.has(key)) {
+                    featuresMap.set(key, {
+                        name_en: feature.attributeName_en,
+                        name_fr: feature.attributeName_fr || '',
+                        values: []
+                    });
+                }
+            });
+        });
+
+        const variantFeatures: ItemAttribute[] = Array.from(featuresMap.entries())
+            .sort(([keyA], [keyB]) => {
+                const orderA = featureOrderMap.get(keyA) ?? 999;
+                const orderB = featureOrderMap.get(keyB) ?? 999;
+                return orderA - orderB;
+            })
+            .map(([, feature]) => ({
+                name_en: feature.name_en,
+                name_fr: feature.name_fr,
+                values: []
+            }));
+
+        const step2Data = {
+            categoryId: item.categoryID,
+            variantAttributes,
+            variantFeatures
+        };
+
+        const existingVariants = activeVariants.map(variant => ({
+            id: variant.id,
+            sku: variant.sku,
+            price: variant.price,
+            stockQuantity: variant.stockQuantity,
+            productIdentifierType: variant.productIdentifierType,
+            productIdentifierValue: variant.productIdentifierValue,
+            thumbnailUrl: variant.thumbnailUrl,
+            imageUrls: variant.imageUrls,
+            itemVariantAttributes: variant.itemVariantAttributes,
+            itemVariantFeatures: variant.itemVariantFeatures || []
+        }));
+
+        setInlineProductMode('edit');
+        setProductWorkflowStep(1);
+        setProductStep1Data(step1Data);
+        setProductStep2Data(step2Data);
+        setEditingItemIdInline(itemId);
+        setEditProductExistingVariants(existingVariants);
+    };
+
+    const handleProductStep1Next = (data: AddProductStep1Data) => {
+        setProductStep1Data(data);
+        setProductWorkflowStep(2);
+    };
+
+    const handleProductStep1Cancel = () => {
+        setInlineProductMode('none');
+        setProductWorkflowStep(1);
+        setProductStep1Data(null);
+        setProductStep2Data(null);
+        setEditingItemIdInline(null);
+        setEditProductExistingVariants(null);
+    };
+
+    const handleProductStep2Next = (data: AddProductStep2Data) => {
+        setProductStep2Data(data);
+        setProductWorkflowStep(3);
+    };
+
+    const handleProductStep2Back = () => {
+        setProductWorkflowStep(1);
+    };
+
+    const handleProductStep3Back = () => {
+        setProductWorkflowStep(2);
+    };
+
+    const handleProductSubmit = async () => {
+        // Product was successfully saved, refresh and return to list
+        await fetchSellerItems();
+        setInlineProductMode('none');
+        setProductWorkflowStep(1);
+        setProductStep1Data(null);
+        setProductStep2Data(null);
+        setEditingItemIdInline(null);
+        setEditProductExistingVariants(null);
+    };
+
+    const handleProductStepNavigate = (step: number) => {
+        // Allow navigation between steps in edit mode
+        if (step >= 1 && step <= 3) {
+            setProductWorkflowStep(step);
+        }
+    };
+
+    const getCompletedSteps = (): number[] => {
+        const completed: number[] = [];
+        if (productStep1Data) completed.push(1);
+        if (productStep2Data) completed.push(2);
+        if (productStep1Data && productStep2Data) {
+            completed.push(3);
+        }
+        return completed;
+    };
+
     // Handle opening manage offers modal
     const handleOpenManageOffers = () => {
         void (async () => {
@@ -838,9 +915,11 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     // Expose methods and state to parent component
     useImperativeHandle(ref, () => ({
         openManageOffers: handleOpenManageOffers,
+        openAddProduct: handleOpenAddProduct,
+        openEditProduct: handleOpenEditProduct,
         isLoadingItems,
         hasItems: sellerItems.length > 0
-    }), [isLoadingItems, sellerItems.length]);
+    }), [isLoadingItems, sellerItems.length, handleOpenManageOffers, handleOpenAddProduct, handleOpenEditProduct]);
 
     // Notify parent of state changes for managing button disabled state
     useEffect(() => {
@@ -1493,7 +1572,47 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
 
     return (
         <div className="section-container">
-            {(showAddForm || showEditForm) && (
+            {/* Show inline add/edit product workflow */}
+            {inlineProductMode !== 'none' && productWorkflowStep === 1 && productStep1Data && (
+                <AddProductStep1
+                    onNext={handleProductStep1Next}
+                    onCancel={handleProductStep1Cancel}
+                    initialData={productStep1Data}
+                    editMode={inlineProductMode === 'edit'}
+                    onStepNavigate={handleProductStepNavigate}
+                    completedSteps={getCompletedSteps()}
+                />
+            )}
+            {inlineProductMode !== 'none' && productWorkflowStep === 2 && productStep1Data && productStep2Data && (
+                <AddProductStep2
+                    onNext={handleProductStep2Next}
+                    onBack={handleProductStep2Back}
+                    onCancel={handleProductStep1Cancel}
+                    step1Data={productStep1Data}
+                    initialData={productStep2Data}
+                    editMode={inlineProductMode === 'edit'}
+                    onStepNavigate={handleProductStepNavigate}
+                    completedSteps={getCompletedSteps()}
+                />
+            )}
+            {inlineProductMode !== 'none' && productWorkflowStep === 3 && productStep1Data && productStep2Data && (
+                <AddProductStep3
+                    onSubmit={handleProductSubmit}
+                    onBack={handleProductStep3Back}
+                    onCancel={handleProductStep1Cancel}
+                    step1Data={productStep1Data}
+                    step2Data={productStep2Data}
+                    companies={companies}
+                    editMode={inlineProductMode === 'edit'}
+                    itemId={editingItemIdInline || undefined}
+                    existingVariants={editProductExistingVariants || undefined}
+                    onStepNavigate={handleProductStepNavigate}
+                    completedSteps={getCompletedSteps()}
+                />
+            )}
+
+            {/* Show product list when not in add/edit mode */}
+            {inlineProductMode === 'none' && (showAddForm || showEditForm) && (
                 <div className="products-add-form">
                     <h3>{showEditForm ? t('products.editProduct') : t('products.addProduct')}</h3>
                     
@@ -1852,7 +1971,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 </div>
             )}
 
-            {showListSection && (
+            {inlineProductMode === 'none' && showListSection && (
                 <div className="products-list-section">
                     {/* Filter and Sort Section */}
                     <div className="products-filter-section">

@@ -374,7 +374,7 @@ function AppContent() {
     const SellerRoute = () => (
         <ProtectedRoute>
             {companies.length > 0 ? (
-                <Seller companies={companies} onLogout={handleBackToLogin} onEditProduct={handleEditProductStart} onCompanyUpdate={handleCompanyUpdate} />
+                <Seller companies={companies} onLogout={handleBackToLogin} onCompanyUpdate={handleCompanyUpdate} />
             ) : (
                 <NoCompanyPage
                     onCreateCompany={handleCreateCompany}

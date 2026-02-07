@@ -956,12 +956,53 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
 
         try {
             // Prepare batch request with all offer updates
-            const offerUpdates = Array.from(offerChanges.entries()).map(([variantId, changes]) => ({
-                variantId,
-                offer: changes.offer,
-                offerStart: toISODateOrUndefined(changes.offerStart),
-                offerEnd: toISODateOrUndefined(changes.offerEnd)
-            }));
+            // Create a map of variantId to variant for efficient lookup
+            const variantsMap = new Map(
+                sellerItems
+                    .flatMap(item => item.variants)
+                    .map(v => [v.id, v])
+            );
+            
+            // Check for missing variants before proceeding
+            const missingVariantIds: string[] = [];
+            for (const [variantId] of offerChanges.entries()) {
+                if (!variantsMap.has(variantId)) {
+                    missingVariantIds.push(variantId);
+                }
+            }
+            
+            // If any variants are missing, fail the save operation
+            if (missingVariantIds.length > 0) {
+                console.error('Missing variant IDs:', missingVariantIds);
+                showError(t('products.offers.variantsNotFound'));
+                setIsSavingOffers(false);
+                return;
+            }
+            
+            const offerUpdates = Array.from(offerChanges.entries()).map(([variantId, changes]) => {
+                // Get the variant from the map (guaranteed to exist after validation above)
+                const variant = variantsMap.get(variantId)!;
+                
+                // Use changed value or fall back to existing value from variant
+                // Use 'in' operator to distinguish between "not changed" and "explicitly set to undefined"
+                const offerValue = 'offer' in changes ? changes.offer : variant.offer;
+                
+                // For dates, if changed use the new value (convert from YYYY-MM-DD to ISO)
+                // Otherwise use the existing value from variant (already ISO string)
+                const offerStartValue = 'offerStart' in changes
+                    ? toISODateOrUndefined(changes.offerStart)
+                    : variant.offerStart;
+                const offerEndValue = 'offerEnd' in changes
+                    ? toISODateOrUndefined(changes.offerEnd)
+                    : variant.offerEnd;
+                
+                return {
+                    variantId,
+                    offer: offerValue,
+                    offerStart: offerStartValue,
+                    offerEnd: offerEndValue
+                };
+            });
 
             const batchRequest = {
                 offerUpdates

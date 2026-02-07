@@ -556,6 +556,10 @@ export const translations: TranslationResources = {
     en: 'Failed to update offers',
     fr: 'Échec de la mise à jour des offres'
   },
+  'products.offers.variantsNotFound': {
+    en: 'Some products have been updated or removed. Please refresh and try again.',
+    fr: 'Certains produits ont été mis à jour ou supprimés. Veuillez actualiser et réessayer.'
+  },
 
   // Pagination
   'pagination.previous': {

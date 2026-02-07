@@ -118,6 +118,10 @@ export const translations: TranslationResources = {
     en: 'Item is not deleted',
     fr: "L'article n'est pas supprimé"
   },
+  'products.itemNotFound': {
+    en: 'Item not found',
+    fr: 'Article non trouvé'
+  },
 
   // Product Form Labels
   'products.itemName': {

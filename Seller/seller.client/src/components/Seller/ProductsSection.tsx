@@ -879,8 +879,14 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     };
 
     const handleProductStepNavigate = (step: number) => {
-        // Allow navigation between steps in edit mode
-        if (step >= 1 && step <= 3) {
+        // Allow navigation between steps only in edit mode and only to completed steps
+        if (inlineProductMode !== 'edit') {
+            return;
+        }
+
+        const completedSteps = getCompletedSteps();
+
+        if (step >= 1 && step <= 3 && completedSteps.includes(step)) {
             setProductWorkflowStep(step);
         }
     };
@@ -1582,13 +1588,13 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                     completedSteps={getCompletedSteps()}
                 />
             )}
-            {inlineProductMode !== 'none' && productWorkflowStep === 2 && productStep1Data && productStep2Data && (
+            {inlineProductMode !== 'none' && productWorkflowStep === 2 && productStep1Data && (
                 <AddProductStep2
                     onNext={handleProductStep2Next}
                     onBack={handleProductStep2Back}
                     onCancel={handleProductStep1Cancel}
                     step1Data={productStep1Data}
-                    initialData={productStep2Data}
+                    initialData={productStep2Data || undefined}
                     editMode={inlineProductMode === 'edit'}
                     onStepNavigate={handleProductStepNavigate}
                     completedSteps={getCompletedSteps()}

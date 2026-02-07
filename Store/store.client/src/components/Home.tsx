@@ -654,7 +654,7 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages,
                     return (
                         <div key={item} className="item-placeholder">
                             <img 
-                                src={imageUrls[index]} 
+                                src={imageUrls[index]!} 
                                 alt={itemNames?.[index] || `Item ${item}`} 
                                 className="item-image"
                                 onError={() => handleImageError(index)}

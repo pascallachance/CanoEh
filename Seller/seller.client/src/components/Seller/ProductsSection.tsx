@@ -967,18 +967,24 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 // Get the variant from the map
                 const variant = variantsMap.get(variantId);
                 
+                // If variant not found, skip this update (data may have been refreshed)
+                if (!variant) {
+                    console.warn(`Variant ${variantId} not found in current items`);
+                    return null;
+                }
+                
                 // Use changed value or fall back to existing value from variant
                 // Use 'in' operator to distinguish between "not changed" and "explicitly set to undefined"
-                const offerValue = 'offer' in changes ? changes.offer : variant?.offer;
+                const offerValue = 'offer' in changes ? changes.offer : variant.offer;
                 
                 // For dates, if changed use the new value (convert from YYYY-MM-DD to ISO)
                 // Otherwise use the existing value from variant (already ISO string)
                 const offerStartValue = 'offerStart' in changes
                     ? toISODateOrUndefined(changes.offerStart)
-                    : variant?.offerStart;
+                    : variant.offerStart;
                 const offerEndValue = 'offerEnd' in changes
                     ? toISODateOrUndefined(changes.offerEnd)
-                    : variant?.offerEnd;
+                    : variant.offerEnd;
                 
                 return {
                     variantId,
@@ -986,7 +992,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                     offerStart: offerStartValue,
                     offerEnd: offerEndValue
                 };
-            });
+            }).filter(update => update !== null); // Remove null entries for missing variants
 
             const batchRequest = {
                 offerUpdates

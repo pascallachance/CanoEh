@@ -965,11 +965,20 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 // Use changed offer or fall back to existing offer value
                 const offerValue = changes.offer !== undefined ? changes.offer : variant?.offer;
                 
+                // For dates, if changed use the new value (convert from YYYY-MM-DD to ISO)
+                // Otherwise use the existing value from variant (already ISO string)
+                const offerStartValue = changes.offerStart !== undefined 
+                    ? toISODateOrUndefined(changes.offerStart)
+                    : variant?.offerStart;
+                const offerEndValue = changes.offerEnd !== undefined 
+                    ? toISODateOrUndefined(changes.offerEnd)
+                    : variant?.offerEnd;
+                
                 return {
                     variantId,
                     offer: offerValue,
-                    offerStart: toISODateOrUndefined(changes.offerStart !== undefined ? changes.offerStart : variant?.offerStart),
-                    offerEnd: toISODateOrUndefined(changes.offerEnd !== undefined ? changes.offerEnd : variant?.offerEnd)
+                    offerStart: offerStartValue,
+                    offerEnd: offerEndValue
                 };
             });
 

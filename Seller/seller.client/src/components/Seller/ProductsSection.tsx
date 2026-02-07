@@ -963,15 +963,25 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                     .map(v => [v.id, v])
             );
             
-            const offerUpdates = Array.from(offerChanges.entries()).map(([variantId, changes]) => {
-                // Get the variant from the map
-                const variant = variantsMap.get(variantId);
-                
-                // If variant not found, skip this update (data may have been refreshed)
-                if (!variant) {
-                    console.warn(`Variant ${variantId} not found in current items`);
-                    return null;
+            // Check for missing variants before proceeding
+            const missingVariantIds: string[] = [];
+            for (const [variantId] of offerChanges.entries()) {
+                if (!variantsMap.has(variantId)) {
+                    missingVariantIds.push(variantId);
                 }
+            }
+            
+            // If any variants are missing, fail the save operation
+            if (missingVariantIds.length > 0) {
+                console.error('Missing variant IDs:', missingVariantIds);
+                showError(t('products.offers.variantsNotFound'));
+                setIsSavingOffers(false);
+                return;
+            }
+            
+            const offerUpdates = Array.from(offerChanges.entries()).map(([variantId, changes]) => {
+                // Get the variant from the map (guaranteed to exist after validation above)
+                const variant = variantsMap.get(variantId)!;
                 
                 // Use changed value or fall back to existing value from variant
                 // Use 'in' operator to distinguish between "not changed" and "explicitly set to undefined"
@@ -992,7 +1002,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                     offerStart: offerStartValue,
                     offerEnd: offerEndValue
                 };
-            }).filter(update => update !== null); // Remove null entries for missing variants
+            });
 
             const batchRequest = {
                 offerUpdates

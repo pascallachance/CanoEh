@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import './Seller.css';
 import ProductsSection from './ProductsSection';
 import type { ProductsSectionRef } from './ProductsSection';
@@ -9,8 +9,6 @@ import CompanySection from './CompanySection';
 import AnalyticsPeriodSelector from './AnalyticsPeriodSelector';
 import { useLanguage } from '../../contexts/LanguageContext';
 import type { PeriodType } from './AnalyticsPeriodSelector';
-import type { AddProductStep1Data } from '../AddProductStep1';
-import type { AddProductStep2Data } from '../AddProductStep2';
 
 type SellerSection = 'analytics' | 'products' | 'orders' | 'company';
 
@@ -47,7 +45,6 @@ interface NavigationState {
 interface SellerProps {
     companies: Company[];
     onLogout: () => void;
-    onEditProduct: (itemId: string, step1Data: AddProductStep1Data, step2Data: AddProductStep2Data, existingVariants: any[]) => void;
     onCompanyUpdate?: (updatedCompany: Company) => void;
 }
 
@@ -61,14 +58,13 @@ interface Company {
     updatedAt?: string;
 }
 
-function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerProps) {
+function Seller({ companies, onLogout, onCompanyUpdate }: SellerProps) {
     const location = useLocation();
     
     const [activeSection, setActiveSection] = useState<SellerSection>(() => getInitialSection(location));
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
     const [isManageOffersDisabled, setIsManageOffersDisabled] = useState(true);
     const { language, setLanguage, t } = useLanguage();
-    const navigate = useNavigate();
     const productsSectionRef = useRef<ProductsSectionRef>(null);
     // Track the last navigation key we processed to avoid reprocessing
     // Empty string ensures first real navigation will always be different
@@ -115,7 +111,6 @@ function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerP
                     companies={companies} 
                     viewMode="list"
                     onViewModeChange={() => {}}
-                    onEditProduct={onEditProduct}
                     onManageOffersStateChange={handleManageOffersStateChange}
                 />;
             case 'orders':
@@ -148,7 +143,7 @@ function Seller({ companies, onLogout, onEditProduct, onCompanyUpdate }: SellerP
                         </button>
                         <button 
                             className="action-button"
-                            onClick={() => navigate('/add-product')}
+                            onClick={() => productsSectionRef.current?.openAddProduct()}
                         >
                             {t('products.addProduct')}
                         </button>

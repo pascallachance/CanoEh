@@ -193,7 +193,7 @@ describe('Home - Image Filtering', () => {
         expect(placeholders?.length).toBe(0);
     });
 
-    it('should show placeholders when no products have images', async () => {
+    it('should show no placeholders when no products have images', async () => {
         // Mock API response with products that have no images
         const mockResponse = {
             isSuccess: true,
@@ -237,12 +237,12 @@ describe('Home - Image Filtering', () => {
             expect(global.fetch).toHaveBeenCalled();
         });
 
-        // When no products have images, should show the default 4 placeholders
+        // When no products have images, should not show any placeholder items
         const recentlyAddedCard = screen.getByText(/Recently added items|Articles récemment ajoutés/).closest('.item-preview-card');
         const placeholders = recentlyAddedCard?.querySelectorAll('.item-placeholder');
         
-        // Should still show 4 placeholder slots
-        expect(placeholders?.length).toBe(4);
+        // Should show no placeholder items when there are no images
+        expect(placeholders?.length).toBe(0);
     });
 
     it('should handle empty imageUrls string correctly', async () => {
@@ -289,11 +289,11 @@ describe('Home - Image Filtering', () => {
             expect(global.fetch).toHaveBeenCalled();
         });
 
-        // Should show placeholders since empty string is not a valid image
+        // Should show no placeholders since empty string is not a valid image
         const recentlyAddedCard = screen.getByText(/Recently added items|Articles récemment ajoutés/).closest('.item-preview-card');
         const placeholders = recentlyAddedCard?.querySelectorAll('.item-placeholder');
         
-        expect(placeholders?.length).toBe(4);
+        expect(placeholders?.length).toBe(0);
     });
 
     it('should handle imageUrls with only whitespace or comma-separated whitespace', async () => {
@@ -340,11 +340,11 @@ describe('Home - Image Filtering', () => {
             expect(global.fetch).toHaveBeenCalled();
         });
 
-        // Should show placeholders since whitespace-only strings are not valid images
+        // Should show no placeholders since whitespace-only strings are not valid images
         const recentlyAddedCard = screen.getByText(/Recently added items|Articles récemment ajoutés/).closest('.item-preview-card');
         const placeholders = recentlyAddedCard?.querySelectorAll('.item-placeholder');
         
-        expect(placeholders?.length).toBe(4);
+        expect(placeholders?.length).toBe(0);
     });
 
     it('should extract first URL from comma-separated imageUrls', async () => {

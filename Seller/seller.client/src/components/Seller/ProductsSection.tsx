@@ -176,8 +176,8 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<ApiItem | null>(null);
     
-    // State for manage offers modal
-    const [showManageOffersModal, setShowManageOffersModal] = useState(false);
+    // State for manage offers (inline mode)
+    const [showManageOffers, setShowManageOffers] = useState(false);
     const [offerChanges, setOfferChanges] = useState<Map<string, { offer?: number; offerStart?: string; offerEnd?: string }>>(new Map());
     const [isSavingOffers, setIsSavingOffers] = useState(false);
     
@@ -192,10 +192,8 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     // Refs for accessibility
     const modalRef = useRef<HTMLDivElement>(null);
     const deleteModalRef = useRef<HTMLDivElement>(null);
-    const manageOffersModalRef = useRef<HTMLDivElement>(null);
     const previousActiveElementForUndelete = useRef<HTMLElement | null>(null);
     const previousActiveElementForDelete = useRef<HTMLElement | null>(null);
-    const previousActiveElementForOffers = useRef<HTMLElement | null>(null);
 
     // Cleanup object URLs on component unmount
     useEffect(() => {
@@ -295,42 +293,6 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
             return () => document.removeEventListener('keydown', handleEscape);
         }
     }, [showDeleteModal]);
-
-    // Accessibility: Focus management for manage offers modal
-    useEffect(() => {
-        if (showManageOffersModal) {
-            previousActiveElementForOffers.current = document.activeElement as HTMLElement;
-            
-            const timer = setTimeout(() => {
-                manageOffersModalRef.current?.focus();
-            }, 100);
-
-            document.body.style.overflow = 'hidden';
-
-            return () => {
-                clearTimeout(timer);
-                document.body.style.overflow = '';
-            };
-        } else if (previousActiveElementForOffers.current) {
-            previousActiveElementForOffers.current.focus();
-            previousActiveElementForOffers.current = null;
-        }
-    }, [showManageOffersModal]);
-
-    // Handle escape key for manage offers modal
-    useEffect(() => {
-        const handleEscape = (event: KeyboardEvent) => {
-            if (event.key === 'Escape' && showManageOffersModal) {
-                setShowManageOffersModal(false);
-                setOfferChanges(new Map());
-            }
-        };
-
-        if (showManageOffersModal) {
-            document.addEventListener('keydown', handleEscape);
-            return () => document.removeEventListener('keydown', handleEscape);
-        }
-    }, [showManageOffersModal]);
 
     // Validation logic for save button
     const isFormInvalid = useMemo(() => {
@@ -901,17 +863,17 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         return completed;
     };
 
-    // Handle opening manage offers modal
+    // Handle opening manage offers inline view
     const handleOpenManageOffers = useCallback(() => {
         void (async () => {
             try {
                 // Refresh data to ensure we show the latest offers
                 await fetchSellerItems();
-                setShowManageOffersModal(true);
+                setShowManageOffers(true);
                 setOfferChanges(new Map());
             } catch (error) {
-                console.error('Error fetching seller items before opening manage offers modal:', error);
-                // Provide user feedback and do not open the modal on failure
+                console.error('Error fetching seller items for manage offers view:', error);
+                // Provide user feedback and do not open on failure
                 showError(t('products.list.error'));
             }
         })();
@@ -933,9 +895,9 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         }
     }, [isLoadingItems, sellerItems.length, onManageOffersStateChange]);
 
-    // Handle closing manage offers modal
+    // Handle closing manage offers
     const handleCloseManageOffers = () => {
-        setShowManageOffersModal(false);
+        setShowManageOffers(false);
         setOfferChanges(new Map());
     };
 
@@ -1016,7 +978,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
             }
             
             showSuccess(t('products.offers.saveSuccess'));
-            setShowManageOffersModal(false);
+            setShowManageOffers(false);
             setOfferChanges(new Map());
             await fetchSellerItems();
         } catch (error) {
@@ -1135,31 +1097,6 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 }
             } else {
                 // Tab
-                if (document.activeElement === lastElement) {
-                    event.preventDefault();
-                    firstElement?.focus();
-                }
-            }
-        }
-    };
-
-    // Focus trapping within manage offers modal
-    const handleManageOffersKeyDown = (event: React.KeyboardEvent) => {
-        if (!showManageOffersModal || !manageOffersModalRef.current) return;
-
-        if (event.key === 'Tab') {
-            const focusableElements = manageOffersModalRef.current.querySelectorAll(
-                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-            );
-            const firstElement = focusableElements[0] as HTMLElement;
-            const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
-
-            if (event.shiftKey) {
-                if (document.activeElement === firstElement) {
-                    event.preventDefault();
-                    lastElement?.focus();
-                }
-            } else {
                 if (document.activeElement === lastElement) {
                     event.preventDefault();
                     firstElement?.focus();
@@ -1976,7 +1913,106 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 </div>
             )}
 
-            {inlineProductMode === 'none' && showListSection && (
+            {/* Show inline manage offers view */}
+            {inlineProductMode === 'none' && showManageOffers && (
+                <div className="products-manage-offers-section">
+                    <h3>{t('products.manageOffers')}</h3>
+                    
+                    <div className="products-offers-container">
+                        {isLoadingItems ? (
+                            <p>{t('products.list.loading')}</p>
+                        ) : sellerItems.length === 0 ? (
+                            <p>{t('products.list.noItems')}</p>
+                        ) : (
+                            <div className="products-offers-table-wrapper">
+                                <table className="products-offers-table">
+                                    <thead>
+                                        <tr>
+                                            <th>{t('products.itemName')}</th>
+                                            <th>{t('products.variant.name')}</th>
+                                            <th>{t('products.offers.offer')} (%)</th>
+                                            <th>{t('products.offers.offerStart')}</th>
+                                            <th>{t('products.offers.offerEnd')}</th>
+                                            <th>{t('products.actions')}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {sellerItems.filter(item => !item.deleted).map(item => {
+                                            const activeVariants = item.variants.filter(v => !v.deleted);
+                                            return activeVariants.map((variant, index) => (
+                                                <tr key={variant.id}>
+                                                    {index === 0 && (
+                                                        <td rowSpan={activeVariants.length}>
+                                                            {getItemName(item)}
+                                                        </td>
+                                                    )}
+                                                    <td>{getVariantName(variant)}</td>
+                                                    <td>
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            max="100"
+                                                            step="0.01"
+                                                            value={getCurrentOffer(variant, 'offer')}
+                                                            onChange={(e) => handleOfferChange(variant.id, 'offer', e.target.value)}
+                                                            className="products-offer-input"
+                                                            placeholder="0-100"
+                                                        />
+                                                    </td>
+                                                    <td>
+                                                        <input
+                                                            type="date"
+                                                            value={getCurrentOffer(variant, 'offerStart')}
+                                                            onChange={(e) => handleOfferChange(variant.id, 'offerStart', e.target.value)}
+                                                            className="products-offer-input"
+                                                        />
+                                                    </td>
+                                                    <td>
+                                                        <input
+                                                            type="date"
+                                                            value={getCurrentOffer(variant, 'offerEnd')}
+                                                            onChange={(e) => handleOfferChange(variant.id, 'offerEnd', e.target.value)}
+                                                            className="products-offer-input"
+                                                        />
+                                                    </td>
+                                                    <td>
+                                                        <button
+                                                            onClick={() => handleClearOffer(variant.id)}
+                                                            className="products-clear-offer-button"
+                                                            title={t('products.offers.clearOffer')}
+                                                        >
+                                                            {t('products.offers.clear')}
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ));
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="products-form-actions">
+                        <button
+                            className="products-action-button products-action-button--cancel"
+                            onClick={handleCloseManageOffers}
+                            disabled={isSavingOffers}
+                        >
+                            {t('common.cancel')}
+                        </button>
+                        <button
+                            className="products-action-button products-action-button--save"
+                            onClick={handleSaveOffers}
+                            disabled={isSavingOffers || offerChanges.size === 0}
+                        >
+                            {isSavingOffers ? t('products.saving') : t('products.offers.save')}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {inlineProductMode === 'none' && !showManageOffers && showListSection && (
                 <div className="products-list-section">
                     {/* Filter and Sort Section */}
                     <div className="products-filter-section">
@@ -2474,121 +2510,6 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                                 aria-label="Confirm delete item"
                             >
                                 {t('products.delete')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Manage Offers Modal */}
-            {showManageOffersModal && (
-                <div 
-                    className="products-modal-overlay"
-                    onClick={(e) => {
-                        if (e.target === e.currentTarget) {
-                            handleCloseManageOffers();
-                        }
-                    }}
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby="manage-offers-modal-title"
-                >
-                    <div 
-                        className="products-modal-content products-modal-content--large"
-                        ref={manageOffersModalRef}
-                        tabIndex={-1}
-                        onKeyDown={handleManageOffersKeyDown}
-                    >
-                        <h3 id="manage-offers-modal-title">{t('products.manageOffers')}</h3>
-                        
-                        <div className="products-offers-container">
-                            {isLoadingItems ? (
-                                <p>{t('products.list.loading')}</p>
-                            ) : sellerItems.length === 0 ? (
-                                <p>{t('products.list.noItems')}</p>
-                            ) : (
-                                <div className="products-offers-table-wrapper">
-                                    <table className="products-offers-table">
-                                        <thead>
-                                            <tr>
-                                                <th>{t('products.itemName')}</th>
-                                                <th>{t('products.variant.name')}</th>
-                                                <th>{t('products.offers.offer')} (%)</th>
-                                                <th>{t('products.offers.offerStart')}</th>
-                                                <th>{t('products.offers.offerEnd')}</th>
-                                                <th>{t('products.actions')}</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {sellerItems.filter(item => !item.deleted).map(item => (
-                                                item.variants.filter(v => !v.deleted).map((variant, index) => (
-                                                    <tr key={variant.id}>
-                                                        {index === 0 && (
-                                                            <td rowSpan={item.variants.filter(v => !v.deleted).length}>
-                                                                {getItemName(item)}
-                                                            </td>
-                                                        )}
-                                                        <td>{getVariantName(variant)}</td>
-                                                        <td>
-                                                            <input
-                                                                type="number"
-                                                                min="0"
-                                                                max="100"
-                                                                step="0.01"
-                                                                value={getCurrentOffer(variant, 'offer')}
-                                                                onChange={(e) => handleOfferChange(variant.id, 'offer', e.target.value)}
-                                                                className="products-offer-input"
-                                                                placeholder="0-100"
-                                                            />
-                                                        </td>
-                                                        <td>
-                                                            <input
-                                                                type="date"
-                                                                value={getCurrentOffer(variant, 'offerStart')}
-                                                                onChange={(e) => handleOfferChange(variant.id, 'offerStart', e.target.value)}
-                                                                className="products-offer-input"
-                                                            />
-                                                        </td>
-                                                        <td>
-                                                            <input
-                                                                type="date"
-                                                                value={getCurrentOffer(variant, 'offerEnd')}
-                                                                onChange={(e) => handleOfferChange(variant.id, 'offerEnd', e.target.value)}
-                                                                className="products-offer-input"
-                                                            />
-                                                        </td>
-                                                        <td>
-                                                            <button
-                                                                onClick={() => handleClearOffer(variant.id)}
-                                                                className="products-clear-offer-button"
-                                                                title={t('products.offers.clearOffer')}
-                                                            >
-                                                                {t('products.offers.clear')}
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="products-modal-actions">
-                            <button
-                                className="products-modal-button products-modal-button--cancel"
-                                onClick={handleCloseManageOffers}
-                                disabled={isSavingOffers}
-                            >
-                                {t('common.cancel')}
-                            </button>
-                            <button
-                                className="products-modal-button products-modal-button--confirm"
-                                onClick={handleSaveOffers}
-                                disabled={isSavingOffers || offerChanges.size === 0}
-                            >
-                                {isSavingOffers ? t('products.saving') : t('products.offers.save')}
                             </button>
                         </div>
                     </div>

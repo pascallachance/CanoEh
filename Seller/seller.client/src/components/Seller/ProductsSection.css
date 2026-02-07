@@ -1205,6 +1205,19 @@
     background: #c82333;
 }
 
+/* Inline Manage Offers Section */
+.products-manage-offers-section {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border: 1px solid #e1e5e9;
+}
+
+.products-manage-offers-section h3 {
+    margin: 0 0 1.5rem 0;
+}
+
 .products-modal-button:disabled {
     background: #6c757d;
     cursor: not-allowed;

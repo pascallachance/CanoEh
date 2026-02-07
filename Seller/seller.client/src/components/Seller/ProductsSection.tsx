@@ -956,11 +956,16 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
 
         try {
             // Prepare batch request with all offer updates
-            const offerUpdates = Array.from(offerChanges.entries()).map(([variantId, changes]) => {
-                // Find the variant to get its current offer value if not changed
-                const variant = sellerItems
+            // Create a map of variantId to variant for efficient lookup
+            const variantsMap = new Map(
+                sellerItems
                     .flatMap(item => item.variants)
-                    .find(v => v.id === variantId);
+                    .map(v => [v.id, v])
+            );
+            
+            const offerUpdates = Array.from(offerChanges.entries()).map(([variantId, changes]) => {
+                // Get the variant from the map
+                const variant = variantsMap.get(variantId);
                 
                 // Use changed value or fall back to existing value from variant
                 // Use 'in' operator to distinguish between "not changed" and "explicitly set to undefined"

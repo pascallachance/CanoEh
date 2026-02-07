@@ -1218,44 +1218,6 @@
     margin: 0 0 1.5rem 0;
 }
 
-/* Form Button Styles */
-.products-form-button {
-    padding: 0.75rem 1.5rem;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.2s;
-}
-
-.products-form-button--save {
-    background: #28a745;
-}
-
-.products-form-button--save:hover:not(:disabled) {
-    background: #218838;
-}
-
-.products-form-button--save:disabled {
-    background: #6c757d;
-    cursor: not-allowed;
-    opacity: 0.65;
-}
-
-.products-form-button--cancel {
-    background: #6c757d;
-}
-
-.products-form-button--cancel:hover:not(:disabled) {
-    background: #5a6268;
-}
-
-.products-form-button--cancel:disabled {
-    cursor: not-allowed;
-    opacity: 0.65;
-}
-
 .products-modal-button:disabled {
     background: #6c757d;
     cursor: not-allowed;

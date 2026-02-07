@@ -1914,7 +1914,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
             )}
 
             {/* Show inline manage offers view */}
-            {showManageOffers && (
+            {inlineProductMode === 'none' && showManageOffers && (
                 <div className="products-manage-offers-section">
                     <h3>{t('products.manageOffers')}</h3>
                     
@@ -1937,11 +1937,12 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {sellerItems.filter(item => !item.deleted).map(item => (
-                                            item.variants.filter(v => !v.deleted).map((variant, index) => (
+                                        {sellerItems.filter(item => !item.deleted).map(item => {
+                                            const activeVariants = item.variants.filter(v => !v.deleted);
+                                            return activeVariants.map((variant, index) => (
                                                 <tr key={variant.id}>
                                                     {index === 0 && (
-                                                        <td rowSpan={item.variants.filter(v => !v.deleted).length}>
+                                                        <td rowSpan={activeVariants.length}>
                                                             {getItemName(item)}
                                                         </td>
                                                     )}
@@ -1984,8 +1985,8 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                                                         </button>
                                                     </td>
                                                 </tr>
-                                            ))
-                                        ))}
+                                            ));
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
@@ -1994,14 +1995,14 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
 
                     <div className="products-form-actions">
                         <button
-                            className="products-form-button products-form-button--cancel"
+                            className="products-action-button products-action-button--cancel"
                             onClick={handleCloseManageOffers}
                             disabled={isSavingOffers}
                         >
                             {t('common.cancel')}
                         </button>
                         <button
-                            className="products-form-button products-form-button--save"
+                            className="products-action-button products-action-button--save"
                             onClick={handleSaveOffers}
                             disabled={isSavingOffers || offerChanges.size === 0}
                         >

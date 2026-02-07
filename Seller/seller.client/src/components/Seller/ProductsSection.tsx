@@ -1573,11 +1573,11 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     return (
         <div className="section-container">
             {/* Show inline add/edit product workflow */}
-            {inlineProductMode !== 'none' && productWorkflowStep === 1 && productStep1Data && (
+            {inlineProductMode !== 'none' && productWorkflowStep === 1 && (
                 <AddProductStep1
                     onNext={handleProductStep1Next}
                     onCancel={handleProductStep1Cancel}
-                    initialData={productStep1Data}
+                    initialData={productStep1Data || undefined}
                     editMode={inlineProductMode === 'edit'}
                     onStepNavigate={handleProductStepNavigate}
                     completedSteps={getCompletedSteps()}

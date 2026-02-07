@@ -1,18 +1,15 @@
 .add-product-step2-container {
-    min-height: 100vh;
     background: linear-gradient(135deg, transparent 0%, transparent 100%);
-    padding: 20px;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 100%;
 }
 
 .add-product-step2-content {
     background: white;
     border-radius: 10px;
     padding: 20px 26px 20px 26px;
-    max-width: 900px;
     width: 100%;
+    box-sizing: border-box;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
     border: 1px solid #e0dede;
 }
@@ -336,10 +333,6 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
-    .add-product-step2-container {
-        padding: 15px;
-    }
-    
     .add-product-step2-content {
         padding: 30px 20px;
     }

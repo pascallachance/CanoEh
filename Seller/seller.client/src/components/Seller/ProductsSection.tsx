@@ -956,12 +956,22 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
 
         try {
             // Prepare batch request with all offer updates
-            const offerUpdates = Array.from(offerChanges.entries()).map(([variantId, changes]) => ({
-                variantId,
-                offer: changes.offer,
-                offerStart: toISODateOrUndefined(changes.offerStart),
-                offerEnd: toISODateOrUndefined(changes.offerEnd)
-            }));
+            const offerUpdates = Array.from(offerChanges.entries()).map(([variantId, changes]) => {
+                // Find the variant to get its current offer value if not changed
+                const variant = sellerItems
+                    .flatMap(item => item.variants)
+                    .find(v => v.id === variantId);
+                
+                // Use changed offer or fall back to existing offer value
+                const offerValue = changes.offer !== undefined ? changes.offer : variant?.offer;
+                
+                return {
+                    variantId,
+                    offer: offerValue,
+                    offerStart: toISODateOrUndefined(changes.offerStart !== undefined ? changes.offerStart : variant?.offerStart),
+                    offerEnd: toISODateOrUndefined(changes.offerEnd !== undefined ? changes.offerEnd : variant?.offerEnd)
+                };
+            });
 
             const batchRequest = {
                 offerUpdates

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
@@ -86,6 +86,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const [offerProductNames, setOfferProductNames] = useState<string[]>([]);
     const [offerPercentages, setOfferPercentages] = useState<number[]>([]);
     const [carouselScrollPosition, setCarouselScrollPosition] = useState<number>(0);
+    const [canScrollNext, setCanScrollNext] = useState<boolean>(false);
+    const carouselRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         // Set language based on user or system settings
@@ -101,18 +103,27 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         fetchSuggestedProducts();
         fetchProductsWithOffers();
 
-        // Add scroll listener to update carousel position without querying the DOM for a specific element
-        const handleScroll = (event: Event) => {
-            const target = event.target as HTMLElement | null;
-            if (target && target.classList.contains('cards-container')) {
-                setCarouselScrollPosition(target.scrollLeft);
+        // Add scroll listener to update carousel position
+        const container = carouselRef.current;
+        const handleScroll = () => {
+            if (container) {
+                const scrollLeft = container.scrollLeft;
+                const maxScrollLeft = container.scrollWidth - container.clientWidth;
+                setCarouselScrollPosition(scrollLeft);
+                setCanScrollNext(scrollLeft < maxScrollLeft - 10);
             }
         };
 
-        document.addEventListener('scroll', handleScroll, true);
+        if (container) {
+            container.addEventListener('scroll', handleScroll);
+            // Initial state check
+            handleScroll();
+        }
 
         return () => {
-            document.removeEventListener('scroll', handleScroll, true);
+            if (container) {
+                container.removeEventListener('scroll', handleScroll);
+            }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthenticated]);
@@ -379,13 +390,13 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     };
 
     const handleCarouselScroll = (direction: 'prev' | 'next') => {
-        const container = document.querySelector('.cards-container') as HTMLElement | null;
+        const container = carouselRef.current;
         if (!container) return;
 
         // Derive scroll amount from actual card width + container gap so it matches responsive breakpoints
         let scrollAmount = 370; // Fallback: original assumed value (card width + gap)
 
-        const firstCard = container.querySelector('.featured-card') as HTMLElement | null;
+        const firstCard = container.querySelector('.item-preview-card') as HTMLElement | null;
         if (firstCard) {
             const containerStyles = window.getComputedStyle(container);
             // Prefer columnGap, fall back to gap; default to 0 if parsing fails
@@ -395,36 +406,21 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         }
 
         const currentScroll = container.scrollLeft;
+        const maxScrollLeft = container.scrollWidth - container.clientWidth;
         const newScroll = direction === 'next'
             ? currentScroll + scrollAmount
             : currentScroll - scrollAmount;
+        const clampedScroll = Math.max(0, Math.min(newScroll, maxScrollLeft));
 
         container.scrollTo({
-            left: newScroll,
+            left: clampedScroll,
             behavior: 'smooth'
         });
 
-        setCarouselScrollPosition(newScroll);
-    };
-
-    export const canScrollNextFor = (
-        scrollLeft: number,
-        scrollWidth: number,
-        clientWidth: number
-    ): boolean => {
-        return scrollLeft < (scrollWidth - clientWidth - 10);
+        // State will be updated by the scroll event listener
     };
 
     const canScrollPrev = carouselScrollPosition > 0;
-    const canScrollNext = () => {
-        const container = document.querySelector('.cards-container') as HTMLElement;
-        if (!container) return false;
-        return canScrollNextFor(
-            container.scrollLeft,
-            container.scrollWidth,
-            container.clientWidth
-        );
-    };
 
     // Get text based on selected language
     const getText = (en: string, fr: string) => language === 'fr' ? fr : en;
@@ -586,7 +582,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                         <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
                     </svg>
                 </button>
-                <div className="cards-container">
+                <div className="cards-container" ref={carouselRef}>
                 <ItemPreviewCard
                     title={getText("Suggested items", "Articles suggérés")}
                     items={suggestedItemsArray}
@@ -648,7 +644,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     type="button"
                     className="carousel-button next"
                     onClick={() => handleCarouselScroll('next')}
-                    disabled={!canScrollNext()}
+                    disabled={!canScrollNext}
                     aria-label={getText("Next cards", "Cartes suivantes")}
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

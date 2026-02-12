@@ -407,11 +407,23 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         setCarouselScrollPosition(newScroll);
     };
 
+    export const canScrollNextFor = (
+        scrollLeft: number,
+        scrollWidth: number,
+        clientWidth: number
+    ): boolean => {
+        return scrollLeft < (scrollWidth - clientWidth - 10);
+    };
+
     const canScrollPrev = carouselScrollPosition > 0;
     const canScrollNext = () => {
         const container = document.querySelector('.cards-container') as HTMLElement;
         if (!container) return false;
-        return container.scrollLeft < (container.scrollWidth - container.clientWidth - 10);
+        return canScrollNextFor(
+            container.scrollLeft,
+            container.scrollWidth,
+            container.clientWidth
+        );
     };
 
     // Get text based on selected language

@@ -303,7 +303,7 @@
     width: calc(4 * 350px + 3 * var(--cards-gap)); /* 4 cards + gaps between them */
     max-width: 100%; /* Don't exceed viewport width */
     margin: 0 auto;
-    box-sizing: border-box; /* Include padding in width calculation */
+    box-sizing: border-box; /* Padding is applied within the width, not added to it */
 }
 
 .cards-container::-webkit-scrollbar {

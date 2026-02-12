@@ -288,7 +288,7 @@
 .cards-container {
     display: flex;
     gap: 20px;
-    overflow-x: hidden;
+    overflow-x: auto;
     scroll-behavior: smooth;
     padding: 0 60px;
 }

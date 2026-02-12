@@ -355,11 +355,6 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         console.log('Search query:', searchQuery);
     };
 
-    const handleNavItemClick = (item: string) => {
-        // TODO: Implement navigation to respective pages
-        console.log('Navigate to:', item);
-    };
-
     const handleCartClick = () => {
         navigate('/cart');
     };
@@ -488,76 +483,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 </button>
             </nav>
 
-            {/* Bottom Navigation Bar */}
-            <nav className="bottom-nav">
-                <button
-                    type="button"
-                    className="nav-item"
-                    onClick={() => handleNavItemClick('category')}
-                >
-                    {getText("Shop by Category", "Magasiner par catégorie")}
-                </button>
-                <button
-                    type="button"
-                    className="nav-item"
-                    onClick={() => handleNavItemClick('province')}
-                >
-                    {getText("Shop by Province", "Magasiner par province")}
-                </button>
-                <button
-                    type="button"
-                    className="nav-item"
-                    onClick={() => handleNavItemClick('bestsellers')}
-                >
-                    {getText("Best Sellers", "Meilleures ventes")}
-                </button>
-                <button
-                    type="button"
-                    className="nav-item"
-                    onClick={() => handleNavItemClick('offers')}
-                >
-                    {getText("Shop Offers", "Offres")}
-                </button>
-                <button
-                    type="button"
-                    className="nav-item"
-                    onClick={() => handleNavItemClick('new')}
-                >
-                    {getText("New Products", "Nouveaux produits")}
-                </button>
-                {isAuthenticated && (
-                    <>
-                        <button
-                            type="button"
-                            className="nav-item"
-                            onClick={() => handleNavItemClick('local')}
-                        >
-                            {getText("Local Products", "Produits locaux")}
-                        </button>
-                        <button
-                            type="button"
-                            className="nav-item"
-                            onClick={() => handleNavItemClick('gifts')}
-                        >
-                            {getText("Gift Ideas", "Idées cadeaux")}
-                        </button>
-                        <button
-                            type="button"
-                            className="nav-item"
-                            onClick={() => handleNavItemClick('history')}
-                        >
-                            {getText("Browsing History", "Historique de navigation")}
-                        </button>
-                        <button
-                            type="button"
-                            className="nav-item"
-                            onClick={() => handleNavItemClick('service')}
-                        >
-                            {getText("Customer Service", "Service client")}
-                        </button>
-                    </>
-                )}
-            </nav>
+
 
             {/* Store Content Container */}
             <div className="store-content">

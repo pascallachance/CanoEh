@@ -659,7 +659,7 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages,
                                 className="item-image"
                                 onError={() => handleImageError(index)}
                             />
-                            {offerPercentages && offerPercentages[index] > 0 && (
+                            {offerPercentages && offerPercentages[index] !== undefined && offerPercentages[index] > 0 && (
                                 <div className="offer-badge">{getOfferText(offerPercentages[index])}</div>
                             )}
                             {itemNames && itemNames[index] && (

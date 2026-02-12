@@ -296,14 +296,14 @@
     gap: var(--cards-gap);
     overflow-x: auto;
     scroll-behavior: smooth;
-    padding: 0 60px;
+    padding: 0 60px; /* 60px left + 60px right = 120px total */
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
     scroll-snap-type: x mandatory;
     width: calc(4 * 350px + 3 * var(--cards-gap)); /* 4 cards + gaps between them */
     max-width: 100%; /* Don't exceed viewport width */
     margin: 0 auto;
-    box-sizing: border-box; /* Padding is applied within the width, not added to it */
+    box-sizing: border-box; /* The 120px padding above is applied within this width */
 }
 
 .cards-container::-webkit-scrollbar {

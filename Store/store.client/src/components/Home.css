@@ -300,8 +300,10 @@
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
     scroll-snap-type: x mandatory;
-    max-width: calc(4 * 350px + 3 * var(--cards-gap) + var(--cards-container-padding)); /* 4 cards + gaps + padding */
+    width: calc(4 * 350px + 3 * var(--cards-gap) + var(--cards-container-padding)); /* 4 cards + gaps + padding */
+    max-width: 100%; /* Don't exceed viewport width */
     margin: 0 auto;
+    box-sizing: content-box; /* Ensure padding doesn't affect width calculation */
 }
 
 .cards-container::-webkit-scrollbar {
@@ -452,7 +454,8 @@
     }
     
     .cards-container {
-        max-width: calc(4 * 300px + 3 * var(--cards-gap) + var(--cards-container-padding)); /* 4 cards + gaps + padding */
+        width: calc(4 * 300px + 3 * var(--cards-gap) + var(--cards-container-padding)); /* 4 cards + gaps + padding */
+        max-width: 100%; /* Don't exceed viewport width */
     }
 }
 
@@ -463,7 +466,8 @@
     }
     
     .cards-container {
-        max-width: calc(4 * 280px + 3 * var(--cards-gap) + var(--cards-container-padding)); /* 4 cards + gaps + padding */
+        width: calc(4 * 280px + 3 * var(--cards-gap) + var(--cards-container-padding)); /* 4 cards + gaps + padding */
+        max-width: 100%; /* Don't exceed viewport width */
     }
 
     .carousel-button {

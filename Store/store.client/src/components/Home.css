@@ -58,53 +58,6 @@
     margin-top: 0;
 }
 
-.top-nav .address {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-    min-width: 0;
-    max-width: 150px;
-    padding: 0 10px;
-    margin-top: 0;
-}
-
-.top-nav .address .location-icon {
-    width: 18px;
-    height: 18px;
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>');
-    background-size: contain;
-    background-repeat: no-repeat;
-    flex-shrink: 0;
-}
-
-.top-nav .address > div {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    line-height: 1.2;
-    min-width: 0;
-}
-
-.top-nav .address > div span:first-child {
-    font-size: 12px;
-    color: #ccc;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-}
-
-.top-nav .address > div span:last-child {
-    font-size: 14px;
-    font-weight: bold;
-    color: white;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-}
-
 .top-nav .search-bar {
     flex: 1 1 auto;
     min-width: 0;
@@ -300,7 +253,8 @@
 
 /* Banner Section */
 .banner-section {
-    padding: 0 80px;
+    padding: 0;
+    width: 100%;
 }
 
 .banner-widget {
@@ -309,6 +263,7 @@
     border-radius: 0;
     color: white;
     text-align: center;
+    width: 100%;
 }
 
 .banner-widget h2 {
@@ -323,12 +278,66 @@
 
 /* Cards Section */
 .cards-section {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    position: relative;
     padding: 20px;
-    max-width: 1400px;
+    max-width: 100%;
     margin: 0 auto;
+    overflow: visible;
+}
+
+.cards-container {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 0 60px;
+}
+
+.carousel-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.carousel-button:hover {
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.carousel-button:focus-visible {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+.carousel-button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.carousel-button.prev {
+    left: 10px;
+}
+
+.carousel-button.next {
+    right: 10px;
+}
+
+.carousel-button svg {
+    width: 24px;
+    height: 24px;
+    fill: #232f3e;
 }
 
 .item-preview-card {
@@ -339,6 +348,8 @@
     cursor: pointer;
     transition: box-shadow 0.2s;
     outline: none;
+    flex: 0 0 350px;
+    min-width: 350px;
 }
 
 .item-preview-card:hover {
@@ -419,14 +430,26 @@
 
 /* Responsive Design */
 @media (max-width: 1200px) {
-    .cards-section {
-        grid-template-columns: repeat(2, 1fr);
+    .item-preview-card {
+        flex: 0 0 300px;
+        min-width: 300px;
     }
 }
 
 @media (max-width: 768px) {
-    .cards-section {
-        grid-template-columns: 1fr;
+    .item-preview-card {
+        flex: 0 0 280px;
+        min-width: 280px;
+    }
+
+    .carousel-button {
+        width: 40px;
+        height: 40px;
+    }
+
+    .carousel-button svg {
+        width: 20px;
+        height: 20px;
     }
 
     .top-nav {

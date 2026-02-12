@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
@@ -77,7 +77,6 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const navigate = useNavigate();
     const [language, setLanguage] = useState<string>('en');
     const [searchQuery, setSearchQuery] = useState<string>('');
-    const [userPostalCode, setUserPostalCode] = useState<string>('');
     const [cartItemsCount, setCartItemsCount] = useState<number>(0);
     const [recentProductImages, setRecentProductImages] = useState<string[]>([]);
     const [suggestedProductImages, setSuggestedProductImages] = useState<string[]>([]);
@@ -86,18 +85,14 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const [offerProductImages, setOfferProductImages] = useState<string[]>([]);
     const [offerProductNames, setOfferProductNames] = useState<string[]>([]);
     const [offerPercentages, setOfferPercentages] = useState<number[]>([]);
+    const [carouselScrollPosition, setCarouselScrollPosition] = useState<number>(0);
+    const [canScrollNext, setCanScrollNext] = useState<boolean>(false);
+    const carouselRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         // Set language based on user or system settings
         const browserLang = navigator.language.toLowerCase();
         setLanguage(browserLang.includes('fr') ? 'fr' : 'en');
-
-        // TODO: Fetch user's postal code from their profile/session data
-        // For now, this is a placeholder that would be replaced with actual API call
-        if (isAuthenticated) {
-            // Example: fetchUserPostalCode().then(code => setUserPostalCode(code));
-            setUserPostalCode(''); // Empty until integrated with user profile API
-        }
 
         // TODO: Fetch cart items count from API/state management
         // For now, this is hardcoded for demonstration
@@ -107,6 +102,29 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         fetchRecentlyAddedProducts();
         fetchSuggestedProducts();
         fetchProductsWithOffers();
+
+        // Add scroll listener to update carousel position
+        const container = carouselRef.current;
+        const handleScroll = () => {
+            if (container) {
+                const scrollLeft = container.scrollLeft;
+                const maxScrollLeft = container.scrollWidth - container.clientWidth;
+                setCarouselScrollPosition(scrollLeft);
+                setCanScrollNext(scrollLeft < maxScrollLeft - 10);
+            }
+        };
+
+        if (container) {
+            container.addEventListener('scroll', handleScroll);
+            // Initial state check
+            handleScroll();
+        }
+
+        return () => {
+            if (container) {
+                container.removeEventListener('scroll', handleScroll);
+            }
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthenticated]);
 
@@ -337,11 +355,6 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         console.log('Search query:', searchQuery);
     };
 
-    const handleLocationClick = () => {
-        // TODO: Implement location update functionality
-        console.log('Update location clicked');
-    };
-
     const handleNavItemClick = (item: string) => {
         // TODO: Implement navigation to respective pages
         console.log('Navigate to:', item);
@@ -376,6 +389,39 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         console.log('Card clicked:', title);
     };
 
+    const handleCarouselScroll = (direction: 'prev' | 'next') => {
+        const container = carouselRef.current;
+        if (!container) return;
+
+        // Derive scroll amount from actual card width + container gap so it matches responsive breakpoints
+        let scrollAmount = 370; // Fallback: original assumed value (card width + gap)
+
+        const firstCard = container.querySelector('.item-preview-card') as HTMLElement | null;
+        if (firstCard) {
+            const containerStyles = window.getComputedStyle(container);
+            // Prefer columnGap, fall back to gap; default to 0 if parsing fails
+            const gapValue = containerStyles.columnGap || containerStyles.gap || '0';
+            const gap = parseFloat(gapValue) || 0;
+            scrollAmount = firstCard.offsetWidth + gap;
+        }
+
+        const currentScroll = container.scrollLeft;
+        const maxScrollLeft = container.scrollWidth - container.clientWidth;
+        const newScroll = direction === 'next'
+            ? currentScroll + scrollAmount
+            : currentScroll - scrollAmount;
+        const clampedScroll = Math.max(0, Math.min(newScroll, maxScrollLeft));
+
+        container.scrollTo({
+            left: clampedScroll,
+            behavior: 'smooth'
+        });
+
+        // State will be updated by the scroll event listener
+    };
+
+    const canScrollPrev = carouselScrollPosition > 0;
+
     // Get text based on selected language
     const getText = (en: string, fr: string) => language === 'fr' ? fr : en;
 
@@ -390,22 +436,6 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     aria-label={getText("Go to home page", "Aller à la page d'accueil")}
                 >
                     CanoEh!
-                </button>
-                <button
-                    type="button"
-                    className="nav-item address"
-                    onClick={handleLocationClick}
-                    aria-label={getText("Update location", "Mettre à jour l'emplacement")}
-                >
-                    <div className="location-icon"></div>
-                    <div>
-                        <span>
-                            {getText("Deliver to", "Livrer à")}
-                        </span>
-                        <span>
-                            {isAuthenticated && userPostalCode ? userPostalCode : getText("Update location", "Mettre à jour l'emplacement")}
-                        </span>
-                    </div>
                 </button>
                 <form className="nav-item search-bar" onSubmit={handleSearchSubmit}>
                     <div className="nav-search-field">
@@ -541,6 +571,18 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
                 {/* Cards Section */}
                 <section className="cards-section">
+                <button
+                    type="button"
+                    className="carousel-button prev"
+                    onClick={() => handleCarouselScroll('prev')}
+                    disabled={!canScrollPrev}
+                    aria-label={getText("Previous cards", "Cartes précédentes")}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                    </svg>
+                </button>
+                <div className="cards-container" ref={carouselRef}>
                 <ItemPreviewCard
                     title={getText("Suggested items", "Articles suggérés")}
                     items={suggestedItemsArray}
@@ -597,6 +639,18 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                         />
                     </>
                 )}
+                </div>
+                <button
+                    type="button"
+                    className="carousel-button next"
+                    onClick={() => handleCarouselScroll('next')}
+                    disabled={!canScrollNext}
+                    aria-label={getText("Next cards", "Cartes suivantes")}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                    </svg>
+                </button>
                 </section>
             </div>
 

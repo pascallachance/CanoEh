@@ -264,6 +264,7 @@
     color: white;
     text-align: center;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .banner-widget h2 {
@@ -293,6 +294,7 @@
     padding: 0 60px;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
+    scroll-snap-type: x mandatory;
 }
 
 .cards-container::-webkit-scrollbar {

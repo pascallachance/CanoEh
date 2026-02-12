@@ -483,8 +483,6 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 </button>
             </nav>
 
-
-
             {/* Store Content Container */}
             <div className="store-content">
                 {/* Page Content Section - Banner */}

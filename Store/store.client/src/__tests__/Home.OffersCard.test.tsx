@@ -152,10 +152,10 @@ describe('Home - Offers Card', () => {
         const offerBadges = offersCard?.querySelectorAll('.offer-badge');
         expect(offerBadges?.length).toBe(2);
 
-        // Verify offer percentages are correct
+        // Verify offer percentages are correct (check for both English and French formats)
         const badgeTexts = Array.from(offerBadges || []).map(badge => badge.textContent || '');
-        expect(badgeTexts).toContain('25% OFF');
-        expect(badgeTexts).toContain('50% OFF');
+        expect(badgeTexts.some(text => text === '25% OFF' || text === 'Rabais 25%')).toBe(true);
+        expect(badgeTexts.some(text => text === '50% OFF' || text === 'Rabais 50%')).toBe(true);
 
         // Check that product names are displayed
         const itemNames = offersCard?.querySelectorAll('.item-name');

@@ -1,3 +1,8 @@
+:root {
+    --cards-gap: 20px;
+    --cards-container-padding: 120px; /* 60px left + 60px right padding */
+}
+
 .home-container {
     width: 100%;
     min-height: 100vh;
@@ -288,13 +293,15 @@
 
 .cards-container {
     display: flex;
-    gap: 20px;
+    gap: var(--cards-gap);
     overflow-x: auto;
     scroll-behavior: smooth;
     padding: 0 60px;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
     scroll-snap-type: x mandatory;
+    max-width: calc(4 * 350px + 3 * var(--cards-gap) + var(--cards-container-padding)); /* 4 cards + gaps + padding */
+    margin: 0 auto;
 }
 
 .cards-container::-webkit-scrollbar {
@@ -443,12 +450,20 @@
         flex: 0 0 300px;
         min-width: 300px;
     }
+    
+    .cards-container {
+        max-width: calc(4 * 300px + 3 * var(--cards-gap) + var(--cards-container-padding)); /* 4 cards + gaps + padding */
+    }
 }
 
 @media (max-width: 768px) {
     .item-preview-card {
         flex: 0 0 280px;
         min-width: 280px;
+    }
+    
+    .cards-container {
+        max-width: calc(4 * 280px + 3 * var(--cards-gap) + var(--cards-container-padding)); /* 4 cards + gaps + padding */
     }
 
     .carousel-button {

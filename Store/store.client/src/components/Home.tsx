@@ -101,22 +101,18 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         fetchSuggestedProducts();
         fetchProductsWithOffers();
 
-        // Add scroll listener to update carousel position
-        const container = document.querySelector('.cards-container') as HTMLElement;
-        const handleScroll = () => {
-            if (container) {
-                setCarouselScrollPosition(container.scrollLeft);
+        // Add scroll listener to update carousel position without querying the DOM for a specific element
+        const handleScroll = (event: Event) => {
+            const target = event.target as HTMLElement | null;
+            if (target && target.classList.contains('cards-container')) {
+                setCarouselScrollPosition(target.scrollLeft);
             }
         };
 
-        if (container) {
-            container.addEventListener('scroll', handleScroll);
-        }
+        document.addEventListener('scroll', handleScroll, true);
 
         return () => {
-            if (container) {
-                container.removeEventListener('scroll', handleScroll);
-            }
+            document.removeEventListener('scroll', handleScroll, true);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthenticated]);

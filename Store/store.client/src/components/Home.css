@@ -295,6 +295,8 @@
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
     scroll-snap-type: x mandatory;
+    max-width: calc(4 * 350px + 3 * 20px + 120px); /* 4 cards + gaps + padding */
+    margin: 0 auto;
 }
 
 .cards-container::-webkit-scrollbar {
@@ -443,12 +445,20 @@
         flex: 0 0 300px;
         min-width: 300px;
     }
+    
+    .cards-container {
+        max-width: calc(4 * 300px + 3 * 20px + 120px); /* 4 cards + gaps + padding */
+    }
 }
 
 @media (max-width: 768px) {
     .item-preview-card {
         flex: 0 0 280px;
         min-width: 280px;
+    }
+    
+    .cards-container {
+        max-width: calc(4 * 280px + 3 * 20px + 120px); /* 4 cards + gaps + padding */
     }
 
     .carousel-button {

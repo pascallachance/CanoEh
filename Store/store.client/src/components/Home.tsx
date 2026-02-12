@@ -383,13 +383,24 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     };
 
     const handleCarouselScroll = (direction: 'prev' | 'next') => {
-        const container = document.querySelector('.cards-container') as HTMLElement;
+        const container = document.querySelector('.cards-container') as HTMLElement | null;
         if (!container) return;
 
-        const scrollAmount = 370; // Card width (350px) + gap (20px)
+        // Derive scroll amount from actual card width + container gap so it matches responsive breakpoints
+        let scrollAmount = 370; // Fallback: original assumed value (card width + gap)
+
+        const firstCard = container.querySelector('.featured-card') as HTMLElement | null;
+        if (firstCard) {
+            const containerStyles = window.getComputedStyle(container);
+            // Prefer columnGap, fall back to gap; default to 0 if parsing fails
+            const gapValue = containerStyles.columnGap || containerStyles.gap || '0';
+            const gap = parseFloat(gapValue) || 0;
+            scrollAmount = firstCard.offsetWidth + gap;
+        }
+
         const currentScroll = container.scrollLeft;
-        const newScroll = direction === 'next' 
-            ? currentScroll + scrollAmount 
+        const newScroll = direction === 'next'
+            ? currentScroll + scrollAmount
             : currentScroll - scrollAmount;
 
         container.scrollTo({

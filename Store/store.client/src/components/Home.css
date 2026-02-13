@@ -302,6 +302,7 @@
     scroll-snap-type: x mandatory;
     scroll-padding: 0 60px; /* Ensure snap points account for padding */
     width: 100%; /* Allow full width */
+    max-width: 1580px; /* Limit to 4 cards: (4 * 350px) + (3 * 20px gap) + (120px padding) = 1580px */
     margin: 0 auto;
     box-sizing: border-box;
 }
@@ -458,12 +459,20 @@
         flex: 0 0 300px;
         min-width: 300px;
     }
+    
+    .cards-container {
+        max-width: 1380px; /* Limit to 4 cards: (4 * 300px) + (3 * 20px gap) + (120px padding) = 1380px */
+    }
 }
 
 @media (max-width: 768px) {
     .item-preview-card {
         flex: 0 0 280px;
         min-width: 280px;
+    }
+
+    .cards-container {
+        max-width: 1300px; /* Limit to 4 cards: (4 * 280px) + (3 * 20px gap) + (120px padding) = 1300px */
     }
 
     .carousel-button {

@@ -1,6 +1,10 @@
 :root {
     --cards-gap: 20px;
     --cards-container-padding: 120px; /* 60px left + 60px right padding */
+    --card-width: 350px;
+    --cards-visible-count: 4;
+    /* Calculate max-width to show exactly 4 cards: (4 * 350px) + (3 * 20px gap) + 120px padding */
+    --cards-container-max-width: calc((var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap)) + var(--cards-container-padding));
 }
 
 .home-container {
@@ -286,7 +290,7 @@
 .cards-section {
     position: relative;
     padding: 20px;
-    max-width: 100%;
+    max-width: var(--cards-container-max-width); /* Constrain to same width as container for button alignment */
     margin: 0 auto;
     overflow: visible;
 }
@@ -302,6 +306,7 @@
     scroll-snap-type: x mandatory;
     scroll-padding: 0 60px; /* Ensure snap points account for padding */
     width: 100%; /* Allow full width */
+    max-width: var(--cards-container-max-width); /* Limit to 4 cards using CSS variables */
     margin: 0 auto;
     box-sizing: border-box;
 }
@@ -365,8 +370,8 @@
     cursor: pointer;
     transition: box-shadow 0.2s;
     outline: none;
-    flex: 0 0 350px;
-    min-width: 350px;
+    flex: 0 0 var(--card-width);
+    min-width: var(--card-width);
     scroll-snap-align: start; /* Snap to start of each card */
 }
 
@@ -454,16 +459,24 @@
 
 /* Responsive Design */
 @media (max-width: 1200px) {
+    :root {
+        --card-width: 300px;
+    }
+    
     .item-preview-card {
-        flex: 0 0 300px;
-        min-width: 300px;
+        flex: 0 0 var(--card-width);
+        min-width: var(--card-width);
     }
 }
 
 @media (max-width: 768px) {
+    :root {
+        --card-width: 280px;
+    }
+    
     .item-preview-card {
-        flex: 0 0 280px;
-        min-width: 280px;
+        flex: 0 0 var(--card-width);
+        min-width: var(--card-width);
     }
 
     .carousel-button {

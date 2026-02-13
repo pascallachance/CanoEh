@@ -368,9 +368,14 @@
     flex: 0 0 350px;
     min-width: 350px;
     scroll-snap-align: start; /* Snap to start of each card */
-    scroll-snap-stop: always; /* Ensure cards don't get partially visible */
 }
 
+/* Progressive enhancement: only apply scroll-snap-stop in browsers that support it */
+@supports (scroll-snap-stop: always) {
+    .item-preview-card {
+        scroll-snap-stop: always; /* Help prevent cards from stopping partially visible */
+    }
+}
 .item-preview-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }

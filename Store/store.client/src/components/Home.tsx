@@ -85,6 +85,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const [offerProductImages, setOfferProductImages] = useState<string[]>([]);
     const [offerProductNames, setOfferProductNames] = useState<string[]>([]);
     const [offerPercentages, setOfferPercentages] = useState<number[]>([]);
+    const [suggestedOfferPercentages, setSuggestedOfferPercentages] = useState<number[]>([]);
+    const [recentOfferPercentages, setRecentOfferPercentages] = useState<number[]>([]);
     const [carouselScrollPosition, setCarouselScrollPosition] = useState<number>(0);
     const [canScrollNext, setCanScrollNext] = useState<boolean>(false);
     const carouselRef = useRef<HTMLDivElement>(null);
@@ -148,6 +150,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 // Extract images from products, but only include products that have valid images
                 const images: string[] = [];
                 const names: string[] = [];
+                const offers: number[] = [];
                 for (const product of result.value) {
                     // Stop if we already have enough images
                     if (images.length >= RECENT_ITEMS_DISPLAY_COUNT) {
@@ -179,11 +182,14 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                             // Get product name based on language preference
                             const productName = language === 'fr' ? product.name_fr : product.name_en;
                             names.push(productName);
+                            // Extract offer percentage if available
+                            offers.push(firstVariant.offer || 0);
                         }
                     }
                 }
                 setRecentProductImages(images);
                 setRecentProductNames(names);
+                setRecentOfferPercentages(offers);
             }
         } catch (error) {
             console.error('Error fetching recently added products:', error);
@@ -209,6 +215,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 // Extract the first image from each product
                 const images: string[] = [];
                 const names: string[] = [];
+                const offers: number[] = [];
                 for (const product of result.value) {
                     if (product.variants && product.variants.length > 0) {
                         const firstVariant: ItemVariantDto = product.variants[0];
@@ -234,11 +241,14 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                             // Get product name based on language preference
                             const productName = language === 'fr' ? product.name_fr : product.name_en;
                             names.push(productName);
+                            // Extract offer percentage if available
+                            offers.push(firstVariant.offer || 0);
                         }
                     }
                 }
                 setSuggestedProductImages(images);
                 setSuggestedProductNames(names);
+                setSuggestedOfferPercentages(offers);
             }
         } catch (error) {
             console.error('Error fetching suggested products:', error);
@@ -513,6 +523,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     items={suggestedItemsArray}
                     imageUrls={suggestedProductImages}
                     itemNames={suggestedProductNames}
+                    offerPercentages={suggestedOfferPercentages}
+                    language={language}
                     onClick={() => handleCardClick('suggested')}
                 />
                 <ItemPreviewCard
@@ -521,6 +533,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     imageUrls={offerProductImages}
                     itemNames={offerProductNames}
                     offerPercentages={offerPercentages}
+                    language={language}
                     onClick={() => handleCardClick('offers')}
                 />
                 <ItemPreviewCard
@@ -543,6 +556,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     items={recentItemsArray}
                     imageUrls={recentProductImages}
                     itemNames={recentProductNames}
+                    offerPercentages={recentOfferPercentages}
+                    language={language}
                     onClick={() => handleCardClick('recentlyadded')}
                 />
                 {isAuthenticated && (
@@ -593,10 +608,11 @@ interface ItemPreviewCardProps {
     imageUrls?: string[];
     itemNames?: string[];
     offerPercentages?: number[];
+    language?: string;
     onClick?: () => void;
 }
 
-function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages, onClick }: ItemPreviewCardProps) {
+function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages, language = 'en', onClick }: ItemPreviewCardProps) {
     const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -608,6 +624,11 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages,
 
     const handleImageError = (index: number) => {
         setImageErrors((prev) => new Set(prev).add(index));
+    };
+
+    // Helper to get translated text for offer badges
+    const getOfferText = (percentage: number) => {
+        return language === 'fr' ? `Rabais ${percentage}%` : `${percentage}% OFF`;
     };
 
     return (
@@ -638,8 +659,8 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages,
                                 className="item-image"
                                 onError={() => handleImageError(index)}
                             />
-                            {offerPercentages && offerPercentages[index] !== undefined && (
-                                <div className="offer-badge">{offerPercentages[index]}% OFF</div>
+                            {offerPercentages && offerPercentages[index] !== undefined && offerPercentages[index] > 0 && (
+                                <div className="offer-badge">{getOfferText(offerPercentages[index])}</div>
                             )}
                             {itemNames && itemNames[index] && (
                                 <div className="item-name">{itemNames[index]}</div>

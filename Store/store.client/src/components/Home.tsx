@@ -398,18 +398,9 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         const container = carouselRef.current;
         if (!container) return;
 
-        // Derive scroll amount from actual card width + container gap so it matches responsive breakpoints
-        let scrollAmount = 4 * 350 + 3 * 20; // Fallback: scroll by 4 cards (4 * card width + 3 * gap)
-
-        const firstCard = container.querySelector('.item-preview-card') as HTMLElement | null;
-        if (firstCard) {
-            const containerStyles = window.getComputedStyle(container);
-            // Prefer columnGap, fall back to gap; default to 0 if parsing fails
-            const gapValue = containerStyles.columnGap || containerStyles.gap || '0';
-            const gap = parseFloat(gapValue) || 0;
-            // Scroll by 4 cards: 4 * card width + 3 * gap (3 gaps between 4 cards)
-            scrollAmount = 4 * firstCard.offsetWidth + 3 * gap;
-        }
+        // Scroll by the visible width of the container (one "page" of content)
+        // This accounts for the container's padding via clientWidth
+        const scrollAmount = container.clientWidth;
 
         const currentScroll = container.scrollLeft;
         const maxScrollLeft = container.scrollWidth - container.clientWidth;

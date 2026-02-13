@@ -300,10 +300,10 @@
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
     scroll-snap-type: x mandatory;
-    width: calc(4 * 350px + 3 * var(--cards-gap) + var(--cards-container-padding)); /* 4 cards + gaps + total horizontal padding */
-    max-width: 100%; /* Don't exceed viewport width */
+    scroll-padding: 0 60px; /* Ensure snap points account for padding */
+    width: 100%; /* Allow full width */
     margin: 0 auto;
-    box-sizing: border-box; /* The 120px padding is included in the width calculation */
+    box-sizing: border-box;
 }
 
 .cards-container::-webkit-scrollbar {
@@ -370,6 +370,12 @@
     scroll-snap-align: start; /* Snap to start of each card */
 }
 
+/* Progressive enhancement: only apply scroll-snap-stop in browsers that support it */
+@supports (scroll-snap-stop: always) {
+    .item-preview-card {
+        scroll-snap-stop: always; /* Help prevent cards from stopping partially visible */
+    }
+}
 .item-preview-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -452,22 +458,12 @@
         flex: 0 0 300px;
         min-width: 300px;
     }
-    
-    .cards-container {
-        width: calc(4 * 300px + 3 * var(--cards-gap) + var(--cards-container-padding)); /* 4 cards + gaps + container padding */
-        max-width: 100%; /* Don't exceed viewport width */
-    }
 }
 
 @media (max-width: 768px) {
     .item-preview-card {
         flex: 0 0 280px;
         min-width: 280px;
-    }
-    
-    .cards-container {
-        width: calc(4 * 280px + 3 * var(--cards-gap) + var(--cards-container-padding)); /* 4 cards + gaps + container padding */
-        max-width: 100%; /* Don't exceed viewport width */
     }
 
     .carousel-button {

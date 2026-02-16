@@ -313,8 +313,10 @@
     -ms-overflow-style: none; /* IE and Edge */
     scroll-snap-type: x mandatory;
     scroll-padding: 0;
-    width: var(--visible-cards-width);
-    flex-shrink: 0;
+    max-width: var(--visible-cards-width);
+    width: 100%;
+    flex: 1;
+    min-width: 0;
     box-sizing: border-box;
     order: 1; /* Center between prev (0) and next (2) buttons */
 }
@@ -468,12 +470,14 @@
 @media (max-width: 1200px) {
     :root {
         --card-width: 300px;
+        --cards-visible-count: 3;
     }
 }
 
 @media (max-width: 768px) {
     :root {
         --card-width: 280px;
+        --cards-visible-count: 2;
         --carousel-button-width: 40px;
     }
 
@@ -493,6 +497,15 @@
 
     .bottom-nav {
         overflow-x: scroll;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --card-width: 250px;
+        --cards-visible-count: 1;
+        --carousel-button-width: 36px;
+        --carousel-gap: 8px;
     }
 }
 

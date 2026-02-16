@@ -4,11 +4,11 @@
     --cards-visible-count: 4;
     --carousel-button-width: 50px;
     --carousel-gap: 10px;
-    /* Calculate cards-container width to fit exactly 4 cards with gaps */
-    --cards-container-width: calc((var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap)));
-    /* Calculate cards-section max-width to fit buttons + gaps + cards-container:
-       2 buttons (50px each) + 2 gaps between buttons and cards-container (10px each) + cards-container (1460px) */
-    --cards-container-max-width: calc((2 * var(--carousel-button-width)) + (2 * var(--carousel-gap)) + var(--cards-container-width));
+    /* Calculate visible cards area width to fit exactly 4 cards with gaps */
+    --visible-cards-width: calc((var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap)));
+    /* Calculate cards-section max-width to fit buttons + gaps + visible cards area:
+       2 buttons (50px each) + 2 gaps between buttons and cards-container (10px each) + visible cards area (1460px) */
+    --cards-section-max-width: calc((2 * var(--carousel-button-width)) + (2 * var(--carousel-gap)) + var(--visible-cards-width));
 }
 
 .home-container {
@@ -295,7 +295,7 @@
     position: relative;
     padding: 20px 0;
     width: 100%;
-    max-width: var(--cards-container-max-width);
+    max-width: var(--cards-section-max-width);
     margin: 0;
     overflow: visible;
     display: flex;
@@ -313,8 +313,8 @@
     -ms-overflow-style: none; /* IE and Edge */
     scroll-snap-type: x mandatory;
     scroll-padding: 0;
-    width: var(--cards-container-width);
-    max-width: var(--cards-container-width);
+    width: var(--visible-cards-width);
+    max-width: var(--visible-cards-width);
     flex-shrink: 0;
     box-sizing: border-box;
     order: 1;

@@ -27,7 +27,6 @@
     border: none;
     padding: 0;
     margin: 0;
-    max-width: var(--cards-section-max-width);
     width: 100%;
     box-sizing: border-box;
 }
@@ -272,6 +271,8 @@
     padding: 0;
     width: 100%;
     margin: 0;
+    display: flex;
+    justify-content: center;
 }
 
 .banner-widget {
@@ -298,7 +299,7 @@
 /* Cards Section */
 .cards-section {
     position: relative;
-    padding: 20px 0;
+    padding: 20px 20px;
     width: 100%;
     margin: 0;
     overflow: visible;
@@ -320,9 +321,9 @@
     -ms-overflow-style: none; /* IE and Edge */
     scroll-snap-type: x mandatory;
     scroll-padding: 0;
-    width: min(var(--visible-cards-width), 100%);
+    width: var(--visible-cards-width);
     max-width: 100%;
-    flex: 0 1 var(--visible-cards-width);
+    flex: 0 0 auto;
     min-width: 0;
     box-sizing: border-box;
     order: 1; /* Center between prev (0) and next (2) buttons */

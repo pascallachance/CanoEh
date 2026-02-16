@@ -305,8 +305,8 @@
     -ms-overflow-style: none; /* IE and Edge */
     scroll-snap-type: x mandatory;
     scroll-padding: 0 60px; /* Ensure snap points account for padding */
-    width: 100%; /* Allow full width */
-    max-width: var(--cards-container-max-width); /* Limit to 4 cards using CSS variables */
+    width: var(--cards-container-max-width); /* Fixed width to show exactly 4 cards */
+    max-width: 100%; /* Don't exceed viewport width */
     margin: 0 auto;
     box-sizing: border-box;
 }

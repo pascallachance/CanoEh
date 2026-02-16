@@ -398,9 +398,14 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         const container = carouselRef.current;
         if (!container) return;
 
-        // Scroll by the visible width of the container (one "page" of content)
-        // This accounts for the container's padding via clientWidth
-        const scrollAmount = container.clientWidth;
+        // Get card width from CSS variable (responsive to screen size)
+        const computedStyle = getComputedStyle(container);
+        const cardWidth = parseInt(computedStyle.getPropertyValue('--card-width')) || 350;
+        const gap = parseInt(computedStyle.getPropertyValue('--cards-gap')) || 20;
+        const cardsPerPage = parseInt(computedStyle.getPropertyValue('--cards-visible-count')) || 4;
+        
+        // Calculate exact scroll amount for one page of cards
+        const scrollAmount = (cardsPerPage * cardWidth) + ((cardsPerPage - 1) * gap);
 
         const currentScroll = container.scrollLeft;
         const maxScrollLeft = container.scrollWidth - container.clientWidth;

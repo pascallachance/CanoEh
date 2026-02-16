@@ -317,8 +317,10 @@
     -ms-overflow-style: none; /* IE and Edge */
     scroll-snap-type: x mandatory;
     scroll-padding: 0;
-    width: var(--visible-cards-width);
-    flex: 0 0 var(--visible-cards-width);
+    width: min(var(--visible-cards-width), 100%);
+    max-width: 100%;
+    flex: 0 1 var(--visible-cards-width);
+    min-width: 0;
     box-sizing: border-box;
     order: 1; /* Center between prev (0) and next (2) buttons */
 }

@@ -412,7 +412,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         const maxScrollLeft = container.scrollWidth - container.clientWidth;
         
         // Calculate new position: move by full page increments
-        let newScroll;
+        let newScroll: number;
         if (direction === 'next') {
             // Move forward by one full page
             newScroll = currentScroll + scrollAmount;

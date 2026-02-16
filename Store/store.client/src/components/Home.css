@@ -294,7 +294,7 @@
     padding: 20px 0;
     width: 100%;
     max-width: var(--cards-container-max-width);
-    margin: 0 auto;
+    margin: 0;
     overflow: visible;
     display: flex;
     align-items: center;
@@ -311,8 +311,9 @@
     -ms-overflow-style: none; /* IE and Edge */
     scroll-snap-type: x mandatory;
     scroll-padding: 0;
-    flex: 1;
-    min-width: 0;
+    width: calc((var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap)));
+    max-width: calc((var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap)));
+    flex-shrink: 0;
     box-sizing: border-box;
 }
 

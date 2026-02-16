@@ -290,7 +290,7 @@
 .cards-section {
     position: relative;
     padding: 20px;
-    max-width: var(--cards-container-max-width); /* Constrain to same width as container for button alignment */
+    width: 100%; /* Expand to full screen width for responsive display */
     margin: 0 auto;
     overflow: visible;
 }
@@ -305,8 +305,7 @@
     -ms-overflow-style: none; /* IE and Edge */
     scroll-snap-type: x mandatory;
     scroll-padding: 0 60px; /* Ensure snap points account for padding */
-    width: var(--cards-container-max-width); /* Fixed width to show exactly 4 cards */
-    max-width: 100%; /* Don't exceed viewport width */
+    width: 100%; /* Allow cards to fill available width for responsive display */
     margin: 0 auto;
     box-sizing: border-box;
 }

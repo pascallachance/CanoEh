@@ -329,8 +329,8 @@
     background-color: rgba(255, 255, 255, 0.95);
     border: 1px solid #ddd;
     border-radius: 50%;
-    width: 50px;
-    height: 50px;
+    width: var(--carousel-button-width);
+    height: var(--carousel-button-width);
     flex-shrink: 0;
     display: flex;
     align-items: center;

@@ -1,10 +1,14 @@
 :root {
     --cards-gap: 20px;
-    --cards-container-padding: 120px; /* 60px left + 60px right padding */
     --card-width: 350px;
     --cards-visible-count: 4;
-    /* Calculate max-width to show exactly 4 cards: (4 * 350px) + (3 * 20px gap) + 120px padding */
-    --cards-container-max-width: calc((var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap)) + var(--cards-container-padding));
+    --carousel-button-width: 50px;
+    --carousel-gap: 10px;
+    /* Calculate visible cards area width to fit exactly 4 cards with gaps */
+    --visible-cards-width: calc((var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap)));
+    /* Calculate cards-section max-width to fit buttons + gaps + visible cards area:
+       2 buttons (50px each) + 2 gaps between buttons and cards-container (10px each) + visible cards area (var(--visible-cards-width)) */
+    --cards-section-max-width: calc((2 * var(--carousel-button-width)) + (2 * var(--carousel-gap)) + var(--visible-cards-width));
 }
 
 .home-container {
@@ -291,9 +295,12 @@
     position: relative;
     padding: 20px 0;
     width: 100%;
-    max-width: var(--cards-container-max-width);
-    margin: 0 auto;
+    max-width: var(--cards-section-max-width);
+    margin: 0;
     overflow: visible;
+    display: flex;
+    align-items: center;
+    gap: var(--carousel-gap);
 }
 
 .cards-container {
@@ -301,14 +308,17 @@
     gap: var(--cards-gap);
     overflow-x: auto;
     scroll-behavior: smooth;
-    padding: 0 60px; /* 60px left + 60px right = 120px total */
+    padding: 0;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
     scroll-snap-type: x mandatory;
-    scroll-padding: 0 60px; /* Ensure snap points account for padding */
-    width: 100%; /* Allow cards to fill available width for responsive display */
-    margin: 0 auto;
+    scroll-padding: 0;
+    max-width: var(--visible-cards-width);
+    width: 100%;
+    flex: 1;
+    min-width: 0;
     box-sizing: border-box;
+    order: 1; /* Center between prev (0) and next (2) buttons */
 }
 
 .cards-container::-webkit-scrollbar {
@@ -316,14 +326,13 @@
 }
 
 .carousel-button {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
+    position: static;
     background-color: rgba(255, 255, 255, 0.95);
     border: 1px solid #ddd;
     border-radius: 50%;
-    width: 50px;
-    height: 50px;
+    width: var(--carousel-button-width);
+    height: var(--carousel-button-width);
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -349,11 +358,11 @@
 }
 
 .carousel-button.prev {
-    left: 5px;
+    order: 0; /* Left button */
 }
 
 .carousel-button.next {
-    right: 5px;
+    order: 2; /* Right button */
 }
 
 .carousel-button svg {
@@ -461,27 +470,20 @@
 @media (max-width: 1200px) {
     :root {
         --card-width: 300px;
-    }
-    
-    .item-preview-card {
-        flex: 0 0 var(--card-width);
-        min-width: var(--card-width);
+        --cards-visible-count: 3;
     }
 }
 
 @media (max-width: 768px) {
     :root {
         --card-width: 280px;
-    }
-    
-    .item-preview-card {
-        flex: 0 0 var(--card-width);
-        min-width: var(--card-width);
+        --cards-visible-count: 2;
+        --carousel-button-width: 40px;
     }
 
     .carousel-button {
-        width: 40px;
-        height: 40px;
+        width: var(--carousel-button-width);
+        height: var(--carousel-button-width);
     }
 
     .carousel-button svg {
@@ -495,6 +497,15 @@
 
     .bottom-nav {
         overflow-x: scroll;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --card-width: 250px;
+        --cards-visible-count: 1;
+        --carousel-button-width: 36px;
+        --carousel-gap: 8px;
     }
 }
 

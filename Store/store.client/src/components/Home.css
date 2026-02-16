@@ -314,7 +314,6 @@
     scroll-snap-type: x mandatory;
     scroll-padding: 0;
     width: var(--visible-cards-width);
-    max-width: var(--visible-cards-width);
     flex-shrink: 0;
     box-sizing: border-box;
     order: 1;

@@ -5,7 +5,7 @@
     --carousel-button-width: 50px;
     --carousel-gap: 10px;
     /* Calculate max-width to fit exactly 4 cards plus buttons and gaps:
-       2 buttons (50px each) + 2 gaps between buttons and container (10px each) + 4 cards (350px each) + 3 gaps between cards (20px each) */
+       2 buttons (50px each) + 2 gaps between buttons and cards-container (10px each) + 4 cards (350px each) + 3 gaps between cards (20px each) */
     --cards-container-max-width: calc((2 * var(--carousel-button-width)) + (2 * var(--carousel-gap)) + (var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap)));
 }
 
@@ -298,7 +298,7 @@
     overflow: visible;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--carousel-gap);
 }
 
 .cards-container {

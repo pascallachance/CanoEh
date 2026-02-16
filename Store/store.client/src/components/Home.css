@@ -315,6 +315,7 @@
     max-width: calc((var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap)));
     flex-shrink: 0;
     box-sizing: border-box;
+    order: 1;
 }
 
 .cards-container::-webkit-scrollbar {
@@ -476,8 +477,8 @@
     }
 
     .carousel-button {
-        width: 40px;
-        height: 40px;
+        width: var(--carousel-button-width);
+        height: var(--carousel-button-width);
     }
 
     .carousel-button svg {

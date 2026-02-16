@@ -316,7 +316,7 @@
     width: var(--visible-cards-width);
     flex-shrink: 0;
     box-sizing: border-box;
-    order: 1;
+    order: 1; /* Center between prev (0) and next (2) buttons */
 }
 
 .cards-container::-webkit-scrollbar {
@@ -356,11 +356,11 @@
 }
 
 .carousel-button.prev {
-    order: 0;
+    order: 0; /* Left button */
 }
 
 .carousel-button.next {
-    order: 2;
+    order: 2; /* Right button */
 }
 
 .carousel-button svg {

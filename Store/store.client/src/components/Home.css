@@ -290,7 +290,7 @@
 .cards-section {
     position: relative;
     padding: 20px;
-    width: 100%; /* Use full screen width */
+    width: 100%; /* Expand to full screen width for responsive display */
     margin: 0 auto;
     overflow: visible;
 }
@@ -305,7 +305,7 @@
     -ms-overflow-style: none; /* IE and Edge */
     scroll-snap-type: x mandatory;
     scroll-padding: 0 60px; /* Ensure snap points account for padding */
-    width: 100%; /* Use full width */
+    width: 100%; /* Allow cards to fill available width for responsive display */
     margin: 0 auto;
     box-sizing: border-box;
 }

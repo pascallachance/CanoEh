@@ -7,7 +7,7 @@
     /* Calculate visible cards area width to fit exactly 4 cards with gaps */
     --visible-cards-width: calc((var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap)));
     /* Calculate cards-section max-width to fit buttons + gaps + visible cards area:
-       2 buttons (50px each) + 2 gaps between buttons and cards-container (10px each) + visible cards area (1460px) */
+       2 buttons (50px each) + 2 gaps between buttons and cards-container (10px each) + visible cards area (var(--visible-cards-width)) */
     --cards-section-max-width: calc((2 * var(--carousel-button-width)) + (2 * var(--carousel-gap)) + var(--visible-cards-width));
 }
 

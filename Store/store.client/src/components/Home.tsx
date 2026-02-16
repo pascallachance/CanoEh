@@ -399,10 +399,11 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         if (!container) return;
 
         // Get card width from CSS variable (responsive to screen size)
-        const computedStyle = getComputedStyle(container);
-        const cardWidth = parseInt(computedStyle.getPropertyValue('--card-width')) || 350;
-        const gap = parseInt(computedStyle.getPropertyValue('--cards-gap')) || 20;
-        const cardsPerPage = parseInt(computedStyle.getPropertyValue('--cards-visible-count')) || 4;
+        // Read from document root to ensure we get the CSS custom properties
+        const rootStyle = getComputedStyle(document.documentElement);
+        const cardWidth = parseInt(rootStyle.getPropertyValue('--card-width')) || 350;
+        const gap = parseInt(rootStyle.getPropertyValue('--cards-gap')) || 20;
+        const cardsPerPage = parseInt(rootStyle.getPropertyValue('--cards-visible-count')) || 4;
         
         // Calculate exact scroll amount for one page of cards
         const scrollAmount = (cardsPerPage * cardWidth) + ((cardsPerPage - 1) * gap);

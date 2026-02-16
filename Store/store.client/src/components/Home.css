@@ -289,8 +289,9 @@
 /* Cards Section */
 .cards-section {
     position: relative;
-    padding: 20px;
-    width: 100%; /* Expand to full screen width for responsive display */
+    padding: 20px 0;
+    width: 100%;
+    max-width: var(--cards-container-max-width);
     margin: 0 auto;
     overflow: visible;
 }
@@ -348,11 +349,11 @@
 }
 
 .carousel-button.prev {
-    left: 10px;
+    left: 5px;
 }
 
 .carousel-button.next {
-    right: 10px;
+    right: 5px;
 }
 
 .carousel-button svg {

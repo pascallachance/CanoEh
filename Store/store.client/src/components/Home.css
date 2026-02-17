@@ -323,7 +323,7 @@
     scroll-padding: 0;
     width: var(--visible-cards-width);
     max-width: 100%;
-    flex: 0 0 auto;
+    flex: 0 1 auto;
     min-width: 0;
     box-sizing: border-box;
     order: 1; /* Center between prev (0) and next (2) buttons */

@@ -6,9 +6,6 @@
     --carousel-gap: 10px;
     /* Calculate visible cards area width to fit exactly 4 cards with gaps */
     --visible-cards-width: calc((var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap)));
-    /* Calculate cards-section max-width to fit buttons + gaps + visible cards area:
-       2 buttons (50px each) + 2 gaps between buttons and cards-container (10px each) + visible cards area (var(--visible-cards-width)) */
-    --cards-section-max-width: calc((2 * var(--carousel-button-width)) + (2 * var(--carousel-gap)) + var(--visible-cards-width));
 }
 
 .home-container {
@@ -27,7 +24,6 @@
     border: none;
     padding: 0;
     margin: 0;
-    max-width: var(--cards-section-max-width);
     width: 100%;
     box-sizing: border-box;
 }
@@ -272,6 +268,8 @@
     padding: 0;
     width: 100%;
     margin: 0;
+    display: flex;
+    justify-content: center;
 }
 
 .banner-widget {
@@ -298,10 +296,11 @@
 /* Cards Section */
 .cards-section {
     position: relative;
-    padding: 20px 0;
+    padding: 20px clamp(8px, 2vw, 20px);
     width: 100%;
     margin: 0;
-    overflow: visible;
+    overflow-x: hidden;
+    overflow-y: visible;
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -320,9 +319,9 @@
     -ms-overflow-style: none; /* IE and Edge */
     scroll-snap-type: x mandatory;
     scroll-padding: 0;
-    width: min(var(--visible-cards-width), 100%);
+    width: var(--visible-cards-width);
     max-width: 100%;
-    flex: 0 1 var(--visible-cards-width);
+    flex: 0 1 auto;
     min-width: 0;
     box-sizing: border-box;
     order: 1; /* Center between prev (0) and next (2) buttons */

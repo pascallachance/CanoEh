@@ -490,7 +490,7 @@
 @media (max-width: 1200px) {
     :root {
         --card-width: 300px;
-        --cards-visible-count: 4;
+        --cards-visible-count: 3;
     }
 }
 

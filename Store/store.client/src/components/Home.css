@@ -1,10 +1,10 @@
 :root {
     --cards-gap: 20px;
     --card-width: 350px;
-    --cards-visible-count: 5;
+    --cards-visible-count: 4;
     --carousel-button-width: 50px;
     --carousel-gap: 10px;
-    /* Calculate visible cards area width to fit exactly 5 cards with gaps */
+    /* Calculate visible cards area width to fit exactly 4 cards with gaps */
     --visible-cards-width: calc((var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap)));
 }
 
@@ -332,7 +332,7 @@
 }
 
 .carousel-button {
-    position: relative;
+    position: static;
     background-color: rgba(255, 255, 255, 0.95);
     border: 1px solid #ddd;
     border-radius: 50%;
@@ -365,12 +365,10 @@
 
 .carousel-button.prev {
     order: 0; /* Left button */
-    margin-right: -15px; /* Overlap on cards-container */
 }
 
 .carousel-button.next {
     order: 2; /* Right button */
-    margin-left: -15px; /* Overlap on cards-container */
 }
 
 .carousel-button svg {
@@ -485,7 +483,7 @@
 @media (max-width: 1200px) {
     :root {
         --card-width: 300px;
-        --cards-visible-count: 4;
+        --cards-visible-count: 3;
     }
 }
 

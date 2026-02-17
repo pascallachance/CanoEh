@@ -373,12 +373,12 @@
 
 .carousel-button.prev {
     order: 0; /* Left button */
-    margin-right: -15px; /* Overlap on cards-container */
+    margin-right: -25px; /* Half-overlap on cards-container */
 }
 
 .carousel-button.next {
     order: 2; /* Right button */
-    margin-left: -15px; /* Overlap on cards-container */
+    margin-left: -25px; /* Half-overlap on cards-container */
 }
 
 .carousel-button svg {
@@ -521,6 +521,14 @@
         height: 20px;
     }
 
+    .carousel-button.prev {
+        margin-right: -20px; /* Half-overlap for 40px buttons */
+    }
+
+    .carousel-button.next {
+        margin-left: -20px; /* Half-overlap for 40px buttons */
+    }
+
     .top-nav {
         flex-wrap: wrap;
     }
@@ -536,6 +544,14 @@
         --cards-visible-count: 1;
         --carousel-button-width: 36px;
         --carousel-gap: 8px;
+    }
+
+    .carousel-button.prev {
+        margin-right: -18px; /* Half-overlap for 36px buttons */
+    }
+
+    .carousel-button.next {
+        margin-left: -18px; /* Half-overlap for 36px buttons */
     }
 }
 

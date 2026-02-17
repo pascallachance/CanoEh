@@ -373,12 +373,12 @@
 
 .carousel-button.prev {
     order: 0; /* Left button */
-    margin-right: -15px; /* Overlap on cards-container */
+    margin-right: calc(var(--carousel-button-width) / -2); /* Half-overlap on cards-container */
 }
 
 .carousel-button.next {
     order: 2; /* Right button */
-    margin-left: -15px; /* Overlap on cards-container */
+    margin-left: calc(var(--carousel-button-width) / -2); /* Half-overlap on cards-container */
 }
 
 .carousel-button svg {

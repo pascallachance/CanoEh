@@ -652,6 +652,12 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages,
                     // Check if this item has an actual image to display
                     const hasImage = imageUrls && imageUrls[index] && !imageErrors.has(index);
                     
+                    // For cards that fetch data (have imageUrls prop defined), only render items with images
+                    // For static cards (imageUrls prop undefined), always show placeholders
+                    if (imageUrls !== undefined && !hasImage) {
+                        return null;
+                    }
+                    
                     return (
                         <div key={item} className="item-placeholder">
                             {hasImage ? (
@@ -671,7 +677,7 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages,
                                 </>
                             ) : (
                                 <div className="item-image-placeholder">
-                                    {language === 'fr' ? `Article ${item}` : `Item ${item}`}
+                                    {itemNames?.[index] ?? (language === 'fr' ? `Article ${item}` : `Item ${item}`)}
                                 </div>
                             )}
                         </div>

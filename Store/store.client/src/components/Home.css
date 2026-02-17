@@ -4,8 +4,11 @@
     --cards-visible-count: 5;
     --carousel-button-width: 50px;
     --carousel-gap: 10px;
-    /* Calculate visible cards area width to fit exactly 5 cards with gaps */
-    --visible-cards-width: calc((var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap)));
+    /* Calculate visible cards area width to fit up to 5 cards with gaps, but not exceed available space (viewport minus buttons, gaps, and section padding) */
+    --visible-cards-width: min(
+        calc((var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap))),
+        calc(100% - (2 * var(--carousel-button-width)) - (2 * var(--carousel-gap)) - 40px)
+    );
 }
 
 .home-container {

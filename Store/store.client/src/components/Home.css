@@ -4,7 +4,7 @@
     --cards-visible-count: 5;
     --carousel-button-width: 50px;
     --carousel-gap: 10px;
-    /* Calculate visible cards area width to fit exactly 5 cards with gaps */
+    /* Calculate visible cards area width to fit the responsive number of cards (varies by screen size) */
     /* Available space is viewport minus the two carousel buttons and gaps between them and the container */
     --visible-cards-width: min(
         calc((var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap))),

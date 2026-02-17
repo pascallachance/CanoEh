@@ -256,13 +256,13 @@ describe('Home - Offers Card', () => {
         const offersCard = offersCardTitle?.closest('.item-preview-card');
         expect(offersCard).toBeInTheDocument();
 
-        // When offers have no images, should show placeholders
+        // When offers have no images, should show no items (not placeholders)
         const images = offersCard?.querySelectorAll('.item-image');
         const placeholders = offersCard?.querySelectorAll('.item-image-placeholder');
         
-        // Should have 0 images and 4 placeholders
+        // Should have 0 images and 0 placeholders (no items rendered)
         expect(images?.length).toBe(0);
-        expect(placeholders?.length).toBe(4);
+        expect(placeholders?.length).toBe(0);
     });
 
     it('should display first variant with offer when product has multiple variants with offers', async () => {

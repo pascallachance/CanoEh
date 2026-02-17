@@ -403,23 +403,28 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         const rootStyle = getComputedStyle(document.documentElement);
         const cardWidth = parseInt(rootStyle.getPropertyValue('--card-width')) || 350;
         const gap = parseInt(rootStyle.getPropertyValue('--cards-gap')) || 20;
-        const cardsPerPage = parseInt(rootStyle.getPropertyValue('--cards-visible-count')) || 4;
+        const cardsPerPage = parseInt(rootStyle.getPropertyValue('--cards-visible-count')) || 5;
         
         // Calculate exact scroll amount for one full page of cards
-        const scrollAmount = (cardsPerPage * cardWidth) + ((cardsPerPage - 1) * gap);
+        const pageWidth = (cardsPerPage * cardWidth) + ((cardsPerPage - 1) * gap);
 
         const currentScroll = container.scrollLeft;
         const maxScrollLeft = container.scrollWidth - container.clientWidth;
         
-        // Calculate new position: move by full page increments
-        let newScroll: number;
+        // Calculate current page number and target page
+        const currentPage = Math.round(currentScroll / pageWidth);
+        let targetPage: number;
+        
         if (direction === 'next') {
-            // Move forward by one full page
-            newScroll = currentScroll + scrollAmount;
+            // Move to next page
+            targetPage = currentPage + 1;
         } else {
-            // Move backward by one full page
-            newScroll = currentScroll - scrollAmount;
+            // Move to previous page
+            targetPage = currentPage - 1;
         }
+        
+        // Calculate exact scroll position for target page
+        const newScroll = targetPage * pageWidth;
         
         // Clamp to valid range
         const clampedScroll = Math.max(0, Math.min(newScroll, maxScrollLeft));

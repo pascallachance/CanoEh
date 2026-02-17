@@ -4,12 +4,11 @@
     --cards-visible-count: 5;
     --carousel-button-width: 50px;
     --carousel-gap: 10px;
-    /* Maximum horizontal section padding per side; total max padding is 2 * this value (matches 20px when clamp(8px, 2vw, 20px) is at its max) */
-    --section-horizontal-padding-max: 20px;
-    /* Calculate visible cards area width to fit up to 5 cards with gaps, but not exceed available space (viewport minus buttons, gaps, and section padding) */
+    /* Calculate visible cards area width to fit exactly 5 cards with gaps */
+    /* Available space is viewport minus the two carousel buttons and gaps between them and the container */
     --visible-cards-width: min(
         calc((var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap))),
-        calc(100% - (2 * var(--carousel-button-width)) - (2 * var(--carousel-gap)) - (2 * var(--section-horizontal-padding-max)))
+        calc(100vw - (2 * var(--carousel-button-width)) - (2 * var(--carousel-gap)))
     );
 }
 
@@ -30,6 +29,7 @@
     padding: 0;
     margin: 0;
     width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
 }
 
@@ -272,6 +272,7 @@
 .banner-section {
     padding: 0;
     width: 100%;
+    max-width: 100%;
     margin: 0;
     display: flex;
     justify-content: center;
@@ -284,6 +285,7 @@
     color: white;
     text-align: center;
     width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
     margin: 0;
 }
@@ -301,8 +303,9 @@
 /* Cards Section */
 .cards-section {
     position: relative;
-    padding: 20px clamp(8px, 2vw, 20px);
+    padding: 20px 0;
     width: 100%;
+    max-width: 100%;
     margin: 0;
     overflow-x: hidden;
     overflow-y: visible;

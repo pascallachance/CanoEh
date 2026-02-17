@@ -398,30 +398,31 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         const container = carouselRef.current;
         if (!container) return;
 
-        // Get card width from CSS variable (responsive to screen size)
-        // Read from document root to ensure we get the CSS custom properties
+        // Get card width and gap from CSS variables
         const rootStyle = getComputedStyle(document.documentElement);
         const cardWidth = parseInt(rootStyle.getPropertyValue('--card-width')) || 350;
         const gap = parseInt(rootStyle.getPropertyValue('--cards-gap')) || 20;
-        const cardsPerPage = parseInt(rootStyle.getPropertyValue('--cards-visible-count')) || 5;
         
-        // Calculate exact scroll amount for one full page of cards
-        const pageWidth = (cardsPerPage * cardWidth) + ((cardsPerPage - 1) * gap);
+        // Calculate actual number of cards that fit in the visible container width
+        // This accounts for the min() constraint in --visible-cards-width
+        const containerWidth = container.clientWidth;
+        const effectiveCardsPerPage = Math.floor((containerWidth + gap) / (cardWidth + gap));
+        
+        // Calculate page width based on cards that actually fit
+        const pageWidth = (effectiveCardsPerPage * cardWidth) + ((effectiveCardsPerPage - 1) * gap);
 
         const currentScroll = container.scrollLeft;
         const maxScrollLeft = container.scrollWidth - container.clientWidth;
         
-        // Calculate current page number and target page
-        const currentPage = Math.round(currentScroll / pageWidth);
-        let targetPage: number;
+        // Use direction-aware rounding to avoid skipping pages
+        // Floor for next: if at 0.8 pages, floor to 0, so next goes to page 1
+        // Ceil for prev: if at 1.2 pages, ceil to 2, so prev goes to page 1
+        const currentPage = direction === 'next' 
+            ? Math.floor(currentScroll / pageWidth)
+            : Math.ceil(currentScroll / pageWidth);
         
-        if (direction === 'next') {
-            // Move to next page
-            targetPage = currentPage + 1;
-        } else {
-            // Move to previous page
-            targetPage = currentPage - 1;
-        }
+        // Calculate target page
+        const targetPage = direction === 'next' ? currentPage + 1 : currentPage - 1;
         
         // Calculate exact scroll position for target page
         const newScroll = targetPage * pageWidth;

@@ -1,7 +1,7 @@
 :root {
     --cards-gap: 20px;
     --card-width: 350px;
-    --cards-visible-count: 5;
+    --cards-visible-count: 5; /* Will be dynamically updated by JavaScript */
     --carousel-button-width: 50px;
     --carousel-gap: 10px;
     /* Calculate visible cards area width to fit the responsive number of cards (varies by screen size) */
@@ -494,21 +494,18 @@
 @media (max-width: 1200px) {
     :root {
         --card-width: 300px;
-        --cards-visible-count: 3;
     }
 }
 
 @media (max-width: 1024px) {
     :root {
         --card-width: 280px;
-        --cards-visible-count: 3;
     }
 }
 
 @media (max-width: 768px) {
     :root {
         --card-width: 280px;
-        --cards-visible-count: 2;
         --carousel-button-width: 40px;
     }
 
@@ -534,7 +531,6 @@
 @media (max-width: 480px) {
     :root {
         --card-width: 250px;
-        --cards-visible-count: 1;
         --carousel-button-width: 36px;
         --carousel-gap: 8px;
     }

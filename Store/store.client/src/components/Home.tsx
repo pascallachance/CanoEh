@@ -90,6 +90,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const [carouselScrollPosition, setCarouselScrollPosition] = useState<number>(0);
     const [canScrollNext, setCanScrollNext] = useState<boolean>(false);
     const carouselRef = useRef<HTMLDivElement>(null);
+    const cardsSectionRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         // Set language based on user or system settings
@@ -129,6 +130,60 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthenticated]);
+
+    // Effect to dynamically adjust visible cards count based on available space
+    useEffect(() => {
+        const updateVisibleCardsCount = () => {
+            const container = carouselRef.current;
+            if (!container) return;
+
+            // Get card width and gap from CSS variables
+            const rootStyle = getComputedStyle(document.documentElement);
+            const cardWidth = parseInt(rootStyle.getPropertyValue('--card-width')) || 350;
+            const gap = parseInt(rootStyle.getPropertyValue('--cards-gap')) || 20;
+            const carouselGap = parseInt(rootStyle.getPropertyValue('--carousel-gap')) || 10;
+
+            // Calculate available width for cards (viewport width minus carousel gaps)
+            const availableWidth = window.innerWidth - (2 * carouselGap);
+
+            // Calculate how many complete cards can fit
+            // Each card takes up (cardWidth + gap), except the last one which doesn't need a trailing gap
+            // Formula: N * cardWidth + (N - 1) * gap <= availableWidth
+            // Solving for N: N <= (availableWidth + gap) / (cardWidth + gap)
+            let visibleCount = Math.floor((availableWidth + gap) / (cardWidth + gap));
+
+            // Ensure at least 1 card is visible
+            visibleCount = Math.max(1, visibleCount);
+
+            // Update CSS variable with the calculated count
+            document.documentElement.style.setProperty('--cards-visible-count', visibleCount.toString());
+        };
+
+        // Update on mount
+        updateVisibleCardsCount();
+
+        // Update on window resize
+        window.addEventListener('resize', updateVisibleCardsCount);
+
+        // Use ResizeObserver to detect when the cards-section changes size
+        // Check if ResizeObserver is available (not in all test environments)
+        const cardsSection = cardsSectionRef.current;
+        let resizeObserver: ResizeObserver | null = null;
+        
+        if (cardsSection && typeof ResizeObserver !== 'undefined') {
+            resizeObserver = new ResizeObserver(() => {
+                updateVisibleCardsCount();
+            });
+            resizeObserver.observe(cardsSection);
+        }
+
+        return () => {
+            window.removeEventListener('resize', updateVisibleCardsCount);
+            if (resizeObserver && cardsSection) {
+                resizeObserver.unobserve(cardsSection);
+            }
+        };
+    }, []);
 
     const fetchRecentlyAddedProducts = async () => {
         try {
@@ -517,7 +572,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 </section>
 
                 {/* Cards Section */}
-                <section className="cards-section">
+                <section className="cards-section" ref={cardsSectionRef}>
                 <button
                     type="button"
                     className="carousel-button prev"

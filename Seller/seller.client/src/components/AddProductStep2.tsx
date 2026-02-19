@@ -402,7 +402,10 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                     <div className="category-breadcrumb">
                                         <span
                                             className="category-breadcrumb-item"
+                                            role="button"
+                                            tabIndex={0}
                                             onClick={() => handleBreadcrumbClick(0)}
+                                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleBreadcrumbClick(0); } }}
                                             style={{ cursor: 'pointer' }}
                                         >
                                             All
@@ -412,7 +415,10 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                                 <span className="category-breadcrumb-sep"> &gt; </span>
                                                 <span
                                                     className="category-breadcrumb-item"
+                                                    role="button"
+                                                    tabIndex={0}
                                                     onClick={() => handleBreadcrumbClick(index + 1)}
+                                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleBreadcrumbClick(index + 1); } }}
                                                     style={{ cursor: 'pointer' }}
                                                 >
                                                     {node.name_en}
@@ -428,7 +434,10 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                             <div
                                                 key={node.id}
                                                 className={`category-node-item category-node-type-${node.nodeType.toLowerCase()}`}
+                                                role="button"
+                                                tabIndex={0}
                                                 onClick={() => handleNodeClick(node)}
+                                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleNodeClick(node); } }}
                                             >
                                                 <span className="category-node-name">{node.name_en} / {node.name_fr}</span>
                                                 {node.nodeType !== 'Category' && (

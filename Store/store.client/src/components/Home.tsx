@@ -503,9 +503,11 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         const rootStyle = getComputedStyle(document.documentElement);
         const visibleCardsCount = parseInt(rootStyle.getPropertyValue('--cards-visible-count')) || 1;
         
-        // Calculate page width based on the number of visible cards
-        // This matches the visible cards count set by updateVisibleCardsCount
-        const pageWidth = (visibleCardsCount * cardWidth) + ((visibleCardsCount - 1) * gap);
+        // Calculate page width based on the number of visible cards.
+        // Use visibleCardsCount * (cardWidth + gap) so the boundary aligns with
+        // CSS scroll-snap points (each card occupies cardWidth + gap in the snap grid),
+        // preventing the browser from snapping to a different position than targeted.
+        const pageWidth = visibleCardsCount * (cardWidth + gap);
 
         const currentScroll = container.scrollLeft;
         const maxScrollLeft = container.scrollWidth - container.clientWidth;

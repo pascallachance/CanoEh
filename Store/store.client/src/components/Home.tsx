@@ -74,7 +74,7 @@ const OFFERS_COUNT = 4;
 const PRIMARY_IMAGE_PATTERN = /_1\.(jpg|jpeg|png|gif|webp)$/i; // Pattern to match primary product images ending with _1
 
 // Default CSS variable values (must match :root in Home.css)
-const DEFAULT_CARD_WIDTH = 350;
+const DEFAULT_CARD_WIDTH = 310;
 const DEFAULT_CARDS_GAP = 20;
 const DEFAULT_CAROUSEL_GAP = 10;
 const RESIZE_DEBOUNCE_MS = 150;
@@ -481,16 +481,14 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         const container = carouselRef.current;
         if (!container) return;
 
-        // Get card width and gap from CSS variables using helper function
+        // Get card width, gap, and visible cards count from CSS variables
         const { cardWidth, gap } = getCSSCardDimensions();
+        const rootStyle = getComputedStyle(document.documentElement);
+        const visibleCardsCount = parseInt(rootStyle.getPropertyValue('--cards-visible-count')) || 1;
         
-        // Calculate actual number of cards that fit in the visible container width
-        // This accounts for the min() constraint in --visible-cards-width
-        const containerWidth = container.clientWidth;
-        const effectiveCardsPerPage = Math.floor((containerWidth + gap) / (cardWidth + gap));
-        
-        // Calculate page width based on cards that actually fit
-        const pageWidth = (effectiveCardsPerPage * cardWidth) + ((effectiveCardsPerPage - 1) * gap);
+        // Calculate page width based on the number of visible cards
+        // This matches the visible cards count set by updateVisibleCardsCount
+        const pageWidth = (visibleCardsCount * cardWidth) + ((visibleCardsCount - 1) * gap);
 
         const currentScroll = container.scrollLeft;
         const maxScrollLeft = container.scrollWidth - container.clientWidth;

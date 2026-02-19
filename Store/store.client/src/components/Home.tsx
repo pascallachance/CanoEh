@@ -184,6 +184,16 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             // Update CSS variable with the calculated count
             document.documentElement.style.setProperty('--cards-visible-count', visibleCount.toString());
+
+            // After updating the visible cards count, trigger scroll state update
+            // This ensures the carousel buttons reflect the new layout
+            const container = carouselRef.current;
+            if (container) {
+                const scrollLeft = container.scrollLeft;
+                const maxScrollLeft = container.scrollWidth - container.clientWidth;
+                setCarouselScrollPosition(scrollLeft);
+                setCanScrollNext(scrollLeft < maxScrollLeft - 10);
+            }
         };
 
         // Debounced version for resize events to prevent excessive re-calculations

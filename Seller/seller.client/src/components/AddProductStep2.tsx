@@ -128,13 +128,13 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
     const getChildren = (parentId: string): CategoryNode[] =>
         allCategoryNodes.filter(n => n.parentId === parentId);
 
-    // Build path string for a given node id (e.g. "Dept > Nav > Category")
+    // Build path string for a given node id (e.g. "Dept EN / Dept FR > Category EN / Category FR")
     const getCategoryPath = (nodeId: string): string => {
         const nodeMap = buildNodeMap(allCategoryNodes);
         const parts: string[] = [];
         let current = nodeMap.get(nodeId);
         while (current) {
-            parts.unshift(current.name_en);
+            parts.unshift(`${current.name_en} / ${current.name_fr}`);
             current = current.parentId ? nodeMap.get(current.parentId) : undefined;
         }
         return parts.join(' > ');

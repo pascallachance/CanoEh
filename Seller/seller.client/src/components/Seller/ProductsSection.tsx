@@ -416,18 +416,23 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         return map;
     }, []);
 
+    // Memoized node map so we don't rebuild it on every getCategoryPath call
+    const categoryNodeMap = useMemo(
+        () => buildNodeMap(categories),
+        [buildNodeMap, categories]
+    );
+
     // Get full category path by ID (e.g. "Dept > Nav > Category")
     const getCategoryPath = useCallback((categoryNodeId: string): string => {
-        const nodeMap = buildNodeMap(categories);
         const parts: string[] = [];
-        let current = nodeMap.get(categoryNodeId);
+        let current = categoryNodeMap.get(categoryNodeId);
         while (current) {
             const name = language === 'fr' ? current.name_fr : current.name_en;
             parts.unshift(name);
-            current = current.parentId ? nodeMap.get(current.parentId) : undefined;
+            current = current.parentId ? categoryNodeMap.get(current.parentId) : undefined;
         }
         return parts.length > 0 ? parts.join(' > ') : t('common.unknown');
-    }, [categories, buildNodeMap, language, t]);
+    }, [categoryNodeMap, language, t]);
 
     // Filter and sort items
     const filteredAndSortedItems = useMemo(() => {
@@ -1645,14 +1650,13 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                         >
                             <option value="">{t('products.selectCategory')}</option>
                             {(() => {
-                                const nodeMap = buildNodeMap(categories);
                                 const buildPath = (node: CategoryNode): string => {
                                     const parts: string[] = [];
                                     let current: CategoryNode | undefined = node;
                                     while (current) {
                                         const name = language === 'fr' ? current.name_fr : current.name_en;
                                         parts.unshift(name);
-                                        current = current.parentId ? nodeMap.get(current.parentId) : undefined;
+                                        current = current.parentId ? categoryNodeMap.get(current.parentId) : undefined;
                                     }
                                     return parts.join(' > ');
                                 };
@@ -2101,14 +2105,13 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                                 >
                                     <option value="">{t('products.filter.allCategories')}</option>
                                     {(() => {
-                                        const nodeMap = buildNodeMap(categories);
                                         const buildPath = (node: CategoryNode): string => {
                                             const parts: string[] = [];
                                             let current: CategoryNode | undefined = node;
                                             while (current) {
                                                 const name = language === 'fr' ? current.name_fr : current.name_en;
                                                 parts.unshift(name);
-                                                current = current.parentId ? nodeMap.get(current.parentId) : undefined;
+                                                current = current.parentId ? categoryNodeMap.get(current.parentId) : undefined;
                                             }
                                             return parts.join(' > ');
                                         };
@@ -2314,19 +2317,43 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                                                     </td>
                                                     <td 
                                                         onClick={() => toggleExpandedRow(item.id)}
+                                                        role="button"
+                                                        tabIndex={0}
                                                         style={{ cursor: 'pointer' }}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                                e.preventDefault();
+                                                                toggleExpandedRow(item.id);
+                                                            }
+                                                        }}
                                                     >
                                                         {getCategoryPath(item.categoryNodeID)}
                                                     </td>
                                                     <td 
                                                         onClick={() => toggleExpandedRow(item.id)}
+                                                        role="button"
+                                                        tabIndex={0}
                                                         style={{ cursor: 'pointer' }}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                                e.preventDefault();
+                                                                toggleExpandedRow(item.id);
+                                                            }
+                                                        }}
                                                     >
                                                         {formatDate(item.createdAt)}
                                                     </td>
                                                     <td 
                                                         onClick={() => toggleExpandedRow(item.id)}
+                                                        role="button"
+                                                        tabIndex={0}
                                                         style={{ cursor: 'pointer' }}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                                e.preventDefault();
+                                                                toggleExpandedRow(item.id);
+                                                            }
+                                                        }}
                                                     >
                                                         {formatDate(item.updatedAt)}
                                                     </td>

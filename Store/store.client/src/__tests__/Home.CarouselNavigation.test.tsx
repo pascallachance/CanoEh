@@ -8,8 +8,12 @@ import userEvent from '@testing-library/user-event';
 global.fetch = vi.fn();
 
 describe('Home - Carousel Navigation', () => {
+    let originalInnerWidth: number;
+
     beforeEach(() => {
         vi.clearAllMocks();
+        // Capture the original innerWidth so afterEach can restore the exact value.
+        originalInnerWidth = window.innerWidth;
         // Set window.innerWidth so that updateVisibleCardsCount computes exactly 3 visible cards.
         // availableWidth = 1110 - 2*10 = 1090; N = floor((1090+20)/370) = floor(3.0) = 3
         Object.defineProperty(window, 'innerWidth', { writable: true, value: 1110 });
@@ -30,7 +34,7 @@ describe('Home - Carousel Navigation', () => {
 
     afterEach(() => {
         vi.unstubAllEnvs();
-        Object.defineProperty(window, 'innerWidth', { writable: true, value: 1024 });
+        Object.defineProperty(window, 'innerWidth', { writable: true, value: originalInnerWidth });
     });
 
     it('should navigate backwards correctly when scrollLeft is slightly past a page boundary', async () => {

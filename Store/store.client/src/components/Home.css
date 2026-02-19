@@ -536,6 +536,14 @@
     }
 }
 
+@media (max-width: 360px) {
+    :root {
+        --card-width: 280px;
+        --carousel-button-width: 36px;
+        --carousel-gap: 8px;
+    }
+}
+
 /* Store Footer */
 .store-footer {
     background: #343a40;

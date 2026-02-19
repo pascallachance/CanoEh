@@ -29,7 +29,7 @@ namespace Infrastructure.Repositories.Tests
                 Name_fr = "Article de test",
                 Description_en = "Test item description EN",
                 Description_fr = "Test item description FR",
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 CreatedAt = DateTime.UtcNow,
                 Deleted = false,
                 Variants = new List<ItemVariant>()
@@ -48,7 +48,7 @@ namespace Infrastructure.Repositories.Tests
                     Name_fr = "Article Un",
                     Description_en = "First item description",
                     Description_fr = "Première description d'article",
-                    CategoryID = Guid.NewGuid(),
+                    CategoryNodeID = Guid.NewGuid(),
                     CreatedAt = DateTime.UtcNow,
                     Deleted = false,
                     Variants = new List<ItemVariant>()
@@ -61,7 +61,7 @@ namespace Infrastructure.Repositories.Tests
                     Name_fr = "Article Deux",
                     Description_en = "Second item description",
                     Description_fr = "Deuxième description d'article",
-                    CategoryID = Guid.NewGuid(),
+                    CategoryNodeID = Guid.NewGuid(),
                     CreatedAt = DateTime.UtcNow,
                     Deleted = false,
                     Variants = new List<ItemVariant>()
@@ -74,7 +74,7 @@ namespace Infrastructure.Repositories.Tests
                     Name_fr = "Article Trois",
                     Description_en = "Third item description",
                     Description_fr = "Troisième description d'article",
-                    CategoryID = Guid.NewGuid(),
+                    CategoryNodeID = Guid.NewGuid(),
                     CreatedAt = DateTime.UtcNow,
                     Deleted = false,
                     Variants = new List<ItemVariant>()
@@ -176,7 +176,7 @@ namespace Infrastructure.Repositories.Tests
             Assert.Equal("Article de test", item.Name_fr);
             Assert.Equal("Test item description EN", item.Description_en);
             Assert.Equal("Test item description FR", item.Description_fr);
-            Assert.NotEqual(Guid.Empty, item.CategoryID);
+            Assert.NotEqual(Guid.Empty, item.CategoryNodeID);
             Assert.False(item.Deleted);
             Assert.NotNull(item.Variants);
         }
@@ -375,7 +375,7 @@ namespace Infrastructure.Repositories.Tests
                     Name_fr = "Article suggéré 1",
                     Description_en = "Description EN",
                     Description_fr = "Description FR",
-                    CategoryID = Guid.NewGuid(),
+                    CategoryNodeID = Guid.NewGuid(),
                     Variants = new List<ItemVariant>
                     {
                         new ItemVariant

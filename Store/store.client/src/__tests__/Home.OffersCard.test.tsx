@@ -39,7 +39,7 @@ describe('Home - Offers Card', () => {
                     sellerID: 'seller1',
                     name_en: 'Product 1 with Offer',
                     name_fr: 'Produit 1 avec offre',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -63,7 +63,7 @@ describe('Home - Offers Card', () => {
                     sellerID: 'seller2',
                     name_en: 'Product 2 with Offer',
                     name_fr: 'Produit 2 avec offre',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-02',
                     deleted: false,
                     variants: [
@@ -187,7 +187,7 @@ describe('Home - Offers Card', () => {
                     sellerID: 'seller1',
                     name_en: 'Product 1 with Offer',
                     name_fr: 'Produit 1 avec offre',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -278,7 +278,7 @@ describe('Home - Offers Card', () => {
                     sellerID: 'seller1',
                     name_en: 'Product 1',
                     name_fr: 'Produit 1',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -370,7 +370,7 @@ describe('Home - Offers Card', () => {
                     sellerID: 'seller1',
                     name_en: 'Product with Multiple Images',
                     name_fr: 'Produit avec plusieurs images',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -449,7 +449,7 @@ describe('Home - Offers Card', () => {
                     sellerID: 'seller1',
                     name_en: 'Product without _1 Image',
                     name_fr: 'Produit sans image _1',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -526,7 +526,7 @@ describe('Home - Offers Card', () => {
                     sellerID: 'seller1',
                     name_en: 'Product with PNG',
                     name_fr: 'Produit avec PNG',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -550,7 +550,7 @@ describe('Home - Offers Card', () => {
                     sellerID: 'seller2',
                     name_en: 'Product with GIF',
                     name_fr: 'Produit avec GIF',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-02',
                     deleted: false,
                     variants: [
@@ -574,7 +574,7 @@ describe('Home - Offers Card', () => {
                     sellerID: 'seller3',
                     name_en: 'Product with WEBP',
                     name_fr: 'Produit avec WEBP',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-03',
                     deleted: false,
                     variants: [
@@ -598,7 +598,7 @@ describe('Home - Offers Card', () => {
                     sellerID: 'seller4',
                     name_en: 'Product with JPEG',
                     name_fr: 'Produit avec JPEG',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-04',
                     deleted: false,
                     variants: [

@@ -268,7 +268,7 @@ ORDER BY SortOrder, Name_en";
                 return false;
             }
 
-            var query = "SELECT COUNT(1) FROM dbo.Item WHERE CategoryID = @categoryNodeId AND Deleted = 0";
+            var query = "SELECT COUNT(1) FROM dbo.Item WHERE CategoryNodeID = @categoryNodeId AND Deleted = 0";
             var count = await dbConnection.ExecuteScalarAsync<int>(query, new { categoryNodeId });
             return count > 0;
         }

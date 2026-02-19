@@ -68,13 +68,14 @@ interface ItemVariant {
     imageFiles?: File[];
 }
 
-interface Category {
+interface CategoryNode {
     id: string;
     name_en: string;
     name_fr: string;
-    parentCategoryId?: string;
-    createdAt: string;
-    updatedAt?: string;
+    nodeType: string;
+    parentId?: string;
+    isActive: boolean;
+    children: CategoryNode[];
 }
 
 // API response types for fetched items
@@ -112,7 +113,7 @@ interface ApiItem {
     name_fr: string;
     description_en?: string;
     description_fr?: string;
-    categoryID: string;
+    categoryNodeID: string;
     variants: ApiItemVariant[];
     createdAt: string;
     updatedAt?: string;
@@ -121,7 +122,7 @@ interface ApiItem {
 
 const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     ({ companies, viewMode = 'list', onViewModeChange, onManageOffersStateChange }, ref) => {
-    const [categories, setCategories] = useState<Category[]>([]);
+    const [categories, setCategories] = useState<CategoryNode[]>([]);
     const { language, t } = useLanguage();
     const { showError, showSuccess } = useNotifications();
     const showAddForm = viewMode === 'add';
@@ -311,12 +312,10 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         return false;
     }, [newItem.name, newItem.name_fr, newItem.description, newItem.description_fr, newItem.categoryId, variants]);
 
-    // Fetch categories on component mount
+    // Fetch category nodes on component mount
     const fetchCategories = async () => {
         try {
-            // For demo purposes, using mock categories when API is not available
-            // Replace with your actual API endpoint when database is configured
-            const response = await ApiClient.get(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Category/GetAllCategories`);
+            const response = await ApiClient.get(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/CategoryNode/GetAllCategoryNodes`);
             if (response.ok) {
                 const result = await response.json();
                 if (result.value) {
@@ -325,36 +324,9 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 }
             }
         } catch (error) {
-            console.error('Failed to fetch categories:', error);
+            console.error('Failed to fetch category nodes:', error);
         }
-        
-        // Mock categories for demo purposes
-        setCategories([
-            {
-                id: '1',
-                name_en: 'Electronics',
-                name_fr: 'Électronique',
-                createdAt: new Date().toISOString()
-            },
-            {
-                id: '2',
-                name_en: 'Clothing',
-                name_fr: 'Vêtements',
-                createdAt: new Date().toISOString()
-            },
-            {
-                id: '3',
-                name_en: 'Books',
-                name_fr: 'Livres',
-                createdAt: new Date().toISOString()
-            },
-            {
-                id: '4',
-                name_en: 'Home & Garden',
-                name_fr: 'Maison et Jardin',
-                createdAt: new Date().toISOString()
-            }
-        ]);
+        setCategories([]);
     };
 
     // Fetch seller items from API
@@ -437,12 +409,29 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         setExpandedItemId(null);
     }, [currentPage]);
 
-    // Get category name by ID
-    const getCategoryName = useCallback((categoryId: string): string => {
-        const category = categories.find(c => c.id === categoryId);
-        if (!category) return t('common.unknown');
-        return language === 'fr' ? category.name_fr : category.name_en;
-    }, [categories, language, t]);
+    // Build flat lookup map for category nodes
+    const buildNodeMap = useCallback((nodes: CategoryNode[]): Map<string, CategoryNode> => {
+        const map = new Map<string, CategoryNode>();
+        const addToMap = (node: CategoryNode) => {
+            map.set(node.id, node);
+            node.children.forEach(addToMap);
+        };
+        nodes.forEach(addToMap);
+        return map;
+    }, []);
+
+    // Get full category path by ID (e.g. "Dept > Nav > Category")
+    const getCategoryPath = useCallback((categoryNodeId: string): string => {
+        const nodeMap = buildNodeMap(categories);
+        const parts: string[] = [];
+        let current = nodeMap.get(categoryNodeId);
+        while (current) {
+            const name = language === 'fr' ? current.name_fr : current.name_en;
+            parts.unshift(name);
+            current = current.parentId ? nodeMap.get(current.parentId) : undefined;
+        }
+        return parts.length > 0 ? parts.join(' > ') : t('common.unknown');
+    }, [categories, buildNodeMap, language, t]);
 
     // Filter and sort items
     const filteredAndSortedItems = useMemo(() => {
@@ -460,7 +449,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
             }
 
             // Filter by category
-            if (filters.categoryId && item.categoryID !== filters.categoryId) {
+            if (filters.categoryId && item.categoryNodeID !== filters.categoryId) {
                 return false;
             }
 
@@ -518,8 +507,8 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                     break;
                 }
                 case 'itemCategory': {
-                    const categoryA = getCategoryName(a.categoryID);
-                    const categoryB = getCategoryName(b.categoryID);
+                    const categoryA = getCategoryPath(a.categoryNodeID);
+                    const categoryB = getCategoryPath(b.categoryNodeID);
                     compareResult = categoryA.localeCompare(categoryB, language === 'fr' ? 'fr' : 'en', { sensitivity: 'base' });
                     break;
                 }
@@ -539,7 +528,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         });
 
         return sorted;
-    }, [sellerItems, language, filters, sortBy, sortDirection, getCategoryName]);
+    }, [sellerItems, language, filters, sortBy, sortDirection, getCategoryPath]);
 
     // Pagination calculations
     const totalPages = Math.ceil(filteredAndSortedItems.length / ITEMS_PER_PAGE);
@@ -776,7 +765,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
             }));
 
         const step2Data = {
-            categoryId: item.categoryID,
+            categoryId: item.categoryNodeID,
             variantAttributes,
             variantFeatures
         };
@@ -1416,7 +1405,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 Name_fr: newItem.name_fr,
                 Description_en: newItem.description,
                 Description_fr: newItem.description_fr,
-                CategoryID: newItem.categoryId,
+                CategoryNodeID: newItem.categoryId,
                 Variants: variants.map(variant => ({
                     Price: variant.price,
                     StockQuantity: variant.stock,
@@ -1659,11 +1648,30 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                             className="products-form-input"
                         >
                             <option value="">{t('products.selectCategory')}</option>
-                            {categories.map(category => (
-                                <option key={category.id} value={category.id}>
-                                    {language === 'fr' ? category.name_fr : category.name_en}
-                                </option>
-                            ))}
+                            {(() => {
+                                const nodeMap = buildNodeMap(categories);
+                                const buildPath = (node: CategoryNode): string => {
+                                    const parts: string[] = [];
+                                    let current: CategoryNode | undefined = node;
+                                    while (current) {
+                                        const name = language === 'fr' ? current.name_fr : current.name_en;
+                                        parts.unshift(name);
+                                        current = current.parentId ? nodeMap.get(current.parentId) : undefined;
+                                    }
+                                    return parts.join(' > ');
+                                };
+                                const categoryNodes: CategoryNode[] = [];
+                                const collect = (nodes: CategoryNode[]) => nodes.forEach(n => {
+                                    if (n.nodeType === 'Category') categoryNodes.push(n);
+                                    else collect(n.children);
+                                });
+                                collect(categories);
+                                return categoryNodes.map(node => (
+                                    <option key={node.id} value={node.id}>
+                                        {buildPath(node)}
+                                    </option>
+                                ));
+                            })()}
                         </select>
                     </div>
 
@@ -2100,11 +2108,30 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                                     className="products-filter-input"
                                 >
                                     <option value="">{t('products.filter.allCategories')}</option>
-                                    {categories.map(category => (
-                                        <option key={category.id} value={category.id}>
-                                            {language === 'fr' ? category.name_fr : category.name_en}
-                                        </option>
-                                    ))}
+                                    {(() => {
+                                        const nodeMap = buildNodeMap(categories);
+                                        const buildPath = (node: CategoryNode): string => {
+                                            const parts: string[] = [];
+                                            let current: CategoryNode | undefined = node;
+                                            while (current) {
+                                                const name = language === 'fr' ? current.name_fr : current.name_en;
+                                                parts.unshift(name);
+                                                current = current.parentId ? nodeMap.get(current.parentId) : undefined;
+                                            }
+                                            return parts.join(' > ');
+                                        };
+                                        const categoryNodes: CategoryNode[] = [];
+                                        const collect = (nodes: CategoryNode[]) => nodes.forEach(n => {
+                                            if (n.nodeType === 'Category') categoryNodes.push(n);
+                                            else collect(n.children);
+                                        });
+                                        collect(categories);
+                                        return categoryNodes.map(node => (
+                                            <option key={node.id} value={node.id}>
+                                                {buildPath(node)}
+                                            </option>
+                                        ));
+                                    })()}
                                 </select>
                             </div>
 
@@ -2301,7 +2328,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                                                         onClick={() => toggleExpandedRow(item.id)}
                                                         style={{ cursor: 'pointer' }}
                                                     >
-                                                        {getCategoryName(item.categoryID)}
+                                                        {getCategoryPath(item.categoryNodeID)}
                                                     </td>
                                                     <td 
                                                         onClick={() => toggleExpandedRow(item.id)}

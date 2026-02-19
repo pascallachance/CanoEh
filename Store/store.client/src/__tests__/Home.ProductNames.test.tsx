@@ -25,7 +25,7 @@ describe('Home - Product Name Extraction', () => {
                     sellerID: 'seller1',
                     name_en: 'Test Product Name',
                     name_fr: 'Nom de Produit Test',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -78,7 +78,7 @@ describe('Home - Product Name Extraction', () => {
                     sellerID: 'seller1',
                     name_en: 'Product 1',
                     name_fr: 'Produit 1',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -99,7 +99,7 @@ describe('Home - Product Name Extraction', () => {
                     sellerID: 'seller2',
                     name_en: 'Product 2',
                     name_fr: 'Produit 2',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-02',
                     deleted: false,
                     variants: [
@@ -120,7 +120,7 @@ describe('Home - Product Name Extraction', () => {
                     sellerID: 'seller3',
                     name_en: 'Product 3',
                     name_fr: 'Produit 3',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-03',
                     deleted: false,
                     variants: [
@@ -174,7 +174,7 @@ describe('Home - Product Name Extraction', () => {
                     sellerID: 'seller1',
                     name_en: 'First Product',
                     name_fr: 'Premier Produit',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -195,7 +195,7 @@ describe('Home - Product Name Extraction', () => {
                     sellerID: 'seller2',
                     name_en: 'Second Product',
                     name_fr: 'Deuxième Produit',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-02',
                     deleted: false,
                     variants: [
@@ -248,7 +248,7 @@ describe('Home - Product Name Extraction', () => {
                     sellerID: 'seller1',
                     name_en: 'Suggested Product',
                     name_fr: 'Produit Suggéré',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -300,7 +300,7 @@ describe('Home - Product Name Extraction', () => {
                     sellerID: 'seller1',
                     name_en: 'Product With Alt Text',
                     name_fr: 'Produit Avec Texte Alt',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -351,7 +351,7 @@ describe('Home - Product Name Extraction', () => {
                     sellerID: 'seller1',
                     name_en: 'Product Without Image',
                     name_fr: 'Produit Sans Image',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [

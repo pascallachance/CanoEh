@@ -32,7 +32,7 @@ namespace API.Tests
                 Name_fr = "Article de test",
                 Description_en = "Test item description EN",
                 Description_fr = "Test item description FR",
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
                 ItemVariantFeatures = new List<ItemVariantFeatures>(),
                 CreatedAt = DateTime.UtcNow,
@@ -47,7 +47,7 @@ namespace API.Tests
             Assert.Equal("Article de test", item.Name_fr);
             Assert.Equal("Test item description EN", item.Description_en);
             Assert.Equal("Test item description FR", item.Description_fr);
-            Assert.NotEqual(Guid.Empty, item.CategoryID);
+            Assert.NotEqual(Guid.Empty, item.CategoryNodeID);
             Assert.NotNull(item.Variants);
             Assert.NotNull(item.ItemVariantFeatures);
             Assert.False(item.Deleted);

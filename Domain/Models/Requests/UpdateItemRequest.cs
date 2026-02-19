@@ -12,7 +12,7 @@ namespace Domain.Models.Requests
         public required string Name_fr { get; set; }
         public required string Description_en { get; set; }
         public required string Description_fr { get; set; }
-        public Guid CategoryID { get; set; }
+        public Guid CategoryNodeID { get; set; }
         public List<ItemVariant> Variants { get; set; } = new();
 
         public Result Validate()
@@ -47,9 +47,9 @@ namespace Domain.Models.Requests
                 return Result.Failure("SellerID is required.", StatusCodes.Status400BadRequest);
             }
 
-            if (CategoryID == Guid.Empty)
+            if (CategoryNodeID == Guid.Empty)
             {
-                return Result.Failure("CategoryID is required.", StatusCodes.Status400BadRequest);
+                return Result.Failure("CategoryNodeID is required.", StatusCodes.Status400BadRequest);
             }
             
             return Result.Success();

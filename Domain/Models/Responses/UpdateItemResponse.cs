@@ -9,7 +9,7 @@ namespace Domain.Models.Responses
         public string? Description_en { get; set; }
         public string? Description_fr { get; set; }
         public string? ImageUrl { get; set; }
-        public Guid CategoryID { get; set; }
+        public Guid CategoryNodeID { get; set; }
         public List<ItemVariantDto> Variants { get; set; } = new();
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

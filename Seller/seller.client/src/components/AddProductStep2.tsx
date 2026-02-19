@@ -28,13 +28,14 @@ interface AddProductStep2Props {
     completedSteps?: number[];
 }
 
-interface Category {
+interface CategoryNode {
     id: string;
     name_en: string;
     name_fr: string;
-    parentCategoryId?: string;
-    createdAt: string;
-    updatedAt?: string;
+    nodeType: string;
+    parentId?: string;
+    isActive: boolean;
+    children: CategoryNode[];
 }
 
 function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep2Props) {
@@ -44,7 +45,8 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
         variantFeatures: []
     });
 
-    const [categories, setCategories] = useState<Category[]>([]);
+    const [allCategoryNodes, setAllCategoryNodes] = useState<CategoryNode[]>([]);
+    const [navigationPath, setNavigationPath] = useState<CategoryNode[]>([]);
     const [errors, setErrors] = useState<{ categoryId?: string; variantAttributes?: string }>({});
     
     // State for variant attributes
@@ -65,52 +67,25 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
     const [editingVariantAttrIndex, setEditingVariantAttrIndex] = useState<number | null>(null);
     const [editingFeatureIndex, setEditingFeatureIndex] = useState<number | null>(null);
 
-    // Fetch categories on component mount
+    // Fetch all category nodes on mount
     useEffect(() => {
-        const fetchCategories = async () => {
+        const fetchCategoryNodes = async () => {
             try {
-                const response = await ApiClient.get(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Category/GetAllCategories`);
+                const response = await ApiClient.get(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/CategoryNode/GetAllCategoryNodes`);
                 if (response.ok) {
                     const result = await response.json();
                     if (result.value) {
-                        setCategories(result.value);
+                        setAllCategoryNodes(result.value);
                         return;
                     }
                 }
             } catch (error) {
-                console.error('Failed to fetch categories:', error);
+                console.error('Failed to fetch category nodes:', error);
             }
-            
-            // Mock categories for demo purposes
-            setCategories([
-                {
-                    id: '1',
-                    name_en: 'Electronics',
-                    name_fr: 'Électronique',
-                    createdAt: new Date().toISOString()
-                },
-                {
-                    id: '2',
-                    name_en: 'Clothing',
-                    name_fr: 'Vêtements',
-                    createdAt: new Date().toISOString()
-                },
-                {
-                    id: '3',
-                    name_en: 'Books',
-                    name_fr: 'Livres',
-                    createdAt: new Date().toISOString()
-                },
-                {
-                    id: '4',
-                    name_en: 'Home & Garden',
-                    name_fr: 'Maison et Jardin',
-                    createdAt: new Date().toISOString()
-                }
-            ]);
+            setAllCategoryNodes([]);
         };
 
-        fetchCategories();
+        fetchCategoryNodes();
     }, []);
 
     // Handle escape key to cancel
@@ -142,12 +117,51 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleCategoryChange = (value: string) => {
-        setFormData(prev => ({ ...prev, categoryId: value }));
-        if (errors.categoryId) {
-            setErrors(prev => ({ ...prev, categoryId: undefined }));
+    // Build a flat lookup map from all category nodes
+    const buildNodeMap = (nodes: CategoryNode[]): Map<string, CategoryNode> => {
+        const map = new Map<string, CategoryNode>();
+        const addToMap = (node: CategoryNode) => {
+            map.set(node.id, node);
+            node.children.forEach(addToMap);
+        };
+        nodes.forEach(addToMap);
+        return map;
+    };
+
+    // Build path string for a given node id (e.g. "Dept > Nav > Category")
+    const getCategoryPath = (nodeId: string): string => {
+        const nodeMap = buildNodeMap(allCategoryNodes);
+        const parts: string[] = [];
+        let current = nodeMap.get(nodeId);
+        while (current) {
+            parts.unshift(current.name_en);
+            current = current.parentId ? nodeMap.get(current.parentId) : undefined;
+        }
+        return parts.join(' > ');
+    };
+
+    // Get current level nodes to display in the navigator
+    const currentLevelNodes = navigationPath.length === 0
+        ? allCategoryNodes.filter(n => !n.parentId)
+        : navigationPath[navigationPath.length - 1].children;
+
+    const handleNodeClick = (node: CategoryNode) => {
+        if (node.nodeType === 'Category') {
+            // Select this category
+            setFormData(prev => ({ ...prev, categoryId: node.id }));
+            if (errors.categoryId) {
+                setErrors(prev => ({ ...prev, categoryId: undefined }));
+            }
+        } else {
+            // Drill into this node
+            setNavigationPath(prev => [...prev, node]);
         }
     };
+
+    const handleBreadcrumbClick = (index: number) => {
+        setNavigationPath(prev => prev.slice(0, index));
+    };
+
 
     // Variant Attributes handlers
     const addVariantAttribute = () => {
@@ -370,20 +384,64 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                     <div className="form-grid">
                         {/* Category Selection */}
                         <div className="form-group full-width">
-                            <label htmlFor="categoryId">Category *</label>
-                            <select
-                                id="categoryId"
-                                value={formData.categoryId}
-                                onChange={(e) => handleCategoryChange(e.target.value)}
-                                className={errors.categoryId ? 'error' : ''}
-                            >
-                                <option value="">Select a category</option>
-                                {categories.map(category => (
-                                    <option key={category.id} value={category.id}>
-                                        {category.name_en} / {category.name_fr}
-                                    </option>
-                                ))}
-                            </select>
+                            <label>Category *</label>
+                            {formData.categoryId && (
+                                <div className="category-selected-path">
+                                    <strong>Selected:</strong> {getCategoryPath(formData.categoryId)}
+                                    <button
+                                        type="button"
+                                        className="category-clear-btn"
+                                        onClick={() => { setFormData(prev => ({ ...prev, categoryId: '' })); setNavigationPath([]); }}
+                                    >
+                                        Change
+                                    </button>
+                                </div>
+                            )}
+                            {!formData.categoryId && (
+                                <div className="category-navigator">
+                                    <div className="category-breadcrumb">
+                                        <span
+                                            className="category-breadcrumb-item"
+                                            onClick={() => handleBreadcrumbClick(0)}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            All
+                                        </span>
+                                        {navigationPath.map((node, index) => (
+                                            <span key={node.id}>
+                                                <span className="category-breadcrumb-sep"> &gt; </span>
+                                                <span
+                                                    className="category-breadcrumb-item"
+                                                    onClick={() => handleBreadcrumbClick(index + 1)}
+                                                    style={{ cursor: 'pointer' }}
+                                                >
+                                                    {node.name_en}
+                                                </span>
+                                            </span>
+                                        ))}
+                                    </div>
+                                    <div className="category-node-list">
+                                        {currentLevelNodes.length === 0 && (
+                                            <p className="category-empty">No categories available.</p>
+                                        )}
+                                        {currentLevelNodes.map(node => (
+                                            <div
+                                                key={node.id}
+                                                className={`category-node-item category-node-type-${node.nodeType.toLowerCase()}`}
+                                                onClick={() => handleNodeClick(node)}
+                                            >
+                                                <span className="category-node-name">{node.name_en} / {node.name_fr}</span>
+                                                {node.nodeType !== 'Category' && (
+                                                    <span className="category-node-arrow">›</span>
+                                                )}
+                                                {node.nodeType === 'Category' && (
+                                                    <span className="category-node-select">Select</span>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                             {errors.categoryId && (
                                 <span className="error-message">{errors.categoryId}</span>
                             )}

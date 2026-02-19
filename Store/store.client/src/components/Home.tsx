@@ -534,7 +534,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         // State will be updated by the scroll event listener
     };
 
-    const canScrollPrev = carouselScrollPosition > 0;
+    const canScrollPrev = carouselScrollPosition > 10;
 
     // Get text based on selected language
     const getText = (en: string, fr: string) => language === 'fr' ? fr : en;

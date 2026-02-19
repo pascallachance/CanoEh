@@ -125,6 +125,20 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const carouselRef = useRef<HTMLDivElement>(null);
     const cardsSectionRef = useRef<HTMLDivElement>(null);
 
+    /**
+     * Updates the carousel scroll state by reading current scroll position
+     * and calculating button enable/disable states
+     */
+    const updateCarouselScrollState = () => {
+        const container = carouselRef.current;
+        if (container) {
+            const scrollLeft = container.scrollLeft;
+            const maxScrollLeft = container.scrollWidth - container.clientWidth;
+            setCarouselScrollPosition(scrollLeft);
+            setCanScrollNext(scrollLeft < maxScrollLeft - 10);
+        }
+    };
+
     useEffect(() => {
         // Set language based on user or system settings
         const browserLang = navigator.language.toLowerCase();
@@ -142,12 +156,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         // Add scroll listener to update carousel position
         const container = carouselRef.current;
         const handleScroll = () => {
-            if (container) {
-                const scrollLeft = container.scrollLeft;
-                const maxScrollLeft = container.scrollWidth - container.clientWidth;
-                setCarouselScrollPosition(scrollLeft);
-                setCanScrollNext(scrollLeft < maxScrollLeft - 10);
-            }
+            updateCarouselScrollState();
         };
 
         if (container) {
@@ -187,13 +196,11 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             // After updating the visible cards count, trigger scroll state update
             // This ensures the carousel buttons reflect the new layout
-            const container = carouselRef.current;
-            if (container) {
-                const scrollLeft = container.scrollLeft;
-                const maxScrollLeft = container.scrollWidth - container.clientWidth;
-                setCarouselScrollPosition(scrollLeft);
-                setCanScrollNext(scrollLeft < maxScrollLeft - 10);
-            }
+            // Use requestAnimationFrame to ensure CSS changes are applied and layout is recalculated
+            // before reading scroll dimensions for the carousel
+            window.requestAnimationFrame(() => {
+                updateCarouselScrollState();
+            });
         };
 
         // Debounced version for resize events to prevent excessive re-calculations

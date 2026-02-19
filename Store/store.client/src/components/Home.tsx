@@ -73,6 +73,39 @@ const SUGGESTED_ITEMS_COUNT = 4;
 const OFFERS_COUNT = 4;
 const PRIMARY_IMAGE_PATTERN = /_1\.(jpg|jpeg|png|gif|webp)$/i; // Pattern to match primary product images ending with _1
 
+// Default CSS variable values (must match :root in Home.css)
+const DEFAULT_CARD_WIDTH = 350;
+const DEFAULT_CARDS_GAP = 20;
+const DEFAULT_CAROUSEL_GAP = 10;
+const RESIZE_DEBOUNCE_MS = 150;
+
+/**
+ * Helper function to read CSS card dimension variables
+ * @returns Object containing card width, gap, and carousel gap
+ */
+function getCSSCardDimensions() {
+    const rootStyle = getComputedStyle(document.documentElement);
+    return {
+        cardWidth: parseInt(rootStyle.getPropertyValue('--card-width')) || DEFAULT_CARD_WIDTH,
+        gap: parseInt(rootStyle.getPropertyValue('--cards-gap')) || DEFAULT_CARDS_GAP,
+        carouselGap: parseInt(rootStyle.getPropertyValue('--carousel-gap')) || DEFAULT_CAROUSEL_GAP
+    };
+}
+
+/**
+ * Debounce utility to limit function execution frequency
+ * @param func Function to debounce
+ * @param wait Delay in milliseconds
+ * @returns Debounced function
+ */
+function debounce<T extends (...args: any[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void {
+    let timeout: NodeJS.Timeout | null = null;
+    return (...args: Parameters<T>) => {
+        if (timeout) clearTimeout(timeout);
+        timeout = setTimeout(() => func(...args), wait);
+    };
+}
+
 function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const navigate = useNavigate();
     const [language, setLanguage] = useState<string>('en');
@@ -134,14 +167,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     // Effect to dynamically adjust visible cards count based on available space
     useEffect(() => {
         const updateVisibleCardsCount = () => {
-            const container = carouselRef.current;
-            if (!container) return;
-
-            // Get card width and gap from CSS variables
-            const rootStyle = getComputedStyle(document.documentElement);
-            const cardWidth = parseInt(rootStyle.getPropertyValue('--card-width')) || 350;
-            const gap = parseInt(rootStyle.getPropertyValue('--cards-gap')) || 20;
-            const carouselGap = parseInt(rootStyle.getPropertyValue('--carousel-gap')) || 10;
+            // Get card width and gap from CSS variables using helper function
+            const { cardWidth, gap, carouselGap } = getCSSCardDimensions();
 
             // Calculate available width for cards (viewport width minus carousel gaps)
             const availableWidth = window.innerWidth - (2 * carouselGap);
@@ -159,11 +186,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
             document.documentElement.style.setProperty('--cards-visible-count', visibleCount.toString());
         };
 
-        // Update on mount
-        updateVisibleCardsCount();
-
-        // Update on window resize
-        window.addEventListener('resize', updateVisibleCardsCount);
+        // Debounced version for resize events to prevent excessive re-calculations
+        const debouncedUpdate = debounce(updateVisibleCardsCount, RESIZE_DEBOUNCE_MS);
 
         // Use ResizeObserver to detect when the cards-section changes size
         // Check if ResizeObserver is available (not in all test environments)
@@ -171,16 +195,20 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         let resizeObserver: ResizeObserver | null = null;
         
         if (cardsSection && typeof ResizeObserver !== 'undefined') {
-            resizeObserver = new ResizeObserver(() => {
-                updateVisibleCardsCount();
-            });
+            resizeObserver = new ResizeObserver(debouncedUpdate);
             resizeObserver.observe(cardsSection);
         }
 
+        // Update on window resize with debouncing
+        window.addEventListener('resize', debouncedUpdate);
+
+        // Initial update after setup, using requestAnimationFrame to ensure styles are computed
+        requestAnimationFrame(updateVisibleCardsCount);
+
         return () => {
-            window.removeEventListener('resize', updateVisibleCardsCount);
-            if (resizeObserver && cardsSection) {
-                resizeObserver.unobserve(cardsSection);
+            window.removeEventListener('resize', debouncedUpdate);
+            if (resizeObserver) {
+                resizeObserver.disconnect();
             }
         };
     }, []);
@@ -453,10 +481,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         const container = carouselRef.current;
         if (!container) return;
 
-        // Get card width and gap from CSS variables
-        const rootStyle = getComputedStyle(document.documentElement);
-        const cardWidth = parseInt(rootStyle.getPropertyValue('--card-width')) || 350;
-        const gap = parseInt(rootStyle.getPropertyValue('--cards-gap')) || 20;
+        // Get card width and gap from CSS variables using helper function
+        const { cardWidth, gap } = getCSSCardDimensions();
         
         // Calculate actual number of cards that fit in the visible container width
         // This accounts for the min() constraint in --visible-cards-width

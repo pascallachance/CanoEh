@@ -510,12 +510,9 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         const currentScroll = container.scrollLeft;
         const maxScrollLeft = container.scrollWidth - container.clientWidth;
         
-        // Use direction-aware rounding to avoid skipping pages
-        // Floor for next: if at 0.8 pages, floor to 0, so next goes to page 1
-        // Ceil for prev: if at 1.2 pages, ceil to 2, so prev goes to page 1
-        const currentPage = direction === 'next' 
-            ? Math.floor(currentScroll / pageWidth)
-            : Math.ceil(currentScroll / pageWidth);
+        // Calculate current page using Math.round to handle positions near page boundaries
+        // This ensures that when we're within 0.5 pages of a boundary, we snap to the nearest page
+        const currentPage = Math.round(currentScroll / pageWidth);
         
         // Calculate target page
         const targetPage = direction === 'next' ? currentPage + 1 : currentPage - 1;

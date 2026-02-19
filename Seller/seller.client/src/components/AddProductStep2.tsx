@@ -435,8 +435,17 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                                 key={node.id}
                                                 className={`category-node-item category-node-type-${node.nodeType.toLowerCase()}`}
                                                 role="button"
+                                                className={`category-node-item category-node-type-${node.nodeType.toLowerCase()}`}
+                                                role="button"
                                                 tabIndex={0}
+                                                aria-label={`${node.nodeType === 'Category' ? 'Select category' : 'Navigate to subcategory'}: ${node.name_en} / ${node.name_fr}`}
                                                 onClick={() => handleNodeClick(node)}
+                                                onKeyDown={(event) => {
+                                                    if (event.key === 'Enter' || event.key === ' ') {
+                                                        event.preventDefault();
+                                                        handleNodeClick(node);
+                                                    }
+                                                }}
                                                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleNodeClick(node); } }}
                                             >
                                                 <span className="category-node-name">{node.name_en} / {node.name_fr}</span>

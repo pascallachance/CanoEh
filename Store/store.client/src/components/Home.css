@@ -1,6 +1,6 @@
 :root {
     --cards-gap: 20px;
-    --card-width: 310px;
+    --card-width: 350px;
     --cards-visible-count: 5; /* Will be dynamically updated by JavaScript */
     --carousel-button-width: 50px;
     --carousel-gap: 10px;

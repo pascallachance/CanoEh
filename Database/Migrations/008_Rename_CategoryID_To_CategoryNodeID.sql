@@ -53,16 +53,34 @@ GO
 
 -- =============================================
 -- Add FK constraint referencing CategoryNode table
+-- (only if existing data is consistent)
 -- =============================================
 IF NOT EXISTS (
     SELECT * FROM sys.foreign_keys 
     WHERE name = 'FK_Item_CategoryNode' AND parent_object_id = OBJECT_ID('dbo.Item')
 )
 BEGIN
-    ALTER TABLE dbo.Item
-        ADD CONSTRAINT FK_Item_CategoryNode
-        FOREIGN KEY (CategoryNodeID) REFERENCES dbo.CategoryNode(Id);
-    PRINT 'Added constraint FK_Item_CategoryNode.';
+    -- Ensure all existing CategoryNodeID values in Item have a matching CategoryNode(Id)
+    IF NOT EXISTS (
+        SELECT 1
+        FROM dbo.Item i
+        WHERE i.CategoryNodeID IS NOT NULL
+          AND NOT EXISTS (
+              SELECT 1
+              FROM dbo.CategoryNode cn
+              WHERE cn.Id = i.CategoryNodeID
+          )
+    )
+    BEGIN
+        ALTER TABLE dbo.Item
+            ADD CONSTRAINT FK_Item_CategoryNode
+            FOREIGN KEY (CategoryNodeID) REFERENCES dbo.CategoryNode(Id);
+        PRINT 'Added constraint FK_Item_CategoryNode.';
+    END
+    ELSE
+    BEGIN
+        PRINT 'WARNING: FK_Item_CategoryNode not added because some Item.CategoryNodeID values do not exist in CategoryNode(Id).';
+    END
 END
 GO
 

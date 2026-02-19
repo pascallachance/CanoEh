@@ -484,7 +484,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             Name_fr: step1Data.name_fr,
             Description_en: step1Data.description,
             Description_fr: step1Data.description_fr,
-            CategoryID: step2Data.categoryId,
+            CategoryNodeID: step2Data.categoryId,
             ItemVariantFeatures: itemVariantFeatures,
             Variants: variants.map(variant => ({
                 Price: variant.price,

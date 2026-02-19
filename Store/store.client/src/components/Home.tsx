@@ -51,7 +51,7 @@ interface GetItemResponse {
     description_en?: string;
     description_fr?: string;
     imageUrl?: string;
-    categoryID: string;
+    categoryNodeID: string;
     variants: ItemVariantDto[];
     itemAttributes: ItemAttributeDto[];
     createdAt: string;

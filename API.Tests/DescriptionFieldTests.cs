@@ -22,7 +22,7 @@ namespace API.Tests
                 Name_fr = "Article de test",
                 Description_en = description_en,
                 Description_fr = description_fr,
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
                 ItemVariantFeatures = new List<ItemVariantFeatures>(),
                 CreatedAt = DateTime.UtcNow,
@@ -49,7 +49,7 @@ namespace API.Tests
                 Name_fr = "Article de test",
                 Description_en = null, // Should be allowed
                 Description_fr = null, // Should be allowed
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
                 ItemVariantFeatures = new List<ItemVariantFeatures>(),
                 CreatedAt = DateTime.UtcNow,
@@ -77,7 +77,7 @@ namespace API.Tests
                 Name_fr = "Article de test",
                 Description_en = description_en,
                 Description_fr = description_fr,
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<CreateItemVariantRequest>(),
                 ItemVariantFeatures = new List<CreateItemVariantFeaturesRequest>()
             };
@@ -103,7 +103,7 @@ namespace API.Tests
                 Name_fr = "Article de test",
                 Description_en = description_en,
                 Description_fr = description_fr,
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
                 ItemVariantFeatures = new List<ItemVariantFeatures>()
             };
@@ -129,7 +129,7 @@ namespace API.Tests
                 Name_fr = "Article de test",
                 Description_en = description_en,
                 Description_fr = description_fr,
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<ItemVariantDto>(),
                 ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
                 CreatedAt = DateTime.UtcNow,

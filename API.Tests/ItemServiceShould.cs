@@ -40,7 +40,7 @@ namespace API.Tests
                 Name_fr = "Article de test",
                 Description_en = "Test Description EN",
                 Description_fr = "Test Description FR",
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<CreateItemVariantRequest>(),
                 ItemVariantFeatures = new List<CreateItemVariantFeaturesRequest>()
             };
@@ -67,7 +67,7 @@ namespace API.Tests
                 Name_fr = "", // Invalid Name_fr
                 Description_en = "Test Description EN",
                 Description_fr = "Test Description FR",
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<CreateItemVariantRequest>(),
                 ItemVariantFeatures = new List<CreateItemVariantFeaturesRequest>()
             };
@@ -94,7 +94,7 @@ namespace API.Tests
                     Name_fr = "Article de test 1",
                     Description_en = "Test item 1 description EN",
                     Description_fr = "Test item 1 description FR",
-                    CategoryID = Guid.NewGuid(),
+                    CategoryNodeID = Guid.NewGuid(),
                     Variants = new List<ItemVariant>(),
                     ItemVariantFeatures = new List<ItemVariantFeatures>(),
                     CreatedAt = DateTime.UtcNow,
@@ -128,7 +128,7 @@ namespace API.Tests
                 Name_fr = "Article de test",
                 Description_en = "Test item description EN",
                 Description_fr = "Test item description FR",
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
                 ItemVariantFeatures = new List<ItemVariantFeatures>(),
                 CreatedAt = DateTime.UtcNow,
@@ -177,7 +177,7 @@ namespace API.Tests
                 Name_fr = "Article mis à jour",
                 Description_en = "Updated Description EN",
                 Description_fr = "Updated Description FR",
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
                 ItemVariantFeatures = new List<ItemVariantFeatures>()
             };
@@ -190,7 +190,7 @@ namespace API.Tests
                 Name_fr = "Article original",
                 Description_en = "Original Description EN",
                 Description_fr = "Original Description FR",
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
                 ItemVariantFeatures = new List<ItemVariantFeatures>(),
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
@@ -206,7 +206,7 @@ namespace API.Tests
                 Name_fr = updateItemRequest.Name_fr,
                 Description_en = updateItemRequest.Description_en,
                 Description_fr = updateItemRequest.Description_fr,
-                CategoryID = updateItemRequest.CategoryID,
+                CategoryNodeID = updateItemRequest.CategoryNodeID,
                 Variants = updateItemRequest.Variants,
                 ItemVariantFeatures = updateItemRequest.ItemVariantFeatures,
                 CreatedAt = existingItem.CreatedAt,
@@ -241,7 +241,7 @@ namespace API.Tests
                 Name_fr = "Article mis à jour",
                 Description_en = "Updated Description EN",
                 Description_fr = "Updated Description FR",
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
                 ItemVariantFeatures = new List<ItemVariantFeatures>()
             };
@@ -271,7 +271,7 @@ namespace API.Tests
                 Name_fr = "Article de test",
                 Description_en = "Test item description EN",
                 Description_fr = "Test item description FR",
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
                 ItemVariantFeatures = new List<ItemVariantFeatures>(),
                 CreatedAt = DateTime.UtcNow,
@@ -362,7 +362,7 @@ namespace API.Tests
                 Name_fr = "Article de test",
                 Description_en = "Test Description EN",
                 Description_fr = "Test Description FR",
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<CreateItemVariantRequest>
                 {
                     new CreateItemVariantRequest
@@ -410,7 +410,7 @@ namespace API.Tests
                 Name_fr = "Article de test",
                 Description_en = "Test Description EN",
                 Description_fr = "Test Description FR",
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<CreateItemVariantRequest>(),
                 ItemVariantFeatures = new List<CreateItemVariantFeaturesRequest>
                 {
@@ -450,7 +450,7 @@ namespace API.Tests
                 Name_fr = "Article de test",
                 Description_en = "Test Description EN",
                 Description_fr = "Test Description FR",
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<CreateItemVariantRequest>
                 {
                     new CreateItemVariantRequest
@@ -533,7 +533,7 @@ namespace API.Tests
                     Name_fr = "Article de test 1",
                     Description_en = "Test item 1 description EN",
                     Description_fr = "Test item 1 description FR",
-                    CategoryID = Guid.NewGuid(),
+                    CategoryNodeID = Guid.NewGuid(),
                     Variants = new List<ItemVariant>(),
                     ItemVariantFeatures = new List<ItemVariantFeatures>(),
                     CreatedAt = DateTime.UtcNow,
@@ -548,7 +548,7 @@ namespace API.Tests
                     Name_fr = "Article de test 2",
                     Description_en = "Test item 2 description EN",
                     Description_fr = "Test item 2 description FR",
-                    CategoryID = Guid.NewGuid(),
+                    CategoryNodeID = Guid.NewGuid(),
                     Variants = new List<ItemVariant>(),
                     ItemVariantFeatures = new List<ItemVariantFeatures>(),
                     CreatedAt = DateTime.UtcNow,
@@ -966,7 +966,7 @@ namespace API.Tests
                 Name_fr = "Article de test",
                 Description_en = "Test item description EN",
                 Description_fr = "Test item description FR",
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
                 ItemVariantFeatures = new List<ItemVariantFeatures>(),
                 CreatedAt = DateTime.UtcNow,
@@ -1020,7 +1020,7 @@ namespace API.Tests
                 Name_fr = "Article de test",
                 Description_en = "Test item description EN",
                 Description_fr = "Test item description FR",
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
                 ItemVariantFeatures = new List<ItemVariantFeatures>(),
                 CreatedAt = DateTime.UtcNow,
@@ -1063,7 +1063,7 @@ namespace API.Tests
                 Name_fr = "Article de test",
                 Description_en = "Test item description EN",
                 Description_fr = "Test item description FR",
-                CategoryID = Guid.NewGuid(),
+                CategoryNodeID = Guid.NewGuid(),
                 Variants = new List<ItemVariant>(),
                 ItemVariantFeatures = new List<ItemVariantFeatures>(),
                 CreatedAt = DateTime.UtcNow,
@@ -1181,7 +1181,7 @@ namespace API.Tests
                     Name_fr = "Article récent 1",
                     Description_en = "Test Description EN",
                     Description_fr = "Test Description FR",
-                    CategoryID = Guid.NewGuid(),
+                    CategoryNodeID = Guid.NewGuid(),
                     Variants = new List<ItemVariant>
                     {
                         new ItemVariant
@@ -1210,7 +1210,7 @@ namespace API.Tests
                     Name_fr = "Article récent 2",
                     Description_en = "Test Description EN",
                     Description_fr = "Test Description FR",
-                    CategoryID = Guid.NewGuid(),
+                    CategoryNodeID = Guid.NewGuid(),
                     Variants = new List<ItemVariant>(),
                     ItemVariantFeatures = new List<ItemVariantFeatures>(),
                     CreatedAt = DateTime.UtcNow.AddMinutes(-1),
@@ -1302,7 +1302,7 @@ namespace API.Tests
                     Name_fr = "Article de test",
                     Description_en = "Description EN",
                     Description_fr = "Description FR",
-                    CategoryID = Guid.NewGuid(),
+                    CategoryNodeID = Guid.NewGuid(),
                     Variants = new List<ItemVariant>
                     {
                         new ItemVariant
@@ -1382,7 +1382,7 @@ namespace API.Tests
                     Name_fr = "Article suggéré 1",
                     Description_en = "Test Description EN",
                     Description_fr = "Test Description FR",
-                    CategoryID = Guid.NewGuid(),
+                    CategoryNodeID = Guid.NewGuid(),
                     Variants = new List<ItemVariant>
                     {
                         new ItemVariant
@@ -1411,7 +1411,7 @@ namespace API.Tests
                     Name_fr = "Article suggéré 2",
                     Description_en = "Test Description EN",
                     Description_fr = "Test Description FR",
-                    CategoryID = Guid.NewGuid(),
+                    CategoryNodeID = Guid.NewGuid(),
                     Variants = new List<ItemVariant>
                     {
                         new ItemVariant
@@ -1517,7 +1517,7 @@ namespace API.Tests
                     Name_fr = "Article de test suggéré",
                     Description_en = "Suggested Description EN",
                     Description_fr = "Suggested Description FR",
-                    CategoryID = Guid.NewGuid(),
+                    CategoryNodeID = Guid.NewGuid(),
                     Variants = new List<ItemVariant>
                     {
                         new ItemVariant

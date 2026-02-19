@@ -27,7 +27,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller1',
                     name_en: 'Product 1 - No Image',
                     name_fr: 'Produit 1',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -48,7 +48,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller2',
                     name_en: 'Product 2 - With Image',
                     name_fr: 'Produit 2',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-02',
                     deleted: false,
                     variants: [
@@ -69,7 +69,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller3',
                     name_en: 'Product 3 - No Image',
                     name_fr: 'Produit 3',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-03',
                     deleted: false,
                     variants: [
@@ -90,7 +90,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller4',
                     name_en: 'Product 4 - With Thumbnail',
                     name_fr: 'Produit 4',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-04',
                     deleted: false,
                     variants: [
@@ -111,7 +111,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller5',
                     name_en: 'Product 5 - With Image',
                     name_fr: 'Produit 5',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-05',
                     deleted: false,
                     variants: [
@@ -132,7 +132,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller6',
                     name_en: 'Product 6 - With Image',
                     name_fr: 'Produit 6',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-06',
                     deleted: false,
                     variants: [
@@ -203,7 +203,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller1',
                     name_en: 'Product 1',
                     name_fr: 'Produit 1',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -255,7 +255,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller1',
                     name_en: 'Product 1',
                     name_fr: 'Produit 1',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -306,7 +306,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller1',
                     name_en: 'Product 1',
                     name_fr: 'Produit 1',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -357,7 +357,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller1',
                     name_en: 'Product 1',
                     name_fr: 'Produit 1',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -409,7 +409,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller1',
                     name_en: 'Product 1 - No Image',
                     name_fr: 'Produit 1',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -430,7 +430,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller2',
                     name_en: 'Product 2 - With Image',
                     name_fr: 'Produit 2',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-02',
                     deleted: false,
                     variants: [
@@ -451,7 +451,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller3',
                     name_en: 'Product 3 - No Image',
                     name_fr: 'Produit 3',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-03',
                     deleted: false,
                     variants: [
@@ -472,7 +472,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller4',
                     name_en: 'Product 4 - With Image',
                     name_fr: 'Produit 4',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-04',
                     deleted: false,
                     variants: [
@@ -493,7 +493,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller5',
                     name_en: 'Product 5 - No Image',
                     name_fr: 'Produit 5',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-05',
                     deleted: false,
                     variants: [
@@ -514,7 +514,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller6',
                     name_en: 'Product 6 - No Image',
                     name_fr: 'Produit 6',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-06',
                     deleted: false,
                     variants: [
@@ -569,7 +569,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller1',
                     name_en: 'Product 1',
                     name_fr: 'Produit 1',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -621,7 +621,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller1',
                     name_en: 'Product 1',
                     name_fr: 'Produit 1',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -673,7 +673,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller1',
                     name_en: 'Product 1',
                     name_fr: 'Produit 1',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [
@@ -725,7 +725,7 @@ describe('Home - Image Filtering', () => {
                     sellerID: 'seller1',
                     name_en: 'Product 1',
                     name_fr: 'Produit 1',
-                    categoryID: 'cat1',
+                    categoryNodeID: 'cat1',
                     createdAt: '2024-01-01',
                     deleted: false,
                     variants: [

@@ -22,7 +22,7 @@ INSERT INTO dbo.Item (
     Name_fr, 
     Description_en, 
     Description_fr, 
-    CategoryID, 
+    CategoryNodeID, 
     CreatedAt, 
     UpdatedAt, 
     Deleted)
@@ -33,7 +33,7 @@ VALUES (
     @Name_fr, 
     @Description_en, 
     @Description_fr, 
-    @CategoryID, 
+    @CategoryNodeID, 
     @CreatedAt, 
     @UpdatedAt, 
     @Deleted)";
@@ -45,7 +45,7 @@ VALUES (
                 entity.Name_fr,
                 entity.Description_en,
                 entity.Description_fr,
-                entity.CategoryID,
+                entity.CategoryNodeID,
                 entity.CreatedAt,
                 entity.UpdatedAt,
                 entity.Deleted
@@ -141,7 +141,7 @@ SET
     Name_fr = @Name_fr,
     Description_en = @Description_en,
     Description_fr = @Description_fr,
-    CategoryID = @CategoryID,
+    CategoryNodeID = @CategoryNodeID,
     UpdatedAt = @UpdatedAt,
     Deleted = @Deleted
 WHERE Id = @Id";
@@ -154,7 +154,7 @@ WHERE Id = @Id";
                 entity.Name_fr,
                 entity.Description_en,
                 entity.Description_fr,
-                entity.CategoryID,
+                entity.CategoryNodeID,
                 entity.UpdatedAt,
                 entity.Deleted
             };

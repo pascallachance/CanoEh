@@ -74,7 +74,7 @@ echo "⏳ Waiting for API server to start..."
 for i in {1..30}; do
     # NOTE: The '-k' flag is used to bypass SSL certificate verification because the API server uses a self-signed certificate in development.
     #       This is safe ONLY in local development. Never use '-k' in production scripts, as it disables important security checks.
-    if curl -k -s https://localhost:7182/api/Category/GetAllCategories >/dev/null 2>&1; then
+    if curl -k -s https://localhost:7182/api/CategoryNode/GetAllCategoryNodes >/dev/null 2>&1; then
         echo "✅ API server is ready!"
         break
     fi

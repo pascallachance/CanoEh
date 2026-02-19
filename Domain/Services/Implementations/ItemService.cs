@@ -44,7 +44,7 @@ namespace Domain.Services.Implementations
                     Name_fr = createItemRequest.Name_fr,
                     Description_en = createItemRequest.Description_en,
                     Description_fr = createItemRequest.Description_fr,
-                    CategoryID = createItemRequest.CategoryID,
+                    CategoryNodeID = createItemRequest.CategoryNodeID,
                     CreatedAt = createdAt,
                     UpdatedAt = null,
                     Deleted = false
@@ -73,7 +73,7 @@ INSERT INTO dbo.Item (
     Name_fr, 
     Description_en, 
     Description_fr, 
-    CategoryID, 
+    CategoryNodeID, 
     CreatedAt, 
     UpdatedAt, 
     Deleted)
@@ -84,7 +84,7 @@ VALUES (
     @Name_fr, 
     @Description_en, 
     @Description_fr, 
-    @CategoryID, 
+    @CategoryNodeID, 
     @CreatedAt, 
     @UpdatedAt, 
     @Deleted)";
@@ -304,7 +304,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                         Description_en = item.Description_en,
                         Description_fr = item.Description_fr,
                         ImageUrl = item.ImageUrl,
-                        CategoryID = item.CategoryID,
+                        CategoryNodeID = item.CategoryNodeID,
                         Variants = MapToItemVariantDtos(item.Variants),
                         CreatedAt = item.CreatedAt,
                         UpdatedAt = item.UpdatedAt,
@@ -404,7 +404,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 Description_en = item.Description_en,
                 Description_fr = item.Description_fr,
                 ImageUrl = item.ImageUrl,
-                CategoryID = item.CategoryID,
+                CategoryNodeID = item.CategoryNodeID,
                 Variants = MapToItemVariantDtos(item.Variants),
                 CreatedAt = item.CreatedAt,
                 UpdatedAt = item.UpdatedAt,
@@ -448,7 +448,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 existingItem.Name_fr = updateItemRequest.Name_fr;
                 existingItem.Description_en = updateItemRequest.Description_en;
                 existingItem.Description_fr = updateItemRequest.Description_fr;
-                existingItem.CategoryID = updateItemRequest.CategoryID;
+                existingItem.CategoryNodeID = updateItemRequest.CategoryNodeID;
                 existingItem.Variants = updateItemRequest.Variants;
                 existingItem.UpdatedAt = DateTime.UtcNow;
 
@@ -463,7 +463,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     Description_en = updatedItem.Description_en,
                     Description_fr = updatedItem.Description_fr,
                     ImageUrl = updatedItem.ImageUrl,
-                    CategoryID = updatedItem.CategoryID,
+                    CategoryNodeID = updatedItem.CategoryNodeID,
                     Variants = MapToItemVariantDtos(updatedItem.Variants),
                     CreatedAt = updatedItem.CreatedAt,
                     UpdatedAt = updatedItem.UpdatedAt,

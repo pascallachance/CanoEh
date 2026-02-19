@@ -99,7 +99,7 @@ namespace API.Tests
                 SellerID = companyId,
                 Name_en = "Test Item",
                 Name_fr = "Article de test",
-                CategoryID = Guid.NewGuid()
+                CategoryNodeID = Guid.NewGuid()
             };
             
             _mockItemService
@@ -167,7 +167,7 @@ namespace API.Tests
                 SellerID = companyId,
                 Name_en = "Test Item",
                 Name_fr = "Article de test",
-                CategoryID = Guid.NewGuid()
+                CategoryNodeID = Guid.NewGuid()
             };
             
             _mockItemService
@@ -234,7 +234,7 @@ namespace API.Tests
                 SellerID = companyId,
                 Name_en = "Test Item",
                 Name_fr = "Article de test",
-                CategoryID = Guid.NewGuid()
+                CategoryNodeID = Guid.NewGuid()
             };
             
             _mockItemService
@@ -356,7 +356,7 @@ namespace API.Tests
                 SellerID = companyId,
                 Name_en = "Test Item",
                 Name_fr = "Article de test",
-                CategoryID = Guid.NewGuid()
+                CategoryNodeID = Guid.NewGuid()
             };
             
             _mockItemService
@@ -433,7 +433,7 @@ namespace API.Tests
                 SellerID = companyId,
                 Name_en = "Test Item",
                 Name_fr = "Article de test",
-                CategoryID = Guid.NewGuid()
+                CategoryNodeID = Guid.NewGuid()
             };
             
             _mockItemService

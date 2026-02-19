@@ -10,6 +10,9 @@ global.fetch = vi.fn();
 describe('Home - Carousel Navigation', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        // Set window.innerWidth so that updateVisibleCardsCount computes exactly 3 visible cards.
+        // availableWidth = 1110 - 2*10 = 1090; N = floor((1090+20)/370) = floor(3.0) = 3
+        Object.defineProperty(window, 'innerWidth', { writable: true, value: 1110 });
         // Mock environment variable
         vi.stubEnv('VITE_API_STORE_BASE_URL', 'https://localhost:7182');
         
@@ -27,6 +30,7 @@ describe('Home - Carousel Navigation', () => {
 
     afterEach(() => {
         vi.unstubAllEnvs();
+        Object.defineProperty(window, 'innerWidth', { writable: true, value: 1024 });
     });
 
     it('should navigate backwards correctly when scrollLeft is slightly past a page boundary', async () => {
@@ -54,9 +58,9 @@ describe('Home - Carousel Navigation', () => {
         expect(nextButton).toBeInTheDocument();
 
         // Mock the carousel dimensions
-        // Assume 3 visible cards with 350px width and 20px gap
-        // pageWidth = (3 * 350) + (2 * 20) = 1090px
-        const pageWidth = 1090;
+        // 3 visible cards with 350px card width and 20px gap.
+        // Snap-aligned pageWidth = visibleCount * (cardWidth + gap) = 3 * 370 = 1110px
+        const pageWidth = 1110;
         
         // Set scrollWidth to simulate multiple pages (e.g., 9 cards)
         Object.defineProperty(cardsContainer, 'scrollWidth', {
@@ -73,11 +77,12 @@ describe('Home - Carousel Navigation', () => {
         const scrollToMock = vi.fn();
         cardsContainer.scrollTo = scrollToMock;
 
-        // Simulate being at a position slightly past the first page boundary
-        // This represents the bug scenario where scrollLeft is at pageWidth + small epsilon
+        // Simulate being at a position slightly past the first page boundary.
+        // This represents the real-world scenario where the browser snaps to a position
+        // that is microscopically past the exact page boundary.
         Object.defineProperty(cardsContainer, 'scrollLeft', {
             writable: true,
-            value: pageWidth + 0.001 // 1090.001px
+            value: pageWidth + 0.001 // 1110.001px
         });
 
         // Trigger the scroll event to update button states
@@ -122,7 +127,8 @@ describe('Home - Carousel Navigation', () => {
         expect(prevButton).toBeInTheDocument();
 
         // Mock the carousel dimensions
-        const pageWidth = 1090;
+        // Snap-aligned pageWidth = 3 * (350 + 20) = 1110px
+        const pageWidth = 1110;
         
         Object.defineProperty(cardsContainer, 'scrollWidth', {
             writable: true,
@@ -141,7 +147,7 @@ describe('Home - Carousel Navigation', () => {
         // Simulate being exactly at the first page boundary
         Object.defineProperty(cardsContainer, 'scrollLeft', {
             writable: true,
-            value: pageWidth // Exactly 1090px
+            value: pageWidth // Exactly 1110px
         });
 
         // Trigger scroll event
@@ -185,7 +191,8 @@ describe('Home - Carousel Navigation', () => {
         expect(nextButton).toBeInTheDocument();
 
         // Mock the carousel dimensions
-        const pageWidth = 1090;
+        // Snap-aligned pageWidth = 3 * (350 + 20) = 1110px
+        const pageWidth = 1110;
         
         Object.defineProperty(cardsContainer, 'scrollWidth', {
             writable: true,
@@ -204,7 +211,7 @@ describe('Home - Carousel Navigation', () => {
         // Simulate being at 80% of the way to page 1 (0.8 * pageWidth)
         Object.defineProperty(cardsContainer, 'scrollLeft', {
             writable: true,
-            value: pageWidth * 0.8 // 872px
+            value: pageWidth * 0.8 // 888px
         });
 
         // Trigger scroll event
@@ -220,7 +227,7 @@ describe('Home - Carousel Navigation', () => {
 
         // Verify that scrollTo was called to go to page 1 (not skip to page 2)
         expect(scrollToMock).toHaveBeenCalledWith({
-            left: pageWidth, // Should go to 1090px (page 1), not 2180px (page 2)
+            left: pageWidth, // Should go to 1110px (page 1), not 2220px (page 2)
             behavior: 'smooth'
         });
     });

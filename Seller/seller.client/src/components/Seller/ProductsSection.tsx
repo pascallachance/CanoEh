@@ -409,14 +409,10 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
         setExpandedItemId(null);
     }, [currentPage]);
 
-    // Build flat lookup map for category nodes
+    // Build flat lookup map for category nodes (flat list from API)
     const buildNodeMap = useCallback((nodes: CategoryNode[]): Map<string, CategoryNode> => {
         const map = new Map<string, CategoryNode>();
-        const addToMap = (node: CategoryNode) => {
-            map.set(node.id, node);
-            node.children.forEach(addToMap);
-        };
-        nodes.forEach(addToMap);
+        nodes.forEach(node => map.set(node.id, node));
         return map;
     }, []);
 
@@ -1660,17 +1656,13 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                                     }
                                     return parts.join(' > ');
                                 };
-                                const categoryNodes: CategoryNode[] = [];
-                                const collect = (nodes: CategoryNode[]) => nodes.forEach(n => {
-                                    if (n.nodeType === 'Category') categoryNodes.push(n);
-                                    else collect(n.children);
-                                });
-                                collect(categories);
-                                return categoryNodes.map(node => (
-                                    <option key={node.id} value={node.id}>
-                                        {buildPath(node)}
-                                    </option>
-                                ));
+                                return categories
+                                    .filter(n => n.nodeType === 'Category')
+                                    .map(node => (
+                                        <option key={node.id} value={node.id}>
+                                            {buildPath(node)}
+                                        </option>
+                                    ));
                             })()}
                         </select>
                     </div>
@@ -2120,17 +2112,13 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                                             }
                                             return parts.join(' > ');
                                         };
-                                        const categoryNodes: CategoryNode[] = [];
-                                        const collect = (nodes: CategoryNode[]) => nodes.forEach(n => {
-                                            if (n.nodeType === 'Category') categoryNodes.push(n);
-                                            else collect(n.children);
-                                        });
-                                        collect(categories);
-                                        return categoryNodes.map(node => (
-                                            <option key={node.id} value={node.id}>
-                                                {buildPath(node)}
-                                            </option>
-                                        ));
+                                        return categories
+                                            .filter(n => n.nodeType === 'Category')
+                                            .map(node => (
+                                                <option key={node.id} value={node.id}>
+                                                    {buildPath(node)}
+                                                </option>
+                                            ));
                                     })()}
                                 </select>
                             </div>

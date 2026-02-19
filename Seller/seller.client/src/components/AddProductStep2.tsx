@@ -117,16 +117,16 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
         return Object.keys(newErrors).length === 0;
     };
 
-    // Build a flat lookup map from all category nodes
+    // Build a flat lookup map from all category nodes (flat list from API)
     const buildNodeMap = (nodes: CategoryNode[]): Map<string, CategoryNode> => {
         const map = new Map<string, CategoryNode>();
-        const addToMap = (node: CategoryNode) => {
-            map.set(node.id, node);
-            node.children.forEach(addToMap);
-        };
-        nodes.forEach(addToMap);
+        nodes.forEach(node => map.set(node.id, node));
         return map;
     };
+
+    // Get children of a node from the flat list
+    const getChildren = (parentId: string): CategoryNode[] =>
+        allCategoryNodes.filter(n => n.parentId === parentId);
 
     // Build path string for a given node id (e.g. "Dept > Nav > Category")
     const getCategoryPath = (nodeId: string): string => {
@@ -143,7 +143,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
     // Get current level nodes to display in the navigator
     const currentLevelNodes = navigationPath.length === 0
         ? allCategoryNodes.filter(n => !n.parentId)
-        : navigationPath[navigationPath.length - 1].children;
+        : getChildren(navigationPath[navigationPath.length - 1].id);
 
     const handleNodeClick = (node: CategoryNode) => {
         if (node.nodeType === 'Category') {

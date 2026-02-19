@@ -406,23 +406,23 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                             tabIndex={0}
                                             onClick={() => handleBreadcrumbClick(0)}
                                             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleBreadcrumbClick(0); } }}
-                                            style={{ cursor: 'pointer' }}
+                                        <button
+                                            type="button"
+                                            className="category-breadcrumb-item"
+                                            onClick={() => handleBreadcrumbClick(0)}
                                         >
                                             All
-                                        </span>
+                                        </button>
                                         {navigationPath.map((node, index) => (
                                             <span key={node.id}>
                                                 <span className="category-breadcrumb-sep"> &gt; </span>
-                                                <span
+                                                <button
+                                                    type="button"
                                                     className="category-breadcrumb-item"
-                                                    role="button"
-                                                    tabIndex={0}
                                                     onClick={() => handleBreadcrumbClick(index + 1)}
-                                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleBreadcrumbClick(index + 1); } }}
-                                                    style={{ cursor: 'pointer' }}
                                                 >
                                                     {node.name_en}
-                                                </span>
+                                                </button>
                                             </span>
                                         ))}
                                     </div>

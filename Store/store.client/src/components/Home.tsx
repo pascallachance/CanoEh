@@ -74,7 +74,7 @@ const OFFERS_COUNT = 4;
 const PRIMARY_IMAGE_PATTERN = /_1\.(jpg|jpeg|png|gif|webp)$/i; // Pattern to match primary product images ending with _1
 
 // Default CSS variable values (must match :root in Home.css)
-const DEFAULT_CARD_WIDTH = 350;
+const DEFAULT_CARD_WIDTH = 310;
 const DEFAULT_CARDS_GAP = 20;
 const DEFAULT_CAROUSEL_GAP = 10;
 const RESIZE_DEBOUNCE_MS = 150;

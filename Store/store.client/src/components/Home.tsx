@@ -510,12 +510,22 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         const currentScroll = container.scrollLeft;
         const maxScrollLeft = container.scrollWidth - container.clientWidth;
         
-        // Use direction-aware rounding to avoid skipping pages
-        // Floor for next: if at 0.8 pages, floor to 0, so next goes to page 1
-        // Ceil for prev: if at 1.2 pages, ceil to 2, so prev goes to page 1
-        const currentPage = direction === 'next' 
-            ? Math.floor(currentScroll / pageWidth)
-            : Math.ceil(currentScroll / pageWidth);
+        // Calculate current page in a direction-aware way to avoid skipping pages.
+        // Use a small epsilon to handle floating-point drift near exact page boundaries.
+        const rawPage = currentScroll / pageWidth;
+        const EPSILON = 0.001;
+        const nearestIntegerPage = Math.round(rawPage);
+        let currentPage: number;
+        if (Math.abs(rawPage - nearestIntegerPage) < EPSILON) {
+            // Close enough to an integer page index: snap to it regardless of direction
+            currentPage = nearestIntegerPage;
+        } else if (direction === 'next') {
+            // When moving forward, treat the user as being on the earlier page
+            currentPage = Math.floor(rawPage + EPSILON);
+        } else {
+            // When moving backward, treat the user as being on the later page
+            currentPage = Math.ceil(rawPage - EPSILON);
+        }
         
         // Calculate target page
         const targetPage = direction === 'next' ? currentPage + 1 : currentPage - 1;

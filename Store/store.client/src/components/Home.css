@@ -524,7 +524,7 @@
 
 @media (max-width: 360px) {
     :root {
-        --card-width: 280px;
+        --card-width: 320px;
         --carousel-button-width: 36px;
         --carousel-gap: 8px;
     }

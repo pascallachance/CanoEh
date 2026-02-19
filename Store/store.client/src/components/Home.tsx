@@ -534,8 +534,12 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         // State will be updated by the scroll event listener
     };
 
-    const canScrollPrev = carouselScrollPosition > 10;
+    // Threshold in pixels used to determine when the carousel can scroll backwards.
+    // Kept as a constant so it can be shared with scroll state logic that handles
+    // fractional scrollLeft values.
+    const SCROLL_BUTTON_THRESHOLD_PX = 10;
 
+    const canScrollPrev = carouselScrollPosition > SCROLL_BUTTON_THRESHOLD_PX;
     // Get text based on selected language
     const getText = (en: string, fr: string) => language === 'fr' ? fr : en;
 

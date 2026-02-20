@@ -1713,5 +1713,38 @@ namespace API.Tests
             Assert.Equal(StatusCodes.Status404NotFound, result.ErrorCode);
             Assert.Equal("Variant not found.", result.Error);
         }
+
+        [Fact]
+        public async Task UpdateVariantImageUrlsAsync_PreservesEmptySlotsInTheMiddle()
+        {
+            // Arrange
+            var variantId = Guid.NewGuid();
+            var variant = new ItemVariant
+            {
+                Id = variantId,
+                ItemId = Guid.NewGuid(),
+                Price = 19.99m,
+                StockQuantity = 100,
+                Sku = "TEST-SKU-001",
+                ImageUrls = null
+            };
+
+            _mockItemVariantRepository.Setup(x => x.GetByIdAsync(variantId))
+                                     .ReturnsAsync(variant);
+            _mockItemVariantRepository.Setup(x => x.UpdateAsync(It.IsAny<ItemVariant>()))
+                                     .ReturnsAsync(variant);
+
+            // Image list with an empty string in the middle; only trailing empties should be trimmed.
+            // Null entries are treated identically to empty strings (position preserved).
+            var imageUrls = new List<string> { "/img1.jpg", "", "/img3.jpg" };
+
+            // Act
+            var result = await _itemService.UpdateVariantImageUrlsAsync(variantId, null, imageUrls);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            // Middle empty entry must be preserved; only trailing empties are stripped
+            Assert.Equal("/img1.jpg,,/img3.jpg", variant.ImageUrls);
+        }
     }
 }

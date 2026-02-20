@@ -542,7 +542,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 const syncedThumbnailUrl =
                     variant.thumbnailFile
                         ? null
-                        : variant.thumbnailUrl && !variant.thumbnailUrl.startsWith('blob:')
+                        : variant.thumbnailUrl &&
+                          !variant.thumbnailUrl.startsWith('blob:') &&
+                          !variant.thumbnailUrl.startsWith('data:')
                             ? toRelativeUrl(variant.thumbnailUrl)
                             : null;
 

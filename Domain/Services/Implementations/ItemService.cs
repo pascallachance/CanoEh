@@ -747,6 +747,10 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     return Result.Failure("Invalid variant ID.", StatusCodes.Status400BadRequest);
                 }
 
+                // NOTE: This method uses a read-modify-write pattern which could be subject to race conditions
+                // if multiple concurrent requests update the same variant's images simultaneously.
+                // For typical usage patterns (single user editing their own products), this is acceptable.
+
                 var variant = await _itemVariantRepository.GetByIdAsync(variantId);
                 if (variant == null)
                 {
@@ -755,7 +759,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
 
                 variant.ThumbnailUrl = string.IsNullOrWhiteSpace(thumbnailUrl) ? null : thumbnailUrl;
 
-                // Build comma-separated string, removing trailing empty slots
+                // Build comma-separated string, removing trailing empty slots.
+                // Null entries are treated as empty strings (via null-coalescing) to maintain position alignment.
                 var trimmedUrls = imageUrls
                     .Select(u => u?.Trim() ?? string.Empty)
                     .ToList();

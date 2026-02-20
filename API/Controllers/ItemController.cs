@@ -708,9 +708,12 @@ namespace API.Controllers
         {
             try
             {
+                _logger.LogInformation("UpdateVariantImageUrls called for variantId: {VariantId}", request.VariantId);
+
                 var validationResult = request.Validate();
                 if (!validationResult.IsSuccess)
                 {
+                    _logger.LogWarning("Validation failed for UpdateVariantImageUrls. VariantId: {VariantId}, Error: {Error}", request.VariantId, validationResult.Error);
                     return BadRequest(validationResult.Error);
                 }
 
@@ -729,6 +732,7 @@ namespace API.Controllers
                 }
 
                 var userId = userResult.Value.ID;
+                _logger.LogInformation("UpdateVariantImageUrls - authenticated userId: {UserId}, variantId: {VariantId}, imageCount: {ImageCount}", userId, request.VariantId, request.ImageUrls.Count);
 
                 // Verify the user owns the item containing this variant
                 var itemResult = await _itemService.GetItemByVariantIdAsync(request.VariantId, userId);
@@ -742,9 +746,11 @@ namespace API.Controllers
                 var result = await _itemService.UpdateVariantImageUrlsAsync(request.VariantId, request.ThumbnailUrl, request.ImageUrls);
                 if (result.IsFailure)
                 {
+                    _logger.LogError("UpdateVariantImageUrlsAsync failed for variantId: {VariantId}, Error: {Error}", request.VariantId, result.Error);
                     return StatusCode(result.ErrorCode ?? StatusCodes.Status500InternalServerError, result.Error);
                 }
 
+                _logger.LogInformation("UpdateVariantImageUrls succeeded for variantId: {VariantId}", request.VariantId);
                 return Ok();
             }
             catch (Exception ex)

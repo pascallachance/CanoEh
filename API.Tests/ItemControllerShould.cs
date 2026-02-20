@@ -1162,5 +1162,170 @@ namespace API.Tests
             Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
             _mockItemService.Verify(x => x.GetSuggestedProductsAsync(4), Times.Once);
         }
+
+        // ===== UpdateVariantImageUrls Controller Tests =====
+
+        private ControllerContext BuildControllerContext(string userEmail)
+        {
+            var claims = new List<System.Security.Claims.Claim>
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, userEmail)
+            };
+            var identity = new System.Security.Claims.ClaimsIdentity(claims);
+            var claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(identity);
+            return new ControllerContext { HttpContext = new DefaultHttpContext { User = claimsPrincipal } };
+        }
+
+        [Fact]
+        public async Task UpdateVariantImageUrls_ReturnOk_WhenUrlsSyncedSuccessfully()
+        {
+            // Arrange
+            var variantId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var userEmail = "seller@example.com";
+            _controller.ControllerContext = BuildControllerContext(userEmail);
+
+            var user = new User { ID = userId, Email = userEmail, Firstname = "Test", Lastname = "Seller", Password = "testpass" };
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ReturnsAsync(Result.Success(user));
+
+            var itemResponse = new GetItemResponse
+            {
+                Id = Guid.NewGuid(),
+                SellerID = userId,
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Description_en = "Desc",
+                Description_fr = "Desc",
+                CategoryNodeID = Guid.NewGuid(),
+                Variants = new List<ItemVariantDto>(),
+                CreatedAt = DateTime.UtcNow,
+                Deleted = false
+            };
+            _mockItemService.Setup(x => x.GetItemByVariantIdAsync(variantId, userId))
+                           .ReturnsAsync(Result.Success(itemResponse));
+            _mockItemService.Setup(x => x.UpdateVariantImageUrlsAsync(variantId, It.IsAny<string?>(), It.IsAny<List<string>>()))
+                           .ReturnsAsync(Result.Success());
+
+            var request = new UpdateVariantImageUrlsRequest
+            {
+                VariantId = variantId,
+                ThumbnailUrl = "/uploads/c/v/v_thumb.jpg",
+                ImageUrls = new List<string> { "/uploads/c/v/v_1.jpg" }
+            };
+
+            // Act
+            var response = await _controller.UpdateVariantImageUrls(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkResult>(response);
+            Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+            _mockItemService.Verify(x => x.UpdateVariantImageUrlsAsync(variantId, request.ThumbnailUrl, request.ImageUrls), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateVariantImageUrls_ReturnUnauthorized_WhenUserNotAuthenticated()
+        {
+            // Arrange - no claims set
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = new System.Security.Claims.ClaimsPrincipal() }
+            };
+
+            var request = new UpdateVariantImageUrlsRequest { VariantId = Guid.NewGuid() };
+
+            // Act
+            var response = await _controller.UpdateVariantImageUrls(request);
+
+            // Assert
+            var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(response);
+            Assert.Equal(StatusCodes.Status401Unauthorized, unauthorizedResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task UpdateVariantImageUrls_ReturnBadRequest_WhenVariantIdIsEmpty()
+        {
+            // Arrange
+            var userEmail = "seller@example.com";
+            _controller.ControllerContext = BuildControllerContext(userEmail);
+            var user = new User { ID = Guid.NewGuid(), Email = userEmail, Firstname = "Test", Lastname = "Seller", Password = "testpass" };
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ReturnsAsync(Result.Success(user));
+
+            var request = new UpdateVariantImageUrlsRequest { VariantId = Guid.Empty };
+
+            // Act
+            var response = await _controller.UpdateVariantImageUrls(request);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task UpdateVariantImageUrls_ReturnNotFound_WhenVariantNotOwnedByUser()
+        {
+            // Arrange
+            var variantId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var userEmail = "seller@example.com";
+            _controller.ControllerContext = BuildControllerContext(userEmail);
+
+            var user = new User { ID = userId, Email = userEmail, Firstname = "Test", Lastname = "Seller", Password = "testpass" };
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ReturnsAsync(Result.Success(user));
+            _mockItemService.Setup(x => x.GetItemByVariantIdAsync(variantId, userId))
+                           .ReturnsAsync(Result.Failure<GetItemResponse>("Variant not found.", StatusCodes.Status404NotFound));
+
+            var request = new UpdateVariantImageUrlsRequest { VariantId = variantId };
+
+            // Act
+            var response = await _controller.UpdateVariantImageUrls(request);
+
+            // Assert
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(response);
+            Assert.Equal(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task UpdateVariantImageUrls_ReturnInternalServerError_WhenServiceFails()
+        {
+            // Arrange
+            var variantId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var userEmail = "seller@example.com";
+            _controller.ControllerContext = BuildControllerContext(userEmail);
+
+            var user = new User { ID = userId, Email = userEmail, Firstname = "Test", Lastname = "Seller", Password = "testpass" };
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ReturnsAsync(Result.Success(user));
+
+            var itemResponse = new GetItemResponse
+            {
+                Id = Guid.NewGuid(),
+                SellerID = userId,
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Description_en = "Desc",
+                Description_fr = "Desc",
+                CategoryNodeID = Guid.NewGuid(),
+                Variants = new List<ItemVariantDto>(),
+                CreatedAt = DateTime.UtcNow,
+                Deleted = false
+            };
+            _mockItemService.Setup(x => x.GetItemByVariantIdAsync(variantId, userId))
+                           .ReturnsAsync(Result.Success(itemResponse));
+            _mockItemService.Setup(x => x.UpdateVariantImageUrlsAsync(variantId, It.IsAny<string?>(), It.IsAny<List<string>>()))
+                           .ReturnsAsync(Result.Failure("DB error.", StatusCodes.Status500InternalServerError));
+
+            var request = new UpdateVariantImageUrlsRequest { VariantId = variantId };
+
+            // Act
+            var response = await _controller.UpdateVariantImageUrls(request);
+
+            // Assert
+            var errorResult = Assert.IsType<ObjectResult>(response);
+            Assert.Equal(StatusCodes.Status500InternalServerError, errorResult.StatusCode);
+        }
     }
 }

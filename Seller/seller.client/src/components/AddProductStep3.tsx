@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import './AddProductStep3.css';
 import { ApiClient } from '../utils/apiClient';
 import { formatVariantAttribute } from '../utils/bilingualArrayUtils';
-import { toAbsoluteUrl, toAbsoluteUrlArray } from '../utils/urlUtils';
+import { toAbsoluteUrl, toAbsoluteUrlArray, toRelativeUrl } from '../utils/urlUtils';
 import { useNotifications } from '../contexts/useNotifications';
 import type { AddProductStep1Data } from './AddProductStep1';
 import type { AddProductStep2Data } from './AddProductStep2';
@@ -525,6 +525,54 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
 
     // Helper function to upload images for a variant (shared between create and update)
     const uploadVariantImages = async (variant: ItemVariant, apiVariantId: string) => {
+        // In edit mode, sync the DB image URLs to match the current UI state before uploading.
+        // This ensures that images removed or reordered in the UI are persisted correctly.
+        if (editMode) {
+            try {
+                // Build the list of relative URLs for server-hosted images, preserving position.
+                // Positions occupied by a new File upload are sent as empty string so that the
+                // subsequent UploadImage call can fill them in at the correct index.
+                const syncedImageUrls = (variant.imageUrls || []).map((url, i) => {
+                    const isServerHosted = !variant.imageFiles || variant.imageFiles[i] === null || variant.imageFiles[i] === undefined;
+                    return isServerHosted ? toRelativeUrl(url) : '';
+                });
+
+                // Determine the thumbnail that should be preserved in the DB.
+                // If a new thumbnailFile is provided the upload step will overwrite it, so pass null.
+                const syncedThumbnailUrl =
+                    variant.thumbnailFile
+                        ? null
+                        : variant.thumbnailUrl &&
+                          !variant.thumbnailUrl.startsWith('blob:') &&
+                          !variant.thumbnailUrl.startsWith('data:')
+                            ? toRelativeUrl(variant.thumbnailUrl)
+                            : null;
+
+                const syncResponse = await fetch(
+                    `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/UpdateVariantImageUrls`,
+                    {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            VariantId: apiVariantId,
+                            ThumbnailUrl: syncedThumbnailUrl,
+                            ImageUrls: syncedImageUrls,
+                        }),
+                    }
+                );
+
+                if (!syncResponse.ok) {
+                    const errorText = await syncResponse.text();
+                    console.error(`Failed to sync image URLs for variant ${apiVariantId}: ${syncResponse.status} ${syncResponse.statusText}`, errorText);
+                    showError('Some image changes could not be saved. Please try again.');
+                }
+            } catch (error) {
+                console.error(`Error syncing image URLs for variant ${apiVariantId}:`, error);
+                showError('Some image changes could not be saved. Please try again.');
+            }
+        }
+
         // Upload thumbnail if present
         if (variant.thumbnailFile) {
             try {

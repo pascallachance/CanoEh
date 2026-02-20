@@ -1582,5 +1582,169 @@ namespace API.Tests
             Assert.Single(item.Variants[0].ItemVariantAttributes);
             Assert.Equal("Size", item.Variants[0].ItemVariantAttributes[0].AttributeName_en);
         }
+
+        // ===== UpdateVariantImageUrlsAsync Tests =====
+
+        [Fact]
+        public async Task UpdateVariantImageUrlsAsync_ReturnSuccess_WhenSettingNewImageUrls()
+        {
+            // Arrange
+            var variantId = Guid.NewGuid();
+            var variant = new ItemVariant
+            {
+                Id = variantId,
+                ItemId = Guid.NewGuid(),
+                Price = 19.99m,
+                StockQuantity = 100,
+                Sku = "TEST-SKU-001",
+                ThumbnailUrl = "/uploads/c/v/v_thumb.jpg",
+                ImageUrls = "/uploads/c/v/v_1.jpg,/uploads/c/v/v_2.jpg,/uploads/c/v/v_3.jpg"
+            };
+
+            _mockItemVariantRepository.Setup(x => x.GetByIdAsync(variantId))
+                                     .ReturnsAsync(variant);
+            _mockItemVariantRepository.Setup(x => x.UpdateAsync(It.IsAny<ItemVariant>()))
+                                     .ReturnsAsync(variant);
+
+            var newImageUrls = new List<string>
+            {
+                "/uploads/c/v/v_1.jpg",
+                "/uploads/c/v/v_3.jpg"
+            };
+
+            // Act
+            var result = await _itemService.UpdateVariantImageUrlsAsync(variantId, "/uploads/c/v/v_thumb.jpg", newImageUrls);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.Equal("/uploads/c/v/v_1.jpg,/uploads/c/v/v_3.jpg", variant.ImageUrls);
+            Assert.Equal("/uploads/c/v/v_thumb.jpg", variant.ThumbnailUrl);
+            _mockItemVariantRepository.Verify(x => x.UpdateAsync(It.IsAny<ItemVariant>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateVariantImageUrlsAsync_ClearsThumbnailAndImages_WhenPassedNullAndEmpty()
+        {
+            // Arrange
+            var variantId = Guid.NewGuid();
+            var variant = new ItemVariant
+            {
+                Id = variantId,
+                ItemId = Guid.NewGuid(),
+                Price = 19.99m,
+                StockQuantity = 100,
+                Sku = "TEST-SKU-001",
+                ThumbnailUrl = "/uploads/c/v/v_thumb.jpg",
+                ImageUrls = "/uploads/c/v/v_1.jpg"
+            };
+
+            _mockItemVariantRepository.Setup(x => x.GetByIdAsync(variantId))
+                                     .ReturnsAsync(variant);
+            _mockItemVariantRepository.Setup(x => x.UpdateAsync(It.IsAny<ItemVariant>()))
+                                     .ReturnsAsync(variant);
+
+            // Act
+            var result = await _itemService.UpdateVariantImageUrlsAsync(variantId, null, new List<string>());
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.Null(variant.ThumbnailUrl);
+            Assert.Null(variant.ImageUrls);
+            _mockItemVariantRepository.Verify(x => x.UpdateAsync(It.IsAny<ItemVariant>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateVariantImageUrlsAsync_TrimsTrailingEmptySlots()
+        {
+            // Arrange
+            var variantId = Guid.NewGuid();
+            var variant = new ItemVariant
+            {
+                Id = variantId,
+                ItemId = Guid.NewGuid(),
+                Price = 19.99m,
+                StockQuantity = 100,
+                Sku = "TEST-SKU-001",
+                ImageUrls = null
+            };
+
+            _mockItemVariantRepository.Setup(x => x.GetByIdAsync(variantId))
+                                     .ReturnsAsync(variant);
+            _mockItemVariantRepository.Setup(x => x.UpdateAsync(It.IsAny<ItemVariant>()))
+                                     .ReturnsAsync(variant);
+
+            // Image list where last positions are empty (pending new-file uploads)
+            var imageUrls = new List<string> { "/uploads/c/v/v_1.jpg", "" };
+
+            // Act
+            var result = await _itemService.UpdateVariantImageUrlsAsync(variantId, null, imageUrls);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            // Trailing empty entry should be removed
+            Assert.Equal("/uploads/c/v/v_1.jpg", variant.ImageUrls);
+        }
+
+        [Fact]
+        public async Task UpdateVariantImageUrlsAsync_ReturnFailure_WhenVariantIdIsEmpty()
+        {
+            // Act
+            var result = await _itemService.UpdateVariantImageUrlsAsync(Guid.Empty, null, new List<string>());
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+            Assert.Equal("Invalid variant ID.", result.Error);
+        }
+
+        [Fact]
+        public async Task UpdateVariantImageUrlsAsync_ReturnFailure_WhenVariantNotFound()
+        {
+            // Arrange
+            var variantId = Guid.NewGuid();
+            _mockItemVariantRepository.Setup(x => x.GetByIdAsync(variantId))
+                                     .ReturnsAsync((ItemVariant?)null);
+
+            // Act
+            var result = await _itemService.UpdateVariantImageUrlsAsync(variantId, null, new List<string>());
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status404NotFound, result.ErrorCode);
+            Assert.Equal("Variant not found.", result.Error);
+        }
+
+        [Fact]
+        public async Task UpdateVariantImageUrlsAsync_PreservesEmptySlotsInTheMiddle()
+        {
+            // Arrange
+            var variantId = Guid.NewGuid();
+            var variant = new ItemVariant
+            {
+                Id = variantId,
+                ItemId = Guid.NewGuid(),
+                Price = 19.99m,
+                StockQuantity = 100,
+                Sku = "TEST-SKU-001",
+                ImageUrls = null
+            };
+
+            _mockItemVariantRepository.Setup(x => x.GetByIdAsync(variantId))
+                                     .ReturnsAsync(variant);
+            _mockItemVariantRepository.Setup(x => x.UpdateAsync(It.IsAny<ItemVariant>()))
+                                     .ReturnsAsync(variant);
+
+            // Image list with an empty string in the middle; only trailing empties should be trimmed.
+            // Null entries are treated identically to empty strings (position preserved).
+            var imageUrls = new List<string> { "/img1.jpg", "", "/img3.jpg" };
+
+            // Act
+            var result = await _itemService.UpdateVariantImageUrlsAsync(variantId, null, imageUrls);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            // Middle empty entry must be preserved; only trailing empties are stripped
+            Assert.Equal("/img1.jpg,,/img3.jpg", variant.ImageUrls);
+        }
     }
 }

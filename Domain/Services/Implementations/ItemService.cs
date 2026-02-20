@@ -454,12 +454,31 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 existingItem.Description_fr = updateItemRequest.Description_fr;
                 existingItem.CategoryNodeID = updateItemRequest.CategoryNodeID;
                 existingItem.Variants = updateItemRequest.Variants;
-                existingItem.ItemVariantFeatures = updateItemRequest.ItemVariantFeatures
-                    .Select(f => { f.ItemID = existingItem.Id; return f; })
-                    .ToList();
                 existingItem.UpdatedAt = DateTime.UtcNow;
 
                 var updatedItem = await _itemRepository.UpdateAsync(existingItem);
+
+                // Persist ItemVariantFeatures: delete existing features for all variants and re-insert.
+                // Features are stored linked to the first variant (consistent with CreateItemAsync).
+                var newFeatures = (updateItemRequest.ItemVariantFeatures ?? Enumerable.Empty<ItemVariantFeatures>()).ToList();
+                var firstVariant = (updateItemRequest.Variants ?? Enumerable.Empty<ItemVariant>())
+                    .FirstOrDefault(v => v.Id != Guid.Empty);
+                if (firstVariant != null)
+                {
+                    await _itemVariantFeaturesRepository.DeleteFeaturesByItemVariantIdAsync(firstVariant.Id);
+
+                    foreach (var feature in newFeatures)
+                    {
+                        feature.ItemID = existingItem.Id;
+                        feature.ItemVariantID = firstVariant.Id;
+                        feature.Id = Guid.NewGuid(); // assign a new ID for each re-inserted feature
+                        await _itemVariantFeaturesRepository.AddAsync(feature);
+                    }
+                }
+
+                updatedItem.ItemVariantFeatures = newFeatures
+                    .Select(f => { f.ItemID = existingItem.Id; return f; })
+                    .ToList();
 
                 var response = new UpdateItemResponse
                 {

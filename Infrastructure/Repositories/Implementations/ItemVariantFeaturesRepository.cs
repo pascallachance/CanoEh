@@ -20,12 +20,13 @@ namespace Infrastructure.Repositories.Implementations
             }
 
             var query = @"
-INSERT INTO dbo.ItemAttribute (Id, ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
-VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
+INSERT INTO dbo.ItemVariantFeatures (Id, ItemID, ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
+VALUES (@Id, @ItemID, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
 
             var parameters = new
             {
                 entity.Id,
+                entity.ItemID,
                 entity.ItemVariantID,
                 entity.AttributeName_en,
                 entity.AttributeName_fr,
@@ -50,7 +51,7 @@ VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_e
                 dbConnection.Open();
             }
             
-            var query = "DELETE FROM dbo.ItemAttribute WHERE Id = @Id";
+            var query = "DELETE FROM dbo.ItemVariantFeatures WHERE Id = @Id";
             await dbConnection.ExecuteAsync(query, new { entity.Id });
         }
 
@@ -61,7 +62,7 @@ VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_e
                 dbConnection.Open();
             }
             
-            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.ItemAttribute WHERE Id = @id", new { id });
+            return await dbConnection.ExecuteScalarAsync<bool>("SELECT COUNT(1) FROM dbo.ItemVariantFeatures WHERE Id = @id", new { id });
         }
 
         public override async Task<IEnumerable<ItemVariantFeatures>> FindAsync(Func<ItemVariantFeatures, bool> predicate)
@@ -77,7 +78,7 @@ VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_e
                 dbConnection.Open();
             }
             
-            var query = "SELECT * FROM dbo.ItemAttribute";
+            var query = "SELECT * FROM dbo.ItemVariantFeatures";
             return await dbConnection.QueryAsync<ItemVariantFeatures>(query);
         }
 
@@ -88,7 +89,7 @@ VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_e
                 dbConnection.Open();
             }
             
-            var query = "SELECT * FROM dbo.ItemAttribute WHERE Id = @id";
+            var query = "SELECT * FROM dbo.ItemVariantFeatures WHERE Id = @id";
             var result = await dbConnection.QueryFirstOrDefaultAsync<ItemVariantFeatures>(query, new { id });
             
             return result ?? throw new InvalidOperationException($"ItemVariantFeatures with id {id} not found");
@@ -102,14 +103,15 @@ VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_e
             }
             
             var query = @"
-UPDATE dbo.ItemAttribute 
-SET ItemVariantID = @ItemVariantID, AttributeName_en = @AttributeName_en, AttributeName_fr = @AttributeName_fr, 
+UPDATE dbo.ItemVariantFeatures 
+SET ItemID = @ItemID, ItemVariantID = @ItemVariantID, AttributeName_en = @AttributeName_en, AttributeName_fr = @AttributeName_fr, 
     Attributes_en = @Attributes_en, Attributes_fr = @Attributes_fr
 WHERE Id = @Id";
 
             var parameters = new
             {
                 entity.Id,
+                entity.ItemID,
                 entity.ItemVariantID,
                 entity.AttributeName_en,
                 entity.AttributeName_fr,
@@ -128,7 +130,7 @@ WHERE Id = @Id";
                 dbConnection.Open();
             }
             
-            var query = "SELECT * FROM dbo.ItemAttribute WHERE ItemVariantID = @itemVariantId";
+            var query = "SELECT * FROM dbo.ItemVariantFeatures WHERE ItemVariantID = @itemVariantId";
             return await dbConnection.QueryAsync<ItemVariantFeatures>(query, new { itemVariantId });
         }
 
@@ -139,7 +141,7 @@ WHERE Id = @Id";
                 dbConnection.Open();
             }
             
-            var query = "DELETE FROM dbo.ItemAttribute WHERE ItemVariantID = @itemVariantId";
+            var query = "DELETE FROM dbo.ItemVariantFeatures WHERE ItemVariantID = @itemVariantId";
             var rowsAffected = await dbConnection.ExecuteAsync(query, new { itemVariantId });
             
             return rowsAffected > 0;

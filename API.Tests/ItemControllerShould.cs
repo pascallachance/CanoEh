@@ -190,10 +190,25 @@ namespace API.Tests
         public async Task UpdateItem_ReturnOk_WhenItemUpdatedSuccessfully()
         {
             // Arrange
+            var userId = Guid.NewGuid();
+            var userEmail = "test@example.com";
+
+            // Setup User claims
+            var claims = new List<System.Security.Claims.Claim>
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, userEmail)
+            };
+            var identity = new System.Security.Claims.ClaimsIdentity(claims);
+            var claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(identity);
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
+
             var updateItemRequest = new UpdateItemRequest
             {
                 Id = Guid.NewGuid(),
-                SellerID = Guid.NewGuid(),
+                SellerID = userId,
                 Name_en = "Updated Item",
                 Name_fr = "Article mis à jour",
                 Description_en = "Test Description EN",
@@ -202,6 +217,29 @@ namespace API.Tests
                 Variants = new List<ItemVariant>(),
                 ItemVariantFeatures = new List<ItemVariantFeatures>()
             };
+
+            // Mock user service
+            var user = new User { ID = userId, Email = userEmail, Firstname = "Test", Lastname = "User", Password = "testpass" };
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ReturnsAsync(Result.Success(user));
+
+            // Mock item service to return item owned by the user
+            var itemResponse = new GetItemResponse
+            {
+                Id = updateItemRequest.Id,
+                SellerID = userId,
+                Name_en = "Original Item",
+                Name_fr = "Article original",
+                Description_en = "Description",
+                Description_fr = "Description",
+                CategoryNodeID = Guid.NewGuid(),
+                Variants = new List<ItemVariantDto>(),
+                ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
+                CreatedAt = DateTime.UtcNow,
+                Deleted = false
+            };
+            _mockItemService.Setup(x => x.GetItemByIdAsync(It.IsAny<Guid>()))
+                           .ReturnsAsync(Result.Success(itemResponse));
 
             var updateItemResponse = new UpdateItemResponse
             {
@@ -235,6 +273,21 @@ namespace API.Tests
         public async Task UpdateItem_ReturnNotFound_WhenItemDoesNotExist()
         {
             // Arrange
+            var userId = Guid.NewGuid();
+            var userEmail = "test@example.com";
+
+            // Setup User claims
+            var claims = new List<System.Security.Claims.Claim>
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, userEmail)
+            };
+            var identity = new System.Security.Claims.ClaimsIdentity(claims);
+            var claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(identity);
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
+
             var updateItemRequest = new UpdateItemRequest
             {
                 Id = Guid.NewGuid(),
@@ -248,15 +301,20 @@ namespace API.Tests
                 ItemVariantFeatures = new List<ItemVariantFeatures>()
             };
 
-            var result = Result.Failure<UpdateItemResponse>("Item not found.", StatusCodes.Status404NotFound);
-            _mockItemService.Setup(x => x.UpdateItemAsync(It.IsAny<UpdateItemRequest>()))
-                           .ReturnsAsync(result);
+            // Mock user service
+            var user = new User { ID = userId, Email = userEmail, Firstname = "Test", Lastname = "User", Password = "testpass" };
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ReturnsAsync(Result.Success(user));
+
+            // Mock item service to return 404 (item not found for ownership check)
+            _mockItemService.Setup(x => x.GetItemByIdAsync(It.IsAny<Guid>()))
+                           .ReturnsAsync(Result.Failure<GetItemResponse>("Item not found.", StatusCodes.Status404NotFound));
 
             // Act
             var response = await _controller.UpdateItem(updateItemRequest);
 
             // Assert
-            var notFoundResult = Assert.IsType<ObjectResult>(response);
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(response);
             Assert.Equal(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
         }
 

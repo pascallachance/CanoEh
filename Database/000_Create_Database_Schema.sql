@@ -330,6 +330,7 @@ IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ItemVariantFeatures' AND s
 BEGIN
     CREATE TABLE dbo.ItemVariantFeatures (
         Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+        ItemID UNIQUEIDENTIFIER NULL,
         ItemVariantID UNIQUEIDENTIFIER NOT NULL,
         AttributeName_en NVARCHAR(255) NOT NULL,
         AttributeName_fr NVARCHAR(255) NULL,
@@ -339,6 +340,7 @@ BEGIN
     );
     
     CREATE INDEX IX_ItemVariantFeatures_ItemVariantID ON dbo.ItemVariantFeatures(ItemVariantID);
+    CREATE INDEX IX_ItemVariantFeatures_ItemID ON dbo.ItemVariantFeatures(ItemID);
     
     PRINT 'Table ItemVariantFeatures created successfully.';
 END

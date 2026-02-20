@@ -231,6 +231,10 @@ WHERE Id = @Id";
             foreach (var item in items)
             {
                 item.Variants = variantsByItemId.TryGetValue(item.Id, out var vars) ? vars : new List<ItemVariant>();
+                // Aggregate item-level features from all variants
+                item.ItemVariantFeatures = item.Variants
+                    .SelectMany(v => v.ItemVariantFeatures)
+                    .ToList();
             }
             
             return items;
@@ -289,6 +293,10 @@ WHERE Id = @Id";
             foreach (var item in items)
             {
                 item.Variants = variantsByItemId.TryGetValue(item.Id, out var vars) ? vars : new List<ItemVariant>();
+                // Aggregate item-level features from all variants
+                item.ItemVariantFeatures = item.Variants
+                    .SelectMany(v => v.ItemVariantFeatures)
+                    .ToList();
             }
             
             return items;
@@ -356,6 +364,10 @@ WHERE Id = @Id";
             foreach (var item in items)
             {
                 item.Variants = variantsByItemId.TryGetValue(item.Id, out var vars) ? vars : new List<ItemVariant>();
+                // Aggregate item-level features from all variants
+                item.ItemVariantFeatures = item.Variants
+                    .SelectMany(v => v.ItemVariantFeatures)
+                    .ToList();
             }
             
             return items;
@@ -438,6 +450,10 @@ WHERE Id = @Id";
             foreach (var item in items)
             {
                 item.Variants = variantsByItemId.TryGetValue(item.Id, out var vars) ? vars : new List<ItemVariant>();
+                // Aggregate item-level features from all variants
+                item.ItemVariantFeatures = item.Variants
+                    .SelectMany(v => v.ItemVariantFeatures)
+                    .ToList();
             }
             
             return items;

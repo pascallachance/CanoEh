@@ -260,6 +260,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                                 itemVariantFeatures.Add(new ItemVariantFeatures
                                 {
                                     Id = attributeId,
+                                    ItemID = item.Id,
                                     ItemVariantID = firstVariantId,
                                     AttributeName_en = attributeRequest.AttributeName_en,
                                     AttributeName_fr = attributeRequest.AttributeName_fr,
@@ -283,6 +284,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
 
                     // Set the collections on the items and variants for the response
                     item.Variants = itemVariants;
+                    item.ItemVariantFeatures = itemVariantFeatures;
                     
                     // Set ItemVariantAttributes and ItemVariantFeatures on each variant
                     foreach (var variant in itemVariants)
@@ -306,6 +308,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                         ImageUrl = item.ImageUrl,
                         CategoryNodeID = item.CategoryNodeID,
                         Variants = MapToItemVariantDtos(item.Variants),
+                        ItemVariantFeatures = MapToItemVariantFeaturesDtos(item.ItemVariantFeatures),
                         CreatedAt = item.CreatedAt,
                         UpdatedAt = item.UpdatedAt,
                         Deleted = item.Deleted
@@ -406,6 +409,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 ImageUrl = item.ImageUrl,
                 CategoryNodeID = item.CategoryNodeID,
                 Variants = MapToItemVariantDtos(item.Variants),
+                ItemVariantFeatures = MapToItemVariantFeaturesDtos(item.ItemVariantFeatures),
                 CreatedAt = item.CreatedAt,
                 UpdatedAt = item.UpdatedAt,
                 Deleted = item.Deleted
@@ -450,6 +454,9 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 existingItem.Description_fr = updateItemRequest.Description_fr;
                 existingItem.CategoryNodeID = updateItemRequest.CategoryNodeID;
                 existingItem.Variants = updateItemRequest.Variants;
+                existingItem.ItemVariantFeatures = updateItemRequest.ItemVariantFeatures
+                    .Select(f => { f.ItemID = existingItem.Id; return f; })
+                    .ToList();
                 existingItem.UpdatedAt = DateTime.UtcNow;
 
                 var updatedItem = await _itemRepository.UpdateAsync(existingItem);
@@ -465,6 +472,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     ImageUrl = updatedItem.ImageUrl,
                     CategoryNodeID = updatedItem.CategoryNodeID,
                     Variants = MapToItemVariantDtos(updatedItem.Variants),
+                    ItemVariantFeatures = MapToItemVariantFeaturesDtos(updatedItem.ItemVariantFeatures),
                     CreatedAt = updatedItem.CreatedAt,
                     UpdatedAt = updatedItem.UpdatedAt,
                     Deleted = updatedItem.Deleted

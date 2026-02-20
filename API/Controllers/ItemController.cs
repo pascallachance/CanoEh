@@ -480,6 +480,7 @@ namespace API.Controllers
         /// </summary>
         /// <param name="updateItemRequest">The item details to update.</param>
         /// <returns>Returns the updated item or an error response.</returns>
+        [Authorize]
         [HttpPut("UpdateItem")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

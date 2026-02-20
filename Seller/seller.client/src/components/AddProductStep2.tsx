@@ -400,12 +400,6 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                             {!formData.categoryId && (
                                 <div className="category-navigator">
                                     <div className="category-breadcrumb">
-                                        <span
-                                            className="category-breadcrumb-item"
-                                            role="button"
-                                            tabIndex={0}
-                                            onClick={() => handleBreadcrumbClick(0)}
-                                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleBreadcrumbClick(0); } }}
                                         <button
                                             type="button"
                                             className="category-breadcrumb-item"
@@ -435,8 +429,6 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                                 key={node.id}
                                                 className={`category-node-item category-node-type-${node.nodeType.toLowerCase()}`}
                                                 role="button"
-                                                className={`category-node-item category-node-type-${node.nodeType.toLowerCase()}`}
-                                                role="button"
                                                 tabIndex={0}
                                                 aria-label={`${node.nodeType === 'Category' ? 'Select category' : 'Navigate to subcategory'}: ${node.name_en} / ${node.name_fr}`}
                                                 onClick={() => handleNodeClick(node)}
@@ -446,7 +438,6 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                                         handleNodeClick(node);
                                                     }
                                                 }}
-                                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleNodeClick(node); } }}
                                             >
                                                 <span className="category-node-name">{node.name_en} / {node.name_fr}</span>
                                                 {node.nodeType !== 'Category' && (

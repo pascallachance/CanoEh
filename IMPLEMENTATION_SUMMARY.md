@@ -18,7 +18,7 @@ Implemented a **paired value structure** where English and French values are alw
 1. **BilingualTagInput.tsx** - New component for managing paired bilingual values
 2. **BilingualTagInput.css** - Styles for the new component
 3. **tests/bilingual-sync-test.ts** - Automated validation script
-4. **tests/ui-demo.html** - Interactive visual demonstration
+4. **docs/ui-demo.html** - Interactive visual demonstration
 5. **BILINGUAL_ATTRIBUTE_FIX.md** - Comprehensive documentation
 
 ### Modified Files

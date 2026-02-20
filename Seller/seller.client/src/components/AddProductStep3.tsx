@@ -323,7 +323,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 // Append new images to existing ones
                 // Keep imageFiles aligned with imageUrls by padding with null for server-hosted images
                 // This ensures handleRemoveImage, handleMoveImage, and uploadVariantImages work correctly
-                const paddedExistingFiles: (File | null)[] = existingUrls.map((url, idx) => 
+                const paddedExistingFiles: (File | null)[] = existingUrls.map((_url, idx) => 
                     existingFiles[idx] || null
                 );
                 

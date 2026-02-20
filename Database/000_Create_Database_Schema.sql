@@ -219,27 +219,38 @@ END
 GO
 
 -- =============================================
--- Create Category Table
+-- Create CategoryNode Table
 -- =============================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Category' AND schema_id = SCHEMA_ID('dbo'))
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CategoryNode' AND schema_id = SCHEMA_ID('dbo'))
 BEGIN
-    CREATE TABLE dbo.Category (
+    CREATE TABLE dbo.CategoryNode (
         Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-        Name_en NVARCHAR(255) NOT NULL,
-        Name_fr NVARCHAR(255) NOT NULL,
-        ParentCategoryId UNIQUEIDENTIFIER NULL,
+        Name_en NVARCHAR(200) NOT NULL,
+        Name_fr NVARCHAR(200) NOT NULL,
+        NodeType NVARCHAR(32) NOT NULL, -- 'Departement', 'Navigation', 'Category'
+        ParentId UNIQUEIDENTIFIER NULL, -- Self-reference to parent node
+        -- Example: for CategoryNode, ParentId points to a NavigationNode or DepartementNode
+        --          for NavigationNode, ParentId points to a DepartementNode or another NavigationNode
+        --          for DepartementNode, ParentId is NULL (root)
+        IsActive BIT NOT NULL DEFAULT 1,
+        SortOrder INT NULL,
         CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
         UpdatedAt DATETIME2 NULL,
-        CONSTRAINT FK_Category_ParentCategory FOREIGN KEY (ParentCategoryId) REFERENCES dbo.Category(Id)
+        CONSTRAINT FK_CategoryNode_Parent FOREIGN KEY (ParentId) REFERENCES dbo.CategoryNode(Id),
+        CONSTRAINT CK_CategoryNode_NodeType CHECK (NodeType IN ('Departement', 'Navigation', 'Category'))
     );
     
-    CREATE INDEX IX_Category_ParentCategoryId ON dbo.Category(ParentCategoryId);
+    -- Indexes for performance
+    CREATE INDEX IX_CategoryNode_ParentId ON dbo.CategoryNode(ParentId);
+    CREATE INDEX IX_CategoryNode_NodeType ON dbo.CategoryNode(NodeType);
+    CREATE INDEX IX_CategoryNode_IsActive ON dbo.CategoryNode(IsActive);
+    CREATE INDEX IX_CategoryNode_SortOrder ON dbo.CategoryNode(SortOrder);
     
-    PRINT 'Table Category created successfully.';
+    PRINT 'Table CategoryNode created successfully.';
 END
 ELSE
 BEGIN
-    PRINT 'Table Category already exists.';
+    PRINT 'Table CategoryNode already exists.';
 END
 GO
 
@@ -255,16 +266,16 @@ BEGIN
         Name_fr NVARCHAR(255) NOT NULL,
         Description_en NVARCHAR(MAX) NULL,
         Description_fr NVARCHAR(MAX) NULL,
-        CategoryID UNIQUEIDENTIFIER NOT NULL,
+        CategoryNodeID UNIQUEIDENTIFIER NOT NULL,
         CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
         UpdatedAt DATETIME2 NULL,
         Deleted BIT NOT NULL DEFAULT 0,
         CONSTRAINT FK_Item_Seller FOREIGN KEY (SellerID) REFERENCES dbo.[User](id),
-        CONSTRAINT FK_Item_Category FOREIGN KEY (CategoryID) REFERENCES dbo.Category(Id)
+        CONSTRAINT FK_Item_CategoryNode FOREIGN KEY (CategoryNodeID) REFERENCES dbo.CategoryNode(Id)
     );
     
     CREATE INDEX IX_Item_SellerID ON dbo.Item(SellerID);
-    CREATE INDEX IX_Item_CategoryID ON dbo.Item(CategoryID);
+    CREATE INDEX IX_Item_CategoryNodeID ON dbo.Item(CategoryNodeID);
     CREATE INDEX IX_Item_Deleted ON dbo.Item(Deleted);
     
     PRINT 'Table Item created successfully.';
@@ -594,42 +605,6 @@ END
 ELSE
 BEGIN
     PRINT 'Table TaxRate already exists.';
-END
-GO
-
--- =============================================
--- Create CategoryNode Table
--- =============================================
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CategoryNode' AND schema_id = SCHEMA_ID('dbo'))
-BEGIN
-    CREATE TABLE dbo.CategoryNode (
-        Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-        Name_en NVARCHAR(200) NOT NULL,
-        Name_fr NVARCHAR(200) NOT NULL,
-        NodeType NVARCHAR(32) NOT NULL, -- 'Departement', 'Navigation', 'Category'
-        ParentId UNIQUEIDENTIFIER NULL, -- Self-reference to parent node
-        -- Example: for CategoryNode, ParentId points to a NavigationNode or DepartementNode
-        --          for NavigationNode, ParentId points to a DepartementNode or another NavigationNode
-        --          for DepartementNode, ParentId is NULL (root)
-        IsActive BIT NOT NULL DEFAULT 1,
-        SortOrder INT NULL,
-        CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-        UpdatedAt DATETIME2 NULL,
-        CONSTRAINT FK_CategoryNode_Parent FOREIGN KEY (ParentId) REFERENCES dbo.CategoryNode(Id),
-        CONSTRAINT CK_CategoryNode_NodeType CHECK (NodeType IN ('Departement', 'Navigation', 'Category'))
-    );
-    
-    -- Indexes for performance
-    CREATE INDEX IX_CategoryNode_ParentId ON dbo.CategoryNode(ParentId);
-    CREATE INDEX IX_CategoryNode_NodeType ON dbo.CategoryNode(NodeType);
-    CREATE INDEX IX_CategoryNode_IsActive ON dbo.CategoryNode(IsActive);
-    CREATE INDEX IX_CategoryNode_SortOrder ON dbo.CategoryNode(SortOrder);
-    
-    PRINT 'Table CategoryNode created successfully.';
-END
-ELSE
-BEGIN
-    PRINT 'Table CategoryNode already exists.';
 END
 GO
 

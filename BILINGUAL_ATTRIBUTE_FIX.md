@@ -202,7 +202,7 @@ npx tsx tests/bilingual-sync-test.ts
 ```
 
 ### Visual Demo
-Interactive HTML demo (`tests/ui-demo.html`) shows:
+Interactive HTML demo (`docs/ui-demo.html`) shows:
 - Side-by-side comparison of old vs new approach
 - Problem scenario walkthrough
 - Data structure comparison
@@ -210,7 +210,7 @@ Interactive HTML demo (`tests/ui-demo.html`) shows:
 
 View with:
 ```bash
-cd Seller/seller.client/tests
+cd docs
 python3 -m http.server 8888
 # Open http://localhost:8888/ui-demo.html
 ```

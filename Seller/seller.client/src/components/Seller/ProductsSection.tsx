@@ -1662,9 +1662,11 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                                 };
                                 return categories
                                     .filter(n => n.nodeType === 'Category')
-                                    .map(node => (
+                                    .map(node => ({ node, path: buildPath(node) }))
+                                    .sort((a, b) => a.path.localeCompare(b.path, language === 'fr' ? 'fr' : 'en', { sensitivity: 'base' }))
+                                    .map(({ node, path }) => (
                                         <option key={node.id} value={node.id}>
-                                            {buildPath(node)}
+                                            {path}
                                         </option>
                                     ));
                             })()}
@@ -2117,9 +2119,11 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                                         };
                                         return categories
                                             .filter(n => n.nodeType === 'Category')
-                                            .map(node => (
+                                            .map(node => ({ node, path: buildPath(node) }))
+                                            .sort((a, b) => a.path.localeCompare(b.path, language === 'fr' ? 'fr' : 'en', { sensitivity: 'base' }))
+                                            .map(({ node, path }) => (
                                                 <option key={node.id} value={node.id}>
-                                                    {buildPath(node)}
+                                                    {path}
                                                 </option>
                                             ));
                                     })()}

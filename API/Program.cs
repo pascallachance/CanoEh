@@ -102,7 +102,6 @@ public class Program
             return new ItemService(itemRepository, itemVariantRepository, itemVariantFeaturesRepository, 
                                  itemVariantAttributeRepository, connectionString);
         });
-        builder.Services.AddScoped<ICategoryService, CategoryService>();
         builder.Services.AddScoped<ICategoryNodeService, CategoryNodeService>();
         builder.Services.AddScoped<ICompanyService, CompanyService>();
         builder.Services.AddScoped<IAddressService, AddressService>();
@@ -152,13 +151,6 @@ public class Program
             var config = provider.GetRequiredService<IConfiguration>();
             var connectionString = config.GetConnectionString("DefaultConnection");
             return new ItemVariantRepository(connectionString);
-        });
-
-        builder.Services.AddScoped<ICategoryRepository>(provider =>
-        {
-            var config = provider.GetRequiredService<IConfiguration>();
-            var connectionString = config.GetConnectionString("DefaultConnection");
-            return new CategoryRepository(connectionString);
         });
 
         builder.Services.AddScoped<ICategoryNodeRepository>(provider =>

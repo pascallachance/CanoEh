@@ -691,6 +691,71 @@ namespace API.Controllers
         }
 
         /// <summary>
+        /// Updates the image URLs for a variant, replacing the stored thumbnail and image URL list.
+        /// Use this during product edits to persist image removals and reordering.
+        /// </summary>
+        /// <param name="request">The variant ID and new image URLs.</param>
+        /// <returns>Returns OK on success or an error response.</returns>
+        [HttpPut("UpdateVariantImageUrls")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateVariantImageUrls([FromBody] UpdateVariantImageUrlsRequest request)
+        {
+            try
+            {
+                var validationResult = request.Validate();
+                if (!validationResult.IsSuccess)
+                {
+                    return BadRequest(validationResult.Error);
+                }
+
+                // Get authenticated user email from claims
+                var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(authenticatedEmail))
+                {
+                    return Unauthorized("User not authenticated.");
+                }
+
+                // Get the authenticated user
+                var userResult = await _userService.GetUserEntityAsync(authenticatedEmail);
+                if (userResult.IsFailure || userResult.Value == null)
+                {
+                    return Unauthorized("Invalid user.");
+                }
+
+                var userId = userResult.Value.ID;
+
+                // Verify the user owns the item containing this variant
+                var itemResult = await _itemService.GetItemByVariantIdAsync(request.VariantId, userId);
+                if (itemResult.IsFailure)
+                {
+                    if (itemResult.ErrorCode == StatusCodes.Status404NotFound)
+                        return NotFound("Variant not found or you do not have permission to update images for this variant.");
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving item by variant.");
+                }
+
+                var result = await _itemService.UpdateVariantImageUrlsAsync(request.VariantId, request.ThumbnailUrl, request.ImageUrls);
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? StatusCodes.Status500InternalServerError, result.Error);
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception in UpdateVariantImageUrls for variantId: {VariantId}", request.VariantId);
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
+        }
+
+        /// <summary>
         /// Uploads a product image (thumbnail or additional images).
         /// </summary>
         /// <param name="file">The image file to upload.</param>

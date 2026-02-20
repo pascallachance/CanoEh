@@ -738,6 +738,46 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             }
         }
 
+        public async Task<Result> UpdateVariantImageUrlsAsync(Guid variantId, string? thumbnailUrl, List<string> imageUrls)
+        {
+            try
+            {
+                if (variantId == Guid.Empty)
+                {
+                    return Result.Failure("Invalid variant ID.", StatusCodes.Status400BadRequest);
+                }
+
+                var variant = await _itemVariantRepository.GetByIdAsync(variantId);
+                if (variant == null)
+                {
+                    return Result.Failure("Variant not found.", StatusCodes.Status404NotFound);
+                }
+
+                variant.ThumbnailUrl = string.IsNullOrWhiteSpace(thumbnailUrl) ? null : thumbnailUrl;
+
+                // Build comma-separated string, removing trailing empty slots
+                var trimmedUrls = imageUrls
+                    .Select(u => u?.Trim() ?? string.Empty)
+                    .ToList();
+
+                // Remove trailing empty entries to keep the DB clean
+                while (trimmedUrls.Count > 0 && string.IsNullOrEmpty(trimmedUrls[trimmedUrls.Count - 1]))
+                {
+                    trimmedUrls.RemoveAt(trimmedUrls.Count - 1);
+                }
+
+                variant.ImageUrls = trimmedUrls.Count > 0 ? string.Join(",", trimmedUrls) : null;
+
+                await _itemVariantRepository.UpdateAsync(variant);
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"An error occurred while updating the variant image URLs: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
         // Helper methods for mapping entities to DTOs
         private static ItemVariantAttributeDto MapToItemVariantAttributeDto(ItemVariantAttribute attribute)
         {

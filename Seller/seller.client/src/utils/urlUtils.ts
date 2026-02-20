@@ -41,6 +41,37 @@ export function toAbsoluteUrl(url: string | undefined): string {
 }
 
 /**
+ * Converts an absolute URL back to a relative URL by stripping the API base URL prefix.
+ * If the URL is already relative or a blob/data URL, returns it unchanged.
+ *
+ * @param url - The URL to convert (can be absolute or relative)
+ * @returns The relative URL, or the original URL if it cannot be converted
+ */
+export function toRelativeUrl(url: string | undefined): string {
+    if (!url) {
+        return '';
+    }
+
+    // Blob or data URLs cannot be stored as server paths - return as-is
+    if (url.startsWith('blob:') || url.startsWith('data:')) {
+        return url;
+    }
+
+    // If URL is absolute, strip the base URL prefix to get the relative path
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+        const baseUrl = import.meta.env.VITE_API_SELLER_BASE_URL;
+        if (baseUrl && url.startsWith(baseUrl)) {
+            return url.substring(baseUrl.length);
+        }
+        // Cannot convert to relative – return as-is
+        return url;
+    }
+
+    // Already relative
+    return url;
+}
+
+/**
  * Converts an array of URLs (which might be a comma-separated string or an array)
  * to an array of absolute URLs.
  * 

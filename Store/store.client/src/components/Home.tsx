@@ -258,20 +258,30 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     }
 
                     if (product.variants && product.variants.length > 0) {
-                        const firstVariant: ItemVariantDto = product.variants[0];
                         let imageUrl: string | null = null;
+                        let selectedVariant: ItemVariantDto = product.variants[0];
 
-                        // Try to get first image from ImageUrls
-                        if (firstVariant.imageUrls) {
-                            const urls = firstVariant.imageUrls.split(',').filter((url: string) => url.trim());
-                            if (urls.length > 0) {
-                                imageUrl = urls[0].trim();
+                        // Prefer imageUrls: scan all variants before falling back to thumbnailUrl
+                        for (const variant of product.variants) {
+                            if (variant.imageUrls) {
+                                const urls = variant.imageUrls.split(',').filter((url: string) => url.trim());
+                                if (urls.length > 0) {
+                                    imageUrl = urls[0].trim();
+                                    selectedVariant = variant;
+                                    break;
+                                }
                             }
                         }
 
-                        // Fall back to ThumbnailUrl if no ImageUrls found
-                        if (!imageUrl && firstVariant.thumbnailUrl) {
-                            imageUrl = firstVariant.thumbnailUrl;
+                        // Fall back to thumbnailUrl if no imageUrls found on any variant
+                        if (!imageUrl) {
+                            for (const variant of product.variants) {
+                                if (variant.thumbnailUrl) {
+                                    imageUrl = variant.thumbnailUrl;
+                                    selectedVariant = variant;
+                                    break;
+                                }
+                            }
                         }
 
                         // Only add to images array if we found a valid image URL
@@ -283,7 +293,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                             const productName = language === 'fr' ? product.name_fr : product.name_en;
                             names.push(productName);
                             // Extract offer percentage if available
-                            offers.push(firstVariant.offer || 0);
+                            offers.push(selectedVariant.offer || 0);
                         }
                     }
                 }
@@ -321,9 +331,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                         let imageUrl: string | null = null;
                         let selectedVariant: ItemVariantDto = product.variants[0];
 
-                        // Find the first variant that has an image
+                        // Prefer imageUrls: scan all variants before falling back to thumbnailUrl
                         for (const variant of product.variants) {
-                            // Try to get first image from ImageUrls
                             if (variant.imageUrls) {
                                 const urls = variant.imageUrls.split(',').filter((url: string) => url.trim());
                                 if (urls.length > 0) {
@@ -332,12 +341,16 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                                     break;
                                 }
                             }
+                        }
 
-                            // Fall back to ThumbnailUrl if no ImageUrls found
-                            if (!imageUrl && variant.thumbnailUrl) {
-                                imageUrl = variant.thumbnailUrl;
-                                selectedVariant = variant;
-                                break;
+                        // Fall back to thumbnailUrl if no imageUrls found on any variant
+                        if (!imageUrl) {
+                            for (const variant of product.variants) {
+                                if (variant.thumbnailUrl) {
+                                    imageUrl = variant.thumbnailUrl;
+                                    selectedVariant = variant;
+                                    break;
+                                }
                             }
                         }
 

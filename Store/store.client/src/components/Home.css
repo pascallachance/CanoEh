@@ -1,12 +1,12 @@
 :root {
     --cards-gap: 20px;
-    --card-width: 350px;
+    --card-width: 345px;
     --cards-visible-count: 5; /* Will be dynamically updated by JavaScript */
     --carousel-button-width: 50px;
-    --carousel-gap: 10px;
+    --carousel-gap: 0px;
     /* Calculate visible cards area width to fit the responsive number of cards (varies by screen size) */
-    /* Available space is viewport minus the gaps between the carousel buttons and the container */
-    /* Note: buttons use negative margins to overlap the cards-container, so they don't consume additional horizontal space in this calculation */
+    /* Available space is viewport width */
+    /* Note: buttons are outside the cards-container and do not overlap it */
     --visible-cards-width: min(
         calc((var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap))),
         calc(100vw - (2 * var(--carousel-gap)))
@@ -374,12 +374,10 @@
 
 .carousel-button.prev {
     order: 0; /* Left button */
-    margin-right: calc(var(--carousel-button-width) / -2); /* Half-overlap on cards-container */
 }
 
 .carousel-button.next {
     order: 2; /* Right button */
-    margin-left: calc(var(--carousel-button-width) / -2); /* Half-overlap on cards-container */
 }
 
 .carousel-button svg {

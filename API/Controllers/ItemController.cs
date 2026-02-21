@@ -480,9 +480,12 @@ namespace API.Controllers
         /// </summary>
         /// <param name="updateItemRequest">The item details to update.</param>
         /// <returns>Returns the updated item or an error response.</returns>
+        [Authorize]
         [HttpPut("UpdateItem")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateItem([FromBody] UpdateItemRequest updateItemRequest)
@@ -492,6 +495,13 @@ namespace API.Controllers
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
+                }
+
+                // Validate user authentication and ownership
+                var (errorResult, _) = await ValidateUserOwnsItemAsync(updateItemRequest.Id);
+                if (errorResult != null)
+                {
+                    return errorResult;
                 }
 
                 var result = await _itemService.UpdateItemAsync(updateItemRequest);

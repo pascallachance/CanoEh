@@ -3,6 +3,7 @@ namespace Infrastructure.Data
     public class ItemVariantFeatures
     {
         public Guid Id { get; set; }
+        public Guid ItemID { get; set; }
         public Guid ItemVariantID { get; set; }
         public string AttributeName_en { get; set; } = string.Empty;
         public string? AttributeName_fr { get; set; }

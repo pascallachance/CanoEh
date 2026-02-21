@@ -309,7 +309,7 @@ WHERE Id = @Id";
                 dbConnection.Open();
             }
             
-            // Get random items that have at least one variant with ImageUrls
+            // Get random items that have at least one variant with ImageUrls or ThumbnailUrl
             // Use NEWID() for random selection and ensure we only get one variant per item
             var itemQuery = @"
                 WITH ItemsWithImages AS (
@@ -318,7 +318,10 @@ WHERE Id = @Id";
                     INNER JOIN dbo.ItemVariant iv ON i.Id = iv.ItemId
                     WHERE i.Deleted = 0 
                       AND iv.Deleted = 0
-                      AND (iv.ImageUrls IS NOT NULL AND iv.ImageUrls != '')
+                      AND (
+                          (iv.ImageUrls IS NOT NULL AND iv.ImageUrls != '')
+                          OR (iv.ThumbnailUrl IS NOT NULL AND iv.ThumbnailUrl != '')
+                      )
                 )
                 SELECT TOP (@count) * 
                 FROM dbo.Item 

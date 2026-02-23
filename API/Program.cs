@@ -32,8 +32,6 @@ public class Program
             })
             .AddJwtBearer(jwtOptions =>
             {
-                jwtOptions.Authority = jwtSettings["Issuer"];
-                jwtOptions.Audience = jwtSettings["Audience"];
                 jwtOptions.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,

@@ -119,6 +119,7 @@ namespace API.Controllers
             return Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(64));
         }
 
+        [AllowAnonymous]
         [HttpPost("refresh")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

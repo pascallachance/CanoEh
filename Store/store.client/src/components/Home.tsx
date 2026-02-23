@@ -70,6 +70,7 @@ const ITEM_PLACEHOLDER_ARRAY = [1, 2, 3, 4];
 const RECENT_ITEMS_DISPLAY_COUNT = 4;
 const RECENT_ITEMS_FETCH_COUNT = 20; // Fetch more to ensure we get enough with images
 const SUGGESTED_ITEMS_COUNT = 4;
+const SUGGESTED_ITEMS_FETCH_COUNT = 20; // Fetch more to ensure we get enough with images
 const OFFERS_COUNT = 4;
 const PRIMARY_IMAGE_PATTERN = /_1\.(jpg|jpeg|png|gif|webp)$/i; // Pattern to match primary product images ending with _1
 
@@ -314,7 +315,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 return;
             }
 
-            const response = await fetch(`${apiBaseUrl}/api/Item/GetSuggestedProducts?count=${SUGGESTED_ITEMS_COUNT}`);
+            // Fetch more products than needed to ensure we get enough with images
+            const response = await fetch(`${apiBaseUrl}/api/Item/GetSuggestedProducts?count=${SUGGESTED_ITEMS_FETCH_COUNT}`);
             if (!response.ok) {
                 console.error('Failed to fetch suggested products');
                 return;
@@ -327,6 +329,11 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 const names: string[] = [];
                 const offers: number[] = [];
                 for (const product of result.value) {
+                    // Stop if we already have enough images
+                    if (images.length >= SUGGESTED_ITEMS_COUNT) {
+                        break;
+                    }
+
                     if (product.variants && product.variants.length > 0) {
                         let imageUrl: string | null = null;
                         let selectedVariant: ItemVariantDto = product.variants[0];
@@ -354,7 +361,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                             }
                         }
 
-                        // Add to images array (should always have an image since the endpoint filters for items with images)
+                        // Only add to images array if we found a valid image URL
                         if (imageUrl) {
                             const fullImageUrl = toAbsoluteUrl(imageUrl);
                             images.push(fullImageUrl);

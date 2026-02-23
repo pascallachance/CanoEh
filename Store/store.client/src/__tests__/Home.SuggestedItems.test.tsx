@@ -70,7 +70,7 @@ describe('Home - Suggested Items image filtering', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetSuggestedProducts?count=4')
+                expect.stringContaining('/api/Item/GetSuggestedProducts?count=20')
             );
         });
 
@@ -79,6 +79,38 @@ describe('Home - Suggested Items image filtering', () => {
         expect(card).toBeInTheDocument();
 
         // All 4 products have at least one variant with an image, so 4 images expected
+        const images = card?.querySelectorAll('.item-image');
+        expect(images?.length).toBe(4);
+    });
+
+    it('should still show 4 images when extra products without images are returned', async () => {
+        // Simulate over-fetch: API returns 6 products, first 2 have no images
+        const suggestedResponse = {
+            isSuccess: true,
+            value: [
+                makeProduct('noimg1', [{ /* no imageUrls, no thumbnailUrl */ }]),
+                makeProduct('noimg2', [{ /* no imageUrls, no thumbnailUrl */ }]),
+                makeProduct('3', [{ imageUrls: 'https://example.com/p3.jpg' }]),
+                makeProduct('4', [{ imageUrls: 'https://example.com/p4.jpg' }]),
+                makeProduct('5', [{ imageUrls: 'https://example.com/p5.jpg' }]),
+                makeProduct('6', [{ imageUrls: 'https://example.com/p6.jpg' }]),
+            ],
+        };
+
+        mockFetchCalls(suggestedResponse);
+        render(<BrowserRouter><Home /></BrowserRouter>);
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith(
+                expect.stringContaining('/api/Item/GetSuggestedProducts?count=20')
+            );
+        });
+
+        const suggestedSection = await screen.findByText(/Suggested items|Articles suggérés/);
+        const card = suggestedSection.closest('.item-preview-card');
+        expect(card).toBeInTheDocument();
+
+        // Despite 2 products lacking images, the remaining 4 fill in the display
         const images = card?.querySelectorAll('.item-image');
         expect(images?.length).toBe(4);
     });
@@ -99,7 +131,7 @@ describe('Home - Suggested Items image filtering', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetSuggestedProducts?count=4')
+                expect.stringContaining('/api/Item/GetSuggestedProducts?count=20')
             );
         });
 
@@ -126,7 +158,7 @@ describe('Home - Suggested Items image filtering', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetSuggestedProducts?count=4')
+                expect.stringContaining('/api/Item/GetSuggestedProducts?count=20')
             );
         });
 
@@ -156,7 +188,7 @@ describe('Home - Suggested Items image filtering', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetSuggestedProducts?count=4')
+                expect.stringContaining('/api/Item/GetSuggestedProducts?count=20')
             );
         });
 

@@ -36,12 +36,12 @@ namespace API.Tests
                 // Override database services to avoid LocalDB dependency
                 builder.ConfigureServices(services =>
                 {
-                    // Remove database-dependent services for this test
-                    var serviceDescriptors = services.Where(d => 
-                        d.ServiceType.Name.Contains("Repository") ||
-                        d.ServiceType.Name.Contains("UserService") ||
-                        d.ServiceType.Name.Contains("CompanyService")).ToList();
-                    
+                    // Remove all database-dependent services (repositories and domain services)
+                    var serviceDescriptors = services.Where(d =>
+                        d.ServiceType.Namespace?.StartsWith("Domain.Services.Interfaces") == true ||
+                        d.ServiceType.Namespace?.StartsWith("Infrastructure.Repositories.Interfaces") == true ||
+                        d.ServiceType.Namespace?.StartsWith("Infrastructure.Services") == true).ToList();
+
                     foreach (var serviceDescriptor in serviceDescriptors)
                     {
                         services.Remove(serviceDescriptor);

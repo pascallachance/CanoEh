@@ -1808,16 +1808,31 @@ namespace API.Tests
         {
             // Arrange
             var categoryNodeId = Guid.NewGuid();
+            var itemId = Guid.NewGuid();
             var items = new List<Item>
             {
                 new Item
                 {
-                    Id = Guid.NewGuid(),
+                    Id = itemId,
                     SellerID = Guid.NewGuid(),
                     Name_en = "Category Item",
                     Name_fr = "Article catégorie",
                     CategoryNodeID = categoryNodeId,
-                    Variants = new List<ItemVariant>(),
+                    Variants = new List<ItemVariant>
+                    {
+                        new ItemVariant
+                        {
+                            Id = Guid.NewGuid(),
+                            ItemId = itemId,
+                            Price = 19.99m,
+                            StockQuantity = 10,
+                            Sku = "CAT-SKU-001",
+                            ImageUrls = "https://example.com/cat1.jpg",
+                            ThumbnailUrl = "https://example.com/cat_thumb1.jpg",
+                            ItemVariantAttributes = new List<ItemVariantAttribute>(),
+                            Deleted = false
+                        }
+                    },
                     ItemVariantFeatures = new List<ItemVariantFeatures>(),
                     CreatedAt = DateTime.UtcNow,
                     Deleted = false
@@ -1833,7 +1848,7 @@ namespace API.Tests
 
             _mockItemRepository.Setup(x => x.GetSuggestedCategoriesProductsAsync(It.IsAny<int>()))
                               .ReturnsAsync(items);
-            _mockCategoryNodeRepository.Setup(x => x.GetAllAsync())
+            _mockCategoryNodeRepository.Setup(x => x.GetByIdsAsync(It.IsAny<IEnumerable<Guid>>()))
                                       .ReturnsAsync(new List<BaseNode> { categoryNode });
 
             // Act

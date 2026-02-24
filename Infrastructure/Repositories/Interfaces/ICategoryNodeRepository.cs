@@ -11,6 +11,7 @@ namespace Infrastructure.Repositories.Interfaces
         Task<bool> HasItemsAsync(Guid categoryNodeId); // Check if a CategoryNode has items
         Task<IEnumerable<BaseNode>> GetNodesByTypeAsync(string nodeType);
         Task<IEnumerable<BaseNode>> GetCategoryNodesAsync(); // Get all CategoryNode items
+        Task<IEnumerable<BaseNode>> GetByIdsAsync(IEnumerable<Guid> ids); // Get nodes by a set of IDs
         Task<(BaseNode node, IEnumerable<CategoryMandatoryFeature> features)> AddNodeWithFeaturesAsync(
             BaseNode node, 
             IEnumerable<CategoryMandatoryFeature> features);

@@ -936,10 +936,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 }
 
                 var categoryIds = items.Select(i => i.CategoryNodeID).Distinct().ToHashSet();
-                var allCategoryNodes = await _categoryNodeRepository.GetAllAsync() ?? Enumerable.Empty<BaseNode>();
-                var categoryNodeMap = allCategoryNodes
-                    .Where(n => categoryIds.Contains(n.Id))
-                    .ToDictionary(n => n.Id);
+                var categoryNodes = await _categoryNodeRepository.GetByIdsAsync(categoryIds) ?? Enumerable.Empty<BaseNode>();
+                var categoryNodeMap = categoryNodes.ToDictionary(n => n.Id);
 
                 var responseList = items.Select(item =>
                 {

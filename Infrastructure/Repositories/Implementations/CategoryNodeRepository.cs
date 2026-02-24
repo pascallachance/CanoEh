@@ -296,6 +296,28 @@ ORDER BY SortOrder, Name_en";
             return await GetNodesByTypeAsync(BaseNode.NodeTypeCategory);
         }
 
+        public async Task<IEnumerable<BaseNode>> GetByIdsAsync(IEnumerable<Guid> ids)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+
+            var idList = ids.ToList();
+            if (!idList.Any())
+            {
+                return Enumerable.Empty<BaseNode>();
+            }
+
+            var query = @"
+SELECT Id, Name_en, Name_fr, NodeType, ParentId, IsActive, SortOrder, CreatedAt, UpdatedAt
+FROM dbo.CategoryNode
+WHERE Id IN @idList";
+
+            var nodesData = await dbConnection.QueryAsync<CategoryNodeDto>(query, new { idList });
+            return nodesData.Select(MapToNode);
+        }
+
         public async Task<(BaseNode node, IEnumerable<CategoryMandatoryFeature> features)> AddNodeWithFeaturesAsync(
             BaseNode node, 
             IEnumerable<CategoryMandatoryFeature> features)

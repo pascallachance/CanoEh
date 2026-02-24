@@ -52,6 +52,8 @@ interface GetItemResponse {
     description_fr?: string;
     imageUrl?: string;
     categoryNodeID: string;
+    categoryName_en?: string;
+    categoryName_fr?: string;
     variants: ItemVariantDto[];
     itemAttributes: ItemAttributeDto[];
     createdAt: string;
@@ -99,12 +101,14 @@ function getCSSCardDimensions() {
  * @param products List of products to extract from
  * @param language Current display language ('fr' or other)
  * @param maxCount Optional maximum number of entries to return
+ * @param useCategoryName When true, use category name instead of item name
  * @returns Object containing parallel arrays of image URLs, product names and offer percentages
  */
 function extractProductImages(
     products: GetItemResponse[],
     language: string,
-    maxCount?: number
+    maxCount?: number,
+    useCategoryName?: boolean
 ): { images: string[]; names: string[]; offers: number[] } {
     const images: string[] = [];
     const names: string[] = [];
@@ -142,7 +146,13 @@ function extractProductImages(
 
             if (imageUrl) {
                 images.push(toAbsoluteUrl(imageUrl));
-                names.push(language === 'fr' ? product.name_fr : product.name_en);
+                if (useCategoryName) {
+                    names.push(language === 'fr'
+                        ? (product.categoryName_fr || product.name_fr)
+                        : (product.categoryName_en || product.name_en));
+                } else {
+                    names.push(language === 'fr' ? product.name_fr : product.name_en);
+                }
                 offers.push(selectedVariant.offer || 0);
             }
         }
@@ -450,7 +460,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                const { images, names, offers } = extractProductImages(result.value, language);
+                const { images, names, offers } = extractProductImages(result.value, language, undefined, true);
                 setCategoriesProductImages(images);
                 setCategoriesProductNames(names);
                 setCategoriesOfferPercentages(offers);

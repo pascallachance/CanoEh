@@ -10,6 +10,8 @@ namespace Domain.Models.Responses
         public string? Description_fr { get; set; }
         public string? ImageUrl { get; set; }
         public Guid CategoryNodeID { get; set; }
+        public string? CategoryName_en { get; set; }
+        public string? CategoryName_fr { get; set; }
         public List<ItemVariantDto> Variants { get; set; } = new();
         public List<ItemVariantFeaturesDto> ItemVariantFeatures { get; set; } = new();
         public DateTime CreatedAt { get; set; }

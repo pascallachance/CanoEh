@@ -16,12 +16,14 @@ namespace Domain.Services.Implementations
         IItemVariantRepository itemVariantRepository,
         IItemVariantFeaturesRepository itemVariantFeaturesRepository,
         IItemVariantAttributeRepository itemVariantAttributeRepository,
+        ICategoryNodeRepository categoryNodeRepository,
         string connectionString) : IItemService
     {
         private readonly IItemRepository _itemRepository = itemRepository;
         private readonly IItemVariantRepository _itemVariantRepository = itemVariantRepository;
         private readonly IItemVariantFeaturesRepository _itemVariantFeaturesRepository = itemVariantFeaturesRepository;
         private readonly IItemVariantAttributeRepository _itemVariantAttributeRepository = itemVariantAttributeRepository;
+        private readonly ICategoryNodeRepository _categoryNodeRepository = categoryNodeRepository;
         private readonly string _connectionString = connectionString;
 
         public async Task<Result<CreateItemResponse>> CreateItemAsync(CreateItemRequest createItemRequest)
@@ -927,10 +929,28 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
         {
             try
             {
-                var items = await _itemRepository.GetSuggestedCategoriesProductsAsync(count);
-                var response = items.Select(item => MapItemToGetItemResponse(item));
+                var items = (await _itemRepository.GetSuggestedCategoriesProductsAsync(count)).ToList();
+                if (!items.Any())
+                {
+                    return Result.Success<IEnumerable<GetItemResponse>>(Enumerable.Empty<GetItemResponse>());
+                }
 
-                return Result.Success(response);
+                var categoryIds = items.Select(i => i.CategoryNodeID).Distinct().ToHashSet();
+                var categoryNodes = await _categoryNodeRepository.GetByIdsAsync(categoryIds) ?? Enumerable.Empty<BaseNode>();
+                var categoryNodeMap = categoryNodes.ToDictionary(n => n.Id);
+
+                var responseList = items.Select(item =>
+                {
+                    var response = MapItemToGetItemResponse(item);
+                    if (categoryNodeMap.TryGetValue(item.CategoryNodeID, out var categoryNode))
+                    {
+                        response.CategoryName_en = categoryNode.Name_en;
+                        response.CategoryName_fr = categoryNode.Name_fr;
+                    }
+                    return response;
+                }).ToList();
+
+                return Result.Success<IEnumerable<GetItemResponse>>(responseList);
             }
             catch (Exception ex)
             {

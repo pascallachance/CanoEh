@@ -1,0 +1,18 @@
+import { Login as SharedLogin } from 'canoeh-shared-ui';
+import 'canoeh-shared-ui/Login.css';
+
+interface LoginProps {
+    onLoginSuccess?: () => void;
+}
+
+function Login({ onLoginSuccess }: LoginProps) {
+    return (
+        <SharedLogin
+            title="CanoEh! Admin"
+            apiBaseUrl={import.meta.env.VITE_API_ADMIN_BASE_URL}
+            onLoginSuccess={onLoginSuccess}
+        />
+    );
+}
+
+export default Login;

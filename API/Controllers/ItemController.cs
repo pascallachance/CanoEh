@@ -332,6 +332,47 @@ namespace API.Controllers
         }
 
         /// <summary>
+        /// Gets 4 suggested products from 4 different categories (Items with their Variants, ItemVariantAttributes, and ItemVariantFeatures).
+        /// Returns one item per category, selected randomly.
+        /// </summary>
+        /// <param name="count">Number of products to retrieve (one per category). Default is 4. Maximum is 100.</param>
+        /// <returns>Returns a list of suggested categories products or an error response.</returns>
+        [HttpGet("GetSuggestedCategoriesProducts")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetSuggestedCategoriesProducts([FromQuery] int count = 4)
+        {
+            try
+            {
+                // Validate count parameter
+                if (count <= 0)
+                {
+                    return BadRequest("Count must be greater than 0.");
+                }
+
+                if (count > 100)
+                {
+                    return BadRequest("Count cannot exceed 100.");
+                }
+
+                var result = await _itemService.GetSuggestedCategoriesProductsAsync(count);
+
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? StatusCodes.Status500InternalServerError, result.Error);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
+        }
+
+        /// <summary>
         /// Updates offer fields for an item variant.
         /// </summary>
         /// <param name="request">The offer update details.</param>

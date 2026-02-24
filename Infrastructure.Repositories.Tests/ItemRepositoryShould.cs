@@ -443,5 +443,127 @@ namespace Infrastructure.Repositories.Tests
             Assert.NotNull(result);
             _mockItemRepository.Verify(repo => repo.GetSuggestedProductsAsync(count), Times.Once);
         }
+
+        // ===== GetSuggestedCategoriesProductsAsync Repository Tests =====
+
+        [Fact]
+        public void GetSuggestedCategoriesProductsAsync_MethodExists_OnItemRepository()
+        {
+            // Arrange & Act
+            // This test verifies that GetSuggestedCategoriesProductsAsync method is properly defined
+            // on ItemRepository and returns the expected type (Task<IEnumerable<Item>>).
+            var methodInfo = _itemRepository.GetType().GetMethod("GetSuggestedCategoriesProductsAsync");
+
+            // Assert
+            Assert.NotNull(methodInfo);
+            Assert.Equal(typeof(Task<IEnumerable<Item>>), methodInfo.ReturnType);
+
+            // Verify method parameter
+            var parameters = methodInfo.GetParameters();
+            Assert.Single(parameters);
+            Assert.Equal("count", parameters[0].Name);
+            Assert.Equal(typeof(int), parameters[0].ParameterType);
+        }
+
+        [Fact]
+        public void GetSuggestedCategoriesProductsAsync_Interface_ShouldDefineMethod()
+        {
+            // Arrange & Act
+            // Verify the interface contract for GetSuggestedCategoriesProductsAsync
+            var interfaceMethodInfo = typeof(IItemRepository).GetMethod("GetSuggestedCategoriesProductsAsync");
+
+            // Assert
+            Assert.NotNull(interfaceMethodInfo);
+            Assert.Equal(typeof(Task<IEnumerable<Item>>), interfaceMethodInfo.ReturnType);
+
+            // Verify method parameter on interface
+            var parameters = interfaceMethodInfo.GetParameters();
+            Assert.Single(parameters);
+            Assert.Equal("count", parameters[0].Name);
+            Assert.Equal(typeof(int), parameters[0].ParameterType);
+        }
+
+        [Fact]
+        public async Task GetSuggestedCategoriesProductsAsync_ShouldReturnItems_WhenItemsExist()
+        {
+            // Arrange
+            var items = new List<Item>
+            {
+                new Item
+                {
+                    Id = Guid.NewGuid(),
+                    SellerID = Guid.NewGuid(),
+                    Name_en = "Category Item 1",
+                    Name_fr = "Article catégorie 1",
+                    Description_en = "Description EN",
+                    Description_fr = "Description FR",
+                    CategoryNodeID = Guid.NewGuid(),
+                    Variants = new List<ItemVariant>
+                    {
+                        new ItemVariant
+                        {
+                            Id = Guid.NewGuid(),
+                            ItemId = Guid.NewGuid(),
+                            Price = 19.99m,
+                            StockQuantity = 5,
+                            Sku = "CAT-001",
+                            ImageUrls = "https://example.com/cat1.jpg",
+                            Deleted = false
+                        }
+                    },
+                    CreatedAt = DateTime.UtcNow,
+                    Deleted = false
+                }
+            };
+
+            _mockItemRepository.Setup(repo => repo.GetSuggestedCategoriesProductsAsync(It.IsAny<int>()))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _mockItemRepository.Object.GetSuggestedCategoriesProductsAsync(4);
+
+            // Assert
+            Assert.NotNull(result);
+            var resultList = result.ToList();
+            Assert.Single(resultList);
+            Assert.Equal("Category Item 1", resultList[0].Name_en);
+            Assert.NotEmpty(resultList[0].Variants);
+            Assert.NotNull(resultList[0].Variants[0].ImageUrls);
+            _mockItemRepository.Verify(repo => repo.GetSuggestedCategoriesProductsAsync(4), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetSuggestedCategoriesProductsAsync_ShouldReturnEmpty_WhenNoItemsExist()
+        {
+            // Arrange
+            var items = new List<Item>();
+            _mockItemRepository.Setup(repo => repo.GetSuggestedCategoriesProductsAsync(It.IsAny<int>()))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _mockItemRepository.Object.GetSuggestedCategoriesProductsAsync(4);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+            _mockItemRepository.Verify(repo => repo.GetSuggestedCategoriesProductsAsync(4), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetSuggestedCategoriesProductsAsync_ShouldRespectCountParameter()
+        {
+            // Arrange
+            var count = 4;
+            var items = new List<Item>();
+            _mockItemRepository.Setup(repo => repo.GetSuggestedCategoriesProductsAsync(count))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _mockItemRepository.Object.GetSuggestedCategoriesProductsAsync(count);
+
+            // Assert
+            Assert.NotNull(result);
+            _mockItemRepository.Verify(repo => repo.GetSuggestedCategoriesProductsAsync(count), Times.Once);
+        }
     }
 }

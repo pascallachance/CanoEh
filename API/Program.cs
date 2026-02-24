@@ -97,8 +97,9 @@ public class Program
             var itemVariantRepository = provider.GetRequiredService<IItemVariantRepository>();
             var itemVariantFeaturesRepository = provider.GetRequiredService<IItemVariantFeaturesRepository>();
             var itemVariantAttributeRepository = provider.GetRequiredService<IItemVariantAttributeRepository>();
+            var categoryNodeRepository = provider.GetRequiredService<ICategoryNodeRepository>();
             return new ItemService(itemRepository, itemVariantRepository, itemVariantFeaturesRepository, 
-                                 itemVariantAttributeRepository, connectionString);
+                                 itemVariantAttributeRepository, categoryNodeRepository, connectionString);
         });
         builder.Services.AddScoped<ICategoryNodeService, CategoryNodeService>();
         builder.Services.AddScoped<ICompanyService, CompanyService>();

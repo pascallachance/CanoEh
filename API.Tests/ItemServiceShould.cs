@@ -13,6 +13,7 @@ namespace API.Tests
         private readonly Mock<IItemVariantRepository> _mockItemVariantRepository;
         private readonly Mock<IItemVariantFeaturesRepository> _mockItemVariantFeaturesRepository;
         private readonly Mock<IItemVariantAttributeRepository> _mockItemVariantAttributeRepository;
+        private readonly Mock<ICategoryNodeRepository> _mockCategoryNodeRepository;
         private readonly ItemService _itemService;
 
         public ItemServiceShould()
@@ -21,11 +22,13 @@ namespace API.Tests
             _mockItemVariantRepository = new Mock<IItemVariantRepository>();
             _mockItemVariantFeaturesRepository = new Mock<IItemVariantFeaturesRepository>();
             _mockItemVariantAttributeRepository = new Mock<IItemVariantAttributeRepository>();
+            _mockCategoryNodeRepository = new Mock<ICategoryNodeRepository>();
             _itemService = new ItemService(
                 _mockItemRepository.Object, 
                 _mockItemVariantRepository.Object,
                 _mockItemVariantFeaturesRepository.Object,
                 _mockItemVariantAttributeRepository.Object,
+                _mockCategoryNodeRepository.Object,
                 "Server=(localdb)\\MSSQLLocalDB;Database=CanoEh;Trusted_Connection=True;TrustServerCertificate=True;");
         }
 
@@ -1798,6 +1801,49 @@ namespace API.Tests
             Assert.Equal(24.99m, item.Variants[0].Price);
             Assert.Single(item.Variants[0].ItemVariantAttributes);
             Assert.Equal("Color", item.Variants[0].ItemVariantAttributes[0].AttributeName_en);
+        }
+
+        [Fact]
+        public async Task GetSuggestedCategoriesProductsAsync_PopulatesCategoryNames_WhenCategoryNodeExists()
+        {
+            // Arrange
+            var categoryNodeId = Guid.NewGuid();
+            var items = new List<Item>
+            {
+                new Item
+                {
+                    Id = Guid.NewGuid(),
+                    SellerID = Guid.NewGuid(),
+                    Name_en = "Category Item",
+                    Name_fr = "Article catégorie",
+                    CategoryNodeID = categoryNodeId,
+                    Variants = new List<ItemVariant>(),
+                    ItemVariantFeatures = new List<ItemVariantFeatures>(),
+                    CreatedAt = DateTime.UtcNow,
+                    Deleted = false
+                }
+            };
+
+            var categoryNode = new CategoryNode
+            {
+                Id = categoryNodeId,
+                Name_en = "Electronics",
+                Name_fr = "Électronique"
+            };
+
+            _mockItemRepository.Setup(x => x.GetSuggestedCategoriesProductsAsync(It.IsAny<int>()))
+                              .ReturnsAsync(items);
+            _mockCategoryNodeRepository.Setup(x => x.GetAllAsync())
+                                      .ReturnsAsync(new List<BaseNode> { categoryNode });
+
+            // Act
+            var result = await _itemService.GetSuggestedCategoriesProductsAsync(4);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            var item = result.Value.First();
+            Assert.Equal("Electronics", item.CategoryName_en);
+            Assert.Equal("Électronique", item.CategoryName_fr);
         }
 
         // ===== UpdateVariantImageUrlsAsync Tests =====

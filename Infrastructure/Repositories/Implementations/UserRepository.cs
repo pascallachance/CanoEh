@@ -1,4 +1,6 @@
 ﻿using System.Data;
+using System.Security.Cryptography;
+using System.Text;
 using Dapper;
 using Infrastructure.Data;
 using Infrastructure.Repositories.Interfaces;
@@ -8,6 +10,11 @@ namespace Infrastructure.Repositories.Implementations
 {
     public class UserRepository(string connectionString) : GenericRepository<User>(connectionString), IUserRepository
     {
+        private static string HashRefreshToken(string token)
+        {
+            var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
+            return Convert.ToHexString(bytes);
+        }
         public override async Task<User> AddAsync(User entity)
         {
             if (dbConnection.State != ConnectionState.Open)
@@ -332,11 +339,12 @@ WHERE restoreUserToken = @token AND deleted = 1 AND restoreUserTokenExpiry > @no
             {
                 dbConnection.Open();
             }
+            var tokenHash = HashRefreshToken(refreshToken);
             var query = @"
 SELECT TOP(1) * 
 FROM dbo.[User] 
-WHERE refreshToken = @refreshToken AND deleted = 0 AND refreshTokenExpiry > @now";
-            return await dbConnection.QueryFirstOrDefaultAsync<User>(query, new { refreshToken, now = DateTime.UtcNow });
+WHERE refreshToken = @tokenHash AND deleted = 0 AND refreshTokenExpiry > @now";
+            return await dbConnection.QueryFirstOrDefaultAsync<User>(query, new { tokenHash, now = DateTime.UtcNow });
         }
 
         public async Task<bool> UpdateRefreshTokenAsync(string email, string refreshToken, DateTime expiry)
@@ -345,11 +353,12 @@ WHERE refreshToken = @refreshToken AND deleted = 0 AND refreshTokenExpiry > @now
             {
                 dbConnection.Open();
             }
+            var tokenHash = HashRefreshToken(refreshToken);
             var query = @"
 UPDATE dbo.[User] 
-SET refreshToken = @refreshToken, refreshTokenExpiry = @expiry, lastupdatedat = @now
+SET refreshToken = @tokenHash, refreshTokenExpiry = @expiry, lastupdatedat = @now
 WHERE email = @email AND deleted = 0";
-            var rowsAffected = await dbConnection.ExecuteAsync(query, new { email, refreshToken, expiry, now = DateTime.UtcNow });
+            var rowsAffected = await dbConnection.ExecuteAsync(query, new { email, tokenHash, expiry, now = DateTime.UtcNow });
             return rowsAffected > 0;
         }
 

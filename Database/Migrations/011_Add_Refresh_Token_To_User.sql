@@ -4,7 +4,10 @@
 --              These columns are required by the /api/Login/refresh endpoint to validate and rotate
 --              refresh tokens. Without these columns, token refresh always fails with 401 Unauthorized.
 
--- Add refreshToken column (nullable, stores the opaque refresh token value)
+USE CanoEh;
+GO
+
+-- Add refreshToken column (nullable, stores the SHA-256 hash of the refresh token as a hex string)
 IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'dbo.[User]') AND name = 'refreshToken')
 BEGIN
     ALTER TABLE dbo.[User]
@@ -44,3 +47,9 @@ BEGIN
     PRINT 'IX_User_RefreshToken index already exists on User table';
 END
 GO
+
+-- Summary
+PRINT 'Migration 011_Add_Refresh_Token_To_User completed successfully.';
+PRINT '  - Ensured refreshToken column exists on dbo.[User].';
+PRINT '  - Ensured refreshTokenExpiry column exists on dbo.[User].';
+PRINT '  - Ensured IX_User_RefreshToken filtered index exists on dbo.[User](refreshToken).';

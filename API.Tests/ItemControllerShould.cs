@@ -1221,6 +1221,126 @@ namespace API.Tests
             _mockItemService.Verify(x => x.GetSuggestedProductsAsync(4), Times.Once);
         }
 
+        // ===== GetSuggestedCategoriesProducts Controller Tests =====
+
+        [Fact]
+        public async Task GetSuggestedCategoriesProducts_ReturnOk_WhenProductsExist()
+        {
+            // Arrange
+            var items = new List<GetItemResponse>
+            {
+                new GetItemResponse
+                {
+                    Id = Guid.NewGuid(),
+                    SellerID = Guid.NewGuid(),
+                    Name_en = "Category Item 1",
+                    Name_fr = "Article catégorie 1",
+                    Description_en = "Test Description EN",
+                    Description_fr = "Test Description FR",
+                    CategoryNodeID = Guid.NewGuid(),
+                    Variants = new List<ItemVariantDto>
+                    {
+                        new ItemVariantDto
+                        {
+                            Id = Guid.NewGuid(),
+                            Price = 19.99m,
+                            StockQuantity = 5,
+                            Sku = "CAT-001",
+                            ImageUrls = "https://example.com/cat1.jpg",
+                            ThumbnailUrl = "https://example.com/cat_thumb1.jpg",
+                            ItemVariantAttributes = new List<ItemVariantAttributeDto>(),
+                            Deleted = false
+                        }
+                    },
+                    ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = null,
+                    Deleted = false
+                }
+            };
+
+            var result = Result.Success<IEnumerable<GetItemResponse>>(items);
+            _mockItemService.Setup(x => x.GetSuggestedCategoriesProductsAsync(It.IsAny<int>()))
+                           .ReturnsAsync(result);
+
+            // Act
+            var response = await _controller.GetSuggestedCategoriesProducts(4);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(response);
+            Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetSuggestedCategoriesProducts_ReturnBadRequest_WhenCountIsZero()
+        {
+            // Arrange & Act
+            var response = await _controller.GetSuggestedCategoriesProducts(0);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+            Assert.Equal("Count must be greater than 0.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task GetSuggestedCategoriesProducts_ReturnBadRequest_WhenCountIsNegative()
+        {
+            // Arrange & Act
+            var response = await _controller.GetSuggestedCategoriesProducts(-5);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+            Assert.Equal("Count must be greater than 0.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task GetSuggestedCategoriesProducts_ReturnBadRequest_WhenCountExceedsMaximum()
+        {
+            // Arrange & Act
+            var response = await _controller.GetSuggestedCategoriesProducts(101);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+            Assert.Equal("Count cannot exceed 100.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task GetSuggestedCategoriesProducts_ReturnInternalServerError_WhenServiceFails()
+        {
+            // Arrange
+            var result = Result.Failure<IEnumerable<GetItemResponse>>("Database error", StatusCodes.Status500InternalServerError);
+            _mockItemService.Setup(x => x.GetSuggestedCategoriesProductsAsync(It.IsAny<int>()))
+                           .ReturnsAsync(result);
+
+            // Act
+            var response = await _controller.GetSuggestedCategoriesProducts(4);
+
+            // Assert
+            var errorResult = Assert.IsType<ObjectResult>(response);
+            Assert.Equal(StatusCodes.Status500InternalServerError, errorResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetSuggestedCategoriesProducts_UseDefaultCount_WhenCountNotProvided()
+        {
+            // Arrange
+            var items = new List<GetItemResponse>();
+            var result = Result.Success<IEnumerable<GetItemResponse>>(items);
+            _mockItemService.Setup(x => x.GetSuggestedCategoriesProductsAsync(4))
+                           .ReturnsAsync(result);
+
+            // Act
+            var response = await _controller.GetSuggestedCategoriesProducts();
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(response);
+            Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+            _mockItemService.Verify(x => x.GetSuggestedCategoriesProductsAsync(4), Times.Once);
+        }
+
         // ===== UpdateVariantImageUrls Controller Tests =====
 
         private ControllerContext BuildControllerContext(string userEmail)

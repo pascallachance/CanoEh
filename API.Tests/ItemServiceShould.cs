@@ -1583,6 +1583,223 @@ namespace API.Tests
             Assert.Equal("Size", item.Variants[0].ItemVariantAttributes[0].AttributeName_en);
         }
 
+        // ===== GetSuggestedCategoriesProductsAsync Service Tests =====
+
+        [Fact]
+        public async Task GetSuggestedCategoriesProductsAsync_ReturnSuccess_WhenItemsExist()
+        {
+            // Arrange
+            var items = new List<Item>
+            {
+                new Item
+                {
+                    Id = Guid.NewGuid(),
+                    SellerID = Guid.NewGuid(),
+                    Name_en = "Category Item 1",
+                    Name_fr = "Article catégorie 1",
+                    Description_en = "Test Description EN",
+                    Description_fr = "Test Description FR",
+                    CategoryNodeID = Guid.NewGuid(),
+                    Variants = new List<ItemVariant>
+                    {
+                        new ItemVariant
+                        {
+                            Id = Guid.NewGuid(),
+                            ItemId = Guid.NewGuid(),
+                            Price = 19.99m,
+                            StockQuantity = 5,
+                            Sku = "CAT-001",
+                            ImageUrls = "https://example.com/cat1.jpg",
+                            ThumbnailUrl = "https://example.com/cat_thumb1.jpg",
+                            ItemVariantAttributes = new List<ItemVariantAttribute>(),
+                            Deleted = false
+                        }
+                    },
+                    ItemVariantFeatures = new List<ItemVariantFeatures>(),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = null,
+                    Deleted = false
+                },
+                new Item
+                {
+                    Id = Guid.NewGuid(),
+                    SellerID = Guid.NewGuid(),
+                    Name_en = "Category Item 2",
+                    Name_fr = "Article catégorie 2",
+                    Description_en = "Test Description EN",
+                    Description_fr = "Test Description FR",
+                    CategoryNodeID = Guid.NewGuid(),
+                    Variants = new List<ItemVariant>
+                    {
+                        new ItemVariant
+                        {
+                            Id = Guid.NewGuid(),
+                            ItemId = Guid.NewGuid(),
+                            Price = 39.99m,
+                            StockQuantity = 12,
+                            Sku = "CAT-002",
+                            ImageUrls = "https://example.com/cat2.jpg",
+                            ThumbnailUrl = "https://example.com/cat_thumb2.jpg",
+                            ItemVariantAttributes = new List<ItemVariantAttribute>(),
+                            Deleted = false
+                        }
+                    },
+                    ItemVariantFeatures = new List<ItemVariantFeatures>(),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = null,
+                    Deleted = false
+                }
+            };
+
+            _mockItemRepository.Setup(x => x.GetSuggestedCategoriesProductsAsync(It.IsAny<int>()))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _itemService.GetSuggestedCategoriesProductsAsync(4);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            var resultList = result.Value.ToList();
+            Assert.Equal(2, resultList.Count);
+            Assert.Equal("Category Item 1", resultList[0].Name_en);
+            Assert.Equal("Category Item 2", resultList[1].Name_en);
+        }
+
+        [Fact]
+        public async Task GetSuggestedCategoriesProductsAsync_ReturnSuccess_WhenNoItemsExist()
+        {
+            // Arrange
+            var items = new List<Item>();
+            _mockItemRepository.Setup(x => x.GetSuggestedCategoriesProductsAsync(It.IsAny<int>()))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _itemService.GetSuggestedCategoriesProductsAsync(4);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Empty(result.Value);
+        }
+
+        [Fact]
+        public async Task GetSuggestedCategoriesProductsAsync_PassCorrectCountToRepository()
+        {
+            // Arrange
+            var items = new List<Item>();
+            _mockItemRepository.Setup(x => x.GetSuggestedCategoriesProductsAsync(4))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _itemService.GetSuggestedCategoriesProductsAsync(4);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            _mockItemRepository.Verify(x => x.GetSuggestedCategoriesProductsAsync(4), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetSuggestedCategoriesProductsAsync_ReturnFailure_WhenExceptionOccurs()
+        {
+            // Arrange
+            _mockItemRepository.Setup(x => x.GetSuggestedCategoriesProductsAsync(It.IsAny<int>()))
+                              .ThrowsAsync(new Exception("Database connection failed"));
+
+            // Act
+            var result = await _itemService.GetSuggestedCategoriesProductsAsync(4);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.ErrorCode);
+            Assert.Contains("An error occurred while retrieving suggested categories products", result.Error);
+        }
+
+        [Fact]
+        public async Task GetSuggestedCategoriesProductsAsync_MapItemsToDtosCorrectly()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            var attributeId = Guid.NewGuid();
+            var variantAttributeId = Guid.NewGuid();
+
+            var items = new List<Item>
+            {
+                new Item
+                {
+                    Id = itemId,
+                    SellerID = Guid.NewGuid(),
+                    Name_en = "Category Test Item",
+                    Name_fr = "Article de test catégorie",
+                    Description_en = "Category Description EN",
+                    Description_fr = "Category Description FR",
+                    CategoryNodeID = Guid.NewGuid(),
+                    Variants = new List<ItemVariant>
+                    {
+                        new ItemVariant
+                        {
+                            Id = variantId,
+                            ItemId = itemId,
+                            Price = 24.99m,
+                            StockQuantity = 7,
+                            Sku = "CAT-SKU-001",
+                            ImageUrls = "cat_image1.jpg,cat_image2.jpg",
+                            ThumbnailUrl = "cat_thumb.jpg",
+                            ItemVariantName_en = "Category Variant EN",
+                            ItemVariantName_fr = "Category Variant FR",
+                            ItemVariantAttributes = new List<ItemVariantAttribute>
+                            {
+                                new ItemVariantAttribute
+                                {
+                                    Id = variantAttributeId,
+                                    ItemVariantID = variantId,
+                                    AttributeName_en = "Color",
+                                    AttributeName_fr = "Couleur",
+                                    Attributes_en = "Blue",
+                                    Attributes_fr = "Bleu"
+                                }
+                            },
+                            Deleted = false
+                        }
+                    },
+                    ItemVariantFeatures = new List<ItemVariantFeatures>
+                    {
+                        new ItemVariantFeatures
+                        {
+                            Id = attributeId,
+                            ItemID = itemId,
+                            AttributeName_en = "Material",
+                            AttributeName_fr = "Matériau",
+                            Attributes_en = "Wood",
+                            Attributes_fr = "Bois"
+                        }
+                    },
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = null,
+                    Deleted = false
+                }
+            };
+
+            _mockItemRepository.Setup(x => x.GetSuggestedCategoriesProductsAsync(It.IsAny<int>()))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _itemService.GetSuggestedCategoriesProductsAsync(1);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            var item = result.Value.First();
+            Assert.Equal(itemId, item.Id);
+            Assert.Equal("Category Test Item", item.Name_en);
+            Assert.Single(item.Variants);
+            Assert.Single(item.ItemVariantFeatures);
+            Assert.Equal(variantId, item.Variants[0].Id);
+            Assert.Equal(24.99m, item.Variants[0].Price);
+            Assert.Single(item.Variants[0].ItemVariantAttributes);
+            Assert.Equal("Color", item.Variants[0].ItemVariantAttributes[0].AttributeName_en);
+        }
+
         // ===== UpdateVariantImageUrlsAsync Tests =====
 
         [Fact]

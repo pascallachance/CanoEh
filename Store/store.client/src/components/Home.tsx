@@ -94,6 +94,63 @@ function getCSSCardDimensions() {
 }
 
 /**
+ * Extracts images, names and offer percentages from a list of products.
+ * Prefers imageUrls on variants, falls back to thumbnailUrl.
+ * @param products List of products to extract from
+ * @param language Current display language ('fr' or other)
+ * @param maxCount Optional maximum number of entries to return
+ * @returns Object containing parallel arrays of image URLs, product names and offer percentages
+ */
+function extractProductImages(
+    products: GetItemResponse[],
+    language: string,
+    maxCount?: number
+): { images: string[]; names: string[]; offers: number[] } {
+    const images: string[] = [];
+    const names: string[] = [];
+    const offers: number[] = [];
+    for (const product of products) {
+        if (maxCount !== undefined && images.length >= maxCount) {
+            break;
+        }
+        if (product.variants && product.variants.length > 0) {
+            let imageUrl: string | null = null;
+            let selectedVariant: ItemVariantDto = product.variants[0];
+
+            // Prefer imageUrls: scan all variants before falling back to thumbnailUrl
+            for (const variant of product.variants) {
+                if (variant.imageUrls) {
+                    const urls = variant.imageUrls.split(',').filter((url: string) => url.trim());
+                    if (urls.length > 0) {
+                        imageUrl = urls[0].trim();
+                        selectedVariant = variant;
+                        break;
+                    }
+                }
+            }
+
+            // Fall back to thumbnailUrl if no imageUrls found on any variant
+            if (!imageUrl) {
+                for (const variant of product.variants) {
+                    if (variant.thumbnailUrl) {
+                        imageUrl = variant.thumbnailUrl;
+                        selectedVariant = variant;
+                        break;
+                    }
+                }
+            }
+
+            if (imageUrl) {
+                images.push(toAbsoluteUrl(imageUrl));
+                names.push(language === 'fr' ? product.name_fr : product.name_en);
+                offers.push(selectedVariant.offer || 0);
+            }
+        }
+    }
+    return { images, names, offers };
+}
+
+/**
  * Debounce utility to limit function execution frequency
  * @param func Function to debounce
  * @param wait Delay in milliseconds
@@ -252,56 +309,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                // Extract images from products, but only include products that have valid images
-                const images: string[] = [];
-                const names: string[] = [];
-                const offers: number[] = [];
-                for (const product of result.value) {
-                    // Stop if we already have enough images
-                    if (images.length >= RECENT_ITEMS_DISPLAY_COUNT) {
-                        break;
-                    }
-
-                    if (product.variants && product.variants.length > 0) {
-                        let imageUrl: string | null = null;
-                        let selectedVariant: ItemVariantDto = product.variants[0];
-
-                        // Prefer imageUrls: scan all variants before falling back to thumbnailUrl
-                        for (const variant of product.variants) {
-                            if (variant.imageUrls) {
-                                const urls = variant.imageUrls.split(',').filter((url: string) => url.trim());
-                                if (urls.length > 0) {
-                                    imageUrl = urls[0].trim();
-                                    selectedVariant = variant;
-                                    break;
-                                }
-                            }
-                        }
-
-                        // Fall back to thumbnailUrl if no imageUrls found on any variant
-                        if (!imageUrl) {
-                            for (const variant of product.variants) {
-                                if (variant.thumbnailUrl) {
-                                    imageUrl = variant.thumbnailUrl;
-                                    selectedVariant = variant;
-                                    break;
-                                }
-                            }
-                        }
-
-                        // Only add to images array if we found a valid image URL
-                        if (imageUrl) {
-                            // Use utility function to convert relative paths to absolute URLs
-                            const fullImageUrl = toAbsoluteUrl(imageUrl);
-                            images.push(fullImageUrl);
-                            // Get product name based on language preference
-                            const productName = language === 'fr' ? product.name_fr : product.name_en;
-                            names.push(productName);
-                            // Extract offer percentage if available
-                            offers.push(selectedVariant.offer || 0);
-                        }
-                    }
-                }
+                const { images, names, offers } = extractProductImages(result.value, language, RECENT_ITEMS_DISPLAY_COUNT);
                 setRecentProductImages(images);
                 setRecentProductNames(names);
                 setRecentOfferPercentages(offers);
@@ -328,55 +336,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                // Extract the first image from each product
-                const images: string[] = [];
-                const names: string[] = [];
-                const offers: number[] = [];
-                for (const product of result.value) {
-                    // Stop if we already have enough images
-                    if (images.length >= SUGGESTED_ITEMS_COUNT) {
-                        break;
-                    }
-
-                    if (product.variants && product.variants.length > 0) {
-                        let imageUrl: string | null = null;
-                        let selectedVariant: ItemVariantDto = product.variants[0];
-
-                        // Prefer imageUrls: scan all variants before falling back to thumbnailUrl
-                        for (const variant of product.variants) {
-                            if (variant.imageUrls) {
-                                const urls = variant.imageUrls.split(',').filter((url: string) => url.trim());
-                                if (urls.length > 0) {
-                                    imageUrl = urls[0].trim();
-                                    selectedVariant = variant;
-                                    break;
-                                }
-                            }
-                        }
-
-                        // Fall back to thumbnailUrl if no imageUrls found on any variant
-                        if (!imageUrl) {
-                            for (const variant of product.variants) {
-                                if (variant.thumbnailUrl) {
-                                    imageUrl = variant.thumbnailUrl;
-                                    selectedVariant = variant;
-                                    break;
-                                }
-                            }
-                        }
-
-                        // Only add to images array if we found a valid image URL
-                        if (imageUrl) {
-                            const fullImageUrl = toAbsoluteUrl(imageUrl);
-                            images.push(fullImageUrl);
-                            // Get product name based on language preference
-                            const productName = language === 'fr' ? product.name_fr : product.name_en;
-                            names.push(productName);
-                            // Extract offer percentage if available
-                            offers.push(selectedVariant.offer || 0);
-                        }
-                    }
-                }
+                const { images, names, offers } = extractProductImages(result.value, language, SUGGESTED_ITEMS_COUNT);
                 setSuggestedProductImages(images);
                 setSuggestedProductNames(names);
                 setSuggestedOfferPercentages(offers);
@@ -490,46 +450,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                const images: string[] = [];
-                const names: string[] = [];
-                const offers: number[] = [];
-                for (const product of result.value) {
-                    if (product.variants && product.variants.length > 0) {
-                        let imageUrl: string | null = null;
-                        let selectedVariant: ItemVariantDto = product.variants[0];
-
-                        // Prefer imageUrls: scan all variants before falling back to thumbnailUrl
-                        for (const variant of product.variants) {
-                            if (variant.imageUrls) {
-                                const urls = variant.imageUrls.split(',').filter((url: string) => url.trim());
-                                if (urls.length > 0) {
-                                    imageUrl = urls[0].trim();
-                                    selectedVariant = variant;
-                                    break;
-                                }
-                            }
-                        }
-
-                        // Fall back to thumbnailUrl if no imageUrls found on any variant
-                        if (!imageUrl) {
-                            for (const variant of product.variants) {
-                                if (variant.thumbnailUrl) {
-                                    imageUrl = variant.thumbnailUrl;
-                                    selectedVariant = variant;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (imageUrl) {
-                            const fullImageUrl = toAbsoluteUrl(imageUrl);
-                            images.push(fullImageUrl);
-                            const productName = language === 'fr' ? product.name_fr : product.name_en;
-                            names.push(productName);
-                            offers.push(selectedVariant.offer || 0);
-                        }
-                    }
-                }
+                const { images, names, offers } = extractProductImages(result.value, language);
                 setCategoriesProductImages(images);
                 setCategoriesProductNames(names);
                 setCategoriesOfferPercentages(offers);

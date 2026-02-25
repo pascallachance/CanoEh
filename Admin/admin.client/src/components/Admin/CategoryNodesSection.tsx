@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
 import './CategoryNodesSection.css';
 import { ApiClient } from '../../utils/apiClient';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -29,6 +29,25 @@ interface CreateNodeForm {
 
 interface MoveNodeForm {
     newParentId: string;
+}
+
+export interface CategoryNodesSectionRef {
+    openCreateModal: () => void;
+}
+
+// Sort nodes alphabetically by display name, recursively
+function sortNodes(nodes: CategoryNode[], language: string): CategoryNode[] {
+    const locale = language === 'fr' ? 'fr-CA' : 'en-CA';
+    return [...nodes]
+        .sort((a, b) => {
+            const nameA = language === 'fr' ? a.name_fr : a.name_en;
+            const nameB = language === 'fr' ? b.name_fr : b.name_en;
+            return nameA.localeCompare(nameB, locale, { sensitivity: 'base' });
+        })
+        .map(node => ({
+            ...node,
+            children: sortNodes(node.children, language),
+        }));
 }
 
 // Flatten tree into a list for parent selection dropdowns
@@ -144,7 +163,7 @@ function TreeNodeRow({ node, depth, language, onDelete, onMove, t }: TreeNodePro
     );
 }
 
-function CategoryNodesSection() {
+const CategoryNodesSection = forwardRef<CategoryNodesSectionRef, Record<string, never>>(function CategoryNodesSection(_props, ref) {
     const { language, t } = useLanguage();
     const { showSuccess, showError } = useNotifications();
     const baseUrl = import.meta.env.VITE_API_ADMIN_BASE_URL;
@@ -152,6 +171,8 @@ function CategoryNodesSection() {
     const [nodes, setNodes] = useState<CategoryNode[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const sortedNodes = useMemo(() => sortNodes(nodes, language), [nodes, language]);
 
     // Create modal state
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -207,6 +228,10 @@ function CategoryNodesSection() {
         });
         setShowCreateModal(true);
     };
+
+    useImperativeHandle(ref, () => ({
+        openCreateModal,
+    }));
 
     const handleCreateSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -345,9 +370,6 @@ function CategoryNodesSection() {
         <div className="category-nodes-section">
             <div className="section-header">
                 <h2 className="section-title">{t('categories.title')}</h2>
-                <button className="btn-primary" onClick={openCreateModal}>
-                    + {t('categories.addNode')}
-                </button>
             </div>
 
             {loading && (
@@ -361,7 +383,7 @@ function CategoryNodesSection() {
             )}
             {!loading && !error && nodes.length > 0 && (
                 <div className="tree-container">
-                    {nodes.map(node => (
+                    {sortedNodes.map(node => (
                         <TreeNodeRow
                             key={node.id}
                             node={node}
@@ -543,6 +565,6 @@ function CategoryNodesSection() {
             )}
         </div>
     );
-}
+});
 
 export default CategoryNodesSection;

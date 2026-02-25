@@ -116,6 +116,42 @@
     background: #f8f9fa;
 }
 
+.admin-content-actions {
+    background-color: #2c3e50;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.admin-content-actions .action-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.admin-content-actions .action-button {
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+    transition: background-color 0.2s ease;
+}
+
+.admin-content-actions .action-button:hover {
+    background-color: #3d5166;
+}
+
+.admin-content-actions .action-button:focus-visible {
+    outline: 2px solid #e74c3c;
+    outline-offset: 2px;
+}
+
 .admin-footer {
     background: #1a2332;
     color: white;

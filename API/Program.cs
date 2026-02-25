@@ -66,12 +66,19 @@ public class Program
             });
 
 
-        // Add CORS policy for both Store and Seller frontend apps
+        // Add CORS policy for Store, Seller, and Admin frontend apps
+        var corsSettings = builder.Configuration.GetSection("CorsSettings");
+        var allowedOrigins = corsSettings.GetSection("AllowedOrigins").Get<string[]>() ?? [];
+        if (allowedOrigins.Length == 0)
+        {
+            var startupLogger = LoggerFactory.Create(b => b.AddConsole()).CreateLogger<Program>();
+            startupLogger.LogWarning("CorsSettings:AllowedOrigins is empty or missing. No origins will be allowed by CORS policy.");
+        }
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowClient", policy =>
             {
-                policy.WithOrigins("https://localhost:64941", "https://localhost:62209")
+                policy.WithOrigins(allowedOrigins)
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .AllowCredentials();

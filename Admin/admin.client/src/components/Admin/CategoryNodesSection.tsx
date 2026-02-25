@@ -177,7 +177,8 @@ function CategoryNodesSection() {
         try {
             const response = await ApiClient.get(`${baseUrl}/api/CategoryNode/GetAllCategoryNodes`);
             if (response.ok) {
-                const data: CategoryNode[] = await response.json();
+                const result = await response.json();
+                const data: CategoryNode[] = result.value ?? [];
                 setNodes(data);
             } else {
                 const text = await response.text();

@@ -66,12 +66,12 @@ public class Program
             });
 
 
-        // Add CORS policy for both Store and Seller frontend apps
+        // Add CORS policy for Store, Seller, and Admin frontend apps
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowClient", policy =>
             {
-                policy.WithOrigins("https://localhost:64941", "https://localhost:62209")
+                policy.WithOrigins("https://localhost:64941", "https://localhost:62209", "https://localhost:62210")
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .AllowCredentials();

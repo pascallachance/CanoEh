@@ -380,6 +380,9 @@ shared/canoeh-shared-ui/package-lock.json
 # Store client package lock file
 Store/store.client/package-lock.json
 
+# Admin client package lock file
+Admin/admin.client/package-lock.json
+
 # Uploaded files (test files)
 # Keep the uploads directory structure but exclude file contents
 API/wwwroot/uploads/*

@@ -155,6 +155,10 @@ export const translations: TranslationResources = {
     en: 'Save',
     fr: 'Enregistrer'
   },
+  'common.optional': {
+    en: 'Optional',
+    fr: 'Facultatif'
+  },
 
   // Footer
   'footer.copyright': {

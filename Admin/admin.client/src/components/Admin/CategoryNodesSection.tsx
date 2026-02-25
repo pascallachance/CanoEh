@@ -298,11 +298,25 @@ function CategoryNodesSection() {
     // A node cannot be moved into itself or its descendants
     const eligibleParentsForMove = (() => {
         if (!movingNode) return [];
+        // Departement nodes cannot have a parent
+        if (movingNode.nodeType === 'Departement') {
+            return [];
+        }
         const subtreeIds = collectSubtreeIds(movingNode);
         const all = flattenNodes(nodes);
-        // For Navigation nodes: parent must be Departement or Navigation
-        // For Category nodes: parent must be Navigation or Departement
-        return all.filter(n => !subtreeIds.has(n.id) && n.nodeType !== 'Category');
+        if (movingNode.nodeType === 'Navigation') {
+            return all.filter(
+                n =>
+                    !subtreeIds.has(n.id) &&
+                    (n.nodeType === 'Departement' || n.nodeType === 'Navigation')
+            );
+        }
+        // Category node being moved: parent must be Navigation or Departement
+        return all.filter(
+            n =>
+                !subtreeIds.has(n.id) &&
+                (n.nodeType === 'Navigation' || n.nodeType === 'Departement')
+        );
     })();
 
     // Compute eligible parent nodes for create dialog
@@ -444,7 +458,7 @@ function CategoryNodesSection() {
                                     className="form-control"
                                     value={createForm.sortOrder}
                                     onChange={e => setCreateForm(prev => ({ ...prev, sortOrder: e.target.value }))}
-                                    placeholder="Optional"
+                                    placeholder={t('common.optional')}
                                 />
                             </div>
 
@@ -499,7 +513,6 @@ function CategoryNodesSection() {
                                     onChange={e => setMoveForm({ newParentId: e.target.value })}
                                     required
                                 >
-                                    <option value="">{t('categories.selectParent')}</option>
                                     {eligibleParentsForMove.map(n => (
                                         <option key={n.id} value={n.id}>
                                             {getNodeLabel(n)}

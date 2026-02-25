@@ -17,7 +17,7 @@ function AppContent() {
     const checkExistingSession = async () => {
         try {
             setIsCheckingSession(true);
-            const response = await ApiClient.get(`${import.meta.env.VITE_API_ADMIN_BASE_URL}/api/Login/refresh`);
+            const response = await ApiClient.post(`${import.meta.env.VITE_API_ADMIN_BASE_URL}/api/Login/refresh`);
 
             if (response.ok) {
                 setIsAuthenticated(true);

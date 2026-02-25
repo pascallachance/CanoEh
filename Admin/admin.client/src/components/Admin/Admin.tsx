@@ -12,12 +12,7 @@ function Admin({ onLogout }: { onLogout: () => void }) {
     const categoriesSectionRef = useRef<CategoryNodesSectionRef>(null);
 
     const renderContent = () => {
-        switch (activeSection) {
-            case 'categories':
-                return <CategoryNodesSection ref={categoriesSectionRef} />;
-            default:
-                return <CategoryNodesSection ref={categoriesSectionRef} />;
-        }
+        return <CategoryNodesSection ref={categoriesSectionRef} />;
     };
 
     const renderActions = () => {

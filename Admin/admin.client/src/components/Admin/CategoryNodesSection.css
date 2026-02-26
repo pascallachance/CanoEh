@@ -79,6 +79,21 @@
     background-color: #3498db;
 }
 
+.btn-edit {
+    background-color: #f39c12;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+.btn-edit:hover {
+    background-color: #e67e22;
+}
+
 /* Loading / Error / Empty states */
 .state-message {
     text-align: center;

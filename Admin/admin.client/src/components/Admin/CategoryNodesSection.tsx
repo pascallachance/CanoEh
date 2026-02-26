@@ -31,6 +31,15 @@ interface MoveNodeForm {
     newParentId: string;
 }
 
+interface EditNodeForm {
+    name_en: string;
+    name_fr: string;
+    nodeType: NodeType;
+    parentId: string;
+    isActive: boolean;
+    sortOrder: string;
+}
+
 export interface CategoryNodesSectionRef {
     openCreateModal: () => void;
 }
@@ -123,10 +132,11 @@ interface TreeNodeProps {
     language: string;
     onDelete: (node: CategoryNode) => void;
     onMove: (node: CategoryNode) => void;
+    onEdit: (node: CategoryNode) => void;
     t: (key: string) => string;
 }
 
-function TreeNodeRow({ node, depth, language, onDelete, onMove, t }: TreeNodeProps) {
+function TreeNodeRow({ node, depth, language, onDelete, onMove, onEdit, t }: TreeNodeProps) {
     const hasChildren = node.children?.length > 0;
     const displayName = language === 'fr' ? node.name_fr : node.name_en;
     const secondaryName = language === 'fr' ? node.name_en : node.name_fr;
@@ -166,6 +176,13 @@ function TreeNodeRow({ node, depth, language, onDelete, onMove, t }: TreeNodePro
                         </button>
                     )}
                     <button
+                        className="btn-edit"
+                        onClick={() => onEdit(node)}
+                        title={t('categories.edit')}
+                    >
+                        {t('categories.edit')}
+                    </button>
+                    <button
                         className="btn-danger"
                         onClick={() => onDelete(node)}
                         title={t('categories.delete')}
@@ -184,6 +201,7 @@ function TreeNodeRow({ node, depth, language, onDelete, onMove, t }: TreeNodePro
                             language={language}
                             onDelete={onDelete}
                             onMove={onMove}
+                            onEdit={onEdit}
                             t={t}
                         />
                     ))}
@@ -221,6 +239,19 @@ const CategoryNodesSection = forwardRef<CategoryNodesSectionRef, Record<string, 
     const [movingNode, setMovingNode] = useState<CategoryNode | null>(null);
     const [moveForm, setMoveForm] = useState<MoveNodeForm>({ newParentId: '' });
     const [moving, setMoving] = useState(false);
+
+    // Edit modal state
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editingNode, setEditingNode] = useState<CategoryNode | null>(null);
+    const [editForm, setEditForm] = useState<EditNodeForm>({
+        name_en: '',
+        name_fr: '',
+        nodeType: 'Departement',
+        parentId: '',
+        isActive: true,
+        sortOrder: '',
+    });
+    const [editing, setEditing] = useState(false);
 
     const loadNodes = useCallback(async () => {
         setLoading(true);
@@ -350,6 +381,55 @@ const CategoryNodesSection = forwardRef<CategoryNodesSectionRef, Record<string, 
         }
     };
 
+    // --- Edit node ---
+    const openEditModal = (node: CategoryNode) => {
+        setEditingNode(node);
+        setEditForm({
+            name_en: node.name_en,
+            name_fr: node.name_fr,
+            nodeType: node.nodeType as NodeType,
+            parentId: node.parentId ?? '',
+            isActive: node.isActive,
+            sortOrder: node.sortOrder !== null && node.sortOrder !== undefined ? String(node.sortOrder) : '',
+        });
+        setShowEditModal(true);
+    };
+
+    const handleEditSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingNode) return;
+        setEditing(true);
+        try {
+            const body: Record<string, unknown> = {
+                id: editingNode.id,
+                name_en: editForm.name_en,
+                name_fr: editForm.name_fr,
+                nodeType: editForm.nodeType,
+                parentId: editForm.parentId || null,
+                isActive: editForm.isActive,
+            };
+            if (editForm.sortOrder !== '') {
+                body.sortOrder = parseInt(editForm.sortOrder, 10);
+            } else {
+                body.sortOrder = null;
+            }
+            const response = await ApiClient.put(`${baseUrl}/api/CategoryNode/UpdateCategoryNode`, body);
+            if (response.ok) {
+                showSuccess(t('categories.editSuccess'));
+                setShowEditModal(false);
+                setEditingNode(null);
+                await loadNodes();
+            } else {
+                const text = await response.text();
+                showError(text || t('categories.editError'));
+            }
+        } catch {
+            showError(t('categories.editError'));
+        } finally {
+            setEditing(false);
+        }
+    };
+
     // Compute eligible parent nodes for move dialog
     // A node cannot be moved into itself or its descendants
     const eligibleParentsForMove = (() => {
@@ -384,6 +464,25 @@ const CategoryNodesSection = forwardRef<CategoryNodesSectionRef, Record<string, 
         }
         // Category: parent must be Navigation or Departement
         return allFlatNodes.filter(n => n.nodeType === 'Navigation' || n.nodeType === 'Departement');
+    })();
+
+    // Compute eligible parent nodes for edit dialog
+    const eligibleParentsForEdit = (() => {
+        if (!editingNode || editForm.nodeType === 'Departement') return [];
+        const subtreeIds = collectSubtreeIds(editingNode);
+        const all = flattenNodes(nodes);
+        if (editForm.nodeType === 'Navigation') {
+            return all.filter(
+                n =>
+                    !subtreeIds.has(n.id) &&
+                    (n.nodeType === 'Departement' || n.nodeType === 'Navigation')
+            );
+        }
+        return all.filter(
+            n =>
+                !subtreeIds.has(n.id) &&
+                (n.nodeType === 'Navigation' || n.nodeType === 'Departement')
+        );
     })();
 
     const getNodeLabel = (node: CategoryNode) => {
@@ -421,6 +520,7 @@ const CategoryNodesSection = forwardRef<CategoryNodesSectionRef, Record<string, 
                             language={language}
                             onDelete={handleDelete}
                             onMove={openMoveModal}
+                            onEdit={openEditModal}
                             t={t}
                         />
                     ))}
@@ -587,6 +687,127 @@ const CategoryNodesSection = forwardRef<CategoryNodesSectionRef, Record<string, 
                                     disabled={moving}
                                 >
                                     {moving ? '...' : t('categories.confirmMove')}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Modal */}
+            {showEditModal && editingNode && (
+                <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+                    <div className="modal-box" onClick={e => e.stopPropagation()}>
+                        <h3 className="modal-title">{t('categories.editTitle')}</h3>
+                        <form onSubmit={handleEditSubmit}>
+                            <div className="form-group">
+                                <label htmlFor="edit-nodeType">{t('categories.nodeType')}</label>
+                                <select
+                                    id="edit-nodeType"
+                                    className="form-control"
+                                    value={editForm.nodeType}
+                                    onChange={e => setEditForm(prev => ({
+                                        ...prev,
+                                        nodeType: e.target.value as NodeType,
+                                        parentId: '',
+                                    }))}
+                                >
+                                    {NODE_TYPES.map(type => (
+                                        <option key={type} value={type}>
+                                            {type === 'Departement'
+                                                ? t('categories.departement')
+                                                : type === 'Navigation'
+                                                    ? t('categories.navigation')
+                                                    : t('categories.category')}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="edit-name_en">{t('categories.nodeName_en')}</label>
+                                <input
+                                    id="edit-name_en"
+                                    type="text"
+                                    className="form-control"
+                                    value={editForm.name_en}
+                                    onChange={e => setEditForm(prev => ({ ...prev, name_en: e.target.value }))}
+                                    required
+                                    maxLength={200}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="edit-name_fr">{t('categories.nodeName_fr')}</label>
+                                <input
+                                    id="edit-name_fr"
+                                    type="text"
+                                    className="form-control"
+                                    value={editForm.name_fr}
+                                    onChange={e => setEditForm(prev => ({ ...prev, name_fr: e.target.value }))}
+                                    required
+                                    maxLength={200}
+                                />
+                            </div>
+
+                            {editForm.nodeType !== 'Departement' && (
+                                <div className="form-group">
+                                    <label htmlFor="edit-parentId">{t('categories.parent')}</label>
+                                    <select
+                                        id="edit-parentId"
+                                        className="form-control"
+                                        value={editForm.parentId}
+                                        onChange={e => setEditForm(prev => ({ ...prev, parentId: e.target.value }))}
+                                        required
+                                    >
+                                        <option value="">{t('categories.selectParent')}</option>
+                                        {eligibleParentsForEdit.map(n => (
+                                            <option key={n.id} value={n.id}>
+                                                {getNodeLabel(n)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                            <div className="form-group">
+                                <label htmlFor="edit-sortOrder">{t('categories.sortOrder')}</label>
+                                <input
+                                    id="edit-sortOrder"
+                                    type="number"
+                                    className="form-control"
+                                    value={editForm.sortOrder}
+                                    onChange={e => setEditForm(prev => ({ ...prev, sortOrder: e.target.value }))}
+                                    placeholder={t('common.optional')}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <div className="form-check">
+                                    <input
+                                        id="edit-isActive"
+                                        type="checkbox"
+                                        checked={editForm.isActive}
+                                        onChange={e => setEditForm(prev => ({ ...prev, isActive: e.target.checked }))}
+                                    />
+                                    <label htmlFor="edit-isActive">{t('categories.isActive')}</label>
+                                </div>
+                            </div>
+
+                            <div className="modal-actions">
+                                <button
+                                    type="button"
+                                    className="btn-cancel"
+                                    onClick={() => setShowEditModal(false)}
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn-submit"
+                                    disabled={editing}
+                                >
+                                    {editing ? t('categories.editing') : t('categories.confirmEdit')}
                                 </button>
                             </div>
                         </form>

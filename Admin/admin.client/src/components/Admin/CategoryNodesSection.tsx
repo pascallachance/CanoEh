@@ -35,6 +35,26 @@ export interface CategoryNodesSectionRef {
     openCreateModal: () => void;
 }
 
+// Build a tree structure from a flat list of nodes using parentId relationships
+function buildTree(flatNodes: CategoryNode[]): CategoryNode[] {
+    const nodeMap = new Map<string, CategoryNode>();
+    const roots: CategoryNode[] = [];
+
+    for (const node of flatNodes) {
+        nodeMap.set(node.id, { ...node, children: [] });
+    }
+
+    for (const node of nodeMap.values()) {
+        if (node.parentId && nodeMap.has(node.parentId)) {
+            nodeMap.get(node.parentId)!.children.push(node);
+        } else {
+            roots.push(node);
+        }
+    }
+
+    return roots;
+}
+
 // Sort nodes alphabetically by display name, recursively
 function sortNodes(nodes: CategoryNode[], language: string): CategoryNode[] {
     const locale = language === 'fr' ? 'fr-CA' : 'en-CA';
@@ -86,7 +106,6 @@ interface TreeNodeProps {
 }
 
 function TreeNodeRow({ node, depth, language, onDelete, onMove, t }: TreeNodeProps) {
-    const [expanded, setExpanded] = useState(true);
     const hasChildren = node.children?.length > 0;
     const displayName = language === 'fr' ? node.name_fr : node.name_en;
     const secondaryName = language === 'fr' ? node.name_en : node.name_fr;
@@ -107,17 +126,7 @@ function TreeNodeRow({ node, depth, language, onDelete, onMove, t }: TreeNodePro
         <div className="tree-node">
             <div className="tree-node-row">
                 <div className="tree-node-indent" style={{ width: `${depth * 24}px` }} />
-                {hasChildren ? (
-                    <button
-                        className="tree-toggle"
-                        onClick={() => setExpanded(prev => !prev)}
-                        aria-label={expanded ? 'Collapse' : 'Expand'}
-                    >
-                        {expanded ? '▾' : '▸'}
-                    </button>
-                ) : (
-                    <div className="tree-toggle-placeholder" />
-                )}
+                <div className="tree-toggle-placeholder" />
                 <span className={`node-badge ${badgeClass}`}>{typeLabel}</span>
                 <span className="node-name">
                     {displayName}
@@ -144,7 +153,7 @@ function TreeNodeRow({ node, depth, language, onDelete, onMove, t }: TreeNodePro
                     </button>
                 </div>
             </div>
-            {hasChildren && expanded && (
+            {hasChildren && (
                 <div className="tree-children">
                     {node.children.map(child => (
                         <TreeNodeRow
@@ -200,7 +209,7 @@ const CategoryNodesSection = forwardRef<CategoryNodesSectionRef, Record<string, 
             if (response.ok) {
                 const result = await response.json();
                 const data: CategoryNode[] = result.value ?? [];
-                setNodes(data);
+                setNodes(buildTree(data));
             } else {
                 const text = await response.text();
                 setError(text || t('categories.error'));

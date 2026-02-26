@@ -404,7 +404,6 @@ const CategoryNodesSection = forwardRef<CategoryNodesSectionRef, Record<string, 
                 id: editingNode.id,
                 name_en: editForm.name_en,
                 name_fr: editForm.name_fr,
-                nodeType: editForm.nodeType,
                 parentId: editForm.parentId || null,
                 isActive: editForm.isActive,
             };
@@ -468,20 +467,13 @@ const CategoryNodesSection = forwardRef<CategoryNodesSectionRef, Record<string, 
 
     // Compute eligible parent nodes for edit dialog
     const eligibleParentsForEdit = (() => {
-        if (!editingNode || editForm.nodeType === 'Departement') return [];
+        if (!editingNode || editingNode.nodeType === 'Departement') return [];
         const subtreeIds = collectSubtreeIds(editingNode);
         const all = flattenNodes(nodes);
-        if (editForm.nodeType === 'Navigation') {
-            return all.filter(
-                n =>
-                    !subtreeIds.has(n.id) &&
-                    (n.nodeType === 'Departement' || n.nodeType === 'Navigation')
-            );
-        }
         return all.filter(
             n =>
                 !subtreeIds.has(n.id) &&
-                (n.nodeType === 'Navigation' || n.nodeType === 'Departement')
+                (n.nodeType === 'Departement' || n.nodeType === 'Navigation')
         );
     })();
 
@@ -702,26 +694,20 @@ const CategoryNodesSection = forwardRef<CategoryNodesSectionRef, Record<string, 
                         <form onSubmit={handleEditSubmit}>
                             <div className="form-group">
                                 <label htmlFor="edit-nodeType">{t('categories.nodeType')}</label>
-                                <select
+                                <input
                                     id="edit-nodeType"
+                                    type="text"
                                     className="form-control"
-                                    value={editForm.nodeType}
-                                    onChange={e => setEditForm(prev => ({
-                                        ...prev,
-                                        nodeType: e.target.value as NodeType,
-                                        parentId: '',
-                                    }))}
-                                >
-                                    {NODE_TYPES.map(type => (
-                                        <option key={type} value={type}>
-                                            {type === 'Departement'
-                                                ? t('categories.departement')
-                                                : type === 'Navigation'
-                                                    ? t('categories.navigation')
-                                                    : t('categories.category')}
-                                        </option>
-                                    ))}
-                                </select>
+                                    value={
+                                        editForm.nodeType === 'Departement'
+                                            ? t('categories.departement')
+                                            : editForm.nodeType === 'Navigation'
+                                                ? t('categories.navigation')
+                                                : t('categories.category')
+                                    }
+                                    readOnly
+                                    disabled
+                                />
                             </div>
 
                             <div className="form-group">

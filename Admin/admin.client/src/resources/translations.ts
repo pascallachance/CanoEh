@@ -133,6 +133,30 @@ export const translations: TranslationResources = {
     en: 'Move Node',
     fr: 'Déplacer le nœud'
   },
+  'categories.edit': {
+    en: 'Edit',
+    fr: 'Modifier'
+  },
+  'categories.editTitle': {
+    en: 'Edit Node',
+    fr: 'Modifier le nœud'
+  },
+  'categories.editing': {
+    en: 'Saving...',
+    fr: 'Enregistrement...'
+  },
+  'categories.editSuccess': {
+    en: 'Category node updated successfully.',
+    fr: 'Nœud de catégorie mis à jour avec succès.'
+  },
+  'categories.editError': {
+    en: 'Failed to update category node.',
+    fr: 'Échec de la mise à jour du nœud de catégorie.'
+  },
+  'categories.confirmEdit': {
+    en: 'Save Changes',
+    fr: 'Enregistrer les modifications'
+  },
   'categories.departement': {
     en: 'Department',
     fr: 'Département'

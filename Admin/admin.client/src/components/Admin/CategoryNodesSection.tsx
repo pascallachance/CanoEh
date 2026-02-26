@@ -35,7 +35,22 @@ export interface CategoryNodesSectionRef {
     openCreateModal: () => void;
 }
 
-// Build a tree structure from a flat list of nodes using parentId relationships
+// Detect if following parentId links from startId would reach targetId (cycle check)
+function wouldCreateCycle(nodeMap: Map<string, CategoryNode>, startId: string, targetId: string): boolean {
+    const visited = new Set<string>();
+    let current: string | null = startId;
+    while (current && nodeMap.has(current)) {
+        if (visited.has(current)) break; // already seen — stop to avoid infinite loop
+        if (current === targetId) return true;
+        visited.add(current);
+        current = nodeMap.get(current)!.parentId ?? null;
+    }
+    return false;
+}
+
+// Build a tree structure from a flat list of nodes using parentId relationships.
+// Self-referencing and cyclic parentId relationships are detected and broken so
+// every node is always reachable from roots and recursive functions stay safe.
 function buildTree(flatNodes: CategoryNode[]): CategoryNode[] {
     const nodeMap = new Map<string, CategoryNode>();
     const roots: CategoryNode[] = [];
@@ -45,8 +60,14 @@ function buildTree(flatNodes: CategoryNode[]): CategoryNode[] {
     }
 
     for (const node of nodeMap.values()) {
-        if (node.parentId && nodeMap.has(node.parentId)) {
-            nodeMap.get(node.parentId)!.children.push(node);
+        const parentId = node.parentId;
+        if (
+            parentId &&
+            parentId !== node.id &&               // skip self-reference
+            nodeMap.has(parentId) &&
+            !wouldCreateCycle(nodeMap, parentId, node.id) // skip cyclic link
+        ) {
+            nodeMap.get(parentId)!.children.push(node);
         } else {
             roots.push(node);
         }

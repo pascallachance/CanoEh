@@ -35,6 +35,47 @@ export interface CategoryNodesSectionRef {
     openCreateModal: () => void;
 }
 
+// Detect if following parentId links from startId would reach targetId (cycle check)
+function wouldCreateCycle(nodeMap: Map<string, CategoryNode>, startId: string, targetId: string): boolean {
+    const visited = new Set<string>();
+    let current: string | null = startId;
+    while (current && nodeMap.has(current)) {
+        if (visited.has(current)) break; // already seen — stop to avoid infinite loop
+        if (current === targetId) return true;
+        visited.add(current);
+        current = nodeMap.get(current)!.parentId ?? null;
+    }
+    return false;
+}
+
+// Build a tree structure from a flat list of nodes using parentId relationships.
+// Self-referencing and cyclic parentId relationships are detected and broken so
+// every node is always reachable from roots and recursive functions stay safe.
+function buildTree(flatNodes: CategoryNode[]): CategoryNode[] {
+    const nodeMap = new Map<string, CategoryNode>();
+    const roots: CategoryNode[] = [];
+
+    for (const node of flatNodes) {
+        nodeMap.set(node.id, { ...node, children: [] });
+    }
+
+    for (const node of nodeMap.values()) {
+        const parentId = node.parentId;
+        if (
+            parentId &&
+            parentId !== node.id &&               // skip self-reference
+            nodeMap.has(parentId) &&
+            !wouldCreateCycle(nodeMap, parentId, node.id) // skip cyclic link
+        ) {
+            nodeMap.get(parentId)!.children.push(node);
+        } else {
+            roots.push(node);
+        }
+    }
+
+    return roots;
+}
+
 // Sort nodes alphabetically by display name, recursively
 function sortNodes(nodes: CategoryNode[], language: string): CategoryNode[] {
     const locale = language === 'fr' ? 'fr-CA' : 'en-CA';
@@ -86,7 +127,6 @@ interface TreeNodeProps {
 }
 
 function TreeNodeRow({ node, depth, language, onDelete, onMove, t }: TreeNodeProps) {
-    const [expanded, setExpanded] = useState(true);
     const hasChildren = node.children?.length > 0;
     const displayName = language === 'fr' ? node.name_fr : node.name_en;
     const secondaryName = language === 'fr' ? node.name_en : node.name_fr;
@@ -107,17 +147,7 @@ function TreeNodeRow({ node, depth, language, onDelete, onMove, t }: TreeNodePro
         <div className="tree-node">
             <div className="tree-node-row">
                 <div className="tree-node-indent" style={{ width: `${depth * 24}px` }} />
-                {hasChildren ? (
-                    <button
-                        className="tree-toggle"
-                        onClick={() => setExpanded(prev => !prev)}
-                        aria-label={expanded ? 'Collapse' : 'Expand'}
-                    >
-                        {expanded ? '▾' : '▸'}
-                    </button>
-                ) : (
-                    <div className="tree-toggle-placeholder" />
-                )}
+                <div className="tree-toggle-placeholder" />
                 <span className={`node-badge ${badgeClass}`}>{typeLabel}</span>
                 <span className="node-name">
                     {displayName}
@@ -144,7 +174,7 @@ function TreeNodeRow({ node, depth, language, onDelete, onMove, t }: TreeNodePro
                     </button>
                 </div>
             </div>
-            {hasChildren && expanded && (
+            {hasChildren && (
                 <div className="tree-children">
                     {node.children.map(child => (
                         <TreeNodeRow
@@ -200,7 +230,7 @@ const CategoryNodesSection = forwardRef<CategoryNodesSectionRef, Record<string, 
             if (response.ok) {
                 const result = await response.json();
                 const data: CategoryNode[] = result.value ?? [];
-                setNodes(data);
+                setNodes(buildTree(data));
             } else {
                 const text = await response.text();
                 setError(text || t('categories.error'));

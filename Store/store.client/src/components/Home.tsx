@@ -96,11 +96,13 @@ function getCSSCardDimensions() {
 }
 
 /**
- * Returns true if the variant has an active (non-expired) offer.
- * An offer is considered expired when offerEnd is set and is in the past.
+ * Returns true if the variant has an active (non-expired and started) offer.
+ * An offer is considered not yet active when offerStart is set and is in the future,
+ * and expired when offerEnd is set and is in the past.
  */
 function isOfferActive(variant: ItemVariantDto): boolean {
     if (!variant.offer || variant.offer <= 0) return false;
+    if (variant.offerStart && new Date(variant.offerStart) > new Date()) return false;
     if (variant.offerEnd && new Date(variant.offerEnd) < new Date()) return false;
     return true;
 }

@@ -44,7 +44,10 @@ function AppContent() {
     const navigate = useNavigate();
     const location = useLocation();
     const locationRef = useRef(location);
-    locationRef.current = location;
+
+    useEffect(() => {
+        locationRef.current = location;
+    }, [location]);
 
     const checkExistingSession = async () => {
         try {

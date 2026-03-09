@@ -107,7 +107,10 @@ function AppContent() {
     const navigate = useNavigate();
     const location = useLocation();
     const locationRef = useRef(location);
-    locationRef.current = location;
+
+    useEffect(() => {
+        locationRef.current = location;
+    }, [location]);
 
     // Check for existing session on app load
     useEffect(() => {

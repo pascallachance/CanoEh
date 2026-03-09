@@ -31,6 +31,8 @@ interface Company {
     updatedAt?: string;
 }
 
+const PUBLIC_PATHS = ['/login', '/CreateUser', '/RestorePassword'];
+
 interface ProtectedRouteProps {
     children: React.ReactNode;
     isAuthenticated: boolean;
@@ -159,7 +161,7 @@ function AppContent() {
             } else if (response.status === 401) {
                 // No valid session, redirect to login
                 setIsAuthenticated(false);
-                if (locationRef.current.pathname !== '/login') {
+                if (!PUBLIC_PATHS.includes(locationRef.current.pathname)) {
                     navigate('/login', { replace: true });
                 }
             } else {
@@ -170,7 +172,7 @@ function AppContent() {
             console.error('Session check error:', err);
             // If there's an error checking session, go to login
             setIsAuthenticated(false);
-            if (locationRef.current.pathname !== '/login') {
+            if (!PUBLIC_PATHS.includes(locationRef.current.pathname)) {
                 navigate('/login', { replace: true });
             }
         } finally {

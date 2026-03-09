@@ -51,7 +51,7 @@ describe('Home - Offers Card', () => {
                             imageUrls: 'https://example.com/product1_1.jpg,https://example.com/product1_2.jpg',
                             offer: 25, // 25% off
                             offerStart: '2024-01-01T00:00:00Z',
-                            offerEnd: '2024-12-31T23:59:59Z',
+                            offerEnd: '2099-12-31T23:59:59Z',
                             itemVariantAttributes: [],
                             deleted: false
                         }
@@ -75,7 +75,7 @@ describe('Home - Offers Card', () => {
                             imageUrls: 'https://example.com/product2_1.png',
                             offer: 50, // 50% off
                             offerStart: '2024-01-01T00:00:00Z',
-                            offerEnd: '2024-12-31T23:59:59Z',
+                            offerEnd: '2099-12-31T23:59:59Z',
                             itemVariantAttributes: [],
                             deleted: false
                         }
@@ -199,7 +199,7 @@ describe('Home - Offers Card', () => {
                             // No imageUrls or thumbnailUrl
                             offer: 25,
                             offerStart: '2024-01-01T00:00:00Z',
-                            offerEnd: '2024-12-31T23:59:59Z',
+                            offerEnd: '2099-12-31T23:59:59Z',
                             itemVariantAttributes: [],
                             deleted: false
                         }
@@ -290,7 +290,7 @@ describe('Home - Offers Card', () => {
                             imageUrls: 'https://example.com/variant1_1.jpg',
                             offer: 25,
                             offerStart: '2024-01-01T00:00:00Z',
-                            offerEnd: '2024-12-31T23:59:59Z',
+                            offerEnd: '2099-12-31T23:59:59Z',
                             itemVariantAttributes: [],
                             deleted: false
                         },
@@ -302,7 +302,7 @@ describe('Home - Offers Card', () => {
                             imageUrls: 'https://example.com/variant2_1.jpg',
                             offer: 30,
                             offerStart: '2024-01-01T00:00:00Z',
-                            offerEnd: '2024-12-31T23:59:59Z',
+                            offerEnd: '2099-12-31T23:59:59Z',
                             itemVariantAttributes: [],
                             deleted: false
                         }
@@ -383,7 +383,7 @@ describe('Home - Offers Card', () => {
                             imageUrls: 'https://example.com/product_3.jpg,https://example.com/product_1.jpg,https://example.com/product_2.jpg',
                             offer: 20,
                             offerStart: '2024-01-01T00:00:00Z',
-                            offerEnd: '2024-12-31T23:59:59Z',
+                            offerEnd: '2099-12-31T23:59:59Z',
                             itemVariantAttributes: [],
                             deleted: false
                         }
@@ -461,7 +461,7 @@ describe('Home - Offers Card', () => {
                             imageUrls: 'https://example.com/product_first.jpg,https://example.com/product_second.jpg',
                             offer: 15,
                             offerStart: '2024-01-01T00:00:00Z',
-                            offerEnd: '2024-12-31T23:59:59Z',
+                            offerEnd: '2099-12-31T23:59:59Z',
                             itemVariantAttributes: [],
                             deleted: false
                         }
@@ -538,7 +538,7 @@ describe('Home - Offers Card', () => {
                             imageUrls: 'https://example.com/product_2.png,https://example.com/product_1.png',
                             offer: 10,
                             offerStart: '2024-01-01T00:00:00Z',
-                            offerEnd: '2024-12-31T23:59:59Z',
+                            offerEnd: '2099-12-31T23:59:59Z',
                             itemVariantAttributes: [],
                             deleted: false
                         }
@@ -562,7 +562,7 @@ describe('Home - Offers Card', () => {
                             imageUrls: 'https://example.com/product_3.gif,https://example.com/product_1.gif',
                             offer: 15,
                             offerStart: '2024-01-01T00:00:00Z',
-                            offerEnd: '2024-12-31T23:59:59Z',
+                            offerEnd: '2099-12-31T23:59:59Z',
                             itemVariantAttributes: [],
                             deleted: false
                         }
@@ -586,7 +586,7 @@ describe('Home - Offers Card', () => {
                             imageUrls: 'https://example.com/product_2.webp,https://example.com/product_1.webp',
                             offer: 20,
                             offerStart: '2024-01-01T00:00:00Z',
-                            offerEnd: '2024-12-31T23:59:59Z',
+                            offerEnd: '2099-12-31T23:59:59Z',
                             itemVariantAttributes: [],
                             deleted: false
                         }
@@ -610,7 +610,7 @@ describe('Home - Offers Card', () => {
                             imageUrls: 'https://example.com/product_3.jpeg,https://example.com/product_1.jpeg',
                             offer: 25,
                             offerStart: '2024-01-01T00:00:00Z',
-                            offerEnd: '2024-12-31T23:59:59Z',
+                            offerEnd: '2099-12-31T23:59:59Z',
                             itemVariantAttributes: [],
                             deleted: false
                         }
@@ -663,5 +663,113 @@ describe('Home - Offers Card', () => {
         expect(imageSrcs.some(src => src.includes('product_1.gif'))).toBe(true);
         expect(imageSrcs.some(src => src.includes('product_1.webp'))).toBe(true);
         expect(imageSrcs.some(src => src.includes('product_1.jpeg'))).toBe(true);
+    });
+
+    it('should not display offer badge when offer is expired', async () => {
+        const mockRecentProducts = { isSuccess: true, value: [] };
+        const mockSuggestedProducts = { isSuccess: true, value: [] };
+
+        // Product with an expired offer (offerEnd in the past) and a non-expired offer
+        const mockOffersResponse = {
+            isSuccess: true,
+            value: [
+                {
+                    id: '1',
+                    sellerID: 'seller1',
+                    name_en: 'Product with Expired Offer',
+                    name_fr: 'Produit avec offre expirée',
+                    categoryNodeID: 'cat1',
+                    createdAt: '2024-01-01',
+                    deleted: false,
+                    variants: [
+                        {
+                            id: 'var1',
+                            price: 100,
+                            stockQuantity: 10,
+                            sku: 'SKU1',
+                            imageUrls: 'https://example.com/expired_1.jpg',
+                            offer: 30,
+                            offerStart: '2024-01-01T00:00:00Z',
+                            offerEnd: '2024-01-02T00:00:00Z', // expired in the past
+                            itemVariantAttributes: [],
+                            deleted: false
+                        }
+                    ],
+                    itemAttributes: []
+                },
+                {
+                    id: '2',
+                    sellerID: 'seller2',
+                    name_en: 'Product with Active Offer',
+                    name_fr: 'Produit avec offre active',
+                    categoryNodeID: 'cat1',
+                    createdAt: '2024-01-02',
+                    deleted: false,
+                    variants: [
+                        {
+                            id: 'var2',
+                            price: 200,
+                            stockQuantity: 5,
+                            sku: 'SKU2',
+                            imageUrls: 'https://example.com/active_1.jpg',
+                            offer: 20,
+                            offerStart: '2024-01-01T00:00:00Z',
+                            offerEnd: '2099-12-31T23:59:59Z', // active offer
+                            itemVariantAttributes: [],
+                            deleted: false
+                        }
+                    ],
+                    itemAttributes: []
+                }
+            ]
+        };
+
+        (global.fetch as ReturnType<typeof vi.fn>).mockImplementation((url: string) => {
+            if (url.includes('GetRecentlyAddedProducts')) {
+                return Promise.resolve({ ok: true, json: async () => mockRecentProducts });
+            } else if (url.includes('GetSuggestedProducts')) {
+                return Promise.resolve({ ok: true, json: async () => mockSuggestedProducts });
+            } else if (url.includes('GetProductsWithOffers')) {
+                return Promise.resolve({ ok: true, json: async () => mockOffersResponse });
+            }
+            return Promise.resolve({ ok: false, json: async () => ({}) });
+        });
+
+        render(
+            <BrowserRouter>
+                <Home />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith(
+                expect.stringContaining('/api/Item/GetProductsWithOffers?count=4')
+            );
+        });
+
+        await waitFor(() => {
+            const allOffersElements = screen.queryAllByText(/^Offers$|^Offres$/);
+            const offersCardTitle = allOffersElements.find(el => el.classList.contains('card-title'));
+            expect(offersCardTitle).toBeInTheDocument();
+        });
+
+        const allOffersElements = screen.getAllByText(/^Offers$|^Offres$/);
+        const offersCardTitle = allOffersElements.find(el => el.classList.contains('card-title'));
+        const offersCard = offersCardTitle?.closest('.item-preview-card');
+        expect(offersCard).toBeInTheDocument();
+
+        // Only the product with the active offer should be displayed (expired product skipped)
+        const images = offersCard?.querySelectorAll('.item-image');
+        expect(images?.length).toBe(1);
+
+        const imageSrcs = Array.from(images || []).map(img => img.getAttribute('src') || '');
+        expect(imageSrcs.some(src => src.includes('active_1.jpg'))).toBe(true);
+        expect(imageSrcs.some(src => src.includes('expired_1.jpg'))).toBe(false);
+
+        // The active offer badge should be displayed
+        const offerBadges = offersCard?.querySelectorAll('.offer-badge');
+        expect(offerBadges?.length).toBe(1);
+        const badgeTexts = Array.from(offerBadges || []).map(badge => badge.textContent || '');
+        expect(badgeTexts.some(text => text === '20% OFF' || text === 'Rabais 20%')).toBe(true);
     });
 });

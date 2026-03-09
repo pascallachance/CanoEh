@@ -200,4 +200,103 @@ describe('Home - Suggested Items image filtering', () => {
         // imageUrls should be chosen over thumbnailUrl
         expect(images?.[0].getAttribute('src')).toBe('https://example.com/full.jpg');
     });
+
+    it('should not show offer badge when variant offer is expired', async () => {
+        const suggestedResponse = {
+            isSuccess: true,
+            value: [
+                makeProduct('1', [{
+                    imageUrls: 'https://example.com/p1.jpg',
+                    offer: 25,
+                    offerStart: '2024-01-01T00:00:00Z',
+                    offerEnd: '2024-01-02T00:00:00Z', // expired in the past
+                }]),
+            ],
+        };
+
+        mockFetchCalls(suggestedResponse);
+        render(<BrowserRouter><Home /></BrowserRouter>);
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith(
+                expect.stringContaining('/api/Item/GetSuggestedProducts?count=20')
+            );
+        });
+
+        const suggestedSection = await screen.findByText(/Suggested items|Articles suggérés/);
+        const card = suggestedSection.closest('.item-preview-card');
+
+        // Image should still appear
+        const images = card?.querySelectorAll('.item-image');
+        expect(images?.length).toBe(1);
+
+        // But offer badge should NOT be shown for an expired offer
+        const offerBadges = card?.querySelectorAll('.offer-badge');
+        expect(offerBadges?.length).toBe(0);
+    });
+
+    it('should not show offer badge when variant offerStart is in the future', async () => {
+        const suggestedResponse = {
+            isSuccess: true,
+            value: [
+                makeProduct('1', [{
+                    imageUrls: 'https://example.com/p1.jpg',
+                    offer: 15,
+                    offerStart: '2099-01-01T00:00:00Z', // not started yet
+                    offerEnd: '2099-12-31T23:59:59Z',
+                }]),
+            ],
+        };
+
+        mockFetchCalls(suggestedResponse);
+        render(<BrowserRouter><Home /></BrowserRouter>);
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith(
+                expect.stringContaining('/api/Item/GetSuggestedProducts?count=20')
+            );
+        });
+
+        const suggestedSection = await screen.findByText(/Suggested items|Articles suggérés/);
+        const card = suggestedSection.closest('.item-preview-card');
+
+        // Image should still appear
+        const images = card?.querySelectorAll('.item-image');
+        expect(images?.length).toBe(1);
+
+        // Offer badge should NOT be shown for an offer that hasn't started yet
+        const offerBadges = card?.querySelectorAll('.offer-badge');
+        expect(offerBadges?.length).toBe(0);
+    });
+
+    it('should show offer badge when variant offer is active', async () => {
+        const suggestedResponse = {
+            isSuccess: true,
+            value: [
+                makeProduct('1', [{
+                    imageUrls: 'https://example.com/p1.jpg',
+                    offer: 20,
+                    offerStart: '2024-01-01T00:00:00Z',
+                    offerEnd: '2099-12-31T23:59:59Z', // active offer
+                }]),
+            ],
+        };
+
+        mockFetchCalls(suggestedResponse);
+        render(<BrowserRouter><Home /></BrowserRouter>);
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith(
+                expect.stringContaining('/api/Item/GetSuggestedProducts?count=20')
+            );
+        });
+
+        const suggestedSection = await screen.findByText(/Suggested items|Articles suggérés/);
+        const card = suggestedSection.closest('.item-preview-card');
+
+        const offerBadges = card?.querySelectorAll('.offer-badge');
+        expect(offerBadges?.length).toBe(1);
+        const badgeTexts = Array.from(offerBadges || []).map(b => b.textContent || '');
+        expect(badgeTexts.some(t => t === '20% OFF' || t === 'Rabais 20%')).toBe(true);
+    });
 });

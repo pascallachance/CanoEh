@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 import Login from './components/Login';
@@ -7,12 +7,47 @@ import { ApiClient } from './utils/apiClient';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 
+interface ProtectedRouteProps {
+    children: React.ReactNode;
+    isAuthenticated: boolean;
+    isCheckingSession: boolean;
+}
+
+function ProtectedRoute({ children, isAuthenticated, isCheckingSession }: ProtectedRouteProps) {
+    if (isCheckingSession) {
+        return (
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100vh',
+                flexDirection: 'column'
+            }}>
+                <h2>CanoEh! Admin</h2>
+                <p>Checking your session...</p>
+                <div className="spinner"></div>
+            </div>
+        );
+    }
+
+    if (!isAuthenticated) {
+        return <Navigate to="/login" replace />;
+    }
+
+    return <>{children}</>;
+}
+
 function AppContent() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isCheckingSession, setIsCheckingSession] = useState(true);
 
     const navigate = useNavigate();
     const location = useLocation();
+    const locationRef = useRef(location);
+
+    useEffect(() => {
+        locationRef.current = location;
+    }, [location]);
 
     const checkExistingSession = async () => {
         try {
@@ -21,18 +56,18 @@ function AppContent() {
 
             if (response.ok) {
                 setIsAuthenticated(true);
-                if (location.pathname === '/login' || location.pathname === '/') {
+                if (locationRef.current.pathname === '/login' || locationRef.current.pathname === '/') {
                     navigate('/admin', { replace: true });
                 }
             } else {
                 setIsAuthenticated(false);
-                if (location.pathname !== '/login') {
+                if (locationRef.current.pathname !== '/login') {
                     navigate('/login', { replace: true });
                 }
             }
         } catch {
             setIsAuthenticated(false);
-            if (location.pathname !== '/login') {
+            if (locationRef.current.pathname !== '/login') {
                 navigate('/login', { replace: true });
             }
         } finally {
@@ -55,35 +90,11 @@ function AppContent() {
         navigate('/login', { replace: true });
     };
 
-    const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-        if (isCheckingSession) {
-            return (
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    height: '100vh',
-                    flexDirection: 'column'
-                }}>
-                    <h2>CanoEh! Admin</h2>
-                    <p>Checking your session...</p>
-                    <div className="spinner"></div>
-                </div>
-            );
-        }
-
-        if (!isAuthenticated) {
-            return <Navigate to="/login" replace />;
-        }
-
-        return <>{children}</>;
-    };
-
     return (
         <Routes>
             <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
             <Route path="/admin" element={
-                <ProtectedRoute>
+                <ProtectedRoute isAuthenticated={isAuthenticated} isCheckingSession={isCheckingSession}>
                     <Admin onLogout={handleLogout} />
                 </ProtectedRoute>
             } />

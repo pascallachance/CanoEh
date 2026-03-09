@@ -96,6 +96,16 @@ function getCSSCardDimensions() {
 }
 
 /**
+ * Returns true if the variant has an active (non-expired) offer.
+ * An offer is considered expired when offerEnd is set and is in the past.
+ */
+function isOfferActive(variant: ItemVariantDto): boolean {
+    if (!variant.offer || variant.offer <= 0) return false;
+    if (variant.offerEnd && new Date(variant.offerEnd) < new Date()) return false;
+    return true;
+}
+
+/**
  * Extracts images, names and offer percentages from a list of products.
  * Prefers imageUrls on variants, falls back to thumbnailUrl.
  * @param products List of products to extract from
@@ -153,7 +163,7 @@ function extractProductImages(
                 } else {
                     names.push(language === 'fr' ? product.name_fr : product.name_en);
                 }
-                offers.push(selectedVariant.offer || 0);
+                offers.push(isOfferActive(selectedVariant) ? (selectedVariant.offer || 0) : 0);
             }
         }
     }
@@ -382,8 +392,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     }
 
                     if (product.variants && product.variants.length > 0) {
-                        // Find the first variant with an offer
-                        const variantWithOffer = product.variants.find(v => v.offer && v.offer > 0);
+                        // Find the first variant with an active (non-expired) offer
+                        const variantWithOffer = product.variants.find(v => isOfferActive(v));
                         
                         if (variantWithOffer) {
                             productsWithOffers.push({

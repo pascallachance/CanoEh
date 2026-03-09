@@ -186,13 +186,19 @@ function AppContent() {
         await checkExistingSession();
     };
 
-    const handleBackToLogin = () => {
-        setIsAuthenticated(false);
-        setCompanies([]);
-        setStep1Data(null);
-        setCreatedCompany(null);
-        setError('');
-        navigate('/login', { replace: true });
+    const handleBackToLogin = async () => {
+        try {
+            await ApiClient.post(`${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Login/logout`);
+        } catch (err) {
+            console.error('Logout error:', err);
+        } finally {
+            setIsAuthenticated(false);
+            setCompanies([]);
+            setStep1Data(null);
+            setCreatedCompany(null);
+            setError('');
+            navigate('/login', { replace: true });
+        }
     };
 
     const handleCompanyUpdate = (updatedCompany: Company) => {

@@ -85,9 +85,15 @@ function AppContent() {
         navigate('/admin', { replace: true });
     };
 
-    const handleLogout = () => {
-        setIsAuthenticated(false);
-        navigate('/login', { replace: true });
+    const handleLogout = async () => {
+        try {
+            await ApiClient.post(`${import.meta.env.VITE_API_ADMIN_BASE_URL}/api/Login/logout`);
+        } catch (err) {
+            console.error('Logout error:', err);
+        } finally {
+            setIsAuthenticated(false);
+            navigate('/login', { replace: true });
+        }
     };
 
     return (

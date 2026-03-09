@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 import Login from './components/Login';
@@ -31,6 +31,60 @@ interface Company {
     updatedAt?: string;
 }
 
+interface ProtectedRouteProps {
+    children: React.ReactNode;
+    isAuthenticated: boolean;
+    isCheckingSession: boolean;
+}
+
+function ProtectedRoute({ children, isAuthenticated, isCheckingSession }: ProtectedRouteProps) {
+    if (isCheckingSession) {
+        return (
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '100vh',
+                flexDirection: 'column'
+            }}>
+                <h2>CanoEh! Seller</h2>
+                <p>Checking your session...</p>
+                <div className="spinner"></div>
+            </div>
+        );
+    }
+
+    if (!isAuthenticated) {
+        return <Navigate to="/login" replace />;
+    }
+
+    return <>{children}</>;
+}
+
+interface SellerRouteProps {
+    companies: Company[];
+    isAuthenticated: boolean;
+    isCheckingSession: boolean;
+    onLogout: () => void;
+    onCreateCompany: () => void;
+    onCompanyUpdate: (company: Company) => void;
+}
+
+function SellerRoute({ companies, isAuthenticated, isCheckingSession, onLogout, onCreateCompany, onCompanyUpdate }: SellerRouteProps) {
+    return (
+        <ProtectedRoute isAuthenticated={isAuthenticated} isCheckingSession={isCheckingSession}>
+            {companies.length > 0 ? (
+                <Seller companies={companies} onLogout={onLogout} onCompanyUpdate={onCompanyUpdate} />
+            ) : (
+                <NoCompanyPage
+                    onCreateCompany={onCreateCompany}
+                    onBackToLogin={onLogout}
+                />
+            )}
+        </ProtectedRoute>
+    );
+}
+
 // Route wrapper component to handle authentication and routing logic
 function AppContent() {
     const [companies, setCompanies] = useState<Company[]>([]);
@@ -52,6 +106,8 @@ function AppContent() {
     
     const navigate = useNavigate();
     const location = useLocation();
+    const locationRef = useRef(location);
+    locationRef.current = location;
 
     // Check for existing session on app load
     useEffect(() => {
@@ -87,12 +143,12 @@ function AppContent() {
                 if (Array.isArray(companies) && companies.length > 0) {
                     setCompanies(companies);
                     // Navigate to seller if on login page and user has companies
-                    if (location.pathname === '/login' || location.pathname === '/') {
+                    if (locationRef.current.pathname === '/login' || locationRef.current.pathname === '/') {
                         navigate('/seller', { replace: true });
                     }
                 } else {
                     // Navigate to no-company page if on login page and no companies
-                    if (location.pathname === '/login' || location.pathname === '/') {
+                    if (locationRef.current.pathname === '/login' || locationRef.current.pathname === '/') {
                         navigate('/seller', { replace: true }); // Will show no company UI
                     }
                 }
@@ -100,7 +156,7 @@ function AppContent() {
             } else if (response.status === 401) {
                 // No valid session, redirect to login
                 setIsAuthenticated(false);
-                if (location.pathname !== '/login') {
+                if (locationRef.current.pathname !== '/login') {
                     navigate('/login', { replace: true });
                 }
             } else {
@@ -111,7 +167,7 @@ function AppContent() {
             console.error('Session check error:', err);
             // If there's an error checking session, go to login
             setIsAuthenticated(false);
-            if (location.pathname !== '/login') {
+            if (locationRef.current.pathname !== '/login') {
                 navigate('/login', { replace: true });
             }
         } finally {
@@ -337,45 +393,6 @@ function AppContent() {
         return completed;
     };
 
-    // Protected route component
-    const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-        if (isCheckingSession) {
-            return (
-                <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'center', 
-                    alignItems: 'center', 
-                    height: '100vh',
-                    flexDirection: 'column'
-                }}>
-                    <h2>CanoEh! Seller</h2>
-                    <p>Checking your session...</p>
-                    <div className="spinner"></div>
-                </div>
-            );
-        }
-
-        if (!isAuthenticated) {
-            return <Navigate to="/login" replace />;
-        }
-
-        return <>{children}</>;
-    };
-
-    // Seller route - shows company status
-    const SellerRoute = () => (
-        <ProtectedRoute>
-            {companies.length > 0 ? (
-                <Seller companies={companies} onLogout={handleBackToLogin} onCompanyUpdate={handleCompanyUpdate} />
-            ) : (
-                <NoCompanyPage
-                    onCreateCompany={handleCreateCompany}
-                    onBackToLogin={handleBackToLogin}
-                />
-            )}
-        </ProtectedRoute>
-    );
-
     // Error state display
     if (error) {
         return (
@@ -401,9 +418,18 @@ function AppContent() {
             <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
             <Route path="/CreateUser" element={<CreateUser onCreateSuccess={() => navigate('/login')} />} />
             <Route path="/RestorePassword" element={<ForgotPassword />} />
-            <Route path="/seller" element={<SellerRoute />} />
+            <Route path="/seller" element={
+                <SellerRoute
+                    companies={companies}
+                    isAuthenticated={isAuthenticated}
+                    isCheckingSession={isCheckingSession}
+                    onLogout={handleBackToLogin}
+                    onCreateCompany={handleCreateCompany}
+                    onCompanyUpdate={handleCompanyUpdate}
+                />
+            } />
             <Route path="/create-company" element={
-                <ProtectedRoute>
+                <ProtectedRoute isAuthenticated={isAuthenticated} isCheckingSession={isCheckingSession}>
                     <CreateCompanyStep1
                         onNext={handleStep1Next}
                         onBack={handleStep1Back}
@@ -412,7 +438,7 @@ function AppContent() {
                 </ProtectedRoute>
             } />
             <Route path="/create-company/step2" element={
-                <ProtectedRoute>
+                <ProtectedRoute isAuthenticated={isAuthenticated} isCheckingSession={isCheckingSession}>
                     {step1Data ? (
                         <CreateCompanyStep2
                             onSubmit={handleStep2Submit}
@@ -425,7 +451,7 @@ function AppContent() {
                 </ProtectedRoute>
             } />
             <Route path="/company-created" element={
-                <ProtectedRoute>
+                <ProtectedRoute isAuthenticated={isAuthenticated} isCheckingSession={isCheckingSession}>
                     {createdCompany ? (
                         <CompanyCreatedSuccess
                             company={createdCompany}
@@ -437,7 +463,7 @@ function AppContent() {
                 </ProtectedRoute>
             } />
             <Route path="/add-product" element={
-                <ProtectedRoute>
+                <ProtectedRoute isAuthenticated={isAuthenticated} isCheckingSession={isCheckingSession}>
                     <AddProductStep1
                         onNext={handleProductStep1Next}
                         onCancel={handleProductStep1Cancel}
@@ -446,7 +472,7 @@ function AppContent() {
                 </ProtectedRoute>
             } />
             <Route path="/add-product/step2" element={
-                <ProtectedRoute>
+                <ProtectedRoute isAuthenticated={isAuthenticated} isCheckingSession={isCheckingSession}>
                     {productStep1Data ? (
                         <AddProductStep2
                             onNext={handleProductStep2Next}
@@ -461,7 +487,7 @@ function AppContent() {
                 </ProtectedRoute>
             } />
             <Route path="/add-product/step3" element={
-                <ProtectedRoute>
+                <ProtectedRoute isAuthenticated={isAuthenticated} isCheckingSession={isCheckingSession}>
                     {productStep1Data && productStep2Data ? (
                         <AddProductStep3
                             onSubmit={handleProductSubmit}
@@ -477,7 +503,7 @@ function AppContent() {
                 </ProtectedRoute>
             } />
             <Route path="/edit-product" element={
-                <ProtectedRoute>
+                <ProtectedRoute isAuthenticated={isAuthenticated} isCheckingSession={isCheckingSession}>
                     {editProductStep1Data ? (
                         <AddProductStep1
                             onNext={handleEditProductStep1Next}
@@ -493,7 +519,7 @@ function AppContent() {
                 </ProtectedRoute>
             } />
             <Route path="/edit-product/step2" element={
-                <ProtectedRoute>
+                <ProtectedRoute isAuthenticated={isAuthenticated} isCheckingSession={isCheckingSession}>
                     {editProductStep1Data && editProductStep2Data ? (
                         <AddProductStep2
                             onNext={handleEditProductStep2Next}
@@ -511,7 +537,7 @@ function AppContent() {
                 </ProtectedRoute>
             } />
             <Route path="/edit-product/step3" element={
-                <ProtectedRoute>
+                <ProtectedRoute isAuthenticated={isAuthenticated} isCheckingSession={isCheckingSession}>
                     {editProductStep1Data && editProductStep2Data && editingItemId ? (
                         <AddProductStep3
                             onSubmit={handleEditProductSubmit}

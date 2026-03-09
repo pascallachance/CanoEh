@@ -48,7 +48,8 @@
 }
 
 .nav-buttons button:hover {
-    background-color: #e74c3c;
+    background-color: #c0392b;
+    border-color: transparent;
 }
 
 .drop-down-language {

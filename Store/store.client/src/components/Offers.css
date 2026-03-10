@@ -27,18 +27,15 @@
     min-height: calc(100vh - 180px);
 }
 
-/* ── Filters panel – left 1/4 ── */
+/* ── Filters panel – left 1/5 ── */
 .offers-filters {
-    width: 25%;
+    width: 20%;
     flex-shrink: 0;
     background-color: white;
     border-right: 1px solid #e0e0e0;
     padding: 20px;
     box-sizing: border-box;
-    position: sticky;
-    top: 0;
-    align-self: flex-start;
-    max-height: calc(100vh - 60px);
+    align-self: stretch;
     overflow-y: auto;
 }
 

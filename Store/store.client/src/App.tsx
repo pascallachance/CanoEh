@@ -6,6 +6,7 @@ import CreateUser from './components/CreateUser';
 import ForgotPassword from './components/ForgotPassword';
 import Home from './components/Home';
 import Cart from './components/Cart';
+import Offers from './components/Offers';
 
 function AppContent() {
     const navigate = useNavigate();
@@ -78,6 +79,7 @@ function AppContent() {
             <Route path="/CreateUser" element={<CreateUser onCreateSuccess={handleCreateUserSuccess} />} />
             <Route path="/RestorePassword" element={<ForgotPassword />} />
             <Route path="/cart" element={<Cart />} />
+            <Route path="/offers" element={<Offers isAuthenticated={isAuthenticated} onLogout={handleLogout} />} />
             <Route path="*" element={<Home isAuthenticated={isAuthenticated} onLogout={handleLogout} />} />
         </Routes>
     );

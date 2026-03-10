@@ -534,6 +534,10 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         : ITEM_PLACEHOLDER_ARRAY;
 
     const handleCardClick = (title: string) => {
+        if (title === 'offers') {
+            navigate('/offers');
+            return;
+        }
         // TODO: Implement navigation to respective category/search pages
         console.log('Card clicked:', title);
     };

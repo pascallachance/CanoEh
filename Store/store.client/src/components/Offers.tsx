@@ -451,6 +451,7 @@ function Offers({ isAuthenticated = false, onLogout }: OffersProps) {
                                         key={product.id}
                                         product={product}
                                         language={language}
+                                        onNavigate={(productId) => navigate(`/product/${productId}`)}
                                     />
                                 ))}
                             </div>
@@ -475,9 +476,10 @@ function Offers({ isAuthenticated = false, onLogout }: OffersProps) {
 interface OfferProductCardProps {
     product: OfferProduct;
     language: string;
+    onNavigate: (productId: string) => void;
 }
 
-function OfferProductCard({ product, language }: OfferProductCardProps) {
+function OfferProductCard({ product, language, onNavigate }: OfferProductCardProps) {
     const [imageError, setImageError] = useState<boolean>(false);
 
     const name = language === 'fr' ? product.name_fr : product.name_en;
@@ -487,7 +489,14 @@ function OfferProductCard({ product, language }: OfferProductCardProps) {
             : `${product.offerPercentage}% OFF`;
 
     return (
-        <div className="offer-product-card">
+        <div
+            className="offer-product-card offer-product-card-clickable"
+            onClick={() => onNavigate(product.id)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate(product.id); } }}
+            aria-label={name}
+        >
             <div className="offer-product-image-wrapper">
                 {product.imageUrl && !imageError ? (
                     <img

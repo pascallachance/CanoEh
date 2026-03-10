@@ -643,7 +643,7 @@ describe('Offers page – UI structure', () => {
         expect(sidebar?.tagName.toLowerCase()).toBe('aside');
     });
 
-    it('does not render offer-product-card with cursor:pointer (non-clickable cards)', async () => {
+    it('renders offer-product-card as a clickable button to navigate to the product page', async () => {
         setupFetchMock([
             makeProduct({ id: '1', variants: [makeVariant({ imageUrls: 'https://example.com/img_1.jpg' })] }),
         ]);
@@ -653,9 +653,9 @@ describe('Offers page – UI structure', () => {
 
         const card = document.querySelector('.offer-product-card');
         expect(card).toBeInTheDocument();
-        // No click handler means no cursor:pointer — checked by ensuring no role="button"
-        expect(card?.getAttribute('role')).not.toBe('button');
-        expect(card?.getAttribute('tabIndex')).toBeNull();
+        // Cards are now clickable to navigate to the product detail page
+        expect(card?.getAttribute('role')).toBe('button');
+        expect(card?.getAttribute('tabIndex')).toBe('0');
     });
 });
 

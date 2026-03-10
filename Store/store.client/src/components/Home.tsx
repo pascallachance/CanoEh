@@ -197,6 +197,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const [suggestedProductNames, setSuggestedProductNames] = useState<string[]>([]);
     const [offerProductImages, setOfferProductImages] = useState<string[]>([]);
     const [offerProductNames, setOfferProductNames] = useState<string[]>([]);
+    const [offerProductIds, setOfferProductIds] = useState<string[]>([]);
     const [offerPercentages, setOfferPercentages] = useState<number[]>([]);
     const [suggestedOfferPercentages, setSuggestedOfferPercentages] = useState<number[]>([]);
     const [recentOfferPercentages, setRecentOfferPercentages] = useState<number[]>([]);
@@ -385,7 +386,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
                 // Get one variant with offer from each product (4 different products)
-                const productsWithOffers: { variant: ItemVariantDto; productName_en: string; productName_fr: string }[] = [];
+                const productsWithOffers: { variant: ItemVariantDto; productName_en: string; productName_fr: string; productId: string }[] = [];
                 
                 for (const product of result.value) {
                     // Stop if we already have enough products
@@ -401,18 +402,20 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                             productsWithOffers.push({
                                 variant: variantWithOffer,
                                 productName_en: product.name_en,
-                                productName_fr: product.name_fr
+                                productName_fr: product.name_fr,
+                                productId: product.id
                             });
                         }
                     }
                 }
 
-                // Extract images, names, and offer percentages
+                // Extract images, names, offer percentages, and product IDs
                 const images: string[] = [];
                 const names: string[] = [];
                 const percentages: number[] = [];
+                const ids: string[] = [];
                 
-                for (const { variant, productName_en, productName_fr } of productsWithOffers) {
+                for (const { variant, productName_en, productName_fr, productId } of productsWithOffers) {
                     let imageUrl: string | null = null;
 
                     // Try to find image ending with _1 from ImageUrls
@@ -445,11 +448,13 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                         const productName = language === 'fr' ? productName_fr : productName_en;
                         names.push(productName);
                         percentages.push(variant.offer!);
+                        ids.push(productId);
                     }
                 }
                 setOfferProductImages(images);
                 setOfferProductNames(names);
                 setOfferPercentages(percentages);
+                setOfferProductIds(ids);
             }
         } catch (error) {
             console.error('Error fetching products with offers:', error);
@@ -707,6 +712,12 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     offerPercentages={offerPercentages}
                     language={language}
                     onClick={() => handleCardClick('offers')}
+                    onItemClick={(index) => {
+                        const productId = offerProductIds[index];
+                        if (productId) {
+                            navigate(`/product/${productId}`);
+                        }
+                    }}
                 />
                 <ItemPreviewCard
                     title={getText("Explore Categories", "Explorer les catégories")}
@@ -786,9 +797,10 @@ interface ItemPreviewCardProps {
     offerPercentages?: number[];
     language?: string;
     onClick?: () => void;
+    onItemClick?: (index: number) => void;
 }
 
-function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages, language = 'en', onClick }: ItemPreviewCardProps) {
+function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages, language = 'en', onClick, onItemClick }: ItemPreviewCardProps) {
     const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -807,16 +819,27 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages,
         return language === 'fr' ? `Rabais ${percentage}%` : `${percentage}% OFF`;
     };
 
+    // When individual items are clickable (onItemClick), the card container must NOT also be
+    // interactive to avoid nested button semantics. Instead, the card title becomes its own
+    // button to preserve "See all" navigation, and each item-placeholder is a <button>.
+    const hasItemClickHandler = Boolean(onItemClick);
+
     return (
         <div
             className="item-preview-card"
-            onClick={onClick}
-            onKeyDown={onClick ? handleKeyDown : undefined}
-            tabIndex={onClick ? 0 : undefined}
-            role={onClick ? 'button' : undefined}
-            aria-label={onClick ? title : undefined}
+            onClick={hasItemClickHandler ? undefined : onClick}
+            onKeyDown={hasItemClickHandler ? undefined : (onClick ? handleKeyDown : undefined)}
+            tabIndex={hasItemClickHandler ? undefined : (onClick ? 0 : undefined)}
+            role={hasItemClickHandler ? undefined : (onClick ? 'button' : undefined)}
+            aria-label={hasItemClickHandler ? undefined : (onClick ? title : undefined)}
         >
-            <h3 className="card-title">{title}</h3>
+            {hasItemClickHandler && onClick ? (
+                <button type="button" className="card-title card-title-btn" onClick={onClick}>
+                    {title}
+                </button>
+            ) : (
+                <h3 className="card-title">{title}</h3>
+            )}
             <div className="items-grid">
                 {items.map((item, index) => {
                     // Check if this item has an actual image to display
@@ -827,29 +850,44 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages,
                     if (imageUrls !== undefined && !hasImage) {
                         return null;
                     }
-                    
+
+                    const itemLabel = itemNames?.[index] ?? (language === 'fr' ? `Article ${item}` : `Item ${item}`);
+                    const itemContent = hasImage ? (
+                        <>
+                            <img 
+                                src={imageUrls[index]!} 
+                                alt={itemNames?.[index] || `Item ${item}`} 
+                                className="item-image"
+                                onError={() => handleImageError(index)}
+                            />
+                            {offerPercentages && offerPercentages[index] !== undefined && offerPercentages[index] > 0 && (
+                                <div className="offer-badge">{getOfferText(offerPercentages[index])}</div>
+                            )}
+                            {itemNames && itemNames[index] && (
+                                <div className="item-name">{itemNames[index]}</div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="item-image-placeholder">{itemLabel}</div>
+                    );
+
+                    if (onItemClick) {
+                        return (
+                            <button
+                                key={item}
+                                type="button"
+                                className="item-placeholder item-placeholder-clickable"
+                                onClick={() => onItemClick(index)}
+                                aria-label={itemLabel}
+                            >
+                                {itemContent}
+                            </button>
+                        );
+                    }
+
                     return (
                         <div key={item} className="item-placeholder">
-                            {hasImage ? (
-                                <>
-                                    <img 
-                                        src={imageUrls[index]!} 
-                                        alt={itemNames?.[index] || `Item ${item}`} 
-                                        className="item-image"
-                                        onError={() => handleImageError(index)}
-                                    />
-                                    {offerPercentages && offerPercentages[index] !== undefined && offerPercentages[index] > 0 && (
-                                        <div className="offer-badge">{getOfferText(offerPercentages[index])}</div>
-                                    )}
-                                    {itemNames && itemNames[index] && (
-                                        <div className="item-name">{itemNames[index]}</div>
-                                    )}
-                                </>
-                            ) : (
-                                <div className="item-image-placeholder">
-                                    {itemNames?.[index] ?? (language === 'fr' ? `Article ${item}` : `Item ${item}`)}
-                                </div>
-                            )}
+                            {itemContent}
                         </div>
                     );
                 })}

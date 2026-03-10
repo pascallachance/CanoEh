@@ -7,6 +7,7 @@ import ForgotPassword from './components/ForgotPassword';
 import Home from './components/Home';
 import Cart from './components/Cart';
 import Offers from './components/Offers';
+import Product from './components/Product';
 
 function AppContent() {
     const navigate = useNavigate();
@@ -80,6 +81,7 @@ function AppContent() {
             <Route path="/RestorePassword" element={<ForgotPassword />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/offers" element={<Offers isAuthenticated={isAuthenticated} onLogout={handleLogout} />} />
+            <Route path="/product/:id" element={<Product isAuthenticated={isAuthenticated} onLogout={handleLogout} />} />
             <Route path="*" element={<Home isAuthenticated={isAuthenticated} onLogout={handleLogout} />} />
         </Routes>
     );

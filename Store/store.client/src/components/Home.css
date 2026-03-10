@@ -423,6 +423,30 @@
     color: #232f3e;
 }
 
+/* When the card title is rendered as a button (to preserve "See all" navigation
+   while individual items are also interactive), reset button styles so it looks
+   identical to the heading. */
+button.card-title-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    width: 100%;
+    display: block;
+}
+
+button.card-title-btn:hover {
+    text-decoration: underline;
+}
+
+button.card-title-btn:focus-visible {
+    outline: 2px solid #febd69;
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
 .items-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -437,6 +461,22 @@
     align-items: center;
     justify-content: flex-start;
     position: relative;
+}
+
+.item-placeholder-clickable {
+    cursor: pointer;
+    border-radius: 4px;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.item-placeholder-clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.item-placeholder-clickable:focus-visible {
+    outline: 2px solid #febd69;
+    outline-offset: 2px;
 }
 
 .offer-badge {

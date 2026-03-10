@@ -60,6 +60,17 @@ interface ApiResult<T> {
     errorCode?: number;
 }
 
+/**
+ * An attribute group for rendering variant options.
+ * nameKey / option.valueKey are language-invariant (always EN).
+ * displayName / option.displayLabel are localized.
+ */
+interface AttributeGroup {
+    nameKey: string;
+    displayName: string;
+    options: { valueKey: string; displayLabel: string }[];
+}
+
 function isOfferActive(variant: ItemVariantDto): boolean {
     if (!variant.offer || variant.offer <= 0) return false;
     if (variant.offerStart && new Date(variant.offerStart) > new Date()) return false;
@@ -87,43 +98,48 @@ function parseImageUrls(imageUrlsStr?: string, thumbnailUrl?: string): string[] 
 }
 
 /**
- * Builds a map of { attributeName -> Set of attribute values } from a list of variants.
- * Only includes non-deleted variants.
+ * Builds a list of attribute groups from the product variants for rendering the variant selector.
+ * nameKey and valueKey are always English (language-invariant) so they can safely be used as
+ * keys in selectedAttributes without de-syncing when the display language is changed.
  */
-function buildAttributeMap(
-    variants: ItemVariantDto[],
-    language: string
-): Map<string, string[]> {
-    const map = new Map<string, string[]>();
+function buildAttributeGroups(variants: ItemVariantDto[], language: string): AttributeGroup[] {
+    const groupMap = new Map<string, AttributeGroup>();
     for (const variant of variants) {
         if (variant.deleted) continue;
         for (const attr of variant.itemVariantAttributes) {
-            const name = language === 'fr'
+            const nameKey = attr.attributeName_en;
+            const displayName = language === 'fr'
                 ? (attr.attributeName_fr || attr.attributeName_en)
                 : attr.attributeName_en;
-            const value = language === 'fr'
+            const valueKey = attr.attributes_en;
+            const displayLabel = language === 'fr'
                 ? (attr.attributes_fr || attr.attributes_en)
                 : attr.attributes_en;
-            if (!map.has(name)) {
-                map.set(name, []);
+
+            if (!groupMap.has(nameKey)) {
+                groupMap.set(nameKey, { nameKey, displayName, options: [] });
             }
-            const values = map.get(name)!;
-            if (!values.includes(value)) {
-                values.push(value);
+            const group = groupMap.get(nameKey)!;
+            group.displayName = displayName; // update in case language changed
+            if (!group.options.some((o) => o.valueKey === valueKey)) {
+                group.options.push({ valueKey, displayLabel });
+            } else {
+                const opt = group.options.find((o) => o.valueKey === valueKey)!;
+                opt.displayLabel = displayLabel; // update localized label
             }
         }
     }
-    return map;
+    return Array.from(groupMap.values());
 }
 
 /**
  * Finds a variant that matches all selected attribute values.
+ * selectedAttributes uses language-invariant keys (attributeName_en → attributes_en).
  * Returns the first matching non-deleted variant, or null if not found.
  */
 function findMatchingVariant(
     variants: ItemVariantDto[],
-    selectedAttributes: Record<string, string>,
-    language: string
+    selectedAttributes: Record<string, string>
 ): ItemVariantDto | null {
     const selectedEntries = Object.entries(selectedAttributes);
     if (selectedEntries.length === 0) {
@@ -132,17 +148,11 @@ function findMatchingVariant(
 
     for (const variant of variants) {
         if (variant.deleted) continue;
-        const matches = selectedEntries.every(([attrName, attrValue]) => {
-            return variant.itemVariantAttributes.some((a) => {
-                const name = language === 'fr'
-                    ? (a.attributeName_fr || a.attributeName_en)
-                    : a.attributeName_en;
-                const value = language === 'fr'
-                    ? (a.attributes_fr || a.attributes_en)
-                    : a.attributes_en;
-                return name === attrName && value === attrValue;
-            });
-        });
+        const matches = selectedEntries.every(([nameKey, valueKey]) =>
+            variant.itemVariantAttributes.some(
+                (a) => a.attributeName_en === nameKey && a.attributes_en === valueKey
+            )
+        );
         if (matches) return variant;
     }
     return null;
@@ -160,7 +170,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Selected variant
+    // Selected variant – keys are always attributeName_en, values are always attributes_en
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
     const [selectedVariant, setSelectedVariant] = useState<ItemVariantDto | null>(null);
 
@@ -178,7 +188,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
 
     useEffect(() => {
         if (!id) {
-            setError('Product ID is missing.');
+            setError(getText('Product ID is missing.', 'Identifiant de produit manquant.'));
             setLoading(false);
             return;
         }
@@ -192,7 +202,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
             setError(null);
             const apiBaseUrl = import.meta.env.VITE_API_STORE_BASE_URL;
             if (!apiBaseUrl) {
-                setError('API not configured.');
+                setError(getText('API not configured.', 'API non configurée.'));
                 return;
             }
             const response = await fetch(`${apiBaseUrl}/api/Item/GetItemById/${productId}`);
@@ -216,8 +226,8 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     };
 
     /**
-     * Initializes variant selection and images from the fetched product.
-     * Selects the first available (non-deleted) variant and pre-selects its attributes.
+     * Initializes variant selection from the fetched product.
+     * Selects the first available (non-deleted) variant using language-invariant keys.
      */
     const initializeVariantSelection = (p: GetItemResponse) => {
         const activeVariants = p.variants.filter((v) => !v.deleted);
@@ -229,17 +239,10 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
 
         const firstVariant = activeVariants[0];
 
-        // Build initial attribute selections from the first variant
+        // Use language-invariant EN keys/values for selectedAttributes
         const initialAttrs: Record<string, string> = {};
         for (const attr of firstVariant.itemVariantAttributes) {
-            const lang = language;
-            const name = lang === 'fr'
-                ? (attr.attributeName_fr || attr.attributeName_en)
-                : attr.attributeName_en;
-            const value = lang === 'fr'
-                ? (attr.attributes_fr || attr.attributes_en)
-                : attr.attributes_en;
-            initialAttrs[name] = value;
+            initialAttrs[attr.attributeName_en] = attr.attributes_en;
         }
 
         setSelectedAttributes(initialAttrs);
@@ -250,10 +253,10 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         setMainImageError(false);
     };
 
-    // Whenever selectedAttributes change, find the matching variant
+    // Whenever selectedAttributes or product change, find the matching variant
     useEffect(() => {
         if (!product) return;
-        const variant = findMatchingVariant(product.variants, selectedAttributes, language);
+        const variant = findMatchingVariant(product.variants, selectedAttributes);
         setSelectedVariant(variant);
         if (variant) {
             const images = parseImageUrls(variant.imageUrls, variant.thumbnailUrl);
@@ -265,11 +268,10 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
             setMainImageIndex(0);
             setMainImageError(false);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedAttributes, language, product]);
+    }, [selectedAttributes, product]);
 
-    const handleAttributeSelect = (attrName: string, value: string) => {
-        setSelectedAttributes((prev) => ({ ...prev, [attrName]: value }));
+    const handleAttributeSelect = (nameKey: string, valueKey: string) => {
+        setSelectedAttributes((prev) => ({ ...prev, [nameKey]: valueKey }));
     };
 
     const handleThumbnailClick = (index: number) => {
@@ -293,26 +295,6 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         console.log('Search query:', searchQuery);
     };
 
-    if (!product && !loading && error) {
-        return (
-            <div className="home-container">
-                <nav className="top-nav">
-                    <button type="button" className="nav-item logo" onClick={handleLogoClick}>
-                        CanoEh!
-                    </button>
-                </nav>
-                <div className="store-content">
-                    <div className="product-error">
-                        <p>{error}</p>
-                        <button type="button" onClick={() => navigate(-1)}>
-                            {getText('Go Back', 'Retour')}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     const productName = product
         ? (language === 'fr' ? product.name_fr : product.name_en)
         : '';
@@ -328,9 +310,10 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         ? selectedVariant.price * (1 - (selectedVariant.offer ?? 0) / 100)
         : null;
 
-    const attributeMap = product
-        ? buildAttributeMap(product.variants, language)
-        : new Map<string, string[]>();
+    // Build localized attribute groups for rendering the variant selector
+    const attributeGroups = product
+        ? buildAttributeGroups(product.variants, language)
+        : [];
 
     const mainImage = variantImages[mainImageIndex] ?? null;
 
@@ -457,29 +440,28 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
 
                                 {/* Thumbnails */}
                                 {variantImages.length > 1 && (
-                                    <div
+                                    <ul
                                         className="product-thumbnails"
-                                        role="list"
                                         aria-label={getText('Image thumbnails', 'Miniatures d\'images')}
                                     >
                                         {variantImages.map((imgUrl, idx) => (
-                                            <button
-                                                key={idx}
-                                                type="button"
-                                                className={`product-thumbnail-btn${mainImageIndex === idx ? ' active' : ''}`}
-                                                onClick={() => handleThumbnailClick(idx)}
-                                                aria-label={getText(`View image ${idx + 1}`, `Voir l'image ${idx + 1}`)}
-                                                aria-pressed={mainImageIndex === idx}
-                                                role="listitem"
-                                            >
-                                                <img
-                                                    src={imgUrl}
-                                                    alt={`${productName} ${idx + 1}`}
-                                                    className="product-thumbnail-img"
-                                                />
-                                            </button>
+                                            <li key={idx}>
+                                                <button
+                                                    type="button"
+                                                    className={`product-thumbnail-btn${mainImageIndex === idx ? ' active' : ''}`}
+                                                    onClick={() => handleThumbnailClick(idx)}
+                                                    aria-label={getText(`View image ${idx + 1}`, `Voir l'image ${idx + 1}`)}
+                                                    aria-pressed={mainImageIndex === idx}
+                                                >
+                                                    <img
+                                                        src={imgUrl}
+                                                        alt={`${productName} ${idx + 1}`}
+                                                        className="product-thumbnail-img"
+                                                    />
+                                                </button>
+                                            </li>
                                         ))}
-                                    </div>
+                                    </ul>
                                 )}
                             </section>
 
@@ -508,9 +490,10 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                     ${discountedPrice.toFixed(2)}
                                                 </span>
                                                 <span className="product-offer-badge">
-                                                    {language === 'fr'
-                                                        ? `Rabais ${selectedVariant.offer}%`
-                                                        : `${selectedVariant.offer}% OFF`}
+                                                    {getText(
+                                                        `${selectedVariant.offer}% OFF`,
+                                                        `Rabais ${selectedVariant.offer}%`
+                                                    )}
                                                 </span>
                                             </>
                                         ) : (
@@ -531,28 +514,28 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                 )}
 
                                 {/* Variant Attribute Selectors */}
-                                {attributeMap.size > 0 && (
+                                {attributeGroups.length > 0 && (
                                     <div className="product-variants">
                                         <h2 className="product-variants-title">
                                             {getText('Options', 'Options')}
                                         </h2>
-                                        {Array.from(attributeMap.entries()).map(([attrName, values]) => (
-                                            <div key={attrName} className="product-attribute-group">
-                                                <p className="product-attribute-name">{attrName}</p>
+                                        {attributeGroups.map((group) => (
+                                            <div key={group.nameKey} className="product-attribute-group">
+                                                <p className="product-attribute-name">{group.displayName}</p>
                                                 <div
                                                     className="product-attribute-options"
                                                     role="group"
-                                                    aria-label={attrName}
+                                                    aria-label={group.displayName}
                                                 >
-                                                    {values.map((value) => (
+                                                    {group.options.map((option) => (
                                                         <button
-                                                            key={value}
+                                                            key={option.valueKey}
                                                             type="button"
-                                                            className={`product-attribute-btn${selectedAttributes[attrName] === value ? ' selected' : ''}`}
-                                                            onClick={() => handleAttributeSelect(attrName, value)}
-                                                            aria-pressed={selectedAttributes[attrName] === value}
+                                                            className={`product-attribute-btn${selectedAttributes[group.nameKey] === option.valueKey ? ' selected' : ''}`}
+                                                            onClick={() => handleAttributeSelect(group.nameKey, option.valueKey)}
+                                                            aria-pressed={selectedAttributes[group.nameKey] === option.valueKey}
                                                         >
-                                                            {value}
+                                                            {option.displayLabel}
                                                         </button>
                                                     ))}
                                                 </div>
@@ -609,3 +592,4 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
 }
 
 export default Product;
+

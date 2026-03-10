@@ -819,16 +819,27 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages,
         return language === 'fr' ? `Rabais ${percentage}%` : `${percentage}% OFF`;
     };
 
+    // When individual items are clickable (onItemClick), the card container must NOT also be
+    // interactive to avoid nested button semantics. Instead, the card title becomes its own
+    // button to preserve "See all" navigation, and each item-placeholder is a <button>.
+    const hasItemClickHandler = Boolean(onItemClick);
+
     return (
         <div
             className="item-preview-card"
-            onClick={onClick}
-            onKeyDown={onClick ? handleKeyDown : undefined}
-            tabIndex={onClick ? 0 : undefined}
-            role={onClick ? 'button' : undefined}
-            aria-label={onClick ? title : undefined}
+            onClick={hasItemClickHandler ? undefined : onClick}
+            onKeyDown={hasItemClickHandler ? undefined : (onClick ? handleKeyDown : undefined)}
+            tabIndex={hasItemClickHandler ? undefined : (onClick ? 0 : undefined)}
+            role={hasItemClickHandler ? undefined : (onClick ? 'button' : undefined)}
+            aria-label={hasItemClickHandler ? undefined : (onClick ? title : undefined)}
         >
-            <h3 className="card-title">{title}</h3>
+            {hasItemClickHandler && onClick ? (
+                <button type="button" className="card-title card-title-btn" onClick={onClick}>
+                    {title}
+                </button>
+            ) : (
+                <h3 className="card-title">{title}</h3>
+            )}
             <div className="items-grid">
                 {items.map((item, index) => {
                     // Check if this item has an actual image to display
@@ -839,37 +850,44 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages,
                     if (imageUrls !== undefined && !hasImage) {
                         return null;
                     }
-                    
-                    return (
-                        <div
-                            key={item}
-                            className={`item-placeholder${onItemClick ? ' item-placeholder-clickable' : ''}`}
-                            onClick={onItemClick ? (e) => { e.stopPropagation(); onItemClick(index); } : undefined}
-                            role={onItemClick ? 'button' : undefined}
-                            tabIndex={onItemClick ? 0 : undefined}
-                            onKeyDown={onItemClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); onItemClick(index); } } : undefined}
-                            aria-label={onItemClick ? (itemNames?.[index] ?? (language === 'fr' ? `Article ${item}` : `Item ${item}`)) : undefined}
-                        >
-                            {hasImage ? (
-                                <>
-                                    <img 
-                                        src={imageUrls[index]!} 
-                                        alt={itemNames?.[index] || `Item ${item}`} 
-                                        className="item-image"
-                                        onError={() => handleImageError(index)}
-                                    />
-                                    {offerPercentages && offerPercentages[index] !== undefined && offerPercentages[index] > 0 && (
-                                        <div className="offer-badge">{getOfferText(offerPercentages[index])}</div>
-                                    )}
-                                    {itemNames && itemNames[index] && (
-                                        <div className="item-name">{itemNames[index]}</div>
-                                    )}
-                                </>
-                            ) : (
-                                <div className="item-image-placeholder">
-                                    {itemNames?.[index] ?? (language === 'fr' ? `Article ${item}` : `Item ${item}`)}
-                                </div>
+
+                    const itemLabel = itemNames?.[index] ?? (language === 'fr' ? `Article ${item}` : `Item ${item}`);
+                    const itemContent = hasImage ? (
+                        <>
+                            <img 
+                                src={imageUrls[index]!} 
+                                alt={itemNames?.[index] || `Item ${item}`} 
+                                className="item-image"
+                                onError={() => handleImageError(index)}
+                            />
+                            {offerPercentages && offerPercentages[index] !== undefined && offerPercentages[index] > 0 && (
+                                <div className="offer-badge">{getOfferText(offerPercentages[index])}</div>
                             )}
+                            {itemNames && itemNames[index] && (
+                                <div className="item-name">{itemNames[index]}</div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="item-image-placeholder">{itemLabel}</div>
+                    );
+
+                    if (onItemClick) {
+                        return (
+                            <button
+                                key={item}
+                                type="button"
+                                className="item-placeholder item-placeholder-clickable"
+                                onClick={() => onItemClick(index)}
+                                aria-label={itemLabel}
+                            >
+                                {itemContent}
+                            </button>
+                        );
+                    }
+
+                    return (
+                        <div key={item} className="item-placeholder">
+                            {itemContent}
                         </div>
                     );
                 })}

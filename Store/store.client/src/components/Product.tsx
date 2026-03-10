@@ -266,7 +266,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
             setMainImageError(false);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedAttributes, language]);
+    }, [selectedAttributes, language, product]);
 
     const handleAttributeSelect = (attrName: string, value: string) => {
         setSelectedAttributes((prev) => ({ ...prev, [attrName]: value }));

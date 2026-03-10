@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import './Offers.css';
@@ -63,7 +63,6 @@ function Offers({ isAuthenticated = false, onLogout }: OffersProps) {
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [cartItemsCount, setCartItemsCount] = useState<number>(0);
     const [products, setProducts] = useState<OfferProduct[]>([]);
-    const [filteredProducts, setFilteredProducts] = useState<OfferProduct[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
     // Filter/sort state
@@ -74,14 +73,8 @@ function Offers({ isAuthenticated = false, onLogout }: OffersProps) {
 
     const getText = (en: string, fr: string) => language === 'fr' ? fr : en;
 
-    useEffect(() => {
-        const browserLang = navigator.language.toLowerCase();
-        setLanguage(browserLang.includes('fr') ? 'fr' : 'en');
-        setCartItemsCount(0);
-        fetchProducts();
-    }, []);
-
-    useEffect(() => {
+    // Derive filtered & sorted products synchronously (no extra render cycle)
+    const filteredProducts = useMemo(() => {
         let result = [...products];
 
         const minPriceNum = minPrice !== '' ? parseFloat(minPrice) : null;
@@ -127,8 +120,15 @@ function Offers({ isAuthenticated = false, onLogout }: OffersProps) {
                 break;
         }
 
-        setFilteredProducts(result);
+        return result;
     }, [products, sortBy, minPrice, maxPrice, minDiscount, language]);
+
+    useEffect(() => {
+        const browserLang = navigator.language.toLowerCase();
+        setLanguage(browserLang.includes('fr') ? 'fr' : 'en');
+        setCartItemsCount(0);
+        fetchProducts();
+    }, []);
 
     const fetchProducts = async () => {
         try {

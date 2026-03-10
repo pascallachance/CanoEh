@@ -190,6 +190,21 @@
     overflow: hidden;
 }
 
+.offer-product-card-clickable {
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.offer-product-card-clickable:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.offer-product-card-clickable:focus-visible {
+    outline: 2px solid #febd69;
+    outline-offset: 2px;
+}
+
 .offer-product-image-wrapper {
     position: relative;
     width: 100%;

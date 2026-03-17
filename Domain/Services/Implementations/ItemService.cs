@@ -482,6 +482,20 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     .Select(f => { f.ItemID = existingItem.Id; return f; })
                     .ToList();
 
+                // Persist ItemVariant changes (price, stock quantity, sku, etc.)
+                foreach (var variant in (updateItemRequest.Variants ?? Enumerable.Empty<ItemVariant>()))
+                {
+                    variant.ItemId = existingItem.Id;
+                    if (variant.Id != Guid.Empty)
+                    {
+                        await _itemVariantRepository.UpdateAsync(variant);
+                    }
+                    else
+                    {
+                        await _itemVariantRepository.AddAsync(variant);
+                    }
+                }
+
                 var response = new UpdateItemResponse
                 {
                     Id = updatedItem.Id,

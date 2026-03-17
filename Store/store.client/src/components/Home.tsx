@@ -121,10 +121,11 @@ function extractProductImages(
     language: string,
     maxCount?: number,
     useCategoryName?: boolean
-): { images: string[]; names: string[]; offers: number[] } {
+): { images: string[]; names: string[]; offers: number[]; ids: string[] } {
     const images: string[] = [];
     const names: string[] = [];
     const offers: number[] = [];
+    const ids: string[] = [];
     for (const product of products) {
         if (maxCount !== undefined && images.length >= maxCount) {
             break;
@@ -166,10 +167,11 @@ function extractProductImages(
                     names.push(language === 'fr' ? product.name_fr : product.name_en);
                 }
                 offers.push(isOfferActive(selectedVariant) ? (selectedVariant.offer || 0) : 0);
+                ids.push(product.id);
             }
         }
     }
-    return { images, names, offers };
+    return { images, names, offers, ids };
 }
 
 /**
@@ -195,6 +197,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const [suggestedProductImages, setSuggestedProductImages] = useState<string[]>([]);
     const [recentProductNames, setRecentProductNames] = useState<string[]>([]);
     const [suggestedProductNames, setSuggestedProductNames] = useState<string[]>([]);
+    const [recentProductIds, setRecentProductIds] = useState<string[]>([]);
+    const [suggestedProductIds, setSuggestedProductIds] = useState<string[]>([]);
     const [offerProductImages, setOfferProductImages] = useState<string[]>([]);
     const [offerProductNames, setOfferProductNames] = useState<string[]>([]);
     const [offerProductIds, setOfferProductIds] = useState<string[]>([]);
@@ -332,10 +336,11 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                const { images, names, offers } = extractProductImages(result.value, language, RECENT_ITEMS_DISPLAY_COUNT);
+                const { images, names, offers, ids } = extractProductImages(result.value, language, RECENT_ITEMS_DISPLAY_COUNT);
                 setRecentProductImages(images);
                 setRecentProductNames(names);
                 setRecentOfferPercentages(offers);
+                setRecentProductIds(ids);
             }
         } catch (error) {
             console.error('Error fetching recently added products:', error);
@@ -359,10 +364,11 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                const { images, names, offers } = extractProductImages(result.value, language, SUGGESTED_ITEMS_COUNT);
+                const { images, names, offers, ids } = extractProductImages(result.value, language, SUGGESTED_ITEMS_COUNT);
                 setSuggestedProductImages(images);
                 setSuggestedProductNames(names);
                 setSuggestedOfferPercentages(offers);
+                setSuggestedProductIds(ids);
             }
         } catch (error) {
             console.error('Error fetching suggested products:', error);
@@ -703,6 +709,12 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     offerPercentages={suggestedOfferPercentages}
                     language={language}
                     onClick={() => handleCardClick('suggested')}
+                    onItemClick={(index) => {
+                        const productId = suggestedProductIds[index];
+                        if (productId) {
+                            navigate(`/product/${productId}`);
+                        }
+                    }}
                 />
                 <ItemPreviewCard
                     title={getText("Offers", "Offres")}
@@ -746,6 +758,12 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     offerPercentages={recentOfferPercentages}
                     language={language}
                     onClick={() => handleCardClick('recentlyadded')}
+                    onItemClick={(index) => {
+                        const productId = recentProductIds[index];
+                        if (productId) {
+                            navigate(`/product/${productId}`);
+                        }
+                    }}
                 />
                 {isAuthenticated && (
                     <>
@@ -821,8 +839,9 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages,
 
     // When individual items are clickable (onItemClick), the card container must NOT also be
     // interactive to avoid nested button semantics. Instead, the card title becomes its own
-    // button to preserve "See all" navigation, and each item-placeholder is a <button>.
-    const hasItemClickHandler = Boolean(onItemClick);
+    // button to preserve "See all" navigation, and each item-placeholder with a product is a <button>.
+    // Only consider items interactive when there are actual products (imageUrls present with content).
+    const hasItemClickHandler = Boolean(onItemClick) && imageUrls !== undefined && imageUrls.length > 0;
 
     return (
         <div
@@ -871,7 +890,7 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages,
                         <div className="item-image-placeholder">{itemLabel}</div>
                     );
 
-                    if (onItemClick) {
+                    if (onItemClick && hasImage) {
                         return (
                             <button
                                 key={item}

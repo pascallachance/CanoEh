@@ -171,11 +171,23 @@ WHERE Id = @Id";
             {
                 dbConnection.Open();
             }
-            
-            // Query Item table only - variants should be loaded separately via ItemVariantRepository
-            var query = "SELECT * FROM dbo.Item WHERE Id = @id AND Deleted = 0";
 
-            return await dbConnection.QueryFirstOrDefaultAsync<Item>(query, new { id });
+            var query = "SELECT * FROM dbo.Item WHERE Id = @id AND Deleted = 0";
+            var item = await dbConnection.QueryFirstOrDefaultAsync<Item>(query, new { id });
+
+            if (item == null)
+            {
+                return null;
+            }
+
+            // Load variants for the item (exclude deleted variants)
+            var variantQuery = "SELECT * FROM dbo.ItemVariant WHERE ItemId = @id AND Deleted = 0";
+            var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { id })).ToList();
+
+            await HydrateVariantAttributesAndFeaturesAsync(variants);
+            AssignVariantsToItems(new List<Item> { item }, variants);
+
+            return item;
         }
 
         public async Task<IEnumerable<Item>> GetBySellerIdAsync(Guid sellerId, bool includeDeleted = false)
@@ -205,37 +217,8 @@ WHERE Id = @Id";
             var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { itemIds })).ToList();
             var variantsByItemId = variants.GroupBy(v => v.ItemId).ToDictionary(g => g.Key, g => g.ToList());
             
-            if (variants.Any())
-            {
-                var variantIds = variants.Select(v => v.Id).ToList();
-                
-                // Get all ItemVariantAttributes for the variants and group by ItemVariantID for O(1) lookup
-                var variantAttributeQuery = "SELECT * FROM dbo.ItemVariantAttribute WHERE ItemVariantID IN @variantIds";
-                var variantAttributes = (await dbConnection.QueryAsync<ItemVariantAttribute>(variantAttributeQuery, new { variantIds })).ToList();
-                var variantAttributesByVariantId = variantAttributes.GroupBy(va => va.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
-                
-                // Get all ItemVariantFeatures for the variants and group by ItemVariantID for O(1) lookup
-                var variantFeaturesQuery = "SELECT * FROM dbo.ItemVariantFeatures WHERE ItemVariantID IN @variantIds";
-                var variantFeatures = (await dbConnection.QueryAsync<ItemVariantFeatures>(variantFeaturesQuery, new { variantIds })).ToList();
-                var variantFeaturesByVariantId = variantFeatures.GroupBy(vf => vf.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
-                
-                // Assign ItemVariantAttributes and ItemVariantFeatures to their respective ItemVariants using dictionary lookup
-                foreach (var variant in variants)
-                {
-                    variant.ItemVariantAttributes = variantAttributesByVariantId.TryGetValue(variant.Id, out var attrs) ? attrs : new List<ItemVariantAttribute>();
-                    variant.ItemVariantFeatures = variantFeaturesByVariantId.TryGetValue(variant.Id, out var features) ? features : new List<ItemVariantFeatures>();
-                }
-            }
-            
-            // Assign ItemVariants to their respective Items using dictionary lookup
-            foreach (var item in items)
-            {
-                item.Variants = variantsByItemId.TryGetValue(item.Id, out var vars) ? vars : new List<ItemVariant>();
-                // Aggregate item-level features from all variants (defensively handle null collections)
-                item.ItemVariantFeatures = item.Variants?
-                    .SelectMany(v => v.ItemVariantFeatures ?? Enumerable.Empty<ItemVariantFeatures>())
-                    .ToList() ?? new List<ItemVariantFeatures>();
-            }
+            await HydrateVariantAttributesAndFeaturesAsync(variants);
+            AssignVariantsToItems(items, variantsByItemId);
             
             return items;
         }
@@ -267,37 +250,8 @@ WHERE Id = @Id";
             var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { itemIds })).ToList();
             var variantsByItemId = variants.GroupBy(v => v.ItemId).ToDictionary(g => g.Key, g => g.ToList());
             
-            if (variants.Any())
-            {
-                var variantIds = variants.Select(v => v.Id).ToList();
-                
-                // Get all ItemVariantAttributes for the variants and group by ItemVariantID for O(1) lookup
-                var variantAttributeQuery = "SELECT * FROM dbo.ItemVariantAttribute WHERE ItemVariantID IN @variantIds";
-                var variantAttributes = (await dbConnection.QueryAsync<ItemVariantAttribute>(variantAttributeQuery, new { variantIds })).ToList();
-                var variantAttributesByVariantId = variantAttributes.GroupBy(va => va.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
-                
-                // Get all ItemVariantFeatures for the variants and group by ItemVariantID for O(1) lookup
-                var variantFeaturesQuery = "SELECT * FROM dbo.ItemVariantFeatures WHERE ItemVariantID IN @variantIds";
-                var variantFeatures = (await dbConnection.QueryAsync<ItemVariantFeatures>(variantFeaturesQuery, new { variantIds })).ToList();
-                var variantFeaturesByVariantId = variantFeatures.GroupBy(vf => vf.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
-                
-                // Assign ItemVariantAttributes and ItemVariantFeatures to their respective ItemVariants using dictionary lookup
-                foreach (var variant in variants)
-                {
-                    variant.ItemVariantAttributes = variantAttributesByVariantId.TryGetValue(variant.Id, out var attrs) ? attrs : new List<ItemVariantAttribute>();
-                    variant.ItemVariantFeatures = variantFeaturesByVariantId.TryGetValue(variant.Id, out var features) ? features : new List<ItemVariantFeatures>();
-                }
-            }
-            
-            // Assign ItemVariants to their respective Items using dictionary lookup
-            foreach (var item in items)
-            {
-                item.Variants = variantsByItemId.TryGetValue(item.Id, out var vars) ? vars : new List<ItemVariant>();
-                // Aggregate item-level features from all variants (defensively handle null collections)
-                item.ItemVariantFeatures = item.Variants?
-                    .SelectMany(v => v.ItemVariantFeatures ?? Enumerable.Empty<ItemVariantFeatures>())
-                    .ToList() ?? new List<ItemVariantFeatures>();
-            }
+            await HydrateVariantAttributesAndFeaturesAsync(variants);
+            AssignVariantsToItems(items, variantsByItemId);
             
             return items;
         }
@@ -341,37 +295,8 @@ WHERE Id = @Id";
             var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { itemIds })).ToList();
             var variantsByItemId = variants.GroupBy(v => v.ItemId).ToDictionary(g => g.Key, g => g.ToList());
             
-            if (variants.Any())
-            {
-                var variantIds = variants.Select(v => v.Id).ToList();
-                
-                // Get all ItemVariantAttributes for the variants and group by ItemVariantID for O(1) lookup
-                var variantAttributeQuery = "SELECT * FROM dbo.ItemVariantAttribute WHERE ItemVariantID IN @variantIds";
-                var variantAttributes = (await dbConnection.QueryAsync<ItemVariantAttribute>(variantAttributeQuery, new { variantIds })).ToList();
-                var variantAttributesByVariantId = variantAttributes.GroupBy(va => va.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
-                
-                // Get all ItemVariantFeatures for the variants and group by ItemVariantID for O(1) lookup
-                var variantFeaturesQuery = "SELECT * FROM dbo.ItemVariantFeatures WHERE ItemVariantID IN @variantIds";
-                var variantFeatures = (await dbConnection.QueryAsync<ItemVariantFeatures>(variantFeaturesQuery, new { variantIds })).ToList();
-                var variantFeaturesByVariantId = variantFeatures.GroupBy(vf => vf.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
-                
-                // Assign ItemVariantAttributes and ItemVariantFeatures to their respective ItemVariants using dictionary lookup
-                foreach (var variant in variants)
-                {
-                    variant.ItemVariantAttributes = variantAttributesByVariantId.TryGetValue(variant.Id, out var attrs) ? attrs : new List<ItemVariantAttribute>();
-                    variant.ItemVariantFeatures = variantFeaturesByVariantId.TryGetValue(variant.Id, out var features) ? features : new List<ItemVariantFeatures>();
-                }
-            }
-            
-            // Assign ItemVariants to their respective Items using dictionary lookup
-            foreach (var item in items)
-            {
-                item.Variants = variantsByItemId.TryGetValue(item.Id, out var vars) ? vars : new List<ItemVariant>();
-                // Aggregate item-level features from all variants (defensively handle null collections)
-                item.ItemVariantFeatures = item.Variants?
-                    .SelectMany(v => v.ItemVariantFeatures ?? Enumerable.Empty<ItemVariantFeatures>())
-                    .ToList() ?? new List<ItemVariantFeatures>();
-            }
+            await HydrateVariantAttributesAndFeaturesAsync(variants);
+            AssignVariantsToItems(items, variantsByItemId);
             
             return items;
         }
@@ -427,37 +352,8 @@ WHERE Id = @Id";
             var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { itemIds })).ToList();
             var variantsByItemId = variants.GroupBy(v => v.ItemId).ToDictionary(g => g.Key, g => g.ToList());
             
-            if (variants.Any())
-            {
-                var variantIds = variants.Select(v => v.Id).ToList();
-                
-                // Get all ItemVariantAttributes for the variants and group by ItemVariantID for O(1) lookup
-                var variantAttributeQuery = "SELECT * FROM dbo.ItemVariantAttribute WHERE ItemVariantID IN @variantIds";
-                var variantAttributes = (await dbConnection.QueryAsync<ItemVariantAttribute>(variantAttributeQuery, new { variantIds })).ToList();
-                var variantAttributesByVariantId = variantAttributes.GroupBy(va => va.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
-                
-                // Get all ItemVariantFeatures for the variants and group by ItemVariantID for O(1) lookup
-                var variantFeaturesQuery = "SELECT * FROM dbo.ItemVariantFeatures WHERE ItemVariantID IN @variantIds";
-                var variantFeatures = (await dbConnection.QueryAsync<ItemVariantFeatures>(variantFeaturesQuery, new { variantIds })).ToList();
-                var variantFeaturesByVariantId = variantFeatures.GroupBy(vf => vf.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
-                
-                // Assign ItemVariantAttributes and ItemVariantFeatures to their respective ItemVariants using dictionary lookup
-                foreach (var variant in variants)
-                {
-                    variant.ItemVariantAttributes = variantAttributesByVariantId.TryGetValue(variant.Id, out var attrs) ? attrs : new List<ItemVariantAttribute>();
-                    variant.ItemVariantFeatures = variantFeaturesByVariantId.TryGetValue(variant.Id, out var features) ? features : new List<ItemVariantFeatures>();
-                }
-            }
-            
-            // Assign ItemVariants to their respective Items using dictionary lookup
-            foreach (var item in items)
-            {
-                item.Variants = variantsByItemId.TryGetValue(item.Id, out var vars) ? vars : new List<ItemVariant>();
-                // Aggregate item-level features from all variants (defensively handle null collections)
-                item.ItemVariantFeatures = item.Variants?
-                    .SelectMany(v => v.ItemVariantFeatures ?? Enumerable.Empty<ItemVariantFeatures>())
-                    .ToList() ?? new List<ItemVariantFeatures>();
-            }
+            await HydrateVariantAttributesAndFeaturesAsync(variants);
+            AssignVariantsToItems(items, variantsByItemId);
             
             return items;
         }
@@ -495,39 +391,69 @@ WHERE Id = @Id";
             var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { itemIds })).ToList();
             var variantsByItemId = variants.GroupBy(v => v.ItemId).ToDictionary(g => g.Key, g => g.ToList());
 
-            if (variants.Any())
+            await HydrateVariantAttributesAndFeaturesAsync(variants);
+            AssignVariantsToItems(items, variantsByItemId);
+
+            return items;
+        }
+
+        /// <summary>
+        /// Loads and attaches <see cref="ItemVariantAttribute"/> and <see cref="ItemVariantFeatures"/> records
+        /// to the supplied variants in a single pair of batch queries. No-ops when the list is empty.
+        /// </summary>
+        private async Task HydrateVariantAttributesAndFeaturesAsync(List<ItemVariant> variants)
+        {
+            if (variants.Count == 0)
             {
-                var variantIds = variants.Select(v => v.Id).ToList();
-
-                // Get all ItemVariantAttributes for the variants and group by ItemVariantID for O(1) lookup
-                var variantAttributeQuery = "SELECT * FROM dbo.ItemVariantAttribute WHERE ItemVariantID IN @variantIds";
-                var variantAttributes = (await dbConnection.QueryAsync<ItemVariantAttribute>(variantAttributeQuery, new { variantIds })).ToList();
-                var variantAttributesByVariantId = variantAttributes.GroupBy(va => va.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
-
-                // Get all ItemVariantFeatures for the variants and group by ItemVariantID for O(1) lookup
-                var variantFeaturesQuery = "SELECT * FROM dbo.ItemVariantFeatures WHERE ItemVariantID IN @variantIds";
-                var variantFeatures = (await dbConnection.QueryAsync<ItemVariantFeatures>(variantFeaturesQuery, new { variantIds })).ToList();
-                var variantFeaturesByVariantId = variantFeatures.GroupBy(vf => vf.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
-
-                // Assign ItemVariantAttributes and ItemVariantFeatures to their respective ItemVariants using dictionary lookup
-                foreach (var variant in variants)
-                {
-                    variant.ItemVariantAttributes = variantAttributesByVariantId.TryGetValue(variant.Id, out var attrs) ? attrs : new List<ItemVariantAttribute>();
-                    variant.ItemVariantFeatures = variantFeaturesByVariantId.TryGetValue(variant.Id, out var features) ? features : new List<ItemVariantFeatures>();
-                }
+                return;
             }
 
-            // Assign ItemVariants to their respective Items using dictionary lookup
+            var variantIds = variants.Select(v => v.Id).ToList();
+
+            // Load variant attributes in one batch query and group by variant ID for O(1) lookup
+            var variantAttributeQuery = "SELECT * FROM dbo.ItemVariantAttribute WHERE ItemVariantID IN @variantIds";
+            var variantAttributes = (await dbConnection.QueryAsync<ItemVariantAttribute>(variantAttributeQuery, new { variantIds })).ToList();
+            var variantAttributesByVariantId = variantAttributes.GroupBy(va => va.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
+
+            // Load variant features in one batch query and group by variant ID for O(1) lookup
+            var variantFeaturesQuery = "SELECT * FROM dbo.ItemVariantFeatures WHERE ItemVariantID IN @variantIds";
+            var variantFeatures = (await dbConnection.QueryAsync<ItemVariantFeatures>(variantFeaturesQuery, new { variantIds })).ToList();
+            var variantFeaturesByVariantId = variantFeatures.GroupBy(vf => vf.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
+
+            // Assign attributes and features to their respective variants
+            foreach (var variant in variants)
+            {
+                variant.ItemVariantAttributes = variantAttributesByVariantId.TryGetValue(variant.Id, out var attrs) ? attrs : new List<ItemVariantAttribute>();
+                variant.ItemVariantFeatures = variantFeaturesByVariantId.TryGetValue(variant.Id, out var features) ? features : new List<ItemVariantFeatures>();
+            }
+        }
+
+        /// <summary>
+        /// Assigns the pre-loaded (and already hydrated) variants to their parent items and
+        /// aggregates item-level features from the assigned variants.
+        /// </summary>
+        private static void AssignVariantsToItems(List<Item> items, Dictionary<Guid, List<ItemVariant>> variantsByItemId)
+        {
             foreach (var item in items)
             {
                 item.Variants = variantsByItemId.TryGetValue(item.Id, out var vars) ? vars : new List<ItemVariant>();
-                // Aggregate item-level features from all variants (defensively handle null collections)
-                item.ItemVariantFeatures = item.Variants?
+                item.ItemVariantFeatures = (item.Variants ?? Enumerable.Empty<ItemVariant>())
                     .SelectMany(v => v.ItemVariantFeatures ?? Enumerable.Empty<ItemVariantFeatures>())
-                    .ToList() ?? new List<ItemVariantFeatures>();
+                    .ToList();
             }
+        }
 
-            return items;
+        /// <summary>
+        /// Assigns the pre-loaded (and already hydrated) variants directly to a single item and
+        /// aggregates item-level features from the assigned variants.
+        /// </summary>
+        private static void AssignVariantsToItems(List<Item> items, List<ItemVariant> variants)
+        {
+            var item = items[0];
+            item.Variants = variants;
+            item.ItemVariantFeatures = variants
+                .SelectMany(v => v.ItemVariantFeatures ?? Enumerable.Empty<ItemVariantFeatures>())
+                .ToList();
         }
     }
 }

@@ -152,6 +152,66 @@ namespace API.Tests
         }
 
         [Fact]
+        public async Task GetItemByIdAsync_ReturnSuccess_WithVariantsAndImages_WhenItemHasVariants()
+        {
+            // Arrange
+            var itemId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            var variant = new ItemVariant
+            {
+                Id = variantId,
+                ItemId = itemId,
+                Price = 29.99m,
+                StockQuantity = 5,
+                Sku = "SKU-001",
+                ImageUrls = "/uploads/image1.jpg,/uploads/image2.jpg",
+                ThumbnailUrl = "/uploads/thumb1.jpg",
+                Deleted = false,
+                ItemVariantAttributes = new List<ItemVariantAttribute>
+                {
+                    new ItemVariantAttribute
+                    {
+                        Id = Guid.NewGuid(),
+                        ItemVariantID = variantId,
+                        AttributeName_en = "Color",
+                        AttributeName_fr = "Couleur",
+                        Attributes_en = "Red",
+                        Attributes_fr = "Rouge"
+                    }
+                },
+                ItemVariantFeatures = new List<ItemVariantFeatures>()
+            };
+            var item = new Item
+            {
+                Id = itemId,
+                SellerID = Guid.NewGuid(),
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                CategoryNodeID = Guid.NewGuid(),
+                Variants = new List<ItemVariant> { variant },
+                ItemVariantFeatures = new List<ItemVariantFeatures>(),
+                CreatedAt = DateTime.UtcNow,
+                Deleted = false
+            };
+
+            _mockItemRepository.Setup(x => x.GetItemByIdAsync(itemId))
+                              .ReturnsAsync(item);
+
+            // Act
+            var result = await _itemService.GetItemByIdAsync(itemId);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Variants);
+            Assert.Equal("/uploads/image1.jpg,/uploads/image2.jpg", result.Value.Variants[0].ImageUrls);
+            Assert.Single(result.Value.Variants[0].ItemVariantAttributes);
+            Assert.Equal("Color", result.Value.Variants[0].ItemVariantAttributes[0].AttributeName_en);
+            Assert.Equal("Red", result.Value.Variants[0].ItemVariantAttributes[0].Attributes_en);
+            Assert.Empty(result.Value.Variants[0].ItemVariantFeatures);
+        }
+
+        [Fact]
         public async Task GetItemByIdAsync_ReturnFailure_WhenItemDoesNotExist()
         {
             // Arrange

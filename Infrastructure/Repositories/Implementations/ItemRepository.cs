@@ -171,11 +171,47 @@ WHERE Id = @Id";
             {
                 dbConnection.Open();
             }
-            
-            // Query Item table only - variants should be loaded separately via ItemVariantRepository
-            var query = "SELECT * FROM dbo.Item WHERE Id = @id AND Deleted = 0";
 
-            return await dbConnection.QueryFirstOrDefaultAsync<Item>(query, new { id });
+            var query = "SELECT * FROM dbo.Item WHERE Id = @id AND Deleted = 0";
+            var item = await dbConnection.QueryFirstOrDefaultAsync<Item>(query, new { id });
+
+            if (item == null)
+            {
+                return null;
+            }
+
+            // Load variants for the item (exclude deleted variants)
+            var variantQuery = "SELECT * FROM dbo.ItemVariant WHERE ItemId = @id AND Deleted = 0";
+            var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { id })).ToList();
+
+            if (variants.Count > 0)
+            {
+                var variantIds = variants.Select(v => v.Id).ToList();
+
+                // Load variant attributes
+                var variantAttributeQuery = "SELECT * FROM dbo.ItemVariantAttribute WHERE ItemVariantID IN @variantIds";
+                var variantAttributes = (await dbConnection.QueryAsync<ItemVariantAttribute>(variantAttributeQuery, new { variantIds })).ToList();
+                var variantAttributesByVariantId = variantAttributes.GroupBy(va => va.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
+
+                // Load variant features
+                var variantFeaturesQuery = "SELECT * FROM dbo.ItemVariantFeatures WHERE ItemVariantID IN @variantIds";
+                var variantFeatures = (await dbConnection.QueryAsync<ItemVariantFeatures>(variantFeaturesQuery, new { variantIds })).ToList();
+                var variantFeaturesByVariantId = variantFeatures.GroupBy(vf => vf.ItemVariantID).ToDictionary(g => g.Key, g => g.ToList());
+
+                // Assign attributes and features to their respective variants
+                foreach (var variant in variants)
+                {
+                    variant.ItemVariantAttributes = variantAttributesByVariantId.TryGetValue(variant.Id, out var attrs) ? attrs : new List<ItemVariantAttribute>();
+                    variant.ItemVariantFeatures = variantFeaturesByVariantId.TryGetValue(variant.Id, out var features) ? features : new List<ItemVariantFeatures>();
+                }
+            }
+
+            item.Variants = variants;
+            item.ItemVariantFeatures = variants
+                .SelectMany(v => v.ItemVariantFeatures ?? Enumerable.Empty<ItemVariantFeatures>())
+                .ToList();
+
+            return item;
         }
 
         public async Task<IEnumerable<Item>> GetBySellerIdAsync(Guid sellerId, bool includeDeleted = false)

@@ -68,6 +68,13 @@ interface ApiResult<T> {
     errorCode?: number;
 }
 
+interface ProductPreviewItem {
+    id: string;
+    imageUrl: string;
+    name: string;
+    offer: number;
+}
+
 const ITEM_PLACEHOLDER_ARRAY = [1, 2, 3, 4];
 const RECENT_ITEMS_DISPLAY_COUNT = 4;
 const RECENT_ITEMS_FETCH_COUNT = 20; // Fetch more to ensure we get enough with images
@@ -108,25 +115,23 @@ function isOfferActive(variant: ItemVariantDto): boolean {
 }
 
 /**
- * Extracts images, names and offer percentages from a list of products.
+ * Extracts product preview data from a list of products.
  * Prefers imageUrls on variants, falls back to thumbnailUrl.
  * @param products List of products to extract from
  * @param language Current display language ('fr' or other)
  * @param maxCount Optional maximum number of entries to return
  * @param useCategoryName When true, use category name instead of item name
- * @returns Object containing parallel arrays of image URLs, product names and offer percentages
+ * @returns Array of ProductPreviewItem objects each containing the product id, resolved image URL, display name and active offer percentage
  */
 function extractProductImages(
     products: GetItemResponse[],
     language: string,
     maxCount?: number,
     useCategoryName?: boolean
-): { images: string[]; names: string[]; offers: number[] } {
-    const images: string[] = [];
-    const names: string[] = [];
-    const offers: number[] = [];
+): ProductPreviewItem[] {
+    const result: ProductPreviewItem[] = [];
     for (const product of products) {
-        if (maxCount !== undefined && images.length >= maxCount) {
+        if (maxCount !== undefined && result.length >= maxCount) {
             break;
         }
         if (product.variants && product.variants.length > 0) {
@@ -157,19 +162,19 @@ function extractProductImages(
             }
 
             if (imageUrl) {
-                images.push(toAbsoluteUrl(imageUrl));
-                if (useCategoryName) {
-                    names.push(language === 'fr'
-                        ? (product.categoryName_fr || product.name_fr)
-                        : (product.categoryName_en || product.name_en));
-                } else {
-                    names.push(language === 'fr' ? product.name_fr : product.name_en);
-                }
-                offers.push(isOfferActive(selectedVariant) ? (selectedVariant.offer || 0) : 0);
+                const name = useCategoryName
+                    ? (language === 'fr' ? (product.categoryName_fr || product.name_fr) : (product.categoryName_en || product.name_en))
+                    : (language === 'fr' ? product.name_fr : product.name_en);
+                result.push({
+                    id: product.id,
+                    imageUrl: toAbsoluteUrl(imageUrl),
+                    name,
+                    offer: isOfferActive(selectedVariant) ? (selectedVariant.offer || 0) : 0,
+                });
             }
         }
     }
-    return { images, names, offers };
+    return result;
 }
 
 /**
@@ -191,19 +196,10 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const [language, setLanguage] = useState<string>('en');
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [cartItemsCount, setCartItemsCount] = useState<number>(0);
-    const [recentProductImages, setRecentProductImages] = useState<string[]>([]);
-    const [suggestedProductImages, setSuggestedProductImages] = useState<string[]>([]);
-    const [recentProductNames, setRecentProductNames] = useState<string[]>([]);
-    const [suggestedProductNames, setSuggestedProductNames] = useState<string[]>([]);
-    const [offerProductImages, setOfferProductImages] = useState<string[]>([]);
-    const [offerProductNames, setOfferProductNames] = useState<string[]>([]);
-    const [offerProductIds, setOfferProductIds] = useState<string[]>([]);
-    const [offerPercentages, setOfferPercentages] = useState<number[]>([]);
-    const [suggestedOfferPercentages, setSuggestedOfferPercentages] = useState<number[]>([]);
-    const [recentOfferPercentages, setRecentOfferPercentages] = useState<number[]>([]);
-    const [categoriesProductImages, setCategoriesProductImages] = useState<string[]>([]);
-    const [categoriesProductNames, setCategoriesProductNames] = useState<string[]>([]);
-    const [categoriesOfferPercentages, setCategoriesOfferPercentages] = useState<number[]>([]);
+    const [recentProducts, setRecentProducts] = useState<ProductPreviewItem[]>([]);
+    const [suggestedProducts, setSuggestedProducts] = useState<ProductPreviewItem[]>([]);
+    const [offerProducts, setOfferProducts] = useState<ProductPreviewItem[]>([]);
+    const [categoriesProducts, setCategoriesProducts] = useState<ProductPreviewItem[]>([]);
     const [carouselScrollPosition, setCarouselScrollPosition] = useState<number>(0);
     const [canScrollNext, setCanScrollNext] = useState<boolean>(false);
     const carouselRef = useRef<HTMLDivElement>(null);
@@ -332,10 +328,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                const { images, names, offers } = extractProductImages(result.value, language, RECENT_ITEMS_DISPLAY_COUNT);
-                setRecentProductImages(images);
-                setRecentProductNames(names);
-                setRecentOfferPercentages(offers);
+                setRecentProducts(extractProductImages(result.value, language, RECENT_ITEMS_DISPLAY_COUNT));
             }
         } catch (error) {
             console.error('Error fetching recently added products:', error);
@@ -359,10 +352,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                const { images, names, offers } = extractProductImages(result.value, language, SUGGESTED_ITEMS_COUNT);
-                setSuggestedProductImages(images);
-                setSuggestedProductNames(names);
-                setSuggestedOfferPercentages(offers);
+                setSuggestedProducts(extractProductImages(result.value, language, SUGGESTED_ITEMS_COUNT));
             }
         } catch (error) {
             console.error('Error fetching suggested products:', error);
@@ -409,11 +399,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     }
                 }
 
-                // Extract images, names, offer percentages, and product IDs
-                const images: string[] = [];
-                const names: string[] = [];
-                const percentages: number[] = [];
-                const ids: string[] = [];
+                // Build unified ProductPreviewItem list
+                const items: ProductPreviewItem[] = [];
                 
                 for (const { variant, productName_en, productName_fr, productId } of productsWithOffers) {
                     let imageUrl: string | null = null;
@@ -443,18 +430,15 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     }
 
                     if (imageUrl) {
-                        const fullImageUrl = toAbsoluteUrl(imageUrl);
-                        images.push(fullImageUrl);
-                        const productName = language === 'fr' ? productName_fr : productName_en;
-                        names.push(productName);
-                        percentages.push(variant.offer!);
-                        ids.push(productId);
+                        items.push({
+                            id: productId,
+                            imageUrl: toAbsoluteUrl(imageUrl),
+                            name: language === 'fr' ? productName_fr : productName_en,
+                            offer: variant.offer!,
+                        });
                     }
                 }
-                setOfferProductImages(images);
-                setOfferProductNames(names);
-                setOfferPercentages(percentages);
-                setOfferProductIds(ids);
+                setOfferProducts(items);
             }
         } catch (error) {
             console.error('Error fetching products with offers:', error);
@@ -477,10 +461,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                const { images, names, offers } = extractProductImages(result.value, language, undefined, true);
-                setCategoriesProductImages(images);
-                setCategoriesProductNames(names);
-                setCategoriesOfferPercentages(offers);
+                setCategoriesProducts(extractProductImages(result.value, language, undefined, true));
             }
         } catch (error) {
             console.error('Error fetching suggested categories products:', error);
@@ -512,31 +493,6 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const handleCartClick = () => {
         navigate('/cart');
     };
-
-    // Generate array for displaying recently added items
-    // If we have images, create an array matching the number of images (up to 4)
-    // Otherwise, use the default placeholder array.
-    // NOTE: The numeric values here (1, 2, 3, ...) are only used as simple render keys
-    // and placeholder labels ("Item 1", "Item 2", etc.). When actual images are shown,
-    // these numbers do not represent real item IDs and are not meaningful domain data.
-    const recentItemsArray = recentProductImages.length > 0 
-        ? Array.from({ length: recentProductImages.length }, (_, i) => i + 1)
-        : ITEM_PLACEHOLDER_ARRAY;
-
-    // Generate array for displaying suggested items
-    const suggestedItemsArray = suggestedProductImages.length > 0 
-        ? Array.from({ length: suggestedProductImages.length }, (_, i) => i + 1)
-        : ITEM_PLACEHOLDER_ARRAY;
-
-    // Generate array for displaying offer items
-    const offerItemsArray = offerProductImages.length > 0 
-        ? Array.from({ length: offerProductImages.length }, (_, i) => i + 1)
-        : ITEM_PLACEHOLDER_ARRAY;
-
-    // Generate array for displaying suggested categories items
-    const categoriesItemsArray = categoriesProductImages.length > 0
-        ? Array.from({ length: categoriesProductImages.length }, (_, i) => i + 1)
-        : ITEM_PLACEHOLDER_ARRAY;
 
     const handleCardClick = (title: string) => {
         if (title === 'offers') {
@@ -697,55 +653,38 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 <div className="cards-container" ref={carouselRef}>
                 <ItemPreviewCard
                     title={getText("Suggested items", "Articles suggérés")}
-                    items={suggestedItemsArray}
-                    imageUrls={suggestedProductImages}
-                    itemNames={suggestedProductNames}
-                    offerPercentages={suggestedOfferPercentages}
+                    products={suggestedProducts}
                     language={language}
                     onClick={() => handleCardClick('suggested')}
+                    onItemClick={(product) => navigate(`/product/${product.id}`)}
                 />
                 <ItemPreviewCard
                     title={getText("Offers", "Offres")}
-                    items={offerItemsArray}
-                    imageUrls={offerProductImages}
-                    itemNames={offerProductNames}
-                    offerPercentages={offerPercentages}
+                    products={offerProducts}
                     language={language}
                     onClick={() => handleCardClick('offers')}
-                    onItemClick={(index) => {
-                        const productId = offerProductIds[index];
-                        if (productId) {
-                            navigate(`/product/${productId}`);
-                        }
-                    }}
+                    onItemClick={(product) => navigate(`/product/${product.id}`)}
                 />
                 <ItemPreviewCard
                     title={getText("Explore Categories", "Explorer les catégories")}
-                    items={categoriesItemsArray}
-                    imageUrls={categoriesProductImages}
-                    itemNames={categoriesProductNames}
-                    offerPercentages={categoriesOfferPercentages}
+                    products={categoriesProducts}
                     language={language}
                     onClick={() => handleCardClick('categories')}
                 />
                 <ItemPreviewCard
                     title={getText("Best Sellers", "Meilleures ventes")}
-                    items={ITEM_PLACEHOLDER_ARRAY}
                     onClick={() => handleCardClick('bestsellers')}
                 />
                 <ItemPreviewCard
                     title={getText("Best Rated", "Mieux notés")}
-                    items={ITEM_PLACEHOLDER_ARRAY}
                     onClick={() => handleCardClick('rated')}
                 />
                 <ItemPreviewCard
                     title={getText("Recently added items", "Articles récemment ajoutés")}
-                    items={recentItemsArray}
-                    imageUrls={recentProductImages}
-                    itemNames={recentProductNames}
-                    offerPercentages={recentOfferPercentages}
+                    products={recentProducts}
                     language={language}
                     onClick={() => handleCardClick('recentlyadded')}
+                    onItemClick={(product) => navigate(`/product/${product.id}`)}
                 />
                 {isAuthenticated && (
                     <>
@@ -789,18 +728,30 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     );
 }
 
+/**
+ * Props for ItemPreviewCard.
+ *
+ * Rendering follows a two-mode design:
+ * - **Dynamic mode** (`products` provided): iterates over `products` and renders each as an
+ *   `<img>`-backed item. When `onItemClick` is also provided, each item is wrapped in a
+ *   `<button>` with the `item-placeholder-clickable` class.
+ * - **Static placeholder mode** (`products` undefined): iterates over `items` and renders
+ *   labelled placeholder divs. Used by cards (e.g. Best Sellers, Best Rated) that do not
+ *   yet have real product data. `items` defaults to `ITEM_PLACEHOLDER_ARRAY` when omitted.
+ */
 interface ItemPreviewCardProps {
     title: string;
-    items: number[];
-    imageUrls?: string[];
-    itemNames?: string[];
-    offerPercentages?: number[];
+    /** Numeric keys for static placeholder rendering. Defaults to [1,2,3,4] when omitted. */
+    items?: number[];
+    /** Actual product data. When provided, takes precedence over `items`. */
+    products?: ProductPreviewItem[];
     language?: string;
     onClick?: () => void;
-    onItemClick?: (index: number) => void;
+    /** Called with the clicked product when `products` is provided. */
+    onItemClick?: (product: ProductPreviewItem) => void;
 }
 
-function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages, language = 'en', onClick, onItemClick }: ItemPreviewCardProps) {
+function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, language = 'en', onClick, onItemClick }: ItemPreviewCardProps) {
     const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -821,8 +772,9 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages,
 
     // When individual items are clickable (onItemClick), the card container must NOT also be
     // interactive to avoid nested button semantics. Instead, the card title becomes its own
-    // button to preserve "See all" navigation, and each item-placeholder is a <button>.
-    const hasItemClickHandler = Boolean(onItemClick);
+    // button to preserve "See all" navigation, and each product item is a <button>.
+    // Only consider items interactive when there are actual products loaded.
+    const hasItemClickHandler = Boolean(onItemClick) && Boolean(products?.length);
 
     return (
         <div
@@ -841,56 +793,55 @@ function ItemPreviewCard({ title, items, imageUrls, itemNames, offerPercentages,
                 <h3 className="card-title">{title}</h3>
             )}
             <div className="items-grid">
-                {items.map((item, index) => {
-                    // Check if this item has an actual image to display
-                    const hasImage = imageUrls && imageUrls[index] && !imageErrors.has(index);
-                    
-                    // For cards that fetch data (have imageUrls prop defined), only render items with images
-                    // For static cards (imageUrls prop undefined), always show placeholders
-                    if (imageUrls !== undefined && !hasImage) {
-                        return null;
-                    }
+                {products !== undefined ? (
+                    products.map((product, index) => {
+                        if (imageErrors.has(index)) return null;
 
-                    const itemLabel = itemNames?.[index] ?? (language === 'fr' ? `Article ${item}` : `Item ${item}`);
-                    const itemContent = hasImage ? (
-                        <>
-                            <img 
-                                src={imageUrls[index]!} 
-                                alt={itemNames?.[index] || `Item ${item}`} 
-                                className="item-image"
-                                onError={() => handleImageError(index)}
-                            />
-                            {offerPercentages && offerPercentages[index] !== undefined && offerPercentages[index] > 0 && (
-                                <div className="offer-badge">{getOfferText(offerPercentages[index])}</div>
-                            )}
-                            {itemNames && itemNames[index] && (
-                                <div className="item-name">{itemNames[index]}</div>
-                            )}
-                        </>
-                    ) : (
-                        <div className="item-image-placeholder">{itemLabel}</div>
-                    );
-
-                    if (onItemClick) {
-                        return (
-                            <button
-                                key={item}
-                                type="button"
-                                className="item-placeholder item-placeholder-clickable"
-                                onClick={() => onItemClick(index)}
-                                aria-label={itemLabel}
-                            >
-                                {itemContent}
-                            </button>
+                        const itemContent = (
+                            <>
+                                <img
+                                    src={product.imageUrl}
+                                    alt={product.name}
+                                    className="item-image"
+                                    onError={() => handleImageError(index)}
+                                />
+                                {product.offer > 0 && (
+                                    <div className="offer-badge">{getOfferText(product.offer)}</div>
+                                )}
+                                <div className="item-name">{product.name}</div>
+                            </>
                         );
-                    }
 
-                    return (
-                        <div key={item} className="item-placeholder">
-                            {itemContent}
-                        </div>
-                    );
-                })}
+                        if (onItemClick) {
+                            return (
+                                <button
+                                    key={product.id}
+                                    type="button"
+                                    className="item-placeholder item-placeholder-clickable"
+                                    onClick={() => onItemClick(product)}
+                                    aria-label={product.name}
+                                >
+                                    {itemContent}
+                                </button>
+                            );
+                        }
+
+                        return (
+                            <div key={product.id} className="item-placeholder">
+                                {itemContent}
+                            </div>
+                        );
+                    })
+                ) : (
+                    items.map((item) => {
+                        const itemLabel = language === 'fr' ? `Article ${item}` : `Item ${item}`;
+                        return (
+                            <div key={item} className="item-placeholder">
+                                <div className="item-image-placeholder">{itemLabel}</div>
+                            </div>
+                        );
+                    })
+                )}
             </div>
         </div>
     );

@@ -449,71 +449,210 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     return Result.Failure<UpdateItemResponse>("Item not found.", StatusCodes.Status404NotFound);
                 }
 
-                existingItem.SellerID = updateItemRequest.SellerID;
-                existingItem.Name_en = updateItemRequest.Name_en;
-                existingItem.Name_fr = updateItemRequest.Name_fr;
-                existingItem.Description_en = updateItemRequest.Description_en;
-                existingItem.Description_fr = updateItemRequest.Description_fr;
-                existingItem.CategoryNodeID = updateItemRequest.CategoryNodeID;
-                existingItem.Variants = updateItemRequest.Variants;
-                existingItem.UpdatedAt = DateTime.UtcNow;
-
-                var updatedItem = await _itemRepository.UpdateAsync(existingItem);
-
-                // Persist ItemVariantFeatures: delete existing features for all variants and re-insert.
-                // Features are stored linked to the first variant (consistent with CreateItemAsync).
+                var updatedAt = DateTime.UtcNow;
+                var variantRequests = (updateItemRequest.Variants ?? Enumerable.Empty<ItemVariant>()).ToList();
                 var newFeatures = (updateItemRequest.ItemVariantFeatures ?? Enumerable.Empty<ItemVariantFeatures>()).ToList();
-                var firstVariant = (updateItemRequest.Variants ?? Enumerable.Empty<ItemVariant>())
-                    .FirstOrDefault(v => v.Id != Guid.Empty);
-                if (firstVariant != null)
-                {
-                    await _itemVariantFeaturesRepository.DeleteFeaturesByItemVariantIdAsync(firstVariant.Id);
 
-                    foreach (var feature in newFeatures)
+                // Execute all database operations in a single transaction to ensure atomicity
+                using var connection = new SqlConnection(_connectionString);
+                await connection.OpenAsync();
+                using var transaction = connection.BeginTransaction();
+
+                try
+                {
+                    // 1. Update Item
+                    var itemQuery = @"
+UPDATE dbo.Item
+SET
+    SellerID = @SellerID,
+    Name_en = @Name_en,
+    Name_fr = @Name_fr,
+    Description_en = @Description_en,
+    Description_fr = @Description_fr,
+    CategoryNodeID = @CategoryNodeID,
+    UpdatedAt = @UpdatedAt,
+    Deleted = @Deleted
+WHERE Id = @Id";
+
+                    await connection.ExecuteAsync(itemQuery, new
                     {
-                        feature.ItemID = existingItem.Id;
-                        feature.ItemVariantID = firstVariant.Id;
-                        feature.Id = Guid.NewGuid(); // assign a new ID for each re-inserted feature
-                        await _itemVariantFeaturesRepository.AddAsync(feature);
+                        updateItemRequest.Id,
+                        updateItemRequest.SellerID,
+                        updateItemRequest.Name_en,
+                        updateItemRequest.Name_fr,
+                        updateItemRequest.Description_en,
+                        updateItemRequest.Description_fr,
+                        updateItemRequest.CategoryNodeID,
+                        UpdatedAt = updatedAt,
+                        existingItem.Deleted
+                    }, transaction);
+
+                    // 2. Update or insert ItemVariants.
+                    // Existing variants (Id != Guid.Empty) are updated with AND ItemId = @ItemId in the
+                    // WHERE clause to prevent cross-item updates. New variants (Id == Guid.Empty) are inserted.
+                    // Capture the first existing variant's ID before the loop assigns new GUIDs to new variants.
+                    var firstExistingVariantId = variantRequests.FirstOrDefault(v => v.Id != Guid.Empty)?.Id;
+                    var updatedVariants = new List<ItemVariant>();
+                    foreach (var variant in variantRequests)
+                    {
+                        variant.ItemId = updateItemRequest.Id;
+                        if (variant.Id != Guid.Empty)
+                        {
+                            var variantUpdateQuery = @"
+UPDATE dbo.ItemVariant
+SET
+    ItemId = @ItemId,
+    Price = @Price,
+    StockQuantity = @StockQuantity,
+    Sku = @Sku,
+    ProductIdentifierType = @ProductIdentifierType,
+    ProductIdentifierValue = @ProductIdentifierValue,
+    ImageUrls = @ImageUrls,
+    ThumbnailUrl = @ThumbnailUrl,
+    ItemVariantName_en = @ItemVariantName_en,
+    ItemVariantName_fr = @ItemVariantName_fr,
+    Deleted = @Deleted,
+    Offer = @Offer,
+    OfferStart = @OfferStart,
+    OfferEnd = @OfferEnd
+WHERE Id = @Id AND ItemId = @ItemId";
+
+                            await connection.ExecuteAsync(variantUpdateQuery, new
+                            {
+                                variant.Id,
+                                variant.ItemId,
+                                variant.Price,
+                                variant.StockQuantity,
+                                variant.Sku,
+                                variant.ProductIdentifierType,
+                                variant.ProductIdentifierValue,
+                                variant.ImageUrls,
+                                variant.ThumbnailUrl,
+                                variant.ItemVariantName_en,
+                                variant.ItemVariantName_fr,
+                                variant.Deleted,
+                                variant.Offer,
+                                variant.OfferStart,
+                                variant.OfferEnd
+                            }, transaction);
+                        }
+                        else
+                        {
+                            variant.Id = Guid.NewGuid();
+                            var variantInsertQuery = @"
+INSERT INTO dbo.ItemVariant (
+    Id,
+    ItemId,
+    Price,
+    StockQuantity,
+    Sku,
+    ProductIdentifierType,
+    ProductIdentifierValue,
+    ImageUrls,
+    ThumbnailUrl,
+    ItemVariantName_en,
+    ItemVariantName_fr,
+    Deleted,
+    Offer,
+    OfferStart,
+    OfferEnd)
+VALUES (
+    @Id,
+    @ItemId,
+    @Price,
+    @StockQuantity,
+    @Sku,
+    @ProductIdentifierType,
+    @ProductIdentifierValue,
+    @ImageUrls,
+    @ThumbnailUrl,
+    @ItemVariantName_en,
+    @ItemVariantName_fr,
+    @Deleted,
+    @Offer,
+    @OfferStart,
+    @OfferEnd)";
+
+                            await connection.ExecuteAsync(variantInsertQuery, new
+                            {
+                                variant.Id,
+                                variant.ItemId,
+                                variant.Price,
+                                variant.StockQuantity,
+                                variant.Sku,
+                                variant.ProductIdentifierType,
+                                variant.ProductIdentifierValue,
+                                variant.ImageUrls,
+                                variant.ThumbnailUrl,
+                                variant.ItemVariantName_en,
+                                variant.ItemVariantName_fr,
+                                variant.Deleted,
+                                variant.Offer,
+                                variant.OfferStart,
+                                variant.OfferEnd
+                            }, transaction);
+                        }
+
+                        updatedVariants.Add(variant);
                     }
+
+                    // 3. Re-insert ItemVariantFeatures for the first existing variant (consistent with CreateItemAsync)
+                    if (firstExistingVariantId.HasValue)
+                    {
+                        await connection.ExecuteAsync(
+                            "DELETE FROM dbo.ItemVariantFeatures WHERE ItemVariantID = @itemVariantId",
+                            new { itemVariantId = firstExistingVariantId.Value },
+                            transaction);
+
+                        foreach (var feature in newFeatures)
+                        {
+                            feature.Id = Guid.NewGuid();
+                            feature.ItemID = updateItemRequest.Id;
+                            feature.ItemVariantID = firstExistingVariantId.Value;
+
+                            await connection.ExecuteAsync(@"
+INSERT INTO dbo.ItemVariantFeatures (Id, ItemID, ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
+VALUES (@Id, @ItemID, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)",
+                                new
+                                {
+                                    feature.Id,
+                                    ItemID = feature.ItemID,
+                                    ItemVariantID = feature.ItemVariantID,
+                                    feature.AttributeName_en,
+                                    feature.AttributeName_fr,
+                                    feature.Attributes_en,
+                                    feature.Attributes_fr
+                                }, transaction);
+                        }
+                    }
+
+                    // Commit transaction - all operations succeeded
+                    await transaction.CommitAsync();
+
+                    var response = new UpdateItemResponse
+                    {
+                        Id = updateItemRequest.Id,
+                        SellerID = updateItemRequest.SellerID,
+                        Name_en = updateItemRequest.Name_en,
+                        Name_fr = updateItemRequest.Name_fr,
+                        Description_en = updateItemRequest.Description_en,
+                        Description_fr = updateItemRequest.Description_fr,
+                        ImageUrl = existingItem.ImageUrl,
+                        CategoryNodeID = updateItemRequest.CategoryNodeID,
+                        Variants = MapToItemVariantDtos(updatedVariants),
+                        ItemVariantFeatures = MapToItemVariantFeaturesDtos(newFeatures),
+                        CreatedAt = existingItem.CreatedAt,
+                        UpdatedAt = updatedAt,
+                        Deleted = existingItem.Deleted
+                    };
+
+                    return Result.Success(response);
                 }
-
-                updatedItem.ItemVariantFeatures = newFeatures
-                    .Select(f => { f.ItemID = existingItem.Id; return f; })
-                    .ToList();
-
-                // Persist ItemVariant changes (price, stock quantity, sku, etc.)
-                foreach (var variant in (updateItemRequest.Variants ?? Enumerable.Empty<ItemVariant>()))
+                catch (Exception ex)
                 {
-                    variant.ItemId = existingItem.Id;
-                    if (variant.Id != Guid.Empty)
-                    {
-                        await _itemVariantRepository.UpdateAsync(variant);
-                    }
-                    else
-                    {
-                        await _itemVariantRepository.AddAsync(variant);
-                    }
+                    await transaction.RollbackAsync();
+                    throw new InvalidOperationException($"Transaction failed: {ex.Message}", ex);
                 }
-
-                var response = new UpdateItemResponse
-                {
-                    Id = updatedItem.Id,
-                    SellerID = updatedItem.SellerID,
-                    Name_en = updatedItem.Name_en,
-                    Name_fr = updatedItem.Name_fr,
-                    Description_en = updatedItem.Description_en,
-                    Description_fr = updatedItem.Description_fr,
-                    ImageUrl = updatedItem.ImageUrl,
-                    CategoryNodeID = updatedItem.CategoryNodeID,
-                    Variants = MapToItemVariantDtos(updatedItem.Variants),
-                    ItemVariantFeatures = MapToItemVariantFeaturesDtos(updatedItem.ItemVariantFeatures),
-                    CreatedAt = updatedItem.CreatedAt,
-                    UpdatedAt = updatedItem.UpdatedAt,
-                    Deleted = updatedItem.Deleted
-                };
-
-                return Result.Success(response);
             }
             catch (Exception ex)
             {

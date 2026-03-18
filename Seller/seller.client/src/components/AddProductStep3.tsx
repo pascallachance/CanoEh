@@ -7,6 +7,7 @@ import { useNotifications } from '../contexts/useNotifications';
 import type { AddProductStep1Data } from './AddProductStep1';
 import type { AddProductStep2Data } from './AddProductStep2';
 import StepIndicator from './StepIndicator';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface ItemVariant {
     id: string;
@@ -50,6 +51,7 @@ interface AddProductStep3Props {
 
 function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, companies, editMode = false, itemId, existingVariants, onStepNavigate, completedSteps }: AddProductStep3Props) {
     const { showSuccess, showError } = useNotifications();
+    const { t, language } = useLanguage();
     const [variants, setVariants] = useState<ItemVariant[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string>('');
@@ -76,14 +78,14 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
 
     // Product identifier types
     const identifierTypes = [
-        { value: '', label: 'Select ID Type' },
+        { value: '', label: t('products.selectIdType') },
         { value: 'UPC', label: 'UPC' },
         { value: 'EAN', label: 'EAN' },
         { value: 'GTIN', label: 'GTIN' },
         { value: 'ISBN', label: 'ISBN' },
         { value: 'ASIN', label: 'ASIN' },
         { value: 'SKU', label: 'SKU' },
-        { value: 'MPN', label: 'MPN (Manufacturer Part Number)' }
+        { value: 'MPN', label: t('products.idType.mpn') }
     ];
 
     // Generate variants on mount or when step2Data changes
@@ -642,7 +644,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             );
 
             if (hasInvalidVariants) {
-                const errorMessage = 'Please ensure all variants have a SKU and price greater than 0.';
+                const errorMessage = t('error.invalidVariants');
                 setError(errorMessage);
                 showError(errorMessage);
                 return;
@@ -651,7 +653,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
 
         const sellerId = companies.length > 0 ? companies[0].ownerID : null;
         if (!sellerId) {
-            const errorMessage = 'Unable to determine seller ID. Please ensure you are logged in.';
+            const errorMessage = t('error.sellerIdMissing');
             setError(errorMessage);
             showError(errorMessage);
             return;
@@ -696,7 +698,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 }
 
                 // Show success message
-                showSuccess(`Product ${editMode ? 'updated' : 'created'} successfully!`);
+                showSuccess(editMode ? t('variant.productUpdated') : t('variant.productCreated'));
                 // Navigate to products list
                 onSubmit();
             } else {
@@ -720,15 +722,15 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
         <div className="add-product-step3-container">
             <div className="add-product-step3-content">
                 <header className="step-header">
-                    <h1>{editMode ? 'Edit Product' : 'Add New Product'}</h1>
+                    <h1>{editMode ? t('products.editProduct') : t('products.addNewProduct')}</h1>
                     <StepIndicator 
                         currentStep={3}
                         totalSteps={3}
                         onStepClick={onStepNavigate}
                         completedSteps={completedSteps || [1, 2]}
                     />
-                    <h2>Step 3: Configure Variants</h2>
-                    <p>Fill in SKU, price, stock, and variant features for each variant.</p>
+                    <h2>{t('step3.title')}</h2>
+                    <p>{t('step3.subtitle')}</p>
                 </header>
 
                 {error && (
@@ -748,7 +750,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                         return (
                                             <span key={`${attr.name_en}-${attr.name_fr}`}>
                                                 {index > 0 && ' / '}
-                                                <strong>{attr.name_en}</strong> ({formatted.en}) / <strong>{attr.name_fr}</strong> ({formatted.fr})
+                                                <strong>{language === 'fr' ? attr.name_fr : attr.name_en}</strong> ({language === 'fr' ? formatted.fr : formatted.en})
                                             </span>
                                         );
                                     })}
@@ -756,10 +758,10 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
 
                                 {/* Attributes Section */}
                                 <div className="variant-section">
-                                    <h4 className="variant-section-title">Attributes</h4>
+                                    <h4 className="variant-section-title">{t('variant.attributes')}</h4>
                                     <div className="variant-fields">
                                         <div className="variant-field">
-                                            <label className="variant-field-label" htmlFor={`sku-${variant.id}`}>SKU *</label>
+                                            <label className="variant-field-label" htmlFor={`sku-${variant.id}`}>{t('products.variant.sku')} *</label>
                                             <div className="variant-field-content">
                                                 <input
                                                     type="text"
@@ -767,13 +769,13 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                     value={variant.sku}
                                                     onChange={(e) => updateVariant(variant.id, 'sku', e.target.value)}
                                                     className={`variant-input ${!variant.sku.trim() ? 'required' : ''}`}
-                                                    placeholder="SKU *"
+                                                    placeholder={`${t('products.variant.sku')} *`}
                                                     required
                                                 />
                                             </div>
                                         </div>
                                         <div className="variant-field">
-                                            <label className="variant-field-label" htmlFor={`product-id-type-${variant.id}`}>Product ID Type</label>
+                                            <label className="variant-field-label" htmlFor={`product-id-type-${variant.id}`}>{t('products.variant.productIdType')}</label>
                                             <div className="variant-field-content">
                                                 <select
                                                     id={`product-id-type-${variant.id}`}
@@ -790,7 +792,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                             </div>
                                         </div>
                                         <div className="variant-field">
-                                            <label className="variant-field-label" htmlFor={`product-id-value-${variant.id}`}>Product ID Value</label>
+                                            <label className="variant-field-label" htmlFor={`product-id-value-${variant.id}`}>{t('products.variant.productIdValue')}</label>
                                             <div className="variant-field-content">
                                                 <input
                                                     type="text"
@@ -798,13 +800,13 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                     value={variant.productIdentifierValue || ''}
                                                     onChange={(e) => updateVariant(variant.id, 'productIdentifierValue', e.target.value)}
                                                     className="variant-input"
-                                                    placeholder="ID Value"
+                                                    placeholder={t('variant.idValuePlaceholder')}
                                                     disabled={!variant.productIdentifierType}
                                                 />
                                             </div>
                                         </div>
                                         <div className="variant-field">
-                                            <label className="variant-field-label" htmlFor={`price-${variant.id}`}>Price *</label>
+                                            <label className="variant-field-label" htmlFor={`price-${variant.id}`}>{t('products.variant.price')} *</label>
                                             <div className="variant-field-content">
                                                 <input
                                                     type="number"
@@ -819,7 +821,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                             </div>
                                         </div>
                                         <div className="variant-field">
-                                            <label className="variant-field-label" htmlFor={`stock-${variant.id}`}>Stock</label>
+                                            <label className="variant-field-label" htmlFor={`stock-${variant.id}`}>{t('variant.stock')}</label>
                                             <div className="variant-field-content">
                                                 <input
                                                     type="number"
@@ -835,7 +837,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                         {/* Thumbnail Section */}
                                         <div className="variant-field variant-field-media">
                                             <div className="media-upload-row">
-                                                <label className="media-label" htmlFor={`thumbnail-${variant.id}`}>Thumbnail</label>
+                                                <label className="media-label" htmlFor={`thumbnail-${variant.id}`}>{t('variant.thumbnail')}</label>
                                                 <div className="media-controls">
                                                     <input
                                                         type="file"
@@ -843,10 +845,10 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                         onChange={(e) => handleThumbnailChange(variant.id, e.target.files?.[0] || null)}
                                                         className="file-input"
                                                         id={`thumbnail-${variant.id}`}
-                                                        aria-label="Upload thumbnail image for variant"
+                                                        aria-label={t('variant.uploadThumbnailAriaLabel')}
                                                     />
                                                     <label htmlFor={`thumbnail-${variant.id}`} className="file-label">
-                                                        Choose Image
+                                                        {t('variant.chooseImage')}
                                                     </label>
                                                 </div>
                                                 <div className="media-preview">
@@ -854,7 +856,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                         <div className="image-preview-item">
                                                             <img 
                                                                 src={variant.thumbnailUrl} 
-                                                                alt="Thumbnail" 
+                                                                alt={t('variant.thumbnailAlt')} 
                                                                 className="thumbnail-preview"
                                                                 onLoad={() => {
                                                                     if (import.meta.env.DEV) {
@@ -872,8 +874,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                 type="button"
                                                                 onClick={() => handleRemoveThumbnail(variant.id)}
                                                                 className="remove-media-btn"
-                                                                title="Remove thumbnail"
-                                                                aria-label="Remove thumbnail"
+                                                                title={t('variant.removeThumbnail')}
+                                                                aria-label={t('variant.removeThumbnail')}
                                                             >
                                                                 ×
                                                             </button>
@@ -886,7 +888,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                         {/* Product Images Section */}
                                         <div className="variant-field variant-field-media">
                                             <div className="media-upload-row">
-                                                <label className="media-label" htmlFor={`images-${variant.id}`}>Product Images</label>
+                                                <label className="media-label" htmlFor={`images-${variant.id}`}>{t('products.productImages')}</label>
                                                 <div className="media-controls">
                                                     <input
                                                         type="file"
@@ -895,10 +897,10 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                         onChange={(e) => handleImagesChange(variant.id, e.target.files)}
                                                         className="file-input"
                                                         id={`images-${variant.id}`}
-                                                        aria-label="Upload product images for variant"
+                                                        aria-label={t('variant.uploadImagesAriaLabel')}
                                                     />
                                                     <label htmlFor={`images-${variant.id}`} className="file-label">
-                                                        Choose Images
+                                                        {t('variant.chooseImages')}
                                                     </label>
                                                 </div>
                                                 <div className="media-preview">
@@ -908,15 +910,15 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                 <div key={index} className="image-preview-item">
                                                                     <img 
                                                                         src={url} 
-                                                                        alt={`Product image ${index + 1}`} 
+                                                                        alt={`${t('products.productImages')} ${index + 1}`} 
                                                                         className="thumbnail-preview"
                                                                     />
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => handleRemoveImage(variant.id, index)}
                                                                         className="remove-media-btn"
-                                                                        title="Remove image"
-                                                                        aria-label={`Remove product image ${index + 1}`}
+                                                                        title={t('variant.removeImageTitle')}
+                                                                        aria-label={`${t('variant.removeImageTitle')} ${index + 1}`}
                                                                     >
                                                                         ×
                                                                     </button>
@@ -926,8 +928,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                                 type="button"
                                                                                 onClick={() => handleMoveImage(variant.id, index, index - 1)}
                                                                                 className="move-btn"
-                                                                                title="Move left"
-                                                                                aria-label={`Move image ${index + 1} left`}
+                                                                                title={t('variant.moveLeft')}
+                                                                                aria-label={`${t('variant.moveLeft')} ${index + 1}`}
                                                                             >
                                                                                 ←
                                                                             </button>
@@ -937,8 +939,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                                 type="button"
                                                                                 onClick={() => handleMoveImage(variant.id, index, index + 1)}
                                                                                 className="move-btn"
-                                                                                title="Move right"
-                                                                                aria-label={`Move image ${index + 1} right`}
+                                                                                title={t('variant.moveRight')}
+                                                                                aria-label={`${t('variant.moveRight')} ${index + 1}`}
                                                                             >
                                                                                 →
                                                                             </button>
@@ -1000,12 +1002,12 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                 {/* Features Section */}
                                 {step2Data.variantFeatures.length > 0 && (
                                     <div className="variant-section">
-                                        <h4 className="variant-section-title">Features</h4>
+                                        <h4 className="variant-section-title">{t('variant.features')}</h4>
                                         <div className="variant-fields">
                                             {step2Data.variantFeatures.map(feature => (
                                                 <div key={`${feature.name_en}-${feature.name_fr}`} className="variant-field">
                                                     <label className="variant-field-label" id={`feature-label-${variant.id}-${feature.name_en}`}>
-                                                        {feature.name_en} / {feature.name_fr}
+                                                        {language === 'fr' ? feature.name_fr : feature.name_en}
                                                     </label>
                                                     <div className="variant-field-content">
                                                         <div className="feature-inputs-vertical">
@@ -1053,7 +1055,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
 
                 <div className="form-actions">
                     <button type="button" className="back-btn" onClick={onBack} disabled={isSaving}>
-                        Back
+                        {t('common.back')}
                     </button>
                     <button
                         type="button"
@@ -1062,8 +1064,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                         className={`submit-btn${(isFormInvalid || isSaving) ? ' disabled' : ''}`}
                     >
                         {isSaving 
-                            ? (editMode ? 'Updating Product...' : 'Creating Product...') 
-                            : (editMode ? 'Update Product' : 'Create Product')}
+                            ? (editMode ? t('variant.updatingProduct') : t('variant.creatingProduct')) 
+                            : (editMode ? t('variant.updateProduct') : t('variant.createProduct'))}
                     </button>
                 </div>
             </div>

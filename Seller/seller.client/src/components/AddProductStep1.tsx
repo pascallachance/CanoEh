@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import './AddProductStep1.css';
 import StepIndicator from './StepIndicator';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export interface AddProductStep1Data {
     name: string;
@@ -19,6 +20,7 @@ interface AddProductStep1Props {
 }
 
 function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep1Props) {
+    const { t } = useLanguage();
     const [formData, setFormData] = useState<AddProductStep1Data>(initialData || {
         name: '',
         name_fr: '',
@@ -46,19 +48,19 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onSt
         const newErrors: Partial<AddProductStep1Data> = {};
 
         if (!formData.name.trim()) {
-            newErrors.name = 'Item name (English) is required';
+            newErrors.name = t('error.nameEnRequired');
         }
 
         if (!formData.name_fr.trim()) {
-            newErrors.name_fr = 'Item name (French) is required';
+            newErrors.name_fr = t('error.nameFrRequired');
         }
 
         if (!formData.description.trim()) {
-            newErrors.description = 'Description (English) is required';
+            newErrors.description = t('error.descriptionEnRequired');
         }
 
         if (!formData.description_fr.trim()) {
-            newErrors.description_fr = 'Description (French) is required';
+            newErrors.description_fr = t('error.descriptionFrRequired');
         }
 
         setErrors(newErrors);
@@ -84,27 +86,27 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onSt
         <div className="add-product-step1-container">
             <div className="add-product-step1-content">
                 <header className="step-header">
-                    <h1>{editMode ? 'Edit Product' : 'Add New Product'}</h1>
+                    <h1>{editMode ? t('products.editProduct') : t('products.addNewProduct')}</h1>
                     <StepIndicator 
                         currentStep={1}
                         totalSteps={3}
                         onStepClick={onStepNavigate}
                         completedSteps={completedSteps || []}
                     />
-                    <h2>Step 1: Item Name and Description</h2>
-                    <p>Provide the basic information about your product.</p>
+                    <h2>{t('step1.title')}</h2>
+                    <p>{t('step1.subtitle')}</p>
                 </header>
 
                 <form className="product-form" onSubmit={handleSubmit}>
                     <div className="form-grid">
                         <div className="form-group full-width">
-                            <label htmlFor="name">Item Name (English) *</label>
+                            <label htmlFor="name">{t('products.itemName')} *</label>
                             <input
                                 type="text"
                                 id="name"
                                 value={formData.name}
                                 onChange={(e) => handleInputChange('name', e.target.value)}
-                                placeholder="Enter item name in English"
+                                placeholder={t('placeholder.itemName')}
                                 className={errors.name ? 'error' : ''}
                             />
                             {errors.name && (
@@ -113,13 +115,13 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onSt
                         </div>
 
                         <div className="form-group full-width">
-                            <label htmlFor="name_fr">Item Name (French) *</label>
+                            <label htmlFor="name_fr">{t('products.itemNameFr')} *</label>
                             <input
                                 type="text"
                                 id="name_fr"
                                 value={formData.name_fr}
                                 onChange={(e) => handleInputChange('name_fr', e.target.value)}
-                                placeholder="Entrez le nom de l'article en français"
+                                placeholder={t('placeholder.itemNameFr')}
                                 className={errors.name_fr ? 'error' : ''}
                             />
                             {errors.name_fr && (
@@ -128,12 +130,12 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onSt
                         </div>
 
                         <div className="form-group full-width">
-                            <label htmlFor="description">Description (English) *</label>
+                            <label htmlFor="description">{t('products.description')} *</label>
                             <textarea
                                 id="description"
                                 value={formData.description}
                                 onChange={(e) => handleInputChange('description', e.target.value)}
-                                placeholder="Enter detailed product description in English"
+                                placeholder={t('placeholder.description')}
                                 className={errors.description ? 'error' : ''}
                                 rows={5}
                             />
@@ -143,12 +145,12 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onSt
                         </div>
 
                         <div className="form-group full-width">
-                            <label htmlFor="description_fr">Description (French) *</label>
+                            <label htmlFor="description_fr">{t('products.descriptionFr')} *</label>
                             <textarea
                                 id="description_fr"
                                 value={formData.description_fr}
                                 onChange={(e) => handleInputChange('description_fr', e.target.value)}
-                                placeholder="Entrez une description détaillée du produit en français"
+                                placeholder={t('placeholder.descriptionFr')}
                                 className={errors.description_fr ? 'error' : ''}
                                 rows={5}
                             />
@@ -160,10 +162,10 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onSt
 
                     <div className="form-actions">
                         <button type="button" className="cancel-btn" onClick={onCancel}>
-                            Cancel
+                            {t('common.cancel')}
                         </button>
                         <button type="submit" className="next-btn">
-                            Next Step
+                            {t('common.nextStep')}
                         </button>
                     </div>
                 </form>

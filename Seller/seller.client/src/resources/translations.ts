@@ -583,6 +583,284 @@ export const translations: TranslationResources = {
   'footer.copyright': {
     en: '© 2024 CanoEh! Seller Platform. All rights reserved.',
     fr: '© 2024 Plateforme vendeur CanoEh! Tous droits réservés.'
+  },
+
+  // Common actions
+  'common.back': {
+    en: 'Back',
+    fr: 'Retour'
+  },
+  'common.nextStep': {
+    en: 'Next Step',
+    fr: 'Étape suivante'
+  },
+  'common.editing': {
+    en: 'Editing...',
+    fr: 'Modification...'
+  },
+
+  // Add/Edit product header
+  'products.addNewProduct': {
+    en: 'Add New Product',
+    fr: 'Ajouter un nouveau produit'
+  },
+
+  // Step 1
+  'step1.title': {
+    en: 'Step 1: Item Name and Description',
+    fr: 'Étape 1 : Nom et description de l\'article'
+  },
+  'step1.subtitle': {
+    en: 'Provide the basic information about your product.',
+    fr: 'Fournissez les informations de base sur votre produit.'
+  },
+
+  // Step 2
+  'step2.title': {
+    en: 'Step 2: Category, Variant Attributes and Features',
+    fr: 'Étape 2 : Catégorie, attributs de variante et caractéristiques'
+  },
+  'step2.subtitle': {
+    en: 'Select a category, define variant attributes (required), and optionally add item attributes and variant features.',
+    fr: 'Sélectionnez une catégorie, définissez les attributs de variante (requis) et ajoutez éventuellement des attributs d\'article et des caractéristiques de variante.'
+  },
+
+  // Step 3
+  'step3.title': {
+    en: 'Step 3: Configure Variants',
+    fr: 'Étape 3 : Configurer les variantes'
+  },
+  'step3.subtitle': {
+    en: 'Fill in SKU, price, stock, and variant features for each variant.',
+    fr: 'Renseignez le SKU, le prix, le stock et les caractéristiques de variante pour chaque variante.'
+  },
+
+  // Validation errors
+  'error.nameEnRequired': {
+    en: 'Item name (English) is required',
+    fr: 'Le nom de l\'article (anglais) est requis'
+  },
+  'error.nameFrRequired': {
+    en: 'Item name (French) is required',
+    fr: 'Le nom de l\'article (français) est requis'
+  },
+  'error.descriptionEnRequired': {
+    en: 'Description (English) is required',
+    fr: 'La description (anglais) est requise'
+  },
+  'error.descriptionFrRequired': {
+    en: 'Description (French) is required',
+    fr: 'La description (français) est requise'
+  },
+  'error.categoryRequired': {
+    en: 'Category is required',
+    fr: 'La catégorie est requise'
+  },
+  'error.variantAttributesRequired': {
+    en: 'Please add at least one variant attribute to continue.',
+    fr: 'Veuillez ajouter au moins un attribut de variante pour continuer.'
+  },
+  'error.invalidVariants': {
+    en: 'Please ensure all variants have a SKU and price greater than 0.',
+    fr: 'Veuillez vous assurer que toutes les variantes ont un SKU et un prix supérieur à 0.'
+  },
+  'error.sellerIdMissing': {
+    en: 'Unable to determine seller ID. Please ensure you are logged in.',
+    fr: 'Impossible de déterminer l\'ID du vendeur. Veuillez vous assurer que vous êtes connecté.'
+  },
+
+  // Category navigator
+  'category.selected': {
+    en: 'Selected:',
+    fr: 'Sélectionné :'
+  },
+  'category.change': {
+    en: 'Change',
+    fr: 'Modifier'
+  },
+  'category.all': {
+    en: 'All',
+    fr: 'Tout'
+  },
+  'category.empty': {
+    en: 'No categories available.',
+    fr: 'Aucune catégorie disponible.'
+  },
+  'category.selectLabel': {
+    en: 'Select',
+    fr: 'Sélectionner'
+  },
+  'category.navigateTo': {
+    en: 'Navigate to subcategory',
+    fr: 'Naviguer vers la sous-catégorie'
+  },
+  'category.selectCategoryLabel': {
+    en: 'Select category',
+    fr: 'Sélectionner la catégorie'
+  },
+
+  // Variant attributes section
+  'variantAttr.title': {
+    en: 'Variant Attributes *',
+    fr: 'Attributs de variante *'
+  },
+  'variantAttr.required': {
+    en: 'At least one variant attribute is required.',
+    fr: 'Au moins un attribut de variante est requis.'
+  },
+  'variantAttr.description': {
+    en: 'Add attributes that create different variants of your product (e.g., Size, Color). Each combination of values will generate a unique variant in the next step.',
+    fr: 'Ajoutez des attributs qui créent différentes variantes de votre produit (ex : Taille, Couleur). Chaque combinaison de valeurs générera une variante unique à l\'étape suivante.'
+  },
+  'variantAttr.namePlaceholderEn': {
+    en: 'e.g., Size',
+    fr: 'ex : Size'
+  },
+  'variantAttr.namePlaceholderFr': {
+    en: 'e.g., Taille',
+    fr: 'ex : Taille'
+  },
+  'variantAttr.addedTitle': {
+    en: 'Added Variant Attributes',
+    fr: 'Attributs de variante ajoutés'
+  },
+  'variantAttr.updateButton': {
+    en: 'Update Attribute',
+    fr: 'Mettre à jour l\'attribut'
+  },
+  'variantAttr.confirmSwitch': {
+    en: 'You are currently editing another attribute. Switching will discard any unsaved changes to that attribute. Do you want to continue?',
+    fr: 'Vous modifiez actuellement un autre attribut. Le changement supprimera toutes les modifications non enregistrées. Voulez-vous continuer ?'
+  },
+
+  // Variant features section
+  'variantFeature.title': {
+    en: 'Variant Features (Optional)',
+    fr: 'Caractéristiques de variante (facultatif)'
+  },
+  'variantFeature.description': {
+    en: 'Add features that can vary by variant but don\'t create new variants (e.g., Weight, Dimensions). You can specify different values for each variant in the next step.',
+    fr: 'Ajoutez des caractéristiques qui peuvent varier par variante mais ne créent pas de nouvelles variantes (ex : Poids, Dimensions). Vous pouvez spécifier des valeurs différentes pour chaque variante à l\'étape suivante.'
+  },
+  'variantFeature.nameEn': {
+    en: 'Feature Name (English)',
+    fr: 'Nom de la caractéristique (anglais)'
+  },
+  'variantFeature.nameFr': {
+    en: 'Feature Name (French)',
+    fr: 'Nom de la caractéristique (français)'
+  },
+  'variantFeature.namePlaceholderEn': {
+    en: 'e.g., Weight',
+    fr: 'ex : Weight'
+  },
+  'variantFeature.namePlaceholderFr': {
+    en: 'e.g., Poids',
+    fr: 'ex : Poids'
+  },
+  'variantFeature.addButton': {
+    en: 'Add Feature',
+    fr: 'Ajouter une caractéristique'
+  },
+  'variantFeature.updateButton': {
+    en: 'Update Feature',
+    fr: 'Mettre à jour la caractéristique'
+  },
+  'variantFeature.addedTitle': {
+    en: 'Added Variant Features',
+    fr: 'Caractéristiques de variante ajoutées'
+  },
+  'variantFeature.confirmSwitch': {
+    en: 'You are currently editing another feature. Switching will discard any unsaved changes to that feature. Do you want to continue?',
+    fr: 'Vous modifiez actuellement une autre caractéristique. Le changement supprimera toutes les modifications non enregistrées. Voulez-vous continuer ?'
+  },
+
+  // Step 3 variant cards
+  'variant.attributes': {
+    en: 'Attributes',
+    fr: 'Attributs'
+  },
+  'variant.features': {
+    en: 'Features',
+    fr: 'Caractéristiques'
+  },
+  'variant.thumbnail': {
+    en: 'Thumbnail',
+    fr: 'Miniature'
+  },
+  'variant.chooseImage': {
+    en: 'Choose Image',
+    fr: 'Choisir une image'
+  },
+  'variant.chooseImages': {
+    en: 'Choose Images',
+    fr: 'Choisir des images'
+  },
+  'variant.stock': {
+    en: 'Stock',
+    fr: 'Stock'
+  },
+  'variant.idValuePlaceholder': {
+    en: 'ID Value',
+    fr: 'Valeur d\'ID'
+  },
+  'variant.createProduct': {
+    en: 'Create Product',
+    fr: 'Créer le produit'
+  },
+  'variant.creatingProduct': {
+    en: 'Creating Product...',
+    fr: 'Création du produit...'
+  },
+  'variant.updateProduct': {
+    en: 'Update Product',
+    fr: 'Mettre à jour le produit'
+  },
+  'variant.updatingProduct': {
+    en: 'Updating Product...',
+    fr: 'Mise à jour du produit...'
+  },
+  'variant.productCreated': {
+    en: 'Product created successfully!',
+    fr: 'Produit créé avec succès !'
+  },
+  'variant.productUpdated': {
+    en: 'Product updated successfully!',
+    fr: 'Produit mis à jour avec succès !'
+  },
+  'products.idType.mpn': {
+    en: 'MPN (Manufacturer Part Number)',
+    fr: 'MPN (Numéro de pièce du fabricant)'
+  },
+
+  // Media upload aria-labels and button titles
+  'variant.uploadThumbnailAriaLabel': {
+    en: 'Upload thumbnail image for variant',
+    fr: 'Télécharger l\'image miniature pour la variante'
+  },
+  'variant.thumbnailAlt': {
+    en: 'Thumbnail',
+    fr: 'Miniature'
+  },
+  'variant.removeThumbnail': {
+    en: 'Remove thumbnail',
+    fr: 'Supprimer la miniature'
+  },
+  'variant.uploadImagesAriaLabel': {
+    en: 'Upload product images for variant',
+    fr: 'Télécharger les images du produit pour la variante'
+  },
+  'variant.removeImageTitle': {
+    en: 'Remove image',
+    fr: 'Supprimer l\'image'
+  },
+  'variant.moveLeft': {
+    en: 'Move left',
+    fr: 'Déplacer à gauche'
+  },
+  'variant.moveRight': {
+    en: 'Move right',
+    fr: 'Déplacer à droite'
   }
 };
 

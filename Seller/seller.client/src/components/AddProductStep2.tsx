@@ -4,6 +4,7 @@ import { ApiClient } from '../utils/apiClient';
 import type { AddProductStep1Data } from './AddProductStep1';
 import StepIndicator from './StepIndicator';
 import BilingualTagInput, { type BilingualValue } from './BilingualTagInput';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export interface ItemAttribute {
     name_en: string;
@@ -39,6 +40,7 @@ interface CategoryNode {
 }
 
 function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep2Props) {
+    const { t, language } = useLanguage();
     const [formData, setFormData] = useState<AddProductStep2Data>(initialData || {
         categoryId: '',
         variantAttributes: [],
@@ -106,11 +108,11 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
         const newErrors: { categoryId?: string; variantAttributes?: string } = {};
 
         if (!formData.categoryId) {
-            newErrors.categoryId = 'Category is required';
+            newErrors.categoryId = t('error.categoryRequired');
         }
 
         if (formData.variantAttributes.length === 0 && !editMode) {
-            newErrors.variantAttributes = 'Please add at least one variant attribute to continue.';
+            newErrors.variantAttributes = t('error.variantAttributesRequired');
         }
 
         setErrors(newErrors);
@@ -128,13 +130,13 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
     const getChildren = (parentId: string): CategoryNode[] =>
         allCategoryNodes.filter(n => n.parentId === parentId);
 
-    // Build path string for a given node id (e.g. "Dept EN / Dept FR > Category EN / Category FR")
+    // Build path string for a given node id using the current UI language
     const getCategoryPath = (nodeId: string): string => {
         const nodeMap = buildNodeMap(allCategoryNodes);
         const parts: string[] = [];
         let current = nodeMap.get(nodeId);
         while (current) {
-            parts.unshift(`${current.name_en} / ${current.name_fr}`);
+            parts.unshift(language === 'fr' ? current.name_fr : current.name_en);
             current = current.parentId ? nodeMap.get(current.parentId) : undefined;
         }
         return parts.join(' > ');
@@ -246,7 +248,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
     const editVariantAttribute = (index: number) => {
         if (editingVariantAttrIndex !== null && editingVariantAttrIndex !== index) {
             const confirmSwitch = window.confirm(
-                'You are currently editing another attribute. Switching will discard any unsaved changes to that attribute. Do you want to continue?'
+                t('variantAttr.confirmSwitch')
             );
             if (!confirmSwitch) {
                 return;
@@ -335,7 +337,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
     const editVariantFeature = (index: number) => {
         if (editingFeatureIndex !== null && editingFeatureIndex !== index) {
             const confirmSwitch = window.confirm(
-                'You are currently editing another feature. Switching will discard any unsaved changes to that feature. Do you want to continue?'
+                t('variantFeature.confirmSwitch')
             );
             if (!confirmSwitch) {
                 return;
@@ -369,31 +371,31 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
         <div className="add-product-step2-container">
             <div className="add-product-step2-content">
                 <header className="step-header">
-                    <h1>{editMode ? 'Edit Product' : 'Add New Product'}</h1>
+                    <h1>{editMode ? t('products.editProduct') : t('products.addNewProduct')}</h1>
                     <StepIndicator 
                         currentStep={2}
                         totalSteps={3}
                         onStepClick={onStepNavigate}
                         completedSteps={completedSteps || [1]}
                     />
-                    <h2>Step 2: Category, Variant Attributes and Features</h2>
-                    <p>Select a category, define variant attributes (required), and optionally add item attributes and variant features.</p>
+                    <h2>{t('step2.title')}</h2>
+                    <p>{t('step2.subtitle')}</p>
                 </header>
 
                 <form className="product-form" onSubmit={handleSubmit}>
                     <div className="form-grid">
                         {/* Category Selection */}
                         <div className="form-group full-width">
-                            <label>Category *</label>
+                            <label>{t('products.category')} *</label>
                             {formData.categoryId && (
                                 <div className="category-selected-path">
-                                    <strong>Selected:</strong> {getCategoryPath(formData.categoryId)}
+                                    <strong>{t('category.selected')}</strong> {getCategoryPath(formData.categoryId)}
                                     <button
                                         type="button"
                                         className="category-clear-btn"
                                         onClick={() => { setFormData(prev => ({ ...prev, categoryId: '' })); setNavigationPath([]); }}
                                     >
-                                        Change
+                                        {t('category.change')}
                                     </button>
                                 </div>
                             )}
@@ -405,7 +407,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                             className="category-breadcrumb-item"
                                             onClick={() => handleBreadcrumbClick(0)}
                                         >
-                                            All
+                                            {t('category.all')}
                                         </button>
                                         {navigationPath.map((node, index) => (
                                             <span key={node.id}>
@@ -415,14 +417,14 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                                     className="category-breadcrumb-item"
                                                     onClick={() => handleBreadcrumbClick(index + 1)}
                                                 >
-                                                    {node.name_en}
+                                                    {language === 'fr' ? node.name_fr : node.name_en}
                                                 </button>
                                             </span>
                                         ))}
                                     </div>
                                     <div className="category-node-list">
                                         {currentLevelNodes.length === 0 && (
-                                            <p className="category-empty">No categories available.</p>
+                                            <p className="category-empty">{t('category.empty')}</p>
                                         )}
                                         {currentLevelNodes.map(node => (
                                             <div
@@ -430,7 +432,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                                 className={`category-node-item category-node-type-${node.nodeType.toLowerCase()}`}
                                                 role="button"
                                                 tabIndex={0}
-                                                aria-label={`${node.nodeType === 'Category' ? 'Select category' : 'Navigate to subcategory'}: ${node.name_en} / ${node.name_fr}`}
+                                                aria-label={`${node.nodeType === 'Category' ? t('category.selectCategoryLabel') : t('category.navigateTo')}: ${language === 'fr' ? node.name_fr : node.name_en}`}
                                                 onClick={() => handleNodeClick(node)}
                                                 onKeyDown={(event) => {
                                                     if (event.key === 'Enter' || event.key === ' ') {
@@ -439,12 +441,12 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                                     }
                                                 }}
                                             >
-                                                <span className="category-node-name">{node.name_en} / {node.name_fr}</span>
+                                                <span className="category-node-name">{language === 'fr' ? node.name_fr : node.name_en}</span>
                                                 {node.nodeType !== 'Category' && (
                                                     <span className="category-node-arrow">›</span>
                                                 )}
                                                 {node.nodeType === 'Category' && (
-                                                    <span className="category-node-select">Select</span>
+                                                    <span className="category-node-select">{t('category.selectLabel')}</span>
                                                 )}
                                             </div>
                                         ))}
@@ -458,9 +460,9 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
 
                         {/* Variant Attributes Section */}
                         <div className="variant-attributes-section full-width">
-                            <h4>Variant Attributes *</h4>
+                            <h4>{t('variantAttr.title')}</h4>
                             <p className="section-description">
-                                <strong>At least one variant attribute is required.</strong> Add attributes that create different variants of your product (e.g., Size, Color). Each combination of values will generate a unique variant in the next step.
+                                <strong>{t('variantAttr.required')}</strong> {t('variantAttr.description')}
                             </p>
                             {errors.variantAttributes && (
                                 <div className="error-message" role="alert">
@@ -471,21 +473,21 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                             <div className="attribute-input-container">
                                 <div className="attribute-names">
                                     <div className="attribute-input-group">
-                                        <label>Attribute Name (English)</label>
+                                        <label>{t('products.attributeNameEn')}</label>
                                         <input
                                             type="text"
                                             value={newVariantAttribute.name_en}
                                             onChange={(e) => setNewVariantAttribute(prev => ({ ...prev, name_en: e.target.value }))}
-                                            placeholder="e.g., Size"
+                                            placeholder={t('variantAttr.namePlaceholderEn')}
                                         />
                                     </div>
                                     <div className="attribute-input-group">
-                                        <label>Attribute Name (French)</label>
+                                        <label>{t('products.attributeNameFr')}</label>
                                         <input
                                             type="text"
                                             value={newVariantAttribute.name_fr}
                                             onChange={(e) => setNewVariantAttribute(prev => ({ ...prev, name_fr: e.target.value }))}
-                                            placeholder="e.g., Taille"
+                                            placeholder={t('variantAttr.namePlaceholderFr')}
                                         />
                                     </div>
                                 </div>
@@ -509,7 +511,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                         className="add-attribute-btn"
                                         disabled={isAddVariantAttributeDisabled}
                                     >
-                                        {editingVariantAttrIndex !== null ? 'Update Attribute' : 'Add Attribute'}
+                                        {editingVariantAttrIndex !== null ? t('variantAttr.updateButton') : t('products.addAttribute')}
                                     </button>
                                     {editingVariantAttrIndex !== null && (
                                         <button
@@ -524,7 +526,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                             }}
                                             className="cancel-edit-btn"
                                         >
-                                            Cancel
+                                            {t('common.cancel')}
                                         </button>
                                     )}
                                 </div>
@@ -532,7 +534,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
 
                             {formData.variantAttributes.length > 0 && (
                                 <div className="added-attributes">
-                                    <h5>Added Variant Attributes</h5>
+                                    <h5>{t('variantAttr.addedTitle')}</h5>
                                     {formData.variantAttributes.map((attr, index) => (
                                         <div key={index} className="attribute-display">
                                             <div className="attribute-info">
@@ -550,14 +552,14 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                                     className="edit-attribute-btn"
                                                     disabled={editingVariantAttrIndex === index}
                                                 >
-                                                    {editingVariantAttrIndex === index ? 'Editing...' : 'Edit'}
+                                                    {editingVariantAttrIndex === index ? t('common.editing') : t('products.edit')}
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={() => removeVariantAttribute(index)}
                                                     className="remove-attribute-btn"
                                                 >
-                                                    Remove
+                                                    {t('products.removeAttribute')}
                                                 </button>
                                             </div>
                                         </div>
@@ -568,29 +570,29 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
 
                         {/* Variant Features Section */}
                         <div className="item-attributes-section full-width">
-                            <h4>Variant Features (Optional)</h4>
+                            <h4>{t('variantFeature.title')}</h4>
                             <p className="section-description">
-                                Add features that can vary by variant but don't create new variants (e.g., Weight, Dimensions). You can specify different values for each variant in the next step.
+                                {t('variantFeature.description')}
                             </p>
                             
                             <div className="attribute-input-container">
                                 <div className="attribute-names">
                                     <div className="attribute-input-group">
-                                        <label>Feature Name (English)</label>
+                                        <label>{t('variantFeature.nameEn')}</label>
                                         <input
                                             type="text"
                                             value={newVariantFeature.name_en}
                                             onChange={(e) => setNewVariantFeature(prev => ({ ...prev, name_en: e.target.value }))}
-                                            placeholder="e.g., Weight"
+                                            placeholder={t('variantFeature.namePlaceholderEn')}
                                         />
                                     </div>
                                     <div className="attribute-input-group">
-                                        <label>Feature Name (French)</label>
+                                        <label>{t('variantFeature.nameFr')}</label>
                                         <input
                                             type="text"
                                             value={newVariantFeature.name_fr}
                                             onChange={(e) => setNewVariantFeature(prev => ({ ...prev, name_fr: e.target.value }))}
-                                            placeholder="e.g., Poids"
+                                            placeholder={t('variantFeature.namePlaceholderFr')}
                                         />
                                     </div>
                                 </div>
@@ -602,7 +604,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                         className="add-attribute-btn"
                                         disabled={isAddVariantFeatureDisabled}
                                     >
-                                        {editingFeatureIndex !== null ? 'Update Feature' : 'Add Feature'}
+                                        {editingFeatureIndex !== null ? t('variantFeature.updateButton') : t('variantFeature.addButton')}
                                     </button>
                                     {editingFeatureIndex !== null && (
                                         <button
@@ -617,7 +619,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                             }}
                                             className="cancel-edit-btn"
                                         >
-                                            Cancel
+                                            {t('common.cancel')}
                                         </button>
                                     )}
                                 </div>
@@ -625,7 +627,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
 
                             {formData.variantFeatures.length > 0 && (
                                 <div className="added-item-attributes">
-                                    <h5>Added Variant Features</h5>
+                                    <h5>{t('variantFeature.addedTitle')}</h5>
                                     {formData.variantFeatures.map((feat, index) => (
                                         <div key={index} className="item-attribute-display">
                                             <div className="attribute-display-content">
@@ -643,14 +645,14 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                                     className="edit-attribute-btn"
                                                     disabled={editingFeatureIndex === index}
                                                 >
-                                                    {editingFeatureIndex === index ? 'Editing...' : 'Edit'}
+                                                    {editingFeatureIndex === index ? t('common.editing') : t('products.edit')}
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={() => removeVariantFeature(index)}
                                                     className="remove-attribute-btn"
                                                 >
-                                                    Remove
+                                                    {t('products.removeAttribute')}
                                                 </button>
                                             </div>
                                         </div>
@@ -662,10 +664,10 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
 
                     <div className="form-actions">
                         <button type="button" className="back-btn" onClick={onBack}>
-                            Back
+                            {t('common.back')}
                         </button>
                         <button type="submit" className="next-btn">
-                            Next Step
+                            {t('common.nextStep')}
                         </button>
                     </div>
                 </form>

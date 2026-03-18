@@ -126,6 +126,18 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                     // Convert relative URLs to absolute URLs for display
                     const convertedThumbnailUrl = toAbsoluteUrl(matchingExisting.thumbnailUrl);
                     const convertedImageUrls = toAbsoluteUrlArray(matchingExisting.imageUrls);
+
+                    // Restore features from the existing variant so they survive an edit round-trip
+                    const features_en: Record<string, string> = {};
+                    const features_fr: Record<string, string> = {};
+                    (matchingExisting.itemVariantFeatures || []).forEach((feature) => {
+                        if (feature.attributeName_en && feature.attributes_en) {
+                            features_en[feature.attributeName_en] = feature.attributes_en;
+                        }
+                        if (feature.attributeName_fr && feature.attributes_fr) {
+                            features_fr[feature.attributeName_fr] = feature.attributes_fr;
+                        }
+                    });
                     
                     if (import.meta.env.DEV) {
                         console.log('[AddProductStep3] Found matching existing variant:', {
@@ -145,7 +157,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                         productIdentifierType: matchingExisting.productIdentifierType || genVariant.productIdentifierType,
                         productIdentifierValue: matchingExisting.productIdentifierValue || genVariant.productIdentifierValue,
                         thumbnailUrl: convertedThumbnailUrl || genVariant.thumbnailUrl,
-                        imageUrls: convertedImageUrls.length > 0 ? convertedImageUrls : genVariant.imageUrls
+                        imageUrls: convertedImageUrls.length > 0 ? convertedImageUrls : genVariant.imageUrls,
+                        features_en,
+                        features_fr
                     };
                 }
                 

@@ -301,7 +301,7 @@ function BilingualTagInput({
                 </div>
             )}
             <div className="bilingual-tag-input-help">
-                <p><strong>Note:</strong> {t('bilingual-tag-input-help')}</p>
+                <p><strong>{t('bilingualInput.helpNoteLabel')}</strong> {t('bilingualInput.helpNoteText')}</p>
             </div>
         </div>
     );

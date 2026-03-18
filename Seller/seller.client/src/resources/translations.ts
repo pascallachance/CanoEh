@@ -831,6 +831,36 @@ export const translations: TranslationResources = {
   'products.idType.mpn': {
     en: 'MPN (Manufacturer Part Number)',
     fr: 'MPN (Numéro de pièce du fabricant)'
+  },
+
+  // Media upload aria-labels and button titles
+  'variant.uploadThumbnailAriaLabel': {
+    en: 'Upload thumbnail image for variant',
+    fr: 'Télécharger l\'image miniature pour la variante'
+  },
+  'variant.thumbnailAlt': {
+    en: 'Thumbnail',
+    fr: 'Miniature'
+  },
+  'variant.removeThumbnail': {
+    en: 'Remove thumbnail',
+    fr: 'Supprimer la miniature'
+  },
+  'variant.uploadImagesAriaLabel': {
+    en: 'Upload product images for variant',
+    fr: 'Télécharger les images du produit pour la variante'
+  },
+  'variant.removeImageTitle': {
+    en: 'Remove image',
+    fr: 'Supprimer l\'image'
+  },
+  'variant.moveLeft': {
+    en: 'Move left',
+    fr: 'Déplacer à gauche'
+  },
+  'variant.moveRight': {
+    en: 'Move right',
+    fr: 'Déplacer à droite'
   }
 };
 

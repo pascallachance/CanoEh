@@ -845,7 +845,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                         onChange={(e) => handleThumbnailChange(variant.id, e.target.files?.[0] || null)}
                                                         className="file-input"
                                                         id={`thumbnail-${variant.id}`}
-                                                        aria-label="Upload thumbnail image for variant"
+                                                        aria-label={t('variant.uploadThumbnailAriaLabel')}
                                                     />
                                                     <label htmlFor={`thumbnail-${variant.id}`} className="file-label">
                                                         {t('variant.chooseImage')}
@@ -856,7 +856,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                         <div className="image-preview-item">
                                                             <img 
                                                                 src={variant.thumbnailUrl} 
-                                                                alt="Thumbnail" 
+                                                                alt={t('variant.thumbnailAlt')} 
                                                                 className="thumbnail-preview"
                                                                 onLoad={() => {
                                                                     if (import.meta.env.DEV) {
@@ -874,8 +874,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                 type="button"
                                                                 onClick={() => handleRemoveThumbnail(variant.id)}
                                                                 className="remove-media-btn"
-                                                                title="Remove thumbnail"
-                                                                aria-label="Remove thumbnail"
+                                                                title={t('variant.removeThumbnail')}
+                                                                aria-label={t('variant.removeThumbnail')}
                                                             >
                                                                 ×
                                                             </button>
@@ -897,7 +897,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                         onChange={(e) => handleImagesChange(variant.id, e.target.files)}
                                                         className="file-input"
                                                         id={`images-${variant.id}`}
-                                                        aria-label="Upload product images for variant"
+                                                        aria-label={t('variant.uploadImagesAriaLabel')}
                                                     />
                                                     <label htmlFor={`images-${variant.id}`} className="file-label">
                                                         {t('variant.chooseImages')}
@@ -910,15 +910,15 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                 <div key={index} className="image-preview-item">
                                                                     <img 
                                                                         src={url} 
-                                                                        alt={`Product image ${index + 1}`} 
+                                                                        alt={`${t('products.productImages')} ${index + 1}`} 
                                                                         className="thumbnail-preview"
                                                                     />
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => handleRemoveImage(variant.id, index)}
                                                                         className="remove-media-btn"
-                                                                        title="Remove image"
-                                                                        aria-label={`Remove product image ${index + 1}`}
+                                                                        title={t('variant.removeImageTitle')}
+                                                                        aria-label={`${t('variant.removeImageTitle')} ${index + 1}`}
                                                                     >
                                                                         ×
                                                                     </button>
@@ -928,8 +928,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                                 type="button"
                                                                                 onClick={() => handleMoveImage(variant.id, index, index - 1)}
                                                                                 className="move-btn"
-                                                                                title="Move left"
-                                                                                aria-label={`Move image ${index + 1} left`}
+                                                                                title={t('variant.moveLeft')}
+                                                                                aria-label={`${t('variant.moveLeft')} ${index + 1}`}
                                                                             >
                                                                                 ←
                                                                             </button>
@@ -939,8 +939,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                                 type="button"
                                                                                 onClick={() => handleMoveImage(variant.id, index, index + 1)}
                                                                                 className="move-btn"
-                                                                                title="Move right"
-                                                                                aria-label={`Move image ${index + 1} right`}
+                                                                                title={t('variant.moveRight')}
+                                                                                aria-label={`${t('variant.moveRight')} ${index + 1}`}
                                                                             >
                                                                                 →
                                                                             </button>

@@ -317,6 +317,8 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
 
     const mainImage = variantImages[mainImageIndex] ?? null;
 
+    const hasProductAttributes = !!(selectedVariant && (selectedVariant.sku || (selectedVariant.productIdentifierType && selectedVariant.productIdentifierValue)));
+
     return (
         <div className="home-container">
             {/* Top Navigation Bar */}
@@ -566,11 +568,23 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                     </div>
                                 )}
 
-                                {/* SKU / Identifier */}
-                                {selectedVariant?.sku && (
-                                    <p className="product-sku">
-                                        {getText('SKU', 'UGS')}: {selectedVariant.sku}
-                                    </p>
+                                {/* Product Attributes */}
+                                {hasProductAttributes && (
+                                    <div className="product-attributes">
+                                        <h2 className="product-attributes-title">
+                                            {getText('Product Details', 'Détails du produit')}
+                                        </h2>
+                                        {selectedVariant.sku && (
+                                            <p className="product-attributes-row">
+                                                {getText('SKU', 'UGS')}: {selectedVariant.sku}
+                                            </p>
+                                        )}
+                                        {selectedVariant.productIdentifierType && selectedVariant.productIdentifierValue && (
+                                            <p className="product-attributes-row">
+                                                {selectedVariant.productIdentifierType}: {selectedVariant.productIdentifierValue}
+                                            </p>
+                                        )}
+                                    </div>
                                 )}
                             </section>
                         </div>

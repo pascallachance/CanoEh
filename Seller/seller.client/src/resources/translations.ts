@@ -699,6 +699,20 @@ export const translations: TranslationResources = {
     fr: 'Sélectionner la catégorie'
   },
 
+  // Bilingual tag input
+  'bilingual-tag-input-help': {
+    en: 'Fill both English and French inputs, then press Enter or Tab to add a paired value. Both values are always added, edited, or removed together to maintain synchronization.',
+    fr: 'Remplissez les deux champs anglais et français, puis appuyez sur Entrée ou Tab pour ajouter une valeur appariée. Les deux valeurs sont toujours ajoutées, modifiées ou supprimées ensemble pour maintenir la synchronisation.'
+  },
+  'variant_attribute_values-en': {
+    en: 'Values (English)',
+    fr: 'Valeurs (Anglais)'
+  },
+  'variant_attribute_values-fr': {
+    en: 'Values (French)',
+    fr: 'Valeurs (Français)'
+  },
+
   // Variant attributes section
   'variantAttr.title': {
     en: 'Variant Attributes *',

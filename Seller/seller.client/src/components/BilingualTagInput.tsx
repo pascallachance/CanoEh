@@ -1,5 +1,6 @@
 import { useState, useRef, type KeyboardEvent, type ChangeEvent } from 'react';
 import './BilingualTagInput.css';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export interface BilingualValue {
     en: string;
@@ -25,6 +26,7 @@ function BilingualTagInput({
     labelFr = 'Values (French)',
     id 
 }: BilingualTagInputProps) {
+    const { t } = useLanguage();
     const [inputValueEn, setInputValueEn] = useState('');
     const [inputValueFr, setInputValueFr] = useState('');
     const [error, setError] = useState('');
@@ -299,7 +301,7 @@ function BilingualTagInput({
                 </div>
             )}
             <div className="bilingual-tag-input-help">
-                <p><strong>Note:</strong> Fill both English and French inputs, then press Enter or Tab to add a paired value. Both values are always added, edited, or removed together to maintain synchronization.</p>
+                <p><strong>Note:</strong> {t('bilingual-tag-input-help')}</p>
             </div>
         </div>
     );

@@ -156,7 +156,7 @@ SET ItemId = @ItemId,
     Offer = @Offer,
     OfferStart = @OfferStart,
     OfferEnd = @OfferEnd
-WHERE Id = @Id";
+WHERE Id = @Id AND ItemId = @ItemId";
 
             var parameters = new
             {

@@ -516,7 +516,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             request.Id = itemId;
             request.Variants = request.Variants.map((variantData: any, index: number) => ({
                 ...variantData,
-                Id: variants[index].id.startsWith('variant-') ? null : variants[index].id
+                Id: variants[index].id.startsWith('variant-') ? '00000000-0000-0000-0000-000000000000' : variants[index].id
             }));
         }
 

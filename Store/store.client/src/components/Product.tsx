@@ -569,7 +569,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                 )}
 
                                 {/* Product Attributes */}
-                                {hasProductAttributes && (
+                                {hasProductAttributes && selectedVariant && (
                                     <div className="product-attributes">
                                         <h2 className="product-attributes-title">
                                             {getText('Product Details', 'Détails du produit')}

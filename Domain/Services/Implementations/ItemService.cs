@@ -636,26 +636,30 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     }
 
                     // 3. Re-insert ItemVariantFeatures for the first variant (consistent with CreateItemAsync).
-                    // Uses the first variant regardless of whether it is new or existing so that features
-                    // are preserved even when the user replaces all variants during edit.
+                    // Delete all existing features for every variant of this item first so that stale rows
+                    // from a previous "first variant" are not left behind when variants are reordered or replaced.
                     if (firstVariantIdForFeatures.HasValue)
                     {
                         await connection.ExecuteAsync(
-                            "DELETE FROM dbo.ItemVariantFeatures WHERE ItemVariantID = @variantId",
-                            new { variantId = firstVariantIdForFeatures.Value },
+                            @"DELETE ivf FROM dbo.ItemVariantFeatures ivf
+                              INNER JOIN dbo.ItemVariant iv ON iv.Id = ivf.ItemVariantID
+                              WHERE iv.ItemId = @itemId",
+                            new { itemId = updateItemRequest.Id },
                             transaction);
 
                         foreach (var feature in newFeatures)
                         {
                             feature.ItemVariantID = firstVariantIdForFeatures.Value;
+                            feature.ItemID = updateItemRequest.Id;
 
                             var featureId = await connection.ExecuteScalarAsync<Guid>(@"
-INSERT INTO dbo.ItemVariantFeatures (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
+INSERT INTO dbo.ItemVariantFeatures (ItemVariantID, ItemID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
 OUTPUT INSERTED.Id
-VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)",
+VALUES (@ItemVariantID, @ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)",
                                 new
                                 {
                                     ItemVariantID = feature.ItemVariantID,
+                                    ItemID = feature.ItemID,
                                     feature.AttributeName_en,
                                     feature.AttributeName_fr,
                                     feature.Attributes_en,
@@ -663,7 +667,6 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                                 }, transaction);
 
                             feature.Id = featureId;
-                            feature.ItemID = updateItemRequest.Id;
                         }
                     }
 

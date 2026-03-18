@@ -127,15 +127,16 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                     const convertedThumbnailUrl = toAbsoluteUrl(matchingExisting.thumbnailUrl);
                     const convertedImageUrls = toAbsoluteUrlArray(matchingExisting.imageUrls);
 
-                    // Restore features from the existing variant so they survive an edit round-trip
+                    // Restore features from the existing variant so they survive an edit round-trip.
+                    // Use != null checks (not truthiness) so that legitimate empty-string values are preserved.
                     const features_en: Record<string, string> = {};
                     const features_fr: Record<string, string> = {};
                     (matchingExisting.itemVariantFeatures || []).forEach((feature) => {
-                        if (feature.attributeName_en && feature.attributes_en) {
-                            features_en[feature.attributeName_en] = feature.attributes_en;
+                        if (feature.attributeName_en != null) {
+                            features_en[feature.attributeName_en] = feature.attributes_en ?? '';
                         }
-                        if (feature.attributeName_fr && feature.attributes_fr) {
-                            features_fr[feature.attributeName_fr] = feature.attributes_fr;
+                        if (feature.attributeName_fr != null) {
+                            features_fr[feature.attributeName_fr] = feature.attributes_fr ?? '';
                         }
                     });
                     

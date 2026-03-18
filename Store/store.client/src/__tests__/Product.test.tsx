@@ -18,6 +18,8 @@ function makeVariant(overrides: {
     price?: number;
     stockQuantity?: number;
     sku?: string;
+    productIdentifierType?: string;
+    productIdentifierValue?: string;
     imageUrls?: string;
     thumbnailUrl?: string;
     offer?: number | null;
@@ -31,6 +33,8 @@ function makeVariant(overrides: {
         price: overrides.price ?? 50,
         stockQuantity: overrides.stockQuantity ?? 10,
         sku: overrides.sku ?? 'SKU-001',
+        productIdentifierType: overrides.productIdentifierType,
+        productIdentifierValue: overrides.productIdentifierValue,
         imageUrls: overrides.imageUrls ?? 'https://example.com/img1.jpg',
         thumbnailUrl: overrides.thumbnailUrl,
         offer: overrides.offer ?? null,
@@ -611,5 +615,76 @@ describe('Product page – error and empty states', () => {
         expect(screen.getByRole('navigation')).toBeInTheDocument();
         expect(screen.getByText('CanoEh!')).toBeInTheDocument();
         expect(document.querySelector('.store-footer')).toBeInTheDocument();
+    });
+});
+
+describe('Product page – product attributes section', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.stubEnv('VITE_API_STORE_BASE_URL', API_BASE_URL);
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('renders the product-attributes section with a title when SKU is present', async () => {
+        setupFetchSuccess(makeProduct({
+            variants: [makeVariant({ sku: 'ABC-123' })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const section = document.querySelector('.product-attributes');
+        expect(section).toBeInTheDocument();
+        const title = document.querySelector('.product-attributes-title');
+        expect(title).toBeInTheDocument();
+        expect(title?.textContent).toMatch(/product details/i);
+    });
+
+    it('renders the SKU row inside product-attributes', async () => {
+        setupFetchSuccess(makeProduct({
+            variants: [makeVariant({ sku: 'MY-SKU-999' })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const rows = document.querySelectorAll('.product-attributes-row');
+        expect(rows.length).toBeGreaterThanOrEqual(1);
+        const skuRow = Array.from(rows).find(r => r.textContent?.includes('MY-SKU-999'));
+        expect(skuRow).toBeInTheDocument();
+    });
+
+    it('renders the Product ID Type and Value row when both are present', async () => {
+        setupFetchSuccess(makeProduct({
+            variants: [makeVariant({ productIdentifierType: 'GTIN', productIdentifierValue: '01234567890123' })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const rows = document.querySelectorAll('.product-attributes-row');
+        const idRow = Array.from(rows).find(r => r.textContent?.includes('GTIN') && r.textContent?.includes('01234567890123'));
+        expect(idRow).toBeInTheDocument();
+    });
+
+    it('does not render the Product ID row when only type is present (no value)', async () => {
+        setupFetchSuccess(makeProduct({
+            variants: [makeVariant({ productIdentifierType: 'UPC', productIdentifierValue: undefined })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const rows = document.querySelectorAll('.product-attributes-row');
+        const idRow = Array.from(rows).find(r => r.textContent?.includes('UPC'));
+        expect(idRow).toBeUndefined();
+    });
+
+    it('does not render product-attributes section when no active variant is selected', async () => {
+        setupFetchSuccess(makeProduct({
+            variants: [makeVariant({ deleted: true })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+        expect(document.querySelector('.product-attributes')).toBeNull();
     });
 });

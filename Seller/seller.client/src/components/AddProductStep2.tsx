@@ -498,8 +498,8 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                         onValuesChange={(values) => setNewVariantAttribute(prev => ({ ...prev, values }))}
                                         placeholderEn="e.g., Small, Medium, Large"
                                         placeholderFr="e.g., Petit, Moyen, Grand"
-                                        labelEn="Values (English)"
-                                        labelFr="Values (French)"
+                                        labelEn={t('variantAttr.valuesEn')}
+                                        labelFr={t('variantAttr.valuesFr')}
                                         id="variant_attribute_values"
                                     />
                                 </div>

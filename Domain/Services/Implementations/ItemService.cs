@@ -551,9 +551,9 @@ SET
     ItemVariantName_en = @ItemVariantName_en,
     ItemVariantName_fr = @ItemVariantName_fr,
     Deleted = @Deleted,
-    Offer = @Offer,
-    OfferStart = @OfferStart,
-    OfferEnd = @OfferEnd
+    Offer = COALESCE(@Offer, Offer),
+    OfferStart = COALESCE(@OfferStart, OfferStart),
+    OfferEnd = COALESCE(@OfferEnd, OfferEnd)
 WHERE Id = @Id AND ItemId = @ItemId";
 
                             await connection.ExecuteAsync(variantUpdateQuery, new

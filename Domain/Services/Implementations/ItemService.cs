@@ -650,7 +650,6 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                         foreach (var feature in newFeatures)
                         {
                             feature.ItemVariantID = firstVariantIdForFeatures.Value;
-                            feature.ItemID = updateItemRequest.Id;
 
                             var featureId = await connection.ExecuteScalarAsync<Guid>(@"
 INSERT INTO dbo.ItemVariantFeatures (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)

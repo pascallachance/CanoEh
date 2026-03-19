@@ -37,7 +37,7 @@ interface ItemVariantDto {
     itemVariantName_en?: string;
     itemVariantName_fr?: string;
     itemVariantAttributes: ItemVariantAttributeDto[];
-    itemVariantFeatures?: ItemVariantFeaturesDto[];
+    itemVariantFeatures: ItemVariantFeaturesDto[];
     deleted: boolean;
     offer?: number | null;
     offerStart?: string | null;
@@ -579,7 +579,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                 )}
 
                                 {/* Variant Features */}
-                                {selectedVariant?.itemVariantFeatures && selectedVariant.itemVariantFeatures.length > 0 && (
+                                {selectedVariant && selectedVariant.itemVariantFeatures.length > 0 && (
                                     <div className="product-variant-features">
                                         <h2 className="product-variant-features-title">
                                             {getText('Features', 'Caractéristiques')}

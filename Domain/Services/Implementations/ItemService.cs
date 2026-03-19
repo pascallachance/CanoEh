@@ -487,12 +487,12 @@ WHERE Id = @Id";
                         existingItem.Deleted
                     }, transaction);
 
-                    // 2. Update or insert ItemVariants.
-                    // Existing variants (Id != Guid.Empty) are updated with AND ItemId = @ItemId in the
-                    // WHERE clause to prevent cross-item updates. New variants (Id == Guid.Empty) are inserted.
-                    // Capture the first existing variant's ID before the loop assigns new GUIDs to new variants.
-                    var firstExistingVariantId = variantRequests.FirstOrDefault(v => v.Id != Guid.Empty)?.Id;
+                    // 2. Update or insert ItemVariants and their ItemVariantAttributes.
+                    // Existing variants (Id != Guid.Empty) are updated; their attributes are deleted and
+                    // re-inserted to reflect any changes. New variants (Id == Guid.Empty) are inserted along
+                    // with their attributes. Track the first processed variant to associate features with it.
                     var updatedVariants = new List<ItemVariant>();
+                    Guid? firstVariantIdForFeatures = null;
                     foreach (var variant in variantRequests)
                     {
                         variant.ItemId = updateItemRequest.Id;
@@ -535,6 +535,11 @@ WHERE Id = @Id AND ItemId = @ItemId";
                                 variant.OfferStart,
                                 variant.OfferEnd
                             }, transaction);
+
+                            // Re-sync attributes: delete old ones then insert the updated set
+                            await connection.ExecuteAsync(
+                                "DELETE FROM dbo.ItemVariantAttribute WHERE ItemVariantID = @variantId",
+                                new { variantId = variant.Id }, transaction);
                         }
                         else
                         {
@@ -593,36 +598,75 @@ VALUES (
                             }, transaction);
                         }
 
+                        // Insert ItemVariantAttributes for this variant (applies to both existing and new variants)
+                        var insertedAttributes = new List<ItemVariantAttribute>();
+                        if (variant.ItemVariantAttributes != null && variant.ItemVariantAttributes.Count > 0)
+                        {
+                            var itemVariantAttributeQuery = @"
+INSERT INTO dbo.ItemVariantAttribute (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
+OUTPUT INSERTED.Id
+VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
+
+                            foreach (var attr in variant.ItemVariantAttributes)
+                            {
+                                var attrId = await connection.ExecuteScalarAsync<Guid>(itemVariantAttributeQuery, new
+                                {
+                                    ItemVariantID = variant.Id,
+                                    attr.AttributeName_en,
+                                    attr.AttributeName_fr,
+                                    attr.Attributes_en,
+                                    attr.Attributes_fr
+                                }, transaction);
+
+                                insertedAttributes.Add(new ItemVariantAttribute
+                                {
+                                    Id = attrId,
+                                    ItemVariantID = variant.Id,
+                                    AttributeName_en = attr.AttributeName_en,
+                                    AttributeName_fr = attr.AttributeName_fr,
+                                    Attributes_en = attr.Attributes_en,
+                                    Attributes_fr = attr.Attributes_fr
+                                });
+                            }
+                        }
+                        variant.ItemVariantAttributes = insertedAttributes;
+
+                        firstVariantIdForFeatures ??= variant.Id;
                         updatedVariants.Add(variant);
                     }
 
-                    // 3. Re-insert ItemVariantFeatures for the first existing variant (consistent with CreateItemAsync)
-                    if (firstExistingVariantId.HasValue)
+                    // 3. Re-insert ItemVariantFeatures for the first variant (consistent with CreateItemAsync).
+                    // Delete all existing features for every variant of this item first so that stale rows
+                    // from a previous "first variant" are not left behind when variants are reordered or replaced.
+                    if (firstVariantIdForFeatures.HasValue)
                     {
                         await connection.ExecuteAsync(
-                            "DELETE FROM dbo.ItemVariantFeatures WHERE ItemVariantID = @itemVariantId",
-                            new { itemVariantId = firstExistingVariantId.Value },
+                            @"DELETE ivf FROM dbo.ItemVariantFeatures ivf
+                              INNER JOIN dbo.ItemVariant iv ON iv.Id = ivf.ItemVariantID
+                              WHERE iv.ItemId = @itemId",
+                            new { itemId = updateItemRequest.Id },
                             transaction);
 
                         foreach (var feature in newFeatures)
                         {
-                            feature.Id = Guid.NewGuid();
+                            feature.ItemVariantID = firstVariantIdForFeatures.Value;
                             feature.ItemID = updateItemRequest.Id;
-                            feature.ItemVariantID = firstExistingVariantId.Value;
 
-                            await connection.ExecuteAsync(@"
-INSERT INTO dbo.ItemVariantFeatures (Id, ItemID, ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
-VALUES (@Id, @ItemID, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)",
+                            var featureId = await connection.ExecuteScalarAsync<Guid>(@"
+INSERT INTO dbo.ItemVariantFeatures (ItemVariantID, ItemID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
+OUTPUT INSERTED.Id
+VALUES (@ItemVariantID, @ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)",
                                 new
                                 {
-                                    feature.Id,
-                                    ItemID = feature.ItemID,
                                     ItemVariantID = feature.ItemVariantID,
+                                    ItemID = feature.ItemID,
                                     feature.AttributeName_en,
                                     feature.AttributeName_fr,
                                     feature.Attributes_en,
                                     feature.Attributes_fr
                                 }, transaction);
+
+                            feature.Id = featureId;
                         }
                     }
 

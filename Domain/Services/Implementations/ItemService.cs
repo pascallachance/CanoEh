@@ -26,6 +26,11 @@ namespace Domain.Services.Implementations
         private readonly ICategoryNodeRepository _categoryNodeRepository = categoryNodeRepository;
         private readonly string _connectionString = connectionString;
 
+        private const string InsertItemVariantFeaturesSql = @"
+INSERT INTO dbo.ItemVariantFeatures (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
+OUTPUT INSERTED.Id
+VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
+
         public async Task<Result<CreateItemResponse>> CreateItemAsync(CreateItemRequest createItemRequest)
         {
             try
@@ -106,6 +111,7 @@ VALUES (
                     // 2. Insert ItemVariants
                     var itemVariants = new List<ItemVariant>();
                     var itemVariantAttributes = new List<ItemVariantAttribute>();
+                    var itemVariantFeatures = new List<ItemVariantFeatures>();
                     if (itemVariantRequests.Any())
                     {
                         try
@@ -224,6 +230,44 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                                         throw new InvalidOperationException($"Failed to insert ItemVariantAttributes: {ex.Message}", ex);
                                     }
                                 }
+
+                                // 3b. Insert per-variant ItemVariantFeatures for this variant
+                                if (variantRequest.ItemVariantFeatures.Any())
+                                {
+                                    try
+                                    {
+                                        foreach (var featureRequest in variantRequest.ItemVariantFeatures)
+                                        {
+                                            var featureId = await connection.ExecuteScalarAsync<Guid>(InsertItemVariantFeaturesSql, new
+                                            {
+                                                ItemVariantID = variantId,
+                                                featureRequest.AttributeName_en,
+                                                featureRequest.AttributeName_fr,
+                                                featureRequest.Attributes_en,
+                                                featureRequest.Attributes_fr
+                                            }, transaction);
+
+                                            itemVariantFeatures.Add(new ItemVariantFeatures
+                                            {
+                                                Id = featureId,
+                                                ItemID = item.Id,
+                                                ItemVariantID = variantId,
+                                                AttributeName_en = featureRequest.AttributeName_en,
+                                                AttributeName_fr = featureRequest.AttributeName_fr,
+                                                Attributes_en = featureRequest.Attributes_en,
+                                                Attributes_fr = featureRequest.Attributes_fr
+                                            });
+                                        }
+                                    }
+                                    catch (SqlException sqlEx)
+                                    {
+                                        throw new InvalidOperationException($"Database error inserting ItemVariantFeatures: {sqlEx.Message}", sqlEx);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        throw new InvalidOperationException($"Failed to insert ItemVariantFeatures: {ex.Message}", ex);
+                                    }
+                                }
                             }
                         }
                         catch (SqlException sqlEx)
@@ -236,21 +280,18 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                         }
                     }
 
-                    // 4. Insert ItemVariantFeatures (assign to first variant for backward compatibility)
-                    var itemVariantFeatures = new List<ItemVariantFeatures>();
-                    if (itemVariantFeaturesRequests.Any() && itemVariants.Any())
+                    // 4. Insert top-level ItemVariantFeatures as a fallback: apply to the first variant only
+                    // when no per-variant features were provided via CreateItemVariantRequest.ItemVariantFeatures.
+                    // This preserves backward compatibility for clients that still send features at the top level.
+                    if (itemVariantFeaturesRequests.Any() && itemVariants.Any() && !itemVariantFeatures.Any())
                     {
                         try
                         {
                             var firstVariantId = itemVariants[0].Id;
-                            var itemVariantFeaturesQuery = @"
-INSERT INTO dbo.ItemVariantFeatures (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
-OUTPUT INSERTED.Id
-VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
 
                             foreach (var attributeRequest in itemVariantFeaturesRequests)
                             {
-                                var attributeId = await connection.ExecuteScalarAsync<Guid>(itemVariantFeaturesQuery, new
+                                var attributeId = await connection.ExecuteScalarAsync<Guid>(InsertItemVariantFeaturesSql, new
                                 {
                                     ItemVariantID = firstVariantId,
                                     attributeRequest.AttributeName_en,
@@ -650,10 +691,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                         {
                             foreach (var feature in variant.ItemVariantFeatures)
                             {
-                                var featureId = await connection.ExecuteScalarAsync<Guid>(@"
-INSERT INTO dbo.ItemVariantFeatures (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
-OUTPUT INSERTED.Id
-VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)",
+                                var featureId = await connection.ExecuteScalarAsync<Guid>(InsertItemVariantFeaturesSql,
                                     new
                                     {
                                         ItemVariantID = variant.Id,
@@ -676,6 +714,39 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                         }
                         variant.ItemVariantFeatures = insertedFeatures;
                         allInsertedFeatures.AddRange(insertedFeatures);
+                    }
+
+                    // Backward-compat fallback: if no per-variant features were provided but the top-level
+                    // ItemVariantFeatures list is populated (old-style clients), apply them to the first variant.
+                    var topLevelFeatures = (updateItemRequest.ItemVariantFeatures ?? Enumerable.Empty<ItemVariantFeatures>()).ToList();
+                    if (!allInsertedFeatures.Any() && topLevelFeatures.Any() && updatedVariants.Any())
+                    {
+                        var firstVariant = updatedVariants[0];
+                        var fallbackInserted = new List<ItemVariantFeatures>();
+                        foreach (var feature in topLevelFeatures)
+                        {
+                            var featureId = await connection.ExecuteScalarAsync<Guid>(InsertItemVariantFeaturesSql,
+                                new
+                                {
+                                    ItemVariantID = firstVariant.Id,
+                                    feature.AttributeName_en,
+                                    feature.AttributeName_fr,
+                                    feature.Attributes_en,
+                                    feature.Attributes_fr
+                                }, transaction);
+
+                            fallbackInserted.Add(new ItemVariantFeatures
+                            {
+                                Id = featureId,
+                                ItemVariantID = firstVariant.Id,
+                                AttributeName_en = feature.AttributeName_en,
+                                AttributeName_fr = feature.AttributeName_fr,
+                                Attributes_en = feature.Attributes_en,
+                                Attributes_fr = feature.Attributes_fr
+                            });
+                        }
+                        firstVariant.ItemVariantFeatures = fallbackInserted;
+                        allInsertedFeatures.AddRange(fallbackInserted);
                     }
 
                     // Commit transaction - all operations succeeded

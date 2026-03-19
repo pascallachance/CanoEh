@@ -14,6 +14,7 @@ namespace Domain.Models.Requests
         public string? ItemVariantName_en { get; set; }
         public string? ItemVariantName_fr { get; set; }
         public List<CreateItemVariantAttributeRequest> ItemVariantAttributes { get; set; } = new();
+        public List<CreateItemVariantFeaturesRequest> ItemVariantFeatures { get; set; } = new();
         public bool Deleted { get; set; } = false;
         
         // Offer fields

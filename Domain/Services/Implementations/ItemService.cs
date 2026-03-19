@@ -128,10 +128,7 @@ INSERT INTO dbo.ItemVariant (
     ThumbnailUrl,
     ItemVariantName_en,
     ItemVariantName_fr,
-    Deleted,
-    Offer,
-    OfferStart,
-    OfferEnd)
+    Deleted)
 OUTPUT INSERTED.Id
 VALUES (
     @ItemId,
@@ -144,10 +141,7 @@ VALUES (
     @ThumbnailUrl,
     @ItemVariantName_en,
     @ItemVariantName_fr,
-    @Deleted,
-    @Offer,
-    @OfferStart,
-    @OfferEnd)";
+    @Deleted)";
 
                             foreach (var variantRequest in itemVariantRequests)
                             {
@@ -163,10 +157,7 @@ VALUES (
                                     variantRequest.ThumbnailUrl,
                                     variantRequest.ItemVariantName_en,
                                     variantRequest.ItemVariantName_fr,
-                                    variantRequest.Deleted,
-                                    variantRequest.Offer,
-                                    variantRequest.OfferStart,
-                                    variantRequest.OfferEnd
+                                    variantRequest.Deleted
                                 }, transaction);
 
                                 var variant = new ItemVariant
@@ -182,10 +173,7 @@ VALUES (
                                     ThumbnailUrl = variantRequest.ThumbnailUrl,
                                     ItemVariantName_en = variantRequest.ItemVariantName_en,
                                     ItemVariantName_fr = variantRequest.ItemVariantName_fr,
-                                    Deleted = variantRequest.Deleted,
-                                    Offer = variantRequest.Offer,
-                                    OfferStart = variantRequest.OfferStart,
-                                    OfferEnd = variantRequest.OfferEnd
+                                    Deleted = variantRequest.Deleted
                                 };
                                 itemVariants.Add(variant);
 

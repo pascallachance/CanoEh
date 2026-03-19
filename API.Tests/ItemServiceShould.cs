@@ -1991,6 +1991,231 @@ namespace API.Tests
             _mockItemVariantRepository.Verify(x => x.UpdateAsync(It.IsAny<ItemVariant>()), Times.Once);
         }
 
+        // -----------------------------------------------------------------------
+        // Per-variant ItemVariantFeatures tests
+        // -----------------------------------------------------------------------
+
+        [Fact]
+        public void UpdateItemRequest_SupportsPerVariantItemVariantFeatures()
+        {
+            // Arrange & Act
+            var variantId = Guid.NewGuid();
+            var feature = new ItemVariantFeatures
+            {
+                AttributeName_en = "Material",
+                AttributeName_fr = "Matériau",
+                Attributes_en = "Cotton",
+                Attributes_fr = "Coton"
+            };
+
+            var request = new UpdateItemRequest
+            {
+                Id = Guid.NewGuid(),
+                SellerID = Guid.NewGuid(),
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Description_en = "Description EN",
+                Description_fr = "Description FR",
+                CategoryNodeID = Guid.NewGuid(),
+                Variants = new List<ItemVariant>
+                {
+                    new ItemVariant
+                    {
+                        Id = variantId,
+                        Price = 19.99m,
+                        StockQuantity = 10,
+                        Sku = "SKU-001",
+                        ItemVariantFeatures = new List<ItemVariantFeatures> { feature }
+                    }
+                },
+                ItemVariantFeatures = new List<ItemVariantFeatures>()
+            };
+
+            // Assert – per-variant features are stored on the variant, not the top-level list
+            Assert.Single(request.Variants[0].ItemVariantFeatures);
+            Assert.Equal("Material", request.Variants[0].ItemVariantFeatures[0].AttributeName_en);
+            Assert.Equal("Cotton", request.Variants[0].ItemVariantFeatures[0].Attributes_en);
+            Assert.Empty(request.ItemVariantFeatures);
+        }
+
+        [Fact]
+        public void UpdateItemRequest_SupportsTopLevelItemVariantFeaturesForBackwardCompatibility()
+        {
+            // Arrange & Act – clients that still send features at the top level should have them accepted
+            var topLevelFeature = new ItemVariantFeatures
+            {
+                AttributeName_en = "Material",
+                AttributeName_fr = "Matériau",
+                Attributes_en = "Cotton",
+                Attributes_fr = "Coton"
+            };
+
+            var request = new UpdateItemRequest
+            {
+                Id = Guid.NewGuid(),
+                SellerID = Guid.NewGuid(),
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Description_en = "Description EN",
+                Description_fr = "Description FR",
+                CategoryNodeID = Guid.NewGuid(),
+                Variants = new List<ItemVariant>
+                {
+                    new ItemVariant
+                    {
+                        Id = Guid.NewGuid(),
+                        Price = 19.99m,
+                        StockQuantity = 10,
+                        Sku = "SKU-001",
+                        ItemVariantFeatures = new List<ItemVariantFeatures>()
+                    }
+                },
+                ItemVariantFeatures = new List<ItemVariantFeatures> { topLevelFeature }
+            };
+
+            // Assert – top-level features are preserved on the request
+            Assert.Single(request.ItemVariantFeatures);
+            Assert.Equal("Material", request.ItemVariantFeatures[0].AttributeName_en);
+            Assert.Empty(request.Variants[0].ItemVariantFeatures);
+        }
+
+        [Fact]
+        public void CreateItemVariantRequest_SupportsPerVariantItemVariantFeatures()
+        {
+            // Arrange & Act
+            var variantFeature = new CreateItemVariantFeaturesRequest
+            {
+                AttributeName_en = "Weight",
+                AttributeName_fr = "Poids",
+                Attributes_en = "500g",
+                Attributes_fr = "500g"
+            };
+
+            var variantRequest = new CreateItemVariantRequest
+            {
+                Price = 29.99m,
+                StockQuantity = 50,
+                Sku = "SKU-002",
+                ItemVariantAttributes = new List<CreateItemVariantAttributeRequest>(),
+                ItemVariantFeatures = new List<CreateItemVariantFeaturesRequest> { variantFeature }
+            };
+
+            // Assert – per-variant features are stored on the variant request
+            Assert.Single(variantRequest.ItemVariantFeatures);
+            Assert.Equal("Weight", variantRequest.ItemVariantFeatures[0].AttributeName_en);
+            Assert.Equal("500g", variantRequest.ItemVariantFeatures[0].Attributes_en);
+        }
+
+        [Fact]
+        public void CreateItemRequest_WithPerVariantFeatures_CanBeBuilt()
+        {
+            // Arrange & Act – verify the full create request can carry per-variant features
+            var createRequest = new CreateItemRequest
+            {
+                SellerID = Guid.NewGuid(),
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Description_en = "Description EN",
+                Description_fr = "Description FR",
+                CategoryNodeID = Guid.NewGuid(),
+                Variants = new List<CreateItemVariantRequest>
+                {
+                    new CreateItemVariantRequest
+                    {
+                        Price = 19.99m,
+                        StockQuantity = 10,
+                        Sku = "SKU-001",
+                        ItemVariantAttributes = new List<CreateItemVariantAttributeRequest>(),
+                        ItemVariantFeatures = new List<CreateItemVariantFeaturesRequest>
+                        {
+                            new CreateItemVariantFeaturesRequest
+                            {
+                                AttributeName_en = "Material",
+                                AttributeName_fr = "Matériau",
+                                Attributes_en = "Wool",
+                                Attributes_fr = "Laine"
+                            }
+                        }
+                    },
+                    new CreateItemVariantRequest
+                    {
+                        Price = 24.99m,
+                        StockQuantity = 5,
+                        Sku = "SKU-002",
+                        ItemVariantAttributes = new List<CreateItemVariantAttributeRequest>(),
+                        ItemVariantFeatures = new List<CreateItemVariantFeaturesRequest>
+                        {
+                            new CreateItemVariantFeaturesRequest
+                            {
+                                AttributeName_en = "Material",
+                                AttributeName_fr = "Matériau",
+                                Attributes_en = "Silk",
+                                Attributes_fr = "Soie"
+                            }
+                        }
+                    }
+                },
+                ItemVariantFeatures = new List<CreateItemVariantFeaturesRequest>()
+            };
+
+            // Assert – each variant carries its own features independently
+            Assert.Equal(2, createRequest.Variants.Count);
+            Assert.Single(createRequest.Variants[0].ItemVariantFeatures);
+            Assert.Equal("Wool", createRequest.Variants[0].ItemVariantFeatures[0].Attributes_en);
+            Assert.Single(createRequest.Variants[1].ItemVariantFeatures);
+            Assert.Equal("Silk", createRequest.Variants[1].ItemVariantFeatures[0].Attributes_en);
+            Assert.Empty(createRequest.ItemVariantFeatures);
+        }
+
+        [Fact]
+        public async Task UpdateItemAsync_ReturnFailure_WhenItemDoesNotExist_WithPerVariantFeatures()
+        {
+            // Arrange – verify the failure path works correctly when per-variant features are present
+            var variantId = Guid.NewGuid();
+            var updateItemRequest = new UpdateItemRequest
+            {
+                Id = Guid.NewGuid(),
+                SellerID = Guid.NewGuid(),
+                Name_en = "Updated Item",
+                Name_fr = "Article mis à jour",
+                Description_en = "Updated Description EN",
+                Description_fr = "Updated Description FR",
+                CategoryNodeID = Guid.NewGuid(),
+                Variants = new List<ItemVariant>
+                {
+                    new ItemVariant
+                    {
+                        Id = variantId,
+                        Price = 19.99m,
+                        StockQuantity = 10,
+                        Sku = "SKU-001",
+                        ItemVariantFeatures = new List<ItemVariantFeatures>
+                        {
+                            new ItemVariantFeatures
+                            {
+                                AttributeName_en = "Material",
+                                AttributeName_fr = "Matériau",
+                                Attributes_en = "Cotton",
+                                Attributes_fr = "Coton"
+                            }
+                        }
+                    }
+                },
+                ItemVariantFeatures = new List<ItemVariantFeatures>()
+            };
+
+            _mockItemRepository.Setup(x => x.GetItemByIdAsync(updateItemRequest.Id))
+                              .ReturnsAsync((Item?)null);
+
+            // Act
+            var result = await _itemService.UpdateItemAsync(updateItemRequest);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status404NotFound, result.ErrorCode);
+            Assert.Equal("Item not found.", result.Error);
+        }
+
         [Fact]
         public async Task UpdateVariantImageUrlsAsync_TrimsTrailingEmptySlots()
         {

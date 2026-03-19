@@ -21,12 +21,22 @@ namespace Domain.Models.Requests
             {
                 return Result.Failure("English name is required.", StatusCodes.Status400BadRequest);
             }
-            
+
+            if (Name_en.Length > 255)
+            {
+                return Result.Failure("English name cannot exceed 255 characters.", StatusCodes.Status400BadRequest);
+            }
+
             if (string.IsNullOrWhiteSpace(Name_fr))
             {
                 return Result.Failure("French name is required.", StatusCodes.Status400BadRequest);
             }
-            
+
+            if (Name_fr.Length > 255)
+            {
+                return Result.Failure("French name cannot exceed 255 characters.", StatusCodes.Status400BadRequest);
+            }
+
             if (string.IsNullOrWhiteSpace(Description_en))
             {
                 return Result.Failure("English description is required.", StatusCodes.Status400BadRequest);
@@ -46,7 +56,25 @@ namespace Domain.Models.Requests
             {
                 return Result.Failure("CategoryNodeID is required.", StatusCodes.Status400BadRequest);
             }
-            
+
+            foreach (var variant in Variants ?? Enumerable.Empty<CreateItemVariantRequest>())
+            {
+                var variantResult = variant.Validate();
+                if (variantResult.IsFailure)
+                {
+                    return variantResult;
+                }
+            }
+
+            foreach (var feature in ItemVariantFeatures ?? Enumerable.Empty<CreateItemVariantFeaturesRequest>())
+            {
+                var featureResult = feature.Validate();
+                if (featureResult.IsFailure)
+                {
+                    return featureResult;
+                }
+            }
+
             return Result.Success();
         }
     }

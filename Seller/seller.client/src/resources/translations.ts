@@ -668,6 +668,22 @@ export const translations: TranslationResources = {
     en: 'Unable to determine seller ID. Please ensure you are logged in.',
     fr: 'Impossible de déterminer l\'ID du vendeur. Veuillez vous assurer que vous êtes connecté.'
   },
+  'error.nameEnTooLong': {
+    en: 'Item name (English) cannot exceed 255 characters.',
+    fr: 'Le nom de l\'article (anglais) ne peut pas dépasser 255 caractères.'
+  },
+  'error.nameFrTooLong': {
+    en: 'Item name (French) cannot exceed 255 characters.',
+    fr: 'Le nom de l\'article (français) ne peut pas dépasser 255 caractères.'
+  },
+  'error.skuTooLong': {
+    en: 'SKU cannot exceed 100 characters.',
+    fr: 'Le SKU ne peut pas dépasser 100 caractères.'
+  },
+  'error.productIdValueTooLong': {
+    en: 'Product identifier value cannot exceed 100 characters.',
+    fr: 'La valeur de l\'identifiant du produit ne peut pas dépasser 100 caractères.'
+  },
 
   // Category navigator
   'category.selected': {

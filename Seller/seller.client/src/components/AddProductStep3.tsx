@@ -455,7 +455,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
     const isFormInvalid = useMemo(() => {
         if (variants.length > 0) {
             return variants.some(variant =>
-                !variant.sku.trim() || variant.price <= 0
+                !variant.sku.trim() || variant.price <= 0 ||
+                variant.sku.length > 100 ||
+                (variant.productIdentifierValue != null && variant.productIdentifierValue.length > 100)
             );
         }
         return false;
@@ -642,6 +644,24 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 showError(errorMessage);
                 return;
             }
+
+            const hasSkuTooLong = variants.some(variant => variant.sku.length > 100);
+            if (hasSkuTooLong) {
+                const errorMessage = t('error.skuTooLong');
+                setError(errorMessage);
+                showError(errorMessage);
+                return;
+            }
+
+            const hasProductIdValueTooLong = variants.some(variant =>
+                variant.productIdentifierValue != null && variant.productIdentifierValue.length > 100
+            );
+            if (hasProductIdValueTooLong) {
+                const errorMessage = t('error.productIdValueTooLong');
+                setError(errorMessage);
+                showError(errorMessage);
+                return;
+            }
         }
 
         const sellerId = companies.length > 0 ? companies[0].ownerID : null;
@@ -761,9 +781,10 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                     id={`sku-${variant.id}`}
                                                     value={variant.sku}
                                                     onChange={(e) => updateVariant(variant.id, 'sku', e.target.value)}
-                                                    className={`variant-input ${!variant.sku.trim() ? 'required' : ''}`}
+                                                    className={`variant-input ${!variant.sku.trim() || variant.sku.length > 100 ? 'invalid' : ''}`}
                                                     placeholder={`${t('products.variant.sku')} *`}
                                                     required
+                                                    maxLength={100}
                                                 />
                                             </div>
                                         </div>
@@ -795,6 +816,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                     className="variant-input"
                                                     placeholder={t('variant.idValuePlaceholder')}
                                                     disabled={!variant.productIdentifierType}
+                                                    maxLength={100}
                                                 />
                                             </div>
                                         </div>

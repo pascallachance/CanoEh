@@ -17,9 +17,10 @@ interface AddProductStep1Props {
     editMode?: boolean;
     onStepNavigate?: (step: number) => void;
     completedSteps?: number[];
+    onDataChange?: (data: AddProductStep1Data) => void;
 }
 
-function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep1Props) {
+function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onStepNavigate, completedSteps, onDataChange }: AddProductStep1Props) {
     const { t } = useLanguage();
     const [formData, setFormData] = useState<AddProductStep1Data>(initialData || {
         name: '',
@@ -68,11 +69,25 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onSt
     };
 
     const handleInputChange = (field: keyof AddProductStep1Data, value: string) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
+        const updated = { ...formData, [field]: value };
+        setFormData(updated);
         // Clear error when user starts typing
         if (errors[field]) {
             setErrors(prev => ({ ...prev, [field]: undefined }));
         }
+        // Notify parent of data changes in edit mode so step 1 data is always current
+        if (editMode && onDataChange) {
+            onDataChange(updated);
+        }
+    };
+
+    const handleStepNavigate = (step: number) => {
+        // In edit mode, persist the current form data before navigating to another step
+        // so that changes made in step 1 are not lost when using the step indicator.
+        if (editMode && onDataChange) {
+            onDataChange(formData);
+        }
+        onStepNavigate?.(step);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -90,7 +105,7 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onSt
                     <StepIndicator 
                         currentStep={1}
                         totalSteps={3}
-                        onStepClick={onStepNavigate}
+                        onStepClick={handleStepNavigate}
                         completedSteps={completedSteps || []}
                     />
                     <h2>{t('step1.title')}</h2>

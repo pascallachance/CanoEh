@@ -1554,6 +1554,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                     editMode={inlineProductMode === 'edit'}
                     onStepNavigate={handleProductStepNavigate}
                     completedSteps={getCompletedSteps()}
+                    onDataChange={inlineProductMode === 'edit' ? (data) => setProductStep1Data(data) : undefined}
                 />
             )}
             {inlineProductMode !== 'none' && productWorkflowStep === 2 && productStep1Data && (

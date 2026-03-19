@@ -748,13 +748,17 @@ describe('Product page – variant features section', () => {
     });
 
     it('does not render the variant features section when itemVariantFeatures is absent', async () => {
-        setupFetchSuccess(makeProduct());
+        // Build a product object that genuinely lacks the itemVariantFeatures property
+        const productWithoutFeatures = makeProduct();
+        const { itemVariantFeatures: _omit, ...productMissingField } = productWithoutFeatures;
+        setupFetchSuccess(productMissingField);
         renderProduct();
         await waitForProductLoaded();
         expect(document.querySelector('.product-variant-features')).toBeNull();
     });
 
     it('renders French feature names and values when French translation is available', async () => {
+        const user = userEvent.setup();
         setupFetchSuccess(makeProduct({
             itemVariantFeatures: [
                 { id: 'f1', attributeName_en: 'Material', attributeName_fr: 'Matériau', attributes_en: 'Cotton', attributes_fr: 'Coton' },
@@ -763,15 +767,14 @@ describe('Product page – variant features section', () => {
         renderProduct();
         await waitForProductLoaded();
 
-        const langSelect = document.querySelector('.language-select') as HTMLSelectElement | null;
-        if (langSelect) {
-            await userEvent.selectOptions(langSelect, 'fr');
-            expect(screen.getByText('Matériau')).toBeInTheDocument();
-            expect(screen.getByText('Coton')).toBeInTheDocument();
-        }
+        const langSelect = screen.getByRole('combobox', { name: /language|langue/i });
+        await user.selectOptions(langSelect, 'fr');
+        expect(screen.getByText('Matériau')).toBeInTheDocument();
+        expect(screen.getByText('Coton')).toBeInTheDocument();
     });
 
     it('falls back to English feature name/value when French translation is absent', async () => {
+        const user = userEvent.setup();
         setupFetchSuccess(makeProduct({
             itemVariantFeatures: [
                 { id: 'f1', attributeName_en: 'Material', attributeName_fr: null, attributes_en: 'Cotton', attributes_fr: null },
@@ -780,12 +783,10 @@ describe('Product page – variant features section', () => {
         renderProduct();
         await waitForProductLoaded();
 
-        const langSelect = document.querySelector('.language-select') as HTMLSelectElement | null;
-        if (langSelect) {
-            await userEvent.selectOptions(langSelect, 'fr');
-            expect(screen.getByText('Material')).toBeInTheDocument();
-            expect(screen.getByText('Cotton')).toBeInTheDocument();
-        }
+        const langSelect = screen.getByRole('combobox', { name: /language|langue/i });
+        await user.selectOptions(langSelect, 'fr');
+        expect(screen.getByText('Material')).toBeInTheDocument();
+        expect(screen.getByText('Cotton')).toBeInTheDocument();
     });
 
     it('renders the variant features section between description and product-attributes', async () => {

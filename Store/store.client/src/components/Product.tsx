@@ -20,9 +20,9 @@ interface ItemVariantAttributeDto {
 interface ItemVariantFeaturesDto {
     id: string;
     attributeName_en: string;
-    attributeName_fr?: string;
+    attributeName_fr?: string | null;
     attributes_en: string;
-    attributes_fr?: string;
+    attributes_fr?: string | null;
 }
 
 interface ItemVariantDto {
@@ -587,7 +587,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                             <tbody>
                                                 {product.itemVariantFeatures.map((feature) => (
                                                     <tr key={feature.id} className="product-variant-features-row">
-                                                        <th className="product-variant-features-name">
+                                                        <th className="product-variant-features-name" scope="row">
                                                             {language === 'fr' && feature.attributeName_fr
                                                                 ? feature.attributeName_fr
                                                                 : feature.attributeName_en}

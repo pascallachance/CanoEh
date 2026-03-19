@@ -206,7 +206,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
     const generateVariants = (): ItemVariant[] => {
         if (step2Data.variantAttributes.length === 0) {
             return [{
-                id: '1',
+                id: 'variant-1',
                 attributes_en: {},
                 attributes_fr: {},
                 features_en: {},

@@ -650,16 +650,14 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                         foreach (var feature in newFeatures)
                         {
                             feature.ItemVariantID = firstVariantIdForFeatures.Value;
-                            feature.ItemID = updateItemRequest.Id;
 
                             var featureId = await connection.ExecuteScalarAsync<Guid>(@"
-INSERT INTO dbo.ItemVariantFeatures (ItemVariantID, ItemID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
+INSERT INTO dbo.ItemVariantFeatures (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
 OUTPUT INSERTED.Id
-VALUES (@ItemVariantID, @ItemID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)",
+VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)",
                                 new
                                 {
                                     ItemVariantID = feature.ItemVariantID,
-                                    ItemID = feature.ItemID,
                                     feature.AttributeName_en,
                                     feature.AttributeName_fr,
                                     feature.Attributes_en,

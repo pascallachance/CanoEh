@@ -57,12 +57,21 @@ namespace Domain.Models.Requests
                 return Result.Failure("CategoryNodeID is required.", StatusCodes.Status400BadRequest);
             }
 
-            foreach (var variant in Variants)
+            foreach (var variant in Variants ?? Enumerable.Empty<CreateItemVariantRequest>())
             {
                 var variantResult = variant.Validate();
                 if (variantResult.IsFailure)
                 {
                     return variantResult;
+                }
+            }
+
+            foreach (var feature in ItemVariantFeatures ?? Enumerable.Empty<CreateItemVariantFeaturesRequest>())
+            {
+                var featureResult = feature.Validate();
+                if (featureResult.IsFailure)
+                {
+                    return featureResult;
                 }
             }
 

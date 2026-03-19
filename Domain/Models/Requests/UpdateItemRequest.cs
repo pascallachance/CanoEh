@@ -63,7 +63,7 @@ namespace Domain.Models.Requests
                 return Result.Failure("CategoryNodeID is required.", StatusCodes.Status400BadRequest);
             }
 
-            foreach (var variant in Variants)
+            foreach (var variant in Variants ?? Enumerable.Empty<ItemVariant>())
             {
                 if (string.IsNullOrWhiteSpace(variant.Sku))
                 {
@@ -95,30 +95,49 @@ namespace Domain.Models.Requests
                     return Result.Failure("Variant name (French) cannot exceed 255 characters.", StatusCodes.Status400BadRequest);
                 }
 
-                foreach (var attr in variant.ItemVariantAttributes)
+                if (variant.ItemVariantAttributes != null)
                 {
-                    if (attr.AttributeName_en != null && attr.AttributeName_en.Length > 255)
+                    foreach (var attr in variant.ItemVariantAttributes)
                     {
-                        return Result.Failure("Attribute name (English) cannot exceed 255 characters.", StatusCodes.Status400BadRequest);
-                    }
+                        if (attr.AttributeName_en != null && attr.AttributeName_en.Length > 255)
+                        {
+                            return Result.Failure("Attribute name (English) cannot exceed 255 characters.", StatusCodes.Status400BadRequest);
+                        }
 
-                    if (attr.AttributeName_fr != null && attr.AttributeName_fr.Length > 255)
-                    {
-                        return Result.Failure("Attribute name (French) cannot exceed 255 characters.", StatusCodes.Status400BadRequest);
+                        if (attr.AttributeName_fr != null && attr.AttributeName_fr.Length > 255)
+                        {
+                            return Result.Failure("Attribute name (French) cannot exceed 255 characters.", StatusCodes.Status400BadRequest);
+                        }
                     }
                 }
 
-                foreach (var feature in variant.ItemVariantFeatures)
+                if (variant.ItemVariantFeatures != null)
                 {
-                    if (feature.AttributeName_en != null && feature.AttributeName_en.Length > 255)
+                    foreach (var feature in variant.ItemVariantFeatures)
                     {
-                        return Result.Failure("Feature name (English) cannot exceed 255 characters.", StatusCodes.Status400BadRequest);
-                    }
+                        if (feature.AttributeName_en != null && feature.AttributeName_en.Length > 255)
+                        {
+                            return Result.Failure("Feature name (English) cannot exceed 255 characters.", StatusCodes.Status400BadRequest);
+                        }
 
-                    if (feature.AttributeName_fr != null && feature.AttributeName_fr.Length > 255)
-                    {
-                        return Result.Failure("Feature name (French) cannot exceed 255 characters.", StatusCodes.Status400BadRequest);
+                        if (feature.AttributeName_fr != null && feature.AttributeName_fr.Length > 255)
+                        {
+                            return Result.Failure("Feature name (French) cannot exceed 255 characters.", StatusCodes.Status400BadRequest);
+                        }
                     }
+                }
+            }
+
+            foreach (var feature in ItemVariantFeatures ?? Enumerable.Empty<ItemVariantFeatures>())
+            {
+                if (feature.AttributeName_en != null && feature.AttributeName_en.Length > 255)
+                {
+                    return Result.Failure("Feature name (English) cannot exceed 255 characters.", StatusCodes.Status400BadRequest);
+                }
+
+                if (feature.AttributeName_fr != null && feature.AttributeName_fr.Length > 255)
+                {
+                    return Result.Failure("Feature name (French) cannot exceed 255 characters.", StatusCodes.Status400BadRequest);
                 }
             }
 

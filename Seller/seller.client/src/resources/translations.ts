@@ -684,14 +684,6 @@ export const translations: TranslationResources = {
     en: 'Product identifier value cannot exceed 100 characters.',
     fr: 'La valeur de l\'identifiant du produit ne peut pas dépasser 100 caractères.'
   },
-  'error.attributeNameEnTooLong': {
-    en: 'Attribute name (English) cannot exceed 255 characters.',
-    fr: 'Le nom de l\'attribut (anglais) ne peut pas dépasser 255 caractères.'
-  },
-  'error.attributeNameFrTooLong': {
-    en: 'Attribute name (French) cannot exceed 255 characters.',
-    fr: 'Le nom de l\'attribut (français) ne peut pas dépasser 255 caractères.'
-  },
 
   // Category navigator
   'category.selected': {

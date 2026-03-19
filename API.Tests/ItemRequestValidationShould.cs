@@ -452,6 +452,151 @@ namespace API.Tests
         // ---------------------------------------------------------------
 
         [Fact]
+        public void CreateItemRequest_ReturnSuccess_WhenVariantsIsNull()
+        {
+            var request = new CreateItemRequest
+            {
+                SellerID = Guid.NewGuid(),
+                Name_en = "Name EN",
+                Name_fr = "Nom FR",
+                Description_en = "Desc EN",
+                Description_fr = "Desc FR",
+                CategoryNodeID = Guid.NewGuid(),
+                Variants = null!
+            };
+
+            var result = request.Validate();
+
+            Assert.True(result.IsSuccess);
+        }
+
+        [Fact]
+        public void CreateItemRequest_ReturnFailure_WhenTopLevelFeatureNameEnExceeds255Characters()
+        {
+            var request = new CreateItemRequest
+            {
+                SellerID = Guid.NewGuid(),
+                Name_en = "Name EN",
+                Name_fr = "Nom FR",
+                Description_en = "Desc EN",
+                Description_fr = "Desc FR",
+                CategoryNodeID = Guid.NewGuid(),
+                ItemVariantFeatures = new List<CreateItemVariantFeaturesRequest>
+                {
+                    new CreateItemVariantFeaturesRequest
+                    {
+                        AttributeName_en = new string('A', 256),
+                        Attributes_en = "Value"
+                    }
+                }
+            };
+
+            var result = request.Validate();
+
+            Assert.True(result.IsFailure);
+            Assert.Equal("Feature name (English) cannot exceed 255 characters.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public void UpdateItemRequest_ReturnSuccess_WhenVariantsIsNull()
+        {
+            var request = new UpdateItemRequest
+            {
+                Id = Guid.NewGuid(),
+                SellerID = Guid.NewGuid(),
+                Name_en = "Name EN",
+                Name_fr = "Nom FR",
+                Description_en = "Desc EN",
+                Description_fr = "Desc FR",
+                CategoryNodeID = Guid.NewGuid(),
+                Variants = null!
+            };
+
+            var result = request.Validate();
+
+            Assert.True(result.IsSuccess);
+        }
+
+        [Fact]
+        public void UpdateItemRequest_ReturnSuccess_WhenVariantAttributesAndFeaturesAreNull()
+        {
+            var request = new UpdateItemRequest
+            {
+                Id = Guid.NewGuid(),
+                SellerID = Guid.NewGuid(),
+                Name_en = "Name EN",
+                Name_fr = "Nom FR",
+                Description_en = "Desc EN",
+                Description_fr = "Desc FR",
+                CategoryNodeID = Guid.NewGuid(),
+                Variants = new List<ItemVariant>
+                {
+                    new ItemVariant
+                    {
+                        Sku = "SKU-001",
+                        ItemVariantAttributes = null!,
+                        ItemVariantFeatures = null!
+                    }
+                }
+            };
+
+            var result = request.Validate();
+
+            Assert.True(result.IsSuccess);
+        }
+
+        [Fact]
+        public void UpdateItemRequest_ReturnFailure_WhenTopLevelFeatureNameEnExceeds255Characters()
+        {
+            var request = new UpdateItemRequest
+            {
+                Id = Guid.NewGuid(),
+                SellerID = Guid.NewGuid(),
+                Name_en = "Name EN",
+                Name_fr = "Nom FR",
+                Description_en = "Desc EN",
+                Description_fr = "Desc FR",
+                CategoryNodeID = Guid.NewGuid(),
+                ItemVariantFeatures = new List<ItemVariantFeatures>
+                {
+                    new ItemVariantFeatures
+                    {
+                        AttributeName_en = new string('A', 256),
+                        Attributes_en = "Value"
+                    }
+                }
+            };
+
+            var result = request.Validate();
+
+            Assert.True(result.IsFailure);
+            Assert.Equal("Feature name (English) cannot exceed 255 characters.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public void UpdateItemRequest_ReturnSuccess_WhenTopLevelFeaturesIsNull()
+        {
+            var request = new UpdateItemRequest
+            {
+                Id = Guid.NewGuid(),
+                SellerID = Guid.NewGuid(),
+                Name_en = "Name EN",
+                Name_fr = "Nom FR",
+                Description_en = "Desc EN",
+                Description_fr = "Desc FR",
+                CategoryNodeID = Guid.NewGuid(),
+                ItemVariantFeatures = null!
+            };
+
+            var result = request.Validate();
+
+            Assert.True(result.IsSuccess);
+        }
+
+
+        [Fact]
         public void CreateItemVariantRequest_ReturnFailure_WhenSkuIsEmpty()
         {
             var request = new CreateItemVariantRequest { Sku = "", Price = 10.0m };

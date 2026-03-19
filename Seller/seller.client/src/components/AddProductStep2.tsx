@@ -479,6 +479,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                             value={newVariantAttribute.name_en}
                                             onChange={(e) => setNewVariantAttribute(prev => ({ ...prev, name_en: e.target.value }))}
                                             placeholder={t('variantAttr.namePlaceholderEn')}
+                                            maxLength={255}
                                         />
                                     </div>
                                     <div className="attribute-input-group">
@@ -488,6 +489,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                             value={newVariantAttribute.name_fr}
                                             onChange={(e) => setNewVariantAttribute(prev => ({ ...prev, name_fr: e.target.value }))}
                                             placeholder={t('variantAttr.namePlaceholderFr')}
+                                            maxLength={255}
                                         />
                                     </div>
                                 </div>
@@ -584,6 +586,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                             value={newVariantFeature.name_en}
                                             onChange={(e) => setNewVariantFeature(prev => ({ ...prev, name_en: e.target.value }))}
                                             placeholder={t('variantFeature.namePlaceholderEn')}
+                                            maxLength={255}
                                         />
                                     </div>
                                     <div className="attribute-input-group">
@@ -593,6 +596,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                             value={newVariantFeature.name_fr}
                                             onChange={(e) => setNewVariantFeature(prev => ({ ...prev, name_fr: e.target.value }))}
                                             placeholder={t('variantFeature.namePlaceholderFr')}
+                                            maxLength={255}
                                         />
                                     </div>
                                 </div>

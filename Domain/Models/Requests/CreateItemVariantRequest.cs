@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using Helpers.Common;
+using Microsoft.AspNetCore.Http;
 
 namespace Domain.Models.Requests
 {
@@ -22,5 +24,58 @@ namespace Domain.Models.Requests
         public decimal? Offer { get; set; }
         public DateTime? OfferStart { get; set; }
         public DateTime? OfferEnd { get; set; }
+
+        public Result Validate()
+        {
+            if (string.IsNullOrWhiteSpace(Sku))
+            {
+                return Result.Failure("SKU is required for each variant.", StatusCodes.Status400BadRequest);
+            }
+
+            if (Sku.Length > 100)
+            {
+                return Result.Failure("SKU cannot exceed 100 characters.", StatusCodes.Status400BadRequest);
+            }
+
+            if (ProductIdentifierType != null && ProductIdentifierType.Length > 50)
+            {
+                return Result.Failure("Product identifier type cannot exceed 50 characters.", StatusCodes.Status400BadRequest);
+            }
+
+            if (ProductIdentifierValue != null && ProductIdentifierValue.Length > 100)
+            {
+                return Result.Failure("Product identifier value cannot exceed 100 characters.", StatusCodes.Status400BadRequest);
+            }
+
+            if (ItemVariantName_en != null && ItemVariantName_en.Length > 255)
+            {
+                return Result.Failure("Variant name (English) cannot exceed 255 characters.", StatusCodes.Status400BadRequest);
+            }
+
+            if (ItemVariantName_fr != null && ItemVariantName_fr.Length > 255)
+            {
+                return Result.Failure("Variant name (French) cannot exceed 255 characters.", StatusCodes.Status400BadRequest);
+            }
+
+            foreach (var attr in ItemVariantAttributes)
+            {
+                var attrResult = attr.Validate();
+                if (attrResult.IsFailure)
+                {
+                    return attrResult;
+                }
+            }
+
+            foreach (var feature in ItemVariantFeatures)
+            {
+                var featureResult = feature.Validate();
+                if (featureResult.IsFailure)
+                {
+                    return featureResult;
+                }
+            }
+
+            return Result.Success();
+        }
     }
 }

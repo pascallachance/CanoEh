@@ -451,7 +451,6 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
 
                 var updatedAt = DateTime.UtcNow;
                 var variantRequests = (updateItemRequest.Variants ?? Enumerable.Empty<ItemVariant>()).ToList();
-                var newFeatures = (updateItemRequest.ItemVariantFeatures ?? Enumerable.Empty<ItemVariantFeatures>()).ToList();
 
                 // Execute all database operations in a single transaction to ensure atomicity
                 using var connection = new SqlConnection(_connectionString);
@@ -490,9 +489,8 @@ WHERE Id = @Id";
                     // 2. Update or insert ItemVariants and their ItemVariantAttributes.
                     // Existing variants (Id != Guid.Empty) are updated; their attributes are deleted and
                     // re-inserted to reflect any changes. New variants (Id == Guid.Empty) are inserted along
-                    // with their attributes. Track the first processed variant to associate features with it.
+                    // with their attributes.
                     var updatedVariants = new List<ItemVariant>();
-                    Guid? firstVariantIdForFeatures = null;
                     foreach (var variant in variantRequests)
                     {
                         variant.ItemId = updateItemRequest.Id;
@@ -631,41 +629,53 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                         }
                         variant.ItemVariantAttributes = insertedAttributes;
 
-                        firstVariantIdForFeatures ??= variant.Id;
                         updatedVariants.Add(variant);
                     }
 
-                    // 3. Re-insert ItemVariantFeatures for the first variant (consistent with CreateItemAsync).
+                    // 3. Re-insert ItemVariantFeatures per variant.
                     // Delete all existing features for every variant of this item first so that stale rows
-                    // from a previous "first variant" are not left behind when variants are reordered or replaced.
-                    if (firstVariantIdForFeatures.HasValue)
+                    // from previous saves are not left behind.
+                    await connection.ExecuteAsync(
+                        @"DELETE ivf FROM dbo.ItemVariantFeatures ivf
+                          INNER JOIN dbo.ItemVariant iv ON iv.Id = ivf.ItemVariantID
+                          WHERE iv.ItemId = @itemId",
+                        new { itemId = updateItemRequest.Id },
+                        transaction);
+
+                    var allInsertedFeatures = new List<ItemVariantFeatures>();
+                    foreach (var variant in updatedVariants)
                     {
-                        await connection.ExecuteAsync(
-                            @"DELETE ivf FROM dbo.ItemVariantFeatures ivf
-                              INNER JOIN dbo.ItemVariant iv ON iv.Id = ivf.ItemVariantID
-                              WHERE iv.ItemId = @itemId",
-                            new { itemId = updateItemRequest.Id },
-                            transaction);
-
-                        foreach (var feature in newFeatures)
+                        var insertedFeatures = new List<ItemVariantFeatures>();
+                        if (variant.ItemVariantFeatures != null && variant.ItemVariantFeatures.Count > 0)
                         {
-                            feature.ItemVariantID = firstVariantIdForFeatures.Value;
-
-                            var featureId = await connection.ExecuteScalarAsync<Guid>(@"
+                            foreach (var feature in variant.ItemVariantFeatures)
+                            {
+                                var featureId = await connection.ExecuteScalarAsync<Guid>(@"
 INSERT INTO dbo.ItemVariantFeatures (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
 OUTPUT INSERTED.Id
 VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)",
-                                new
-                                {
-                                    ItemVariantID = feature.ItemVariantID,
-                                    feature.AttributeName_en,
-                                    feature.AttributeName_fr,
-                                    feature.Attributes_en,
-                                    feature.Attributes_fr
-                                }, transaction);
+                                    new
+                                    {
+                                        ItemVariantID = variant.Id,
+                                        feature.AttributeName_en,
+                                        feature.AttributeName_fr,
+                                        feature.Attributes_en,
+                                        feature.Attributes_fr
+                                    }, transaction);
 
-                            feature.Id = featureId;
+                                insertedFeatures.Add(new ItemVariantFeatures
+                                {
+                                    Id = featureId,
+                                    ItemVariantID = variant.Id,
+                                    AttributeName_en = feature.AttributeName_en,
+                                    AttributeName_fr = feature.AttributeName_fr,
+                                    Attributes_en = feature.Attributes_en,
+                                    Attributes_fr = feature.Attributes_fr
+                                });
+                            }
                         }
+                        variant.ItemVariantFeatures = insertedFeatures;
+                        allInsertedFeatures.AddRange(insertedFeatures);
                     }
 
                     // Commit transaction - all operations succeeded
@@ -682,7 +692,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                         ImageUrl = existingItem.ImageUrl,
                         CategoryNodeID = updateItemRequest.CategoryNodeID,
                         Variants = MapToItemVariantDtos(updatedVariants),
-                        ItemVariantFeatures = MapToItemVariantFeaturesDtos(newFeatures),
+                        ItemVariantFeatures = MapToItemVariantFeaturesDtos(allInsertedFeatures),
                         CreatedAt = existingItem.CreatedAt,
                         UpdatedAt = updatedAt,
                         Deleted = existingItem.Deleted

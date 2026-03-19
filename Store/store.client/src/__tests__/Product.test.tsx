@@ -54,6 +54,7 @@ function makeProduct(overrides: {
     categoryName_en?: string;
     categoryName_fr?: string;
     variants?: object[];
+    itemVariantFeatures?: object[];
 } = {}) {
     return {
         id: overrides.id ?? 'prod1',
@@ -68,6 +69,7 @@ function makeProduct(overrides: {
         createdAt: '2024-01-01',
         deleted: false,
         itemAttributes: [],
+        itemVariantFeatures: overrides.itemVariantFeatures ?? [],
         variants: overrides.variants ?? [makeVariant()],
     };
 }
@@ -686,5 +688,126 @@ describe('Product page – product attributes section', () => {
         renderProduct();
         await waitForProductLoaded();
         expect(document.querySelector('.product-attributes')).toBeNull();
+    });
+});
+
+describe('Product page – variant features section', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.stubEnv('VITE_API_STORE_BASE_URL', API_BASE_URL);
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('renders the variant features section when itemVariantFeatures are present', async () => {
+        setupFetchSuccess(makeProduct({
+            itemVariantFeatures: [
+                { id: 'f1', attributeName_en: 'Material', attributeName_fr: 'Matériau', attributes_en: 'Cotton', attributes_fr: 'Coton' },
+            ],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+        expect(document.querySelector('.product-variant-features')).toBeInTheDocument();
+    });
+
+    it('renders the Features heading in English by default', async () => {
+        setupFetchSuccess(makeProduct({
+            itemVariantFeatures: [
+                { id: 'f1', attributeName_en: 'Material', attributes_en: 'Cotton' },
+            ],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+        const title = document.querySelector('.product-variant-features-title');
+        expect(title).toBeInTheDocument();
+        expect(title?.textContent).toBe('Features');
+    });
+
+    it('renders each feature name and value in English', async () => {
+        setupFetchSuccess(makeProduct({
+            itemVariantFeatures: [
+                { id: 'f1', attributeName_en: 'Material', attributes_en: 'Cotton' },
+                { id: 'f2', attributeName_en: 'Weight', attributes_en: '200g' },
+            ],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+        expect(screen.getByText('Material')).toBeInTheDocument();
+        expect(screen.getByText('Cotton')).toBeInTheDocument();
+        expect(screen.getByText('Weight')).toBeInTheDocument();
+        expect(screen.getByText('200g')).toBeInTheDocument();
+    });
+
+    it('does not render the variant features section when itemVariantFeatures is empty', async () => {
+        setupFetchSuccess(makeProduct({ itemVariantFeatures: [] }));
+        renderProduct();
+        await waitForProductLoaded();
+        expect(document.querySelector('.product-variant-features')).toBeNull();
+    });
+
+    it('does not render the variant features section when itemVariantFeatures is absent', async () => {
+        // Build a product object that genuinely lacks the itemVariantFeatures property
+        const productWithoutFeatures = makeProduct();
+        const { itemVariantFeatures: _omit, ...productMissingField } = productWithoutFeatures;
+        setupFetchSuccess(productMissingField);
+        renderProduct();
+        await waitForProductLoaded();
+        expect(document.querySelector('.product-variant-features')).toBeNull();
+    });
+
+    it('renders French feature names and values when French translation is available', async () => {
+        const user = userEvent.setup();
+        setupFetchSuccess(makeProduct({
+            itemVariantFeatures: [
+                { id: 'f1', attributeName_en: 'Material', attributeName_fr: 'Matériau', attributes_en: 'Cotton', attributes_fr: 'Coton' },
+            ],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const langSelect = screen.getByRole('combobox', { name: /language|langue/i });
+        await user.selectOptions(langSelect, 'fr');
+        expect(screen.getByText('Matériau')).toBeInTheDocument();
+        expect(screen.getByText('Coton')).toBeInTheDocument();
+    });
+
+    it('falls back to English feature name/value when French translation is absent', async () => {
+        const user = userEvent.setup();
+        setupFetchSuccess(makeProduct({
+            itemVariantFeatures: [
+                { id: 'f1', attributeName_en: 'Material', attributeName_fr: null, attributes_en: 'Cotton', attributes_fr: null },
+            ],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const langSelect = screen.getByRole('combobox', { name: /language|langue/i });
+        await user.selectOptions(langSelect, 'fr');
+        expect(screen.getByText('Material')).toBeInTheDocument();
+        expect(screen.getByText('Cotton')).toBeInTheDocument();
+    });
+
+    it('renders the variant features section between description and product-attributes', async () => {
+        setupFetchSuccess(makeProduct({
+            description_en: 'A great product.',
+            itemVariantFeatures: [
+                { id: 'f1', attributeName_en: 'Material', attributes_en: 'Cotton' },
+            ],
+            variants: [makeVariant({ sku: 'SKU-001' })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const productInfo = document.querySelector('.product-info');
+        expect(productInfo).toBeInTheDocument();
+        const children = Array.from(productInfo!.children);
+        const descIndex = children.findIndex(el => el.classList.contains('product-description'));
+        const featIndex = children.findIndex(el => el.classList.contains('product-variant-features'));
+        const attrIndex = children.findIndex(el => el.classList.contains('product-attributes'));
+        expect(descIndex).toBeGreaterThanOrEqual(0);
+        expect(featIndex).toBeGreaterThan(descIndex);
+        expect(attrIndex).toBeGreaterThan(featIndex);
     });
 });

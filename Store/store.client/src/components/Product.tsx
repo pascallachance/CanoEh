@@ -17,6 +17,14 @@ interface ItemVariantAttributeDto {
     attributes_fr?: string;
 }
 
+interface ItemVariantFeaturesDto {
+    id: string;
+    attributeName_en: string;
+    attributeName_fr?: string | null;
+    attributes_en: string;
+    attributes_fr?: string | null;
+}
+
 interface ItemVariantDto {
     id: string;
     price: number;
@@ -48,6 +56,7 @@ interface GetItemResponse {
     categoryName_fr?: string;
     variants: ItemVariantDto[];
     itemAttributes: { id: string; attributeName_en: string; attributeName_fr?: string; attributes_en: string; attributes_fr?: string }[];
+    itemVariantFeatures: ItemVariantFeaturesDto[];
     createdAt: string;
     updatedAt?: string;
     deleted: boolean;
@@ -565,6 +574,33 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                             {getText('Description', 'Description')}
                                         </h2>
                                         <p className="product-description-text">{productDescription}</p>
+                                    </div>
+                                )}
+
+                                {/* Variant Features */}
+                                {product.itemVariantFeatures && product.itemVariantFeatures.length > 0 && (
+                                    <div className="product-variant-features">
+                                        <h2 className="product-variant-features-title">
+                                            {getText('Features', 'Caractéristiques')}
+                                        </h2>
+                                        <table className="product-variant-features-table">
+                                            <tbody>
+                                                {product.itemVariantFeatures.map((feature) => (
+                                                    <tr key={feature.id} className="product-variant-features-row">
+                                                        <th className="product-variant-features-name" scope="row">
+                                                            {language === 'fr' && feature.attributeName_fr
+                                                                ? feature.attributeName_fr
+                                                                : feature.attributeName_en}
+                                                        </th>
+                                                        <td className="product-variant-features-value">
+                                                            {language === 'fr' && feature.attributes_fr
+                                                                ? feature.attributes_fr
+                                                                : feature.attributes_en}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 )}
 

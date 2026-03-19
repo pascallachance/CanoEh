@@ -534,8 +534,8 @@ SET
     Sku = @Sku,
     ProductIdentifierType = @ProductIdentifierType,
     ProductIdentifierValue = @ProductIdentifierValue,
-    ImageUrls = @ImageUrls,
-    ThumbnailUrl = @ThumbnailUrl,
+    ImageUrls = COALESCE(@ImageUrls, ImageUrls),
+    ThumbnailUrl = COALESCE(@ThumbnailUrl, ThumbnailUrl),
     ItemVariantName_en = @ItemVariantName_en,
     ItemVariantName_fr = @ItemVariantName_fr,
     Deleted = @Deleted

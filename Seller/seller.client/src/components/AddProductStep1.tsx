@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './AddProductStep1.css';
 import StepIndicator from './StepIndicator';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -17,16 +17,21 @@ interface AddProductStep1Props {
     editMode?: boolean;
     onStepNavigate?: (step: number) => void;
     completedSteps?: number[];
+    onDataChange?: (data: AddProductStep1Data) => void;
 }
 
-function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep1Props) {
+function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onStepNavigate, completedSteps, onDataChange }: AddProductStep1Props) {
     const { t } = useLanguage();
-    const [formData, setFormData] = useState<AddProductStep1Data>(initialData || {
+    const initialFormData = initialData || {
         name: '',
         name_fr: '',
         description: '',
         description_fr: ''
-    });
+    };
+    const [formData, setFormData] = useState<AddProductStep1Data>(initialFormData);
+    // Ref always holds the latest form data so handleStepNavigate can read it without
+    // closing over a stale state snapshot (avoids calling onDataChange on every keystroke).
+    const latestFormData = useRef<AddProductStep1Data>(initialFormData);
 
     const [errors, setErrors] = useState<Partial<AddProductStep1Data>>({});
 
@@ -68,11 +73,27 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onSt
     };
 
     const handleInputChange = (field: keyof AddProductStep1Data, value: string) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
+        setFormData(prev => {
+            const updated = { ...prev, [field]: value };
+            // Keep the ref in sync so handleStepNavigate always has the latest data.
+            latestFormData.current = updated;
+            return updated;
+        });
         // Clear error when user starts typing
         if (errors[field]) {
             setErrors(prev => ({ ...prev, [field]: undefined }));
         }
+    };
+
+    const handleStepNavigate = (step: number) => {
+        // In edit mode, persist the latest form data before navigating to another step
+        // so that changes made in step 1 are not lost when using the step indicator.
+        // We read from the ref (not state) to avoid a stale closure and to avoid calling
+        // onDataChange on every keystroke, which would cause expensive parent re-renders.
+        if (editMode && onDataChange) {
+            onDataChange(latestFormData.current);
+        }
+        onStepNavigate?.(step);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -90,7 +111,7 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onSt
                     <StepIndicator 
                         currentStep={1}
                         totalSteps={3}
-                        onStepClick={onStepNavigate}
+                        onStepClick={handleStepNavigate}
                         completedSteps={completedSteps || []}
                     />
                     <h2>{t('step1.title')}</h2>

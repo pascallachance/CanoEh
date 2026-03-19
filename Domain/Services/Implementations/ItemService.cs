@@ -128,10 +128,7 @@ INSERT INTO dbo.ItemVariant (
     ThumbnailUrl,
     ItemVariantName_en,
     ItemVariantName_fr,
-    Deleted,
-    Offer,
-    OfferStart,
-    OfferEnd)
+    Deleted)
 OUTPUT INSERTED.Id
 VALUES (
     @ItemId,
@@ -144,10 +141,7 @@ VALUES (
     @ThumbnailUrl,
     @ItemVariantName_en,
     @ItemVariantName_fr,
-    @Deleted,
-    @Offer,
-    @OfferStart,
-    @OfferEnd)";
+    @Deleted)";
 
                             foreach (var variantRequest in itemVariantRequests)
                             {
@@ -163,10 +157,7 @@ VALUES (
                                     variantRequest.ThumbnailUrl,
                                     variantRequest.ItemVariantName_en,
                                     variantRequest.ItemVariantName_fr,
-                                    variantRequest.Deleted,
-                                    variantRequest.Offer,
-                                    variantRequest.OfferStart,
-                                    variantRequest.OfferEnd
+                                    variantRequest.Deleted
                                 }, transaction);
 
                                 var variant = new ItemVariant
@@ -182,10 +173,7 @@ VALUES (
                                     ThumbnailUrl = variantRequest.ThumbnailUrl,
                                     ItemVariantName_en = variantRequest.ItemVariantName_en,
                                     ItemVariantName_fr = variantRequest.ItemVariantName_fr,
-                                    Deleted = variantRequest.Deleted,
-                                    Offer = variantRequest.Offer,
-                                    OfferStart = variantRequest.OfferStart,
-                                    OfferEnd = variantRequest.OfferEnd
+                                    Deleted = variantRequest.Deleted
                                 };
                                 itemVariants.Add(variant);
 
@@ -550,10 +538,7 @@ SET
     ThumbnailUrl = @ThumbnailUrl,
     ItemVariantName_en = @ItemVariantName_en,
     ItemVariantName_fr = @ItemVariantName_fr,
-    Deleted = @Deleted,
-    Offer = COALESCE(@Offer, Offer),
-    OfferStart = COALESCE(@OfferStart, OfferStart),
-    OfferEnd = COALESCE(@OfferEnd, OfferEnd)
+    Deleted = @Deleted
 WHERE Id = @Id AND ItemId = @ItemId";
 
                             await connection.ExecuteAsync(variantUpdateQuery, new
@@ -569,10 +554,7 @@ WHERE Id = @Id AND ItemId = @ItemId";
                                 variant.ThumbnailUrl,
                                 variant.ItemVariantName_en,
                                 variant.ItemVariantName_fr,
-                                variant.Deleted,
-                                variant.Offer,
-                                variant.OfferStart,
-                                variant.OfferEnd
+                                variant.Deleted
                             }, transaction);
 
                             // Re-sync attributes: delete old ones then insert the updated set
@@ -596,10 +578,7 @@ INSERT INTO dbo.ItemVariant (
     ThumbnailUrl,
     ItemVariantName_en,
     ItemVariantName_fr,
-    Deleted,
-    Offer,
-    OfferStart,
-    OfferEnd)
+    Deleted)
 VALUES (
     @Id,
     @ItemId,
@@ -612,10 +591,7 @@ VALUES (
     @ThumbnailUrl,
     @ItemVariantName_en,
     @ItemVariantName_fr,
-    @Deleted,
-    @Offer,
-    @OfferStart,
-    @OfferEnd)";
+    @Deleted)";
 
                             await connection.ExecuteAsync(variantInsertQuery, new
                             {
@@ -630,10 +606,7 @@ VALUES (
                                 variant.ThumbnailUrl,
                                 variant.ItemVariantName_en,
                                 variant.ItemVariantName_fr,
-                                variant.Deleted,
-                                variant.Offer,
-                                variant.OfferStart,
-                                variant.OfferEnd
+                                variant.Deleted
                             }, transaction);
                         }
 

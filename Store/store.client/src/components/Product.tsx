@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect, useMemo, Fragment } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './Home.css';
 import './Product.css';
@@ -181,18 +181,21 @@ function findMatchingVariant(
 
 /**
  * Builds the ancestor path (root → leaf) for a given category node ID.
- * Uses a flat list of all nodes and follows parentId links up to the root.
+ * Accepts a pre-built node map to avoid rebuilding it on every call.
+ * Guards against cycles in the category graph using a visited-ID set.
  */
-function buildCategoryPath(nodes: CategoryNodeDto[], categoryNodeId: string): CategoryNodeDto[] {
-    const map = new Map<string, CategoryNodeDto>();
-    for (const node of nodes) {
-        map.set(node.id, node);
-    }
+function buildCategoryPath(nodeMap: Map<string, CategoryNodeDto>, categoryNodeId: string): CategoryNodeDto[] {
     const path: CategoryNodeDto[] = [];
-    let current = map.get(categoryNodeId);
+    const visitedIds = new Set<string>();
+    let current = nodeMap.get(categoryNodeId);
     while (current) {
+        // Detect cycles in the category graph to avoid infinite loops.
+        if (visitedIds.has(current.id)) {
+            break;
+        }
+        visitedIds.add(current.id);
         path.unshift(current);
-        current = current.parentId ? map.get(current.parentId) : undefined;
+        current = current.parentId ? nodeMap.get(current.parentId) : undefined;
     }
     return path;
 }
@@ -275,9 +278,15 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     const fetchCategoryNodes = async () => {
         try {
             const apiBaseUrl = import.meta.env.VITE_API_STORE_BASE_URL;
-            if (!apiBaseUrl) return;
+            if (!apiBaseUrl) {
+                console.warn('VITE_API_STORE_BASE_URL is not set; skipping category nodes fetch and breadcrumb construction.');
+                return;
+            }
             const response = await fetch(`${apiBaseUrl}/api/CategoryNode/GetAllCategoryNodes`);
-            if (!response.ok) return;
+            if (!response.ok) {
+                console.warn(`Failed to fetch category nodes: ${response.status} ${response.statusText}`);
+                return;
+            }
             const result: ApiResult<CategoryNodeDto[]> = await response.json();
             if (result.isSuccess && result.value) {
                 setCategoryNodes(result.value);
@@ -364,9 +373,18 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         ? (language === 'fr' ? product.description_fr : product.description_en)
         : '';
 
-    const categoryPath = product
-        ? buildCategoryPath(categoryNodes, product.categoryNodeID)
-        : [];
+    const categoryNodeMap = useMemo(() => {
+        const map = new Map<string, CategoryNodeDto>();
+        for (const node of categoryNodes) {
+            map.set(node.id, node);
+        }
+        return map;
+    }, [categoryNodes]);
+
+    const categoryPath = useMemo(
+        () => product ? buildCategoryPath(categoryNodeMap, product.categoryNodeID) : [],
+        [categoryNodeMap, product]
+    );
 
     const offerActive = selectedVariant ? isOfferActive(selectedVariant) : false;
     const discountedPrice = offerActive && selectedVariant

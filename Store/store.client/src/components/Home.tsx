@@ -615,7 +615,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     type="button"
                     className="nav-item cart-button"
                     onClick={handleCartClick}
-                    aria-label={getText("Shopping cart", "Panier d'achat")}
+                    aria-label={getText("Items in cart", "Articles dans le panier")}
                 >
                     <div>
                         <span className="nav-cart-icon"></span>

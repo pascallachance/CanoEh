@@ -406,13 +406,17 @@ WHERE Id = @Id";
 
             // Use a recursive CTE to find the given node and all its descendants,
             // then return all non-deleted items assigned to any of those nodes.
+            // AncestorPath tracks visited node IDs (comma-separated) to break cycles
+            // caused by corrupted ParentId chains in the database.
             var itemQuery = @"
                 WITH DescendantNodes AS (
-                    SELECT Id FROM dbo.CategoryNode WHERE Id = @nodeId
+                    SELECT Id, CAST(Id AS NVARCHAR(MAX)) AS AncestorPath
+                    FROM dbo.CategoryNode WHERE Id = @nodeId
                     UNION ALL
-                    SELECT c.Id
+                    SELECT c.Id, dn.AncestorPath + ',' + CAST(c.Id AS NVARCHAR(36))
                     FROM dbo.CategoryNode c
                     INNER JOIN DescendantNodes dn ON c.ParentId = dn.Id
+                    WHERE ',' + dn.AncestorPath + ',' NOT LIKE '%,' + CAST(c.Id AS NVARCHAR(36)) + ',%'
                 )
                 SELECT i.*
                 FROM dbo.Item i

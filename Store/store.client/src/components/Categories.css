@@ -172,6 +172,11 @@
     gap: 16px;
 }
 
+.categories-empty-btn {
+    width: auto;
+    padding: 10px 24px;
+}
+
 /* ── Product card (reuses offer-product-card styles) ── */
 .category-product-card {
     background-color: white;

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
+import './Filters.css';
 import './Categories.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
 
@@ -626,7 +627,7 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                                 {(minPrice || maxPrice) && (
                                     <button
                                         type="button"
-                                        className="filter-clear-btn offers-empty-btn"
+                                        className="filter-clear-btn categories-empty-btn"
                                         onClick={handleClearFilters}
                                     >
                                         {getText("Clear Filters", "Effacer les filtres")}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
+import './Filters.css';
 import './Offers.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
 

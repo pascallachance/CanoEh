@@ -461,6 +461,7 @@ button.card-title-btn:focus-visible {
     align-items: center;
     justify-content: flex-start;
     position: relative;
+    min-width: 0;
 }
 
 .item-placeholder-clickable {

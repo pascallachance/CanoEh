@@ -1243,7 +1243,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             }
             catch (Exception ex)
             {
-                return Result.Failure<IEnumerable<GetItemResponse>>($"An error occurred while retrieving items by category node: {ex.Message}", StatusCodes.Status500InternalServerError);
+                return Result.Failure<IEnumerable<GetItemResponse>>("An error occurred while retrieving items by category node.", StatusCodes.Status500InternalServerError);
             }
         }
 

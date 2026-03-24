@@ -125,6 +125,7 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
 
     // Category tree data
     const [categoryTree, setCategoryTree] = useState<CategoryNodeDto[]>([]);
+    const [nodesError, setNodesError] = useState<boolean>(false);
 
     // Navigation state: stack of visited nodes (breadcrumb path)
     const [navPath, setNavPath] = useState<CategoryNodeDto[]>([]);
@@ -211,15 +212,18 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
     const fetchCategoryNodes = async () => {
         try {
             setLoadingNodes(true);
+            setNodesError(false);
             const apiBaseUrl = import.meta.env.VITE_API_STORE_BASE_URL;
             if (!apiBaseUrl) {
                 console.warn('API base URL not configured');
+                setNodesError(true);
                 return;
             }
 
             const response = await fetch(`${apiBaseUrl}/api/CategoryNode/GetAllCategoryNodes`);
             if (!response.ok) {
                 console.error('Failed to fetch category nodes');
+                setNodesError(true);
                 return;
             }
 
@@ -227,9 +231,12 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
             if (result.isSuccess && result.value) {
                 const tree = buildCategoryTree(result.value);
                 setCategoryTree(tree);
+            } else {
+                setNodesError(true);
             }
         } catch (error) {
             console.error('Error fetching category nodes:', error);
+            setNodesError(true);
         } finally {
             setLoadingNodes(false);
         }
@@ -556,6 +563,15 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                         {loadingNodes ? (
                             <div className="categories-loading" role="status">
                                 <p>{getText("Loading categories...", "Chargement des catégories...")}</p>
+                            </div>
+                        ) : nodesError ? (
+                            <div className="categories-empty">
+                                <p>
+                                    {getText(
+                                        "Unable to load categories. Please try again later.",
+                                        "Impossible de charger les catégories. Veuillez réessayer plus tard."
+                                    )}
+                                </p>
                             </div>
                         ) : currentChildren.length > 0 && (
                             <div className="category-nodes-section">

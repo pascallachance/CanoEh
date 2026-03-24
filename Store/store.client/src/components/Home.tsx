@@ -625,7 +625,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                             {cartItemsCount}
                         </span>
                         <span className="nav-cart-line2">
-                            {getText("Cart", "Panier")}
+                            {getText("Items", "Articles")}
                         </span>
                     </div>
                 </button>

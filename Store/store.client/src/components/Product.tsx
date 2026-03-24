@@ -492,9 +492,13 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                             {categoryPath.map((node) => (
                                 <Fragment key={node.id}>
                                     <span className="breadcrumb-sep" aria-hidden="true">›</span>
-                                    <span className="breadcrumb-current">
+                                    <button
+                                        type="button"
+                                        className="breadcrumb-link"
+                                        onClick={() => navigate(`/categories?nodeId=${node.id}`)}
+                                    >
                                         {getCategoryNodeName(node, language)}
-                                    </span>
+                                    </button>
                                 </Fragment>
                             ))}
                         </nav>

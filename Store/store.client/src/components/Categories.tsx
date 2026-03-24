@@ -98,7 +98,8 @@ function buildCategoryTree(nodes: CategoryNodeDto[]): CategoryNodeDto[] {
     for (const node of map.values()) {
         if (node.parentId && map.has(node.parentId)) {
             map.get(node.parentId)!.children.push(node);
-        } else if (!node.parentId) {
+        } else {
+            // Treat nodes whose parent is missing (or have no parentId) as roots
             roots.push(node);
         }
     }
@@ -586,10 +587,7 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                                         <button
                                             key={node.id}
                                             type="button"
-                                            className={
-                                                'category-node-chip' +
-                                                (currentNode?.id === node.id ? ' category-node-chip-active' : '')
-                                            }
+                                            className="category-node-chip"
                                             onClick={() => handleNodeClick(node)}
                                         >
                                             {language === 'fr' ? node.name_fr : node.name_en}

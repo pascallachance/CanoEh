@@ -419,7 +419,7 @@ WHERE Id = @Id";
                 WHERE i.CategoryNodeID IN (SELECT Id FROM DescendantNodes)
                   AND i.Deleted = 0
                 ORDER BY i.CreatedAt DESC
-                OPTION (MAXRECURSION 20)";
+                OPTION (MAXRECURSION 32767)";
 
             var items = (await dbConnection.QueryAsync<Item>(itemQuery, new { nodeId })).ToList();
 

@@ -2309,5 +2309,71 @@ namespace API.Tests
             // Middle empty entry must be preserved; only trailing empties are stripped
             Assert.Equal("/img1.jpg,,/img3.jpg", variant.ImageUrls);
         }
+
+        [Fact]
+        public async Task GetItemsByCategoryNodeAsync_ReturnFailure_WhenNodeIdIsEmpty()
+        {
+            // Act
+            var result = await _itemService.GetItemsByCategoryNodeAsync(Guid.Empty);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+            Assert.Equal("Category node ID cannot be empty.", result.Error);
+        }
+
+        [Fact]
+        public async Task GetItemsByCategoryNodeAsync_ReturnEmptyList_WhenNoItemsFound()
+        {
+            // Arrange
+            var nodeId = Guid.NewGuid();
+            _mockItemRepository.Setup(x => x.GetItemsByCategoryNodeAsync(nodeId))
+                               .ReturnsAsync(Enumerable.Empty<Item>());
+
+            // Act
+            var result = await _itemService.GetItemsByCategoryNodeAsync(nodeId);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Empty(result.Value);
+        }
+
+        [Fact]
+        public async Task GetItemsByCategoryNodeAsync_MapsCategoryNames_WhenItemsFound()
+        {
+            // Arrange
+            var nodeId = Guid.NewGuid();
+            var item = new Item
+            {
+                Id = Guid.NewGuid(),
+                SellerID = Guid.NewGuid(),
+                Name_en = "Widget",
+                Name_fr = "Gadget",
+                CategoryNodeID = nodeId,
+                Deleted = false
+            };
+            var categoryNode = new CategoryNode
+            {
+                Id = nodeId,
+                Name_en = "Electronics",
+                Name_fr = "Électronique"
+            };
+
+            _mockItemRepository.Setup(x => x.GetItemsByCategoryNodeAsync(nodeId))
+                               .ReturnsAsync(new List<Item> { item });
+            _mockCategoryNodeRepository.Setup(x => x.GetByIdsAsync(It.IsAny<IEnumerable<Guid>>()))
+                                       .ReturnsAsync(new List<BaseNode> { categoryNode });
+
+            // Act
+            var result = await _itemService.GetItemsByCategoryNodeAsync(nodeId);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            var responseList = result.Value.ToList();
+            Assert.Single(responseList);
+            Assert.Equal("Electronics", responseList[0].CategoryName_en);
+            Assert.Equal("Électronique", responseList[0].CategoryName_fr);
+        }
     }
 }

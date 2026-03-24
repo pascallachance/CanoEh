@@ -495,7 +495,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                     <button
                                         type="button"
                                         className="breadcrumb-link"
-                                        onClick={() => navigate(`/categories?nodeId=${node.id}`)}
+                                        onClick={() => navigate(`/categories?nodeId=${encodeURIComponent(node.id)}`)}
                                     >
                                         {getCategoryNodeName(node, language)}
                                     </button>

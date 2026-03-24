@@ -219,7 +219,7 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
         const path = buildPathToNode(categoryTree, nodeId);
         if (path.length > 0) {
             setNavPath(path);
-            fetchProductsForNode(nodeId);
+            fetchProductsForNode(encodeURIComponent(nodeId));
         }
     }, [categoryTree, searchParams]);
 

@@ -1207,6 +1207,46 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             }
         }
 
+        public async Task<Result<IEnumerable<GetItemResponse>>> GetItemsByCategoryNodeAsync(Guid nodeId)
+        {
+            try
+            {
+                if (nodeId == Guid.Empty)
+                {
+                    return Result.Failure<IEnumerable<GetItemResponse>>(
+                        "Category node ID cannot be empty.",
+                        StatusCodes.Status400BadRequest);
+                }
+
+                var items = (await _itemRepository.GetItemsByCategoryNodeAsync(nodeId)).ToList();
+                if (!items.Any())
+                {
+                    return Result.Success<IEnumerable<GetItemResponse>>(Enumerable.Empty<GetItemResponse>());
+                }
+
+                var categoryIds = items.Select(i => i.CategoryNodeID).Distinct().ToHashSet();
+                var categoryNodes = await _categoryNodeRepository.GetByIdsAsync(categoryIds) ?? Enumerable.Empty<BaseNode>();
+                var categoryNodeMap = categoryNodes.ToDictionary(n => n.Id);
+
+                var responseList = items.Select(item =>
+                {
+                    var response = MapItemToGetItemResponse(item);
+                    if (categoryNodeMap.TryGetValue(item.CategoryNodeID, out var categoryNode))
+                    {
+                        response.CategoryName_en = categoryNode.Name_en;
+                        response.CategoryName_fr = categoryNode.Name_fr;
+                    }
+                    return response;
+                }).ToList();
+
+                return Result.Success<IEnumerable<GetItemResponse>>(responseList);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<IEnumerable<GetItemResponse>>("An error occurred while retrieving items by category node.", StatusCodes.Status500InternalServerError);
+            }
+        }
+
         public async Task<Result> UpdateItemVariantOfferAsync(UpdateItemVariantOfferRequest request)
         {
             try

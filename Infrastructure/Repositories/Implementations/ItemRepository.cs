@@ -397,6 +397,49 @@ WHERE Id = @Id";
             return items;
         }
 
+        public async Task<IEnumerable<Item>> GetItemsByCategoryNodeAsync(Guid nodeId)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+
+            // Use a recursive CTE to find the given node and all its descendants,
+            // then return all non-deleted items assigned to any of those nodes.
+            var itemQuery = @"
+                WITH DescendantNodes AS (
+                    SELECT Id FROM dbo.CategoryNode WHERE Id = @nodeId
+                    UNION ALL
+                    SELECT c.Id
+                    FROM dbo.CategoryNode c
+                    INNER JOIN DescendantNodes dn ON c.ParentId = dn.Id
+                )
+                SELECT i.*
+                FROM dbo.Item i
+                WHERE i.CategoryNodeID IN (SELECT Id FROM DescendantNodes)
+                  AND i.Deleted = 0
+                ORDER BY i.CreatedAt DESC
+                OPTION (MAXRECURSION 20)";
+
+            var items = (await dbConnection.QueryAsync<Item>(itemQuery, new { nodeId })).ToList();
+
+            if (!items.Any())
+            {
+                return items;
+            }
+
+            var itemIds = items.Select(i => i.Id).ToList();
+
+            var variantQuery = "SELECT * FROM dbo.ItemVariant WHERE ItemId IN @itemIds AND Deleted = 0";
+            var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { itemIds })).ToList();
+            var variantsByItemId = variants.GroupBy(v => v.ItemId).ToDictionary(g => g.Key, g => g.ToList());
+
+            await HydrateVariantAttributesAndFeaturesAsync(variants);
+            AssignVariantsToItems(items, variantsByItemId);
+
+            return items;
+        }
+
         /// <summary>
         /// Loads and attaches <see cref="ItemVariantAttribute"/> and <see cref="ItemVariantFeatures"/> records
         /// to the supplied variants in a single pair of batch queries. No-ops when the list is empty.

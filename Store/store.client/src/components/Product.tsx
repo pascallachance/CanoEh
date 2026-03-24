@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './Home.css';
 import './Product.css';
@@ -68,6 +68,17 @@ interface ApiResult<T> {
     value?: T;
     error?: string;
     errorCode?: number;
+}
+
+interface CategoryNodeDto {
+    id: string;
+    name_en: string;
+    name_fr: string;
+    nodeType: string;
+    parentId: string | null;
+    isActive: boolean;
+    sortOrder: number | null;
+    children: CategoryNodeDto[];
 }
 
 /**
@@ -168,6 +179,28 @@ function findMatchingVariant(
     return null;
 }
 
+/**
+ * Builds the ancestor path (root → leaf) for a given category node ID.
+ * Uses a flat list of all nodes and follows parentId links up to the root.
+ */
+function buildCategoryPath(nodes: CategoryNodeDto[], categoryNodeId: string): CategoryNodeDto[] {
+    const map = new Map<string, CategoryNodeDto>();
+    for (const node of nodes) {
+        map.set(node.id, node);
+    }
+    const path: CategoryNodeDto[] = [];
+    let current = map.get(categoryNodeId);
+    while (current) {
+        path.unshift(current);
+        current = current.parentId ? map.get(current.parentId) : undefined;
+    }
+    return path;
+}
+
+function getCategoryNodeName(node: CategoryNodeDto, language: string): string {
+    return language === 'fr' ? node.name_fr : node.name_en;
+}
+
 function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -179,6 +212,9 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     const [product, setProduct] = useState<GetItemResponse | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
+    // Category nodes for breadcrumb path
+    const [categoryNodes, setCategoryNodes] = useState<CategoryNodeDto[]>([]);
 
     // Selected variant – keys are always attributeName_en, values are always attributes_en
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
@@ -194,6 +230,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     useEffect(() => {
         const browserLang = navigator.language.toLowerCase();
         setLanguage(browserLang.includes('fr') ? 'fr' : 'en');
+        fetchCategoryNodes();
     }, []);
 
     useEffect(() => {
@@ -232,6 +269,21 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
             setError(getText('Failed to load product.', 'Impossible de charger le produit.'));
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchCategoryNodes = async () => {
+        try {
+            const apiBaseUrl = import.meta.env.VITE_API_STORE_BASE_URL;
+            if (!apiBaseUrl) return;
+            const response = await fetch(`${apiBaseUrl}/api/CategoryNode/GetAllCategoryNodes`);
+            if (!response.ok) return;
+            const result: ApiResult<CategoryNodeDto[]> = await response.json();
+            if (result.isSuccess && result.value) {
+                setCategoryNodes(result.value);
+            }
+        } catch (err) {
+            console.error('Error fetching category nodes:', err);
         }
     };
 
@@ -311,9 +363,10 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     const productDescription = product
         ? (language === 'fr' ? product.description_fr : product.description_en)
         : '';
-    const categoryName = product
-        ? (language === 'fr' ? product.categoryName_fr : product.categoryName_en)
-        : '';
+
+    const categoryPath = product
+        ? buildCategoryPath(categoryNodes, product.categoryNodeID)
+        : [];
 
     const offerActive = selectedVariant ? isOfferActive(selectedVariant) : false;
     const discountedPrice = offerActive && selectedVariant
@@ -418,14 +471,14 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                             >
                                 {getText('Home', 'Accueil')}
                             </button>
-                            {categoryName && (
-                                <>
+                            {categoryPath.map((node) => (
+                                <Fragment key={node.id}>
                                     <span className="breadcrumb-sep" aria-hidden="true">›</span>
-                                    <span className="breadcrumb-current">{categoryName}</span>
-                                </>
-                            )}
-                            <span className="breadcrumb-sep" aria-hidden="true">›</span>
-                            <span className="breadcrumb-current">{productName}</span>
+                                    <span className="breadcrumb-current">
+                                        {getCategoryNodeName(node, language)}
+                                    </span>
+                                </Fragment>
+                            ))}
                         </nav>
 
                         {/* Main product section */}
@@ -484,9 +537,9 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                             >
                                 <h1 className="product-name">{productName}</h1>
 
-                                {categoryName && (
+                                {categoryPath.length > 0 && (
                                     <p className="product-category">
-                                        {getText('Category', 'Catégorie')}: {categoryName}
+                                        {getText('Category', 'Catégorie')}: {getCategoryNodeName(categoryPath[categoryPath.length - 1], language)}
                                     </p>
                                 )}
 

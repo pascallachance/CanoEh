@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import './Home.css';
 import './Filters.css';
 import './Categories.css';
@@ -121,6 +121,7 @@ function buildCategoryTree(nodes: CategoryNodeDto[]): CategoryNodeDto[] {
 
 function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [language, setLanguage] = useState<string>('en');
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [cartItemsCount] = useState<number>(0);
@@ -210,6 +211,17 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
         setLanguage(browserLang.includes('fr') ? 'fr' : 'en');
         fetchCategoryNodes();
     }, []);
+
+    // Navigate to a pre-selected node when the category tree is loaded and a nodeId is in the URL
+    useEffect(() => {
+        const nodeId = searchParams.get('nodeId');
+        if (!nodeId || categoryTree.length === 0) return;
+        const path = buildPathToNode(categoryTree, nodeId);
+        if (path.length > 0) {
+            setNavPath(path);
+            fetchProductsForNode(encodeURIComponent(nodeId));
+        }
+    }, [categoryTree, searchParams]);
 
     const fetchCategoryNodes = async () => {
         try {
@@ -537,9 +549,9 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                             <button
                                 type="button"
                                 className="breadcrumb-item"
-                                onClick={() => handleBreadcrumbClick(-1)}
+                                onClick={() => navigate('/')}
                             >
-                                {getText("All Departments", "Tous les rayons")}
+                                {getText("Home", "Accueil")}
                             </button>
                             {navPath.map((node, idx) => (
                                 <span key={node.id} style={{ display: 'contents' }}>
@@ -577,11 +589,6 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                             </div>
                         ) : currentChildren.length > 0 && (
                             <div className="category-nodes-section">
-                                <p className="category-nodes-label">
-                                    {currentNode
-                                        ? getText("Sub-categories", "Sous-catégories")
-                                        : getText("Departments", "Rayons")}
-                                </p>
                                 <div className="category-nodes-list">
                                     {currentChildren.map((node) => (
                                         <button
@@ -737,6 +744,16 @@ function findNodeInTree(nodes: CategoryNodeDto[], id: string): CategoryNodeDto |
         if (found) return found;
     }
     return null;
+}
+
+// Helper to build the ancestor path (root → node) for a given node ID
+function buildPathToNode(nodes: CategoryNodeDto[], id: string): CategoryNodeDto[] {
+    for (const node of nodes) {
+        if (node.id === id) return [node];
+        const childPath = buildPathToNode(node.children, id);
+        if (childPath.length > 0) return [node, ...childPath];
+    }
+    return [];
 }
 
 export default Categories;

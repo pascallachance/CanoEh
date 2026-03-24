@@ -372,10 +372,33 @@ namespace API.Controllers
             }
         }
 
+        [HttpGet("GetItemsByCategoryNode/{nodeId:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetItemsByCategoryNode(Guid nodeId)
+        {
+            try
+            {
+                var result = await _itemService.GetItemsByCategoryNodeAsync(nodeId);
+
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? StatusCodes.Status500InternalServerError, result.Error);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
+        }
+
         /// <summary>
         /// Updates offer fields for an item variant.
         /// </summary>
-        /// <param name="request">The offer update details.</param>
         /// <returns>Returns success or an error response.</returns>
         [HttpPut("UpdateItemVariantOffer")]
         [Authorize]

@@ -10,5 +10,6 @@ namespace Infrastructure.Repositories.Interfaces
         Task<IEnumerable<Item>> GetSuggestedProductsAsync(int count = 4);
         Task<IEnumerable<Item>> GetProductsWithOffersAsync(int count = 10);
         Task<IEnumerable<Item>> GetSuggestedCategoriesProductsAsync(int count = 4);
+        Task<IEnumerable<Item>> GetItemsByCategoryNodeAsync(Guid nodeId);
     }
 }

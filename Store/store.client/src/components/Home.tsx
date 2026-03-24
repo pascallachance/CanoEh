@@ -499,6 +499,10 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
             navigate('/offers');
             return;
         }
+        if (title === 'categories') {
+            navigate('/categories');
+            return;
+        }
         // TODO: Implement navigation to respective category/search pages
         console.log('Card clicked:', title);
     };

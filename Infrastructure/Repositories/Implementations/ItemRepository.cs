@@ -103,11 +103,26 @@ VALUES (
             {
                 dbConnection.Open();
             }
-            
-            // Query Item table only - variants should be loaded separately via ItemVariantRepository
+
             var query = "SELECT * FROM dbo.Item WHERE Deleted = 0";
-            
-            return await dbConnection.QueryAsync<Item>(query);
+            var items = (await dbConnection.QueryAsync<Item>(query)).ToList();
+
+            if (!items.Any())
+            {
+                return items;
+            }
+
+            var itemIds = items.Select(i => i.Id).ToList();
+
+            // Get all ItemVariants for the items (exclude deleted variants)
+            var variantQuery = "SELECT * FROM dbo.ItemVariant WHERE ItemId IN @itemIds AND Deleted = 0";
+            var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { itemIds })).ToList();
+            var variantsByItemId = variants.GroupBy(v => v.ItemId).ToDictionary(g => g.Key, g => g.ToList());
+
+            await HydrateVariantAttributesAndFeaturesAsync(variants);
+            AssignVariantsToItems(items, variantsByItemId);
+
+            return items;
         }
 
         public override async Task<Item> GetByIdAsync(Guid id)

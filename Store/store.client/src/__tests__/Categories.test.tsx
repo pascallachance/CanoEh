@@ -240,6 +240,42 @@ describe('Categories page – ?nodeId= URL param pre-selection', () => {
             );
         });
     });
+
+    it('shows an "All Products" root breadcrumb button when a node is selected', async () => {
+        const node = makeCategoryNode({ id: 'electronics', name_en: 'Electronics' });
+        setupFetch([node], []);
+
+        renderCategories('/categories?nodeId=electronics');
+
+        await waitFor(() => {
+            const breadcrumb = document.querySelector('.categories-breadcrumb');
+            expect(breadcrumb?.textContent).toMatch(/All Products/);
+        });
+    });
+
+    it('clicking the "All Products" breadcrumb root re-fetches all products and clears navPath', async () => {
+        const node = makeCategoryNode({ id: 'electronics', name_en: 'Electronics' });
+        setupFetch([node], []);
+
+        renderCategories('/categories?nodeId=electronics');
+
+        // Wait until the node breadcrumb is visible
+        await waitFor(() => {
+            expect(document.querySelector('.categories-breadcrumb')?.textContent).toMatch(/All Products/);
+        });
+
+        const allProductsBtn = screen.getByRole('button', { name: /All Products/i });
+        await act(async () => { allProductsBtn.click(); });
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith(
+                expect.stringContaining('/api/Item/GetAllItems')
+            );
+        });
+
+        // The node name should no longer appear in the breadcrumb
+        expect(document.querySelector('.categories-breadcrumb')?.textContent).not.toMatch(/Electronics/);
+    });
 });
 
 describe('Categories page – list all products when no node is selected', () => {

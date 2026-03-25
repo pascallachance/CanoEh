@@ -263,34 +263,34 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
     const safePage = Math.min(currentPage, totalPages);
     const pagedProducts = filteredProducts.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
+    // Reset pagination when sorting or price filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [sortBy, minPrice, maxPrice]);
+
     useEffect(() => {
         const browserLang = navigator.language.toLowerCase();
         setLanguage(browserLang.includes('fr') ? 'fr' : 'en');
         fetchCategoryNodes();
     }, []);
 
-    // Navigate to a pre-selected node when the category tree is loaded and a nodeId is in the URL
+    // When the category tree loads (or searchParams changes), navigate to the pre-selected node
+    // if nodeId is present, or fetch all products and clear navPath if it is absent.
     useEffect(() => {
+        if (categoryTree.length === 0) return;
         const nodeId = searchParams.get('nodeId');
-        if (!nodeId || categoryTree.length === 0) return;
-        const path = buildPathToNode(categoryTree, nodeId);
-        if (path.length > 0) {
-            setNavPath(path);
-            fetchProductsForNode(encodeURIComponent(nodeId));
-        }
-    }, [categoryTree, searchParams]);
-
-    // When no node is selected and the tree has loaded, fetch all products.
-    // This effect is intentionally scoped to categoryTree changes only:
-    // navPath is always [] here (initial state), searchParams hasn't changed,
-    // and fetchAllProducts only closes over stable state setters and env constants.
-    useEffect(() => {
-        const nodeId = searchParams.get('nodeId');
-        if (categoryTree.length > 0 && !nodeId && navPath.length === 0) {
+        if (nodeId) {
+            const path = buildPathToNode(categoryTree, nodeId);
+            if (path.length > 0) {
+                setNavPath(path);
+                fetchProductsForNode(encodeURIComponent(nodeId));
+            }
+        } else {
+            setNavPath([]);
             fetchAllProducts();
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [categoryTree]);
+    }, [categoryTree, searchParams]);
 
     const fetchCategoryNodes = async () => {
         try {
@@ -603,6 +603,18 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                             className="categories-breadcrumb"
                             aria-label={getText("Category navigation", "Navigation par catégorie")}
                         >
+                            {navPath.length > 0 && (
+                                <>
+                                    <button
+                                        type="button"
+                                        className="breadcrumb-item"
+                                        onClick={() => handleBreadcrumbClick(-1)}
+                                    >
+                                        {getText('All Products', 'Tous les produits')}
+                                    </button>
+                                    <span className="breadcrumb-sep" aria-hidden="true">›</span>
+                                </>
+                            )}
                             {navPath.map((node, idx) => (
                                 <span key={node.id} style={{ display: 'contents' }}>
                                     {idx > 0 && <span className="breadcrumb-sep" aria-hidden="true">›</span>}
@@ -709,7 +721,7 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                                                 type="button"
                                                 className={`pagination-btn${page === safePage ? ' pagination-btn-active' : ''}`}
                                                 onClick={() => setCurrentPage(page)}
-                                                aria-label={`Page ${page}`}
+                                                aria-label={getText(`Page ${page}`, `Page ${page}`)}
                                                 aria-current={page === safePage ? 'page' : undefined}
                                             >
                                                 {page}

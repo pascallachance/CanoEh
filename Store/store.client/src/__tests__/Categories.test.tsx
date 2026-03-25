@@ -114,7 +114,7 @@ describe('Categories page – breadcrumb Home item', () => {
         vi.unstubAllEnvs();
     });
 
-    it('shows "Home" as the first breadcrumb item', async () => {
+    it('does not show "Home" as a breadcrumb item', async () => {
         setupFetch([makeCategoryNode()]);
         renderCategories();
 
@@ -123,8 +123,8 @@ describe('Categories page – breadcrumb Home item', () => {
             expect(breadcrumb).toBeInTheDocument();
         });
 
-        const homeBtn = screen.getByRole('button', { name: /^Home$|^Accueil$/i });
-        expect(homeBtn).toBeInTheDocument();
+        const homeBtn = screen.queryByRole('button', { name: /^Home$|^Accueil$/i });
+        expect(homeBtn).not.toBeInTheDocument();
     });
 
     it('does not show "All Departments" in the breadcrumb', async () => {

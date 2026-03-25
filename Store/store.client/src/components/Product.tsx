@@ -482,16 +482,9 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                     <div className="product-detail">
                         {/* Breadcrumb */}
                         <nav className="product-breadcrumb" aria-label={getText('Breadcrumb', 'Fil d\'Ariane')}>
-                            <button
-                                type="button"
-                                className="breadcrumb-link"
-                                onClick={() => navigate('/')}
-                            >
-                                {getText('Home', 'Accueil')}
-                            </button>
-                            {categoryPath.map((node) => (
+                            {categoryPath.map((node, idx) => (
                                 <Fragment key={node.id}>
-                                    <span className="breadcrumb-sep" aria-hidden="true">›</span>
+                                    {idx > 0 && <span className="breadcrumb-sep" aria-hidden="true">›</span>}
                                     <button
                                         type="button"
                                         className="breadcrumb-link"

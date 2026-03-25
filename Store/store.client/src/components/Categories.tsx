@@ -546,16 +546,9 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                             className="categories-breadcrumb"
                             aria-label={getText("Category navigation", "Navigation par catégorie")}
                         >
-                            <button
-                                type="button"
-                                className="breadcrumb-item"
-                                onClick={() => navigate('/')}
-                            >
-                                {getText("Home", "Accueil")}
-                            </button>
                             {navPath.map((node, idx) => (
                                 <span key={node.id} style={{ display: 'contents' }}>
-                                    <span className="breadcrumb-sep" aria-hidden="true">›</span>
+                                    {idx > 0 && <span className="breadcrumb-sep" aria-hidden="true">›</span>}
                                     {idx < navPath.length - 1 ? (
                                         <button
                                             type="button"

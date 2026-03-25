@@ -119,6 +119,54 @@ function buildCategoryTree(nodes: CategoryNodeDto[]): CategoryNodeDto[] {
     return roots;
 }
 
+function mapItemsToCategoryProducts(items: GetItemResponse[]): CategoryProduct[] {
+    const result: CategoryProduct[] = [];
+
+    for (const item of items) {
+        if (!item.variants || item.variants.length === 0) continue;
+
+        // Pick the variant with the best (active) offer, or the first available
+        let bestVariant: ItemVariantDto | null = null;
+        let bestOffer = 0;
+
+        for (const v of item.variants) {
+            if (v.deleted) continue;
+            if (isOfferActive(v) && (v.offer ?? 0) > bestOffer) {
+                bestVariant = v;
+                bestOffer = v.offer!;
+            }
+        }
+
+        if (!bestVariant) {
+            bestVariant = item.variants.find(v => !v.deleted) ?? null;
+        }
+
+        if (!bestVariant) continue;
+
+        const imageUrl = extractBestImageUrl(bestVariant);
+        if (!imageUrl) continue;
+
+        const hasOffer = isOfferActive(bestVariant);
+        const offerPct = hasOffer ? (bestVariant.offer ?? 0) : 0;
+
+        result.push({
+            id: item.id,
+            name_en: item.name_en,
+            name_fr: item.name_fr,
+            price: bestVariant.price,
+            hasOffer,
+            offerPercentage: offerPct,
+            discountedPrice: bestVariant.price * (1 - offerPct / 100),
+            imageUrl: toAbsoluteUrl(imageUrl),
+            categoryNodeID: item.categoryNodeID,
+            categoryName_en: item.categoryName_en ?? '',
+            categoryName_fr: item.categoryName_fr ?? '',
+        });
+    }
+
+    return result;
+}
+
 function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -142,6 +190,10 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
     const [sortBy, setSortBy] = useState<string>('name-asc');
     const [minPrice, setMinPrice] = useState<string>('');
     const [maxPrice, setMaxPrice] = useState<string>('');
+
+    // Pagination
+    const PAGE_SIZE = 10;
+    const [currentPage, setCurrentPage] = useState<number>(1);
 
     const getText = (en: string, fr: string) => language === 'fr' ? fr : en;
 
@@ -206,21 +258,38 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
         return result;
     }, [products, sortBy, minPrice, maxPrice, language]);
 
+    // Paginated slice of filtered products
+    const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
+    const safePage = Math.min(currentPage, totalPages);
+    const pagedProducts = filteredProducts.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+    // Reset pagination when sorting or price filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [sortBy, minPrice, maxPrice]);
+
     useEffect(() => {
         const browserLang = navigator.language.toLowerCase();
         setLanguage(browserLang.includes('fr') ? 'fr' : 'en');
         fetchCategoryNodes();
     }, []);
 
-    // Navigate to a pre-selected node when the category tree is loaded and a nodeId is in the URL
+    // When the category tree loads (or searchParams changes), navigate to the pre-selected node
+    // if nodeId is present, or fetch all products and clear navPath if it is absent.
     useEffect(() => {
+        if (categoryTree.length === 0) return;
         const nodeId = searchParams.get('nodeId');
-        if (!nodeId || categoryTree.length === 0) return;
-        const path = buildPathToNode(categoryTree, nodeId);
-        if (path.length > 0) {
-            setNavPath(path);
-            fetchProductsForNode(encodeURIComponent(nodeId));
+        if (nodeId) {
+            const path = buildPathToNode(categoryTree, nodeId);
+            if (path.length > 0) {
+                setNavPath(path);
+                fetchProductsForNode(encodeURIComponent(nodeId));
+            }
+        } else {
+            setNavPath([]);
+            fetchAllProducts();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [categoryTree, searchParams]);
 
     const fetchCategoryNodes = async () => {
@@ -256,6 +325,34 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
         }
     };
 
+    const fetchAllProducts = async () => {
+        try {
+            setLoadingProducts(true);
+            setProducts([]);
+
+            const apiBaseUrl = import.meta.env.VITE_API_STORE_BASE_URL;
+            if (!apiBaseUrl) {
+                console.warn('API base URL not configured');
+                return;
+            }
+
+            const response = await fetch(`${apiBaseUrl}/api/Item/GetAllItems`);
+            if (!response.ok) {
+                console.error('Failed to fetch all products');
+                return;
+            }
+
+            const result: ApiResult<GetItemResponse[]> = await response.json();
+            if (result.isSuccess && result.value) {
+                setProducts(mapItemsToCategoryProducts(result.value));
+            }
+        } catch (error) {
+            console.error('Error fetching all products:', error);
+        } finally {
+            setLoadingProducts(false);
+        }
+    };
+
     const fetchProductsForNode = async (nodeId: string) => {
         try {
             setLoadingProducts(true);
@@ -277,51 +374,7 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                const categoryProducts: CategoryProduct[] = [];
-
-                for (const item of result.value) {
-                    if (!item.variants || item.variants.length === 0) continue;
-
-                    // Pick the variant with the best (active) offer, or the first available
-                    let bestVariant: ItemVariantDto | null = null;
-                    let bestOffer = 0;
-
-                    for (const v of item.variants) {
-                        if (v.deleted) continue;
-                        if (isOfferActive(v) && (v.offer ?? 0) > bestOffer) {
-                            bestVariant = v;
-                            bestOffer = v.offer!;
-                        }
-                    }
-
-                    if (!bestVariant) {
-                        bestVariant = item.variants.find(v => !v.deleted) ?? null;
-                    }
-
-                    if (!bestVariant) continue;
-
-                    const imageUrl = extractBestImageUrl(bestVariant);
-                    if (!imageUrl) continue;
-
-                    const hasOffer = isOfferActive(bestVariant);
-                    const offerPct = hasOffer ? (bestVariant.offer ?? 0) : 0;
-
-                    categoryProducts.push({
-                        id: item.id,
-                        name_en: item.name_en,
-                        name_fr: item.name_fr,
-                        price: bestVariant.price,
-                        hasOffer,
-                        offerPercentage: offerPct,
-                        discountedPrice: bestVariant.price * (1 - offerPct / 100),
-                        imageUrl: toAbsoluteUrl(imageUrl),
-                        categoryNodeID: item.categoryNodeID,
-                        categoryName_en: item.categoryName_en ?? '',
-                        categoryName_fr: item.categoryName_fr ?? '',
-                    });
-                }
-
-                setProducts(categoryProducts);
+                setProducts(mapItemsToCategoryProducts(result.value));
             }
         } catch (error) {
             console.error('Error fetching products:', error);
@@ -344,18 +397,21 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
         }
 
         setNavPath(newPath);
+        setCurrentPage(1);
         fetchProductsForNode(node.id);
     };
 
     const handleBreadcrumbClick = (idx: number) => {
         if (idx < 0) {
-            // Home / root
+            // Root – show all products
             setNavPath([]);
-            setProducts([]);
+            setCurrentPage(1);
+            fetchAllProducts();
             return;
         }
         const newPath = navPath.slice(0, idx + 1);
         setNavPath(newPath);
+        setCurrentPage(1);
         fetchProductsForNode(navPath[idx].id);
     };
 
@@ -363,6 +419,7 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
         setSortBy('name-asc');
         setMinPrice('');
         setMaxPrice('');
+        setCurrentPage(1);
     };
 
     const handleConnectClick = () => {
@@ -380,7 +437,7 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
 
     const currentNodeName = currentNode
         ? (language === 'fr' ? currentNode.name_fr : currentNode.name_en)
-        : getText('All Departments', 'Tous les rayons');
+        : getText('All Products', 'Tous les produits');
 
     return (
         <div className="home-container">
@@ -459,7 +516,7 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                     </h1>
                     <p className="categories-subtitle">
                         {currentNodeName}
-                        {currentNode && !loadingProducts && ` — ${productCountLabel}`}
+                        {!loadingProducts && ` — ${productCountLabel}`}
                     </p>
                 </div>
 
@@ -546,6 +603,18 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                             className="categories-breadcrumb"
                             aria-label={getText("Category navigation", "Navigation par catégorie")}
                         >
+                            {navPath.length > 0 && (
+                                <>
+                                    <button
+                                        type="button"
+                                        className="breadcrumb-item"
+                                        onClick={() => handleBreadcrumbClick(-1)}
+                                    >
+                                        {getText('All Products', 'Tous les produits')}
+                                    </button>
+                                    <span className="breadcrumb-sep" aria-hidden="true">›</span>
+                                </>
+                            )}
                             {navPath.map((node, idx) => (
                                 <span key={node.id} style={{ display: 'contents' }}>
                                     {idx > 0 && <span className="breadcrumb-sep" aria-hidden="true">›</span>}
@@ -601,16 +670,7 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                         )}
 
                         {/* Products */}
-                        {!currentNode ? (
-                            <div className="categories-empty">
-                                <p>
-                                    {getText(
-                                        "Select a department above to browse products.",
-                                        "Sélectionnez un rayon ci-dessus pour parcourir les produits."
-                                    )}
-                                </p>
-                            </div>
-                        ) : loadingProducts ? (
+                        {loadingProducts ? (
                             <div className="categories-loading" role="status">
                                 <p>{getText("Loading products...", "Chargement des produits...")}</p>
                             </div>
@@ -618,8 +678,8 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                             <div className="categories-empty">
                                 <p>
                                     {getText(
-                                        "No products found in this category.",
-                                        "Aucun produit trouvé dans cette catégorie."
+                                        "No products found.",
+                                        "Aucun produit trouvé."
                                     )}
                                 </p>
                                 {(minPrice || maxPrice) && (
@@ -633,16 +693,52 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                                 )}
                             </div>
                         ) : (
-                            <div className="categories-grid">
-                                {filteredProducts.map((product) => (
-                                    <CategoryProductCard
-                                        key={product.id}
-                                        product={product}
-                                        language={language}
-                                        onNavigate={(id) => navigate(`/product/${id}`)}
-                                    />
-                                ))}
-                            </div>
+                            <>
+                                <div className="categories-grid">
+                                    {pagedProducts.map((product) => (
+                                        <CategoryProductCard
+                                            key={product.id}
+                                            product={product}
+                                            language={language}
+                                            onNavigate={(id) => navigate(`/product/${id}`)}
+                                        />
+                                    ))}
+                                </div>
+                                {totalPages > 1 && (
+                                    <div className="categories-pagination" aria-label={getText("Page navigation", "Navigation par page")}>
+                                        <button
+                                            type="button"
+                                            className="pagination-btn"
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={safePage <= 1}
+                                            aria-label={getText("Previous page", "Page précédente")}
+                                        >
+                                            ‹
+                                        </button>
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                            <button
+                                                key={page}
+                                                type="button"
+                                                className={`pagination-btn${page === safePage ? ' pagination-btn-active' : ''}`}
+                                                onClick={() => setCurrentPage(page)}
+                                                aria-label={getText(`Page ${page}`, `Page ${page}`)}
+                                                aria-current={page === safePage ? 'page' : undefined}
+                                            >
+                                                {page}
+                                            </button>
+                                        ))}
+                                        <button
+                                            type="button"
+                                            className="pagination-btn"
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={safePage >= totalPages}
+                                            aria-label={getText("Next page", "Page suivante")}
+                                        >
+                                            ›
+                                        </button>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </main>
                 </div>

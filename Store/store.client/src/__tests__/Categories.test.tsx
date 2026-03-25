@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Categories from '../components/Categories';
 
@@ -98,6 +98,17 @@ function renderCategories(path = '/categories') {
             </Routes>
         </MemoryRouter>
     );
+}
+
+/**
+ * Creates N unique items with distinct names so they can be identified.
+ */
+function makeItems(count: number): object[] {
+    return Array.from({ length: count }, (_, i) => makeItem({
+        id: `item-${i + 1}`,
+        name_en: `Product ${String(i + 1).padStart(2, '0')}`,
+        name_fr: `Produit ${String(i + 1).padStart(2, '0')}`,
+    }));
 }
 
 // ---------------------------------------------------------------------------
@@ -228,5 +239,130 @@ describe('Categories page – ?nodeId= URL param pre-selection', () => {
                 expect.stringContaining('/api/Item/GetItemsByCategoryNode/node%201')
             );
         });
+    });
+});
+
+describe('Categories page – list all products when no node is selected', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.stubEnv('VITE_API_STORE_BASE_URL', API_BASE_URL);
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('fetches all products from GetAllItems when no nodeId is in the URL', async () => {
+        setupFetch([makeCategoryNode()]);
+        renderCategories('/categories');
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith(
+                expect.stringContaining('/api/Item/GetAllItems')
+            );
+        });
+    });
+
+    it('displays products returned by GetAllItems when no node is selected', async () => {
+        const node = makeCategoryNode();
+        const item = makeItem({ name_en: 'All Products Item' });
+        setupFetch([node], [item]);
+
+        renderCategories('/categories');
+
+        await waitFor(() => {
+            expect(screen.getByText('All Products Item')).toBeInTheDocument();
+        });
+    });
+
+    it('does not show the "Select a department" prompt', async () => {
+        setupFetch([makeCategoryNode()]);
+        renderCategories('/categories');
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith(
+                expect.stringContaining('/api/Item/GetAllItems')
+            );
+        });
+
+        expect(screen.queryByText(/Select a department/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Sélectionnez un rayon/i)).not.toBeInTheDocument();
+    });
+});
+
+describe('Categories page – pagination', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.stubEnv('VITE_API_STORE_BASE_URL', API_BASE_URL);
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('shows only 10 products on the first page when more than 10 products are returned', async () => {
+        const node = makeCategoryNode({ id: 'node1' });
+        const items = makeItems(15);
+        setupFetch([node], items);
+
+        renderCategories('/categories?nodeId=node1');
+
+        await waitFor(() => {
+            // Product 01 through 10 should be visible
+            expect(screen.getByText('Product 01')).toBeInTheDocument();
+            expect(screen.getByText('Product 10')).toBeInTheDocument();
+        });
+
+        // Product 11 should NOT be on the first page
+        expect(screen.queryByText('Product 11')).not.toBeInTheDocument();
+    });
+
+    it('does not render pagination controls when 10 or fewer products are returned', async () => {
+        const node = makeCategoryNode({ id: 'node1' });
+        const items = makeItems(8);
+        setupFetch([node], items);
+
+        renderCategories('/categories?nodeId=node1');
+
+        await waitFor(() => {
+            expect(screen.getByText('Product 01')).toBeInTheDocument();
+        });
+
+        expect(document.querySelector('.categories-pagination')).toBeNull();
+    });
+
+    it('renders pagination controls when more than 10 products are returned', async () => {
+        const node = makeCategoryNode({ id: 'node1' });
+        const items = makeItems(11);
+        setupFetch([node], items);
+
+        renderCategories('/categories?nodeId=node1');
+
+        await waitFor(() => {
+            expect(document.querySelector('.categories-pagination')).toBeInTheDocument();
+        });
+    });
+
+    it('shows products on the second page when the next-page button is clicked', async () => {
+        const node = makeCategoryNode({ id: 'node1' });
+        const items = makeItems(15);
+        setupFetch([node], items);
+
+        renderCategories('/categories?nodeId=node1');
+
+        // Wait for first page to load
+        await waitFor(() => {
+            expect(screen.getByText('Product 01')).toBeInTheDocument();
+            expect(document.querySelector('.categories-pagination')).toBeInTheDocument();
+        });
+
+        const nextBtn = screen.getByLabelText(/Next page/i);
+        await act(async () => { nextBtn.click(); });
+
+        await waitFor(() => {
+            expect(screen.getByText('Product 11')).toBeInTheDocument();
+        });
+
+        expect(screen.queryByText('Product 01')).not.toBeInTheDocument();
     });
 });

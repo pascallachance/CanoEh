@@ -192,7 +192,7 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
     const [maxPrice, setMaxPrice] = useState<string>('');
 
     // Pagination
-    const PAGE_SIZE = 10;
+    const PAGE_SIZE = 12;
     const [currentPage, setCurrentPage] = useState<number>(1);
 
     const getText = (en: string, fr: string) => language === 'fr' ? fr : en;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './Home.css';
 import './Filters.css';
@@ -263,36 +263,7 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
     const safePage = Math.min(currentPage, totalPages);
     const pagedProducts = filteredProducts.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
-    // Reset pagination when sorting or price filters change
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [sortBy, minPrice, maxPrice]);
-
-    useEffect(() => {
-        const browserLang = navigator.language.toLowerCase();
-        setLanguage(browserLang.includes('fr') ? 'fr' : 'en');
-        fetchCategoryNodes();
-    }, []);
-
-    // When the category tree loads (or searchParams changes), navigate to the pre-selected node
-    // if nodeId is present, or fetch all products and clear navPath if it is absent.
-    useEffect(() => {
-        if (categoryTree.length === 0) return;
-        const nodeId = searchParams.get('nodeId');
-        if (nodeId) {
-            const path = buildPathToNode(categoryTree, nodeId);
-            if (path.length > 0) {
-                setNavPath(path);
-                fetchProductsForNode(encodeURIComponent(nodeId));
-            }
-        } else {
-            setNavPath([]);
-            fetchAllProducts();
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [categoryTree, searchParams]);
-
-    const fetchCategoryNodes = async () => {
+    const fetchCategoryNodes = useCallback(async () => {
         try {
             setLoadingNodes(true);
             setNodesError(false);
@@ -323,9 +294,9 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
         } finally {
             setLoadingNodes(false);
         }
-    };
+    }, []);
 
-    const fetchAllProducts = async () => {
+    const fetchAllProducts = useCallback(async () => {
         try {
             setLoadingProducts(true);
             setProducts([]);
@@ -351,9 +322,9 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
         } finally {
             setLoadingProducts(false);
         }
-    };
+    }, []);
 
-    const fetchProductsForNode = async (nodeId: string) => {
+    const fetchProductsForNode = useCallback(async (nodeId: string) => {
         try {
             setLoadingProducts(true);
             setProducts([]);
@@ -381,7 +352,38 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
         } finally {
             setLoadingProducts(false);
         }
-    };
+    }, []);
+
+    // Reset pagination when sorting or price filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [sortBy, minPrice, maxPrice]);
+
+    useEffect(() => {
+        const browserLang = navigator.language.toLowerCase();
+        setLanguage(browserLang.includes('fr') ? 'fr' : 'en');
+        fetchCategoryNodes();
+    }, [fetchCategoryNodes]);
+
+    // When no nodeId is present, fetch all products immediately (no need to wait for the category tree).
+    useEffect(() => {
+        const nodeId = searchParams.get('nodeId');
+        if (!nodeId) {
+            setNavPath([]);
+            fetchAllProducts();
+        }
+    }, [searchParams, fetchAllProducts]);
+
+    // When a nodeId is present, wait for the category tree to load, then resolve the path and fetch.
+    useEffect(() => {
+        const nodeId = searchParams.get('nodeId');
+        if (!nodeId || categoryTree.length === 0) return;
+        const path = buildPathToNode(categoryTree, nodeId);
+        if (path.length > 0) {
+            setNavPath(path);
+            fetchProductsForNode(encodeURIComponent(nodeId));
+        }
+    }, [categoryTree, searchParams, fetchProductsForNode]);
 
     const handleNodeClick = (node: CategoryNodeDto) => {
         // Update breadcrumb path - if node is already in path, navigate to it

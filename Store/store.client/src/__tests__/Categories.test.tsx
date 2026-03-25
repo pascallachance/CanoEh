@@ -104,7 +104,7 @@ function renderCategories(path = '/categories') {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('Categories page – breadcrumb Home item', () => {
+describe('Categories page – breadcrumb (no Home item)', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.stubEnv('VITE_API_STORE_BASE_URL', API_BASE_URL);

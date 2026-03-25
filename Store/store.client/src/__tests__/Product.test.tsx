@@ -26,6 +26,7 @@ function makeVariant(overrides: {
     offerStart?: string | null;
     offerEnd?: string | null;
     itemVariantAttributes?: object[];
+    itemVariantFeatures?: object[];
     deleted?: boolean;
 } = {}) {
     return {
@@ -41,6 +42,7 @@ function makeVariant(overrides: {
         offerStart: overrides.offerStart ?? null,
         offerEnd: overrides.offerEnd ?? null,
         itemVariantAttributes: overrides.itemVariantAttributes ?? [],
+        itemVariantFeatures: overrides.itemVariantFeatures ?? [],
         deleted: overrides.deleted ?? false,
     };
 }
@@ -114,6 +116,39 @@ async function waitForProductLoaded(name = 'Test Product') {
         const heading = document.querySelector('.product-name');
         expect(heading).toBeInTheDocument();
         expect(heading?.textContent).toBe(name);
+    });
+}
+
+function makeCategoryNode(overrides: {
+    id?: string;
+    name_en?: string;
+    name_fr?: string;
+    parentId?: string | null;
+} = {}) {
+    return {
+        id: overrides.id ?? 'cat1',
+        name_en: overrides.name_en ?? 'Electronics',
+        name_fr: overrides.name_fr ?? 'Électronique',
+        nodeType: 'category',
+        parentId: overrides.parentId ?? null,
+        isActive: true,
+        sortOrder: null,
+        children: [],
+    };
+}
+
+function setupFetchWithCategories(product: object, categoryNodes: object[] = []) {
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementation((url: string) => {
+        if (url.includes('/api/CategoryNode/GetAllCategoryNodes')) {
+            return Promise.resolve({
+                ok: true,
+                json: async () => ({ isSuccess: true, value: categoryNodes }),
+            });
+        }
+        return Promise.resolve({
+            ok: true,
+            json: async () => makeApiResult(product),
+        });
     });
 }
 
@@ -809,5 +844,58 @@ describe('Product page – variant features section', () => {
         expect(descIndex).toBeGreaterThanOrEqual(0);
         expect(featIndex).toBeGreaterThan(descIndex);
         expect(attrIndex).toBeGreaterThan(featIndex);
+    });
+});
+
+describe('Product page – product-breadcrumb', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.stubEnv('VITE_API_STORE_BASE_URL', API_BASE_URL);
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('does not show "Home" or "Accueil" in the product breadcrumb', async () => {
+        const node = makeCategoryNode({ id: 'cat1', name_en: 'Electronics' });
+        setupFetchWithCategories(makeProduct(), [node]);
+        renderProduct();
+        await waitForProductLoaded();
+        const breadcrumb = document.querySelector('.product-breadcrumb');
+        expect(breadcrumb).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /^Home$|^Accueil$/i })).not.toBeInTheDocument();
+    });
+
+    it('renders the category node name in the breadcrumb', async () => {
+        const node = makeCategoryNode({ id: 'cat1', name_en: 'Electronics' });
+        setupFetchWithCategories(makeProduct(), [node]);
+        renderProduct();
+        await waitForProductLoaded();
+        const breadcrumb = document.querySelector('.product-breadcrumb');
+        expect(breadcrumb?.textContent).toMatch(/Electronics/);
+    });
+
+    it('renders no leading separator when there is only one category node', async () => {
+        const node = makeCategoryNode({ id: 'cat1', name_en: 'Electronics' });
+        setupFetchWithCategories(makeProduct(), [node]);
+        renderProduct();
+        await waitForProductLoaded();
+        const breadcrumb = document.querySelector('.product-breadcrumb');
+        const seps = breadcrumb?.querySelectorAll('.breadcrumb-sep');
+        expect(seps?.length).toBe(0);
+    });
+
+    it('renders a separator only between nodes when there are multiple category nodes', async () => {
+        const parent = makeCategoryNode({ id: 'parent', name_en: 'Electronics', parentId: null });
+        const child = makeCategoryNode({ id: 'cat1', name_en: 'Phones', parentId: 'parent' });
+        setupFetchWithCategories(makeProduct(), [parent, child]);
+        renderProduct();
+        await waitForProductLoaded();
+        const breadcrumb = document.querySelector('.product-breadcrumb');
+        const seps = breadcrumb?.querySelectorAll('.breadcrumb-sep');
+        expect(seps?.length).toBe(1);
+        expect(breadcrumb?.textContent).toMatch(/Electronics/);
+        expect(breadcrumb?.textContent).toMatch(/Phones/);
     });
 });

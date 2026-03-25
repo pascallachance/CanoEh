@@ -370,7 +370,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
         {
             try
             {
-                var items = await _itemRepository.GetAllAsync();
+                var items = await _itemRepository.GetAllWithVariantsAsync();
                 var response = items.Select(item => MapItemToGetItemResponse(item));
 
                 return Result.Success(response);

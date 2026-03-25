@@ -7,6 +7,8 @@ namespace Infrastructure.Repositories.Implementations
 {
     public class ItemRepository(string connectionString) : GenericRepository<Item>(connectionString), IItemRepository
     {
+        private const string AllActiveItemsQuery = "SELECT * FROM dbo.Item WHERE Deleted = 0";
+
         public override async Task<Item> AddAsync(Item entity)
         {
             if (dbConnection.State != ConnectionState.Open)
@@ -103,11 +105,36 @@ VALUES (
             {
                 dbConnection.Open();
             }
-            
-            // Query Item table only - variants should be loaded separately via ItemVariantRepository
-            var query = "SELECT * FROM dbo.Item WHERE Deleted = 0";
-            
-            return await dbConnection.QueryAsync<Item>(query);
+
+            // Items-only query; does not load variants. Use GetAllWithVariantsAsync() when variants are needed.
+            return await dbConnection.QueryAsync<Item>(AllActiveItemsQuery);
+        }
+
+        public async Task<IEnumerable<Item>> GetAllWithVariantsAsync()
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+
+            var items = (await dbConnection.QueryAsync<Item>(AllActiveItemsQuery)).ToList();
+
+            if (!items.Any())
+            {
+                return items;
+            }
+
+            var itemIds = items.Select(i => i.Id).ToList();
+
+            // Get all ItemVariants for the items (exclude deleted variants)
+            var variantQuery = "SELECT * FROM dbo.ItemVariant WHERE ItemId IN @itemIds AND Deleted = 0";
+            var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { itemIds })).ToList();
+            var variantsByItemId = variants.GroupBy(v => v.ItemId).ToDictionary(g => g.Key, g => g.ToList());
+
+            await HydrateVariantAttributesAndFeaturesAsync(variants);
+            AssignVariantsToItems(items, variantsByItemId);
+
+            return items;
         }
 
         public override async Task<Item> GetByIdAsync(Guid id)

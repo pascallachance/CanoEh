@@ -106,7 +106,7 @@ namespace API.Tests
                 }
             };
 
-            _mockItemRepository.Setup(x => x.GetAllAsync())
+            _mockItemRepository.Setup(x => x.GetAllWithVariantsAsync())
                               .ReturnsAsync(items);
 
             // Act

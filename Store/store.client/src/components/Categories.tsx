@@ -277,9 +277,9 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
     // When the category tree loads (or searchParams changes), navigate to the pre-selected node
     // if nodeId is present, or fetch all products and clear navPath if it is absent.
     useEffect(() => {
-        if (categoryTree.length === 0) return;
         const nodeId = searchParams.get('nodeId');
         if (nodeId) {
+            if (categoryTree.length === 0) return;
             const path = buildPathToNode(categoryTree, nodeId);
             if (path.length > 0) {
                 setNavPath(path);
@@ -289,7 +289,6 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
             setNavPath([]);
             fetchAllProducts();
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [categoryTree, searchParams]);
 
     const fetchCategoryNodes = async () => {

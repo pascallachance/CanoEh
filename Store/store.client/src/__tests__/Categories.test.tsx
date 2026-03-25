@@ -336,7 +336,7 @@ describe('Categories page – pagination', () => {
         vi.unstubAllEnvs();
     });
 
-    it('shows only 10 products on the first page when more than 10 products are returned', async () => {
+    it('shows only 12 products on the first page when more than 12 products are returned', async () => {
         const node = makeCategoryNode({ id: 'node1' });
         const items = makeItems(15);
         setupFetch([node], items);
@@ -344,16 +344,16 @@ describe('Categories page – pagination', () => {
         renderCategories('/categories?nodeId=node1');
 
         await waitFor(() => {
-            // Product 01 through 10 should be visible
+            // Product 01 through 12 should be visible
             expect(screen.getByText('Product 01')).toBeInTheDocument();
-            expect(screen.getByText('Product 10')).toBeInTheDocument();
+            expect(screen.getByText('Product 12')).toBeInTheDocument();
         });
 
-        // Product 11 should NOT be on the first page
-        expect(screen.queryByText('Product 11')).not.toBeInTheDocument();
+        // Product 13 should NOT be on the first page
+        expect(screen.queryByText('Product 13')).not.toBeInTheDocument();
     });
 
-    it('does not render pagination controls when 10 or fewer products are returned', async () => {
+    it('does not render pagination controls when 12 or fewer products are returned', async () => {
         const node = makeCategoryNode({ id: 'node1' });
         const items = makeItems(8);
         setupFetch([node], items);
@@ -367,9 +367,9 @@ describe('Categories page – pagination', () => {
         expect(document.querySelector('.categories-pagination')).toBeNull();
     });
 
-    it('renders pagination controls when more than 10 products are returned', async () => {
+    it('renders pagination controls when more than 12 products are returned', async () => {
         const node = makeCategoryNode({ id: 'node1' });
-        const items = makeItems(11);
+        const items = makeItems(13);
         setupFetch([node], items);
 
         renderCategories('/categories?nodeId=node1');
@@ -396,7 +396,7 @@ describe('Categories page – pagination', () => {
         await act(async () => { nextBtn.click(); });
 
         await waitFor(() => {
-            expect(screen.getByText('Product 11')).toBeInTheDocument();
+            expect(screen.getByText('Product 13')).toBeInTheDocument();
         });
 
         expect(screen.queryByText('Product 01')).not.toBeInTheDocument();

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
@@ -8,6 +8,12 @@ import { toAbsoluteUrl } from '../utils/urlUtils';
  * Must be kept in sync with the :root defaults in Home.css.
  */
 const DEFAULT_SCROLL_STEP_PX = 212;
+
+/** Tolerance (px) used when comparing scrollLeft to the maximum scroll position to account for sub-pixel rounding. */
+const SCROLL_TOLERANCE = 1;
+
+/** Fraction of the card's rendered height used as the chevron button size. */
+const CHEVRON_SIZE_RATIO = 0.25;
 
 /**
  * Returns the horizontal scroll step in pixels by reading the rendered --item-width
@@ -574,51 +580,89 @@ interface ItemPreviewCardProps {
 
 function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, language = 'en', onClick, onItemClick }: ItemPreviewCardProps) {
     const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
+    const [isHovered, setIsHovered] = useState(false);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(false);
+    const [chevronHeight, setChevronHeight] = useState(0);
     const itemsGridRef = useRef<HTMLDivElement>(null);
+    const cardRef = useRef<HTMLDivElement>(null);
+
+    const updateScrollState = useCallback(() => {
+        const el = itemsGridRef.current;
+        if (!el) return;
+        const maxScrollLeft = el.scrollWidth - el.clientWidth;
+        setCanScrollLeft(el.scrollLeft > 0);
+        setCanScrollRight(maxScrollLeft > SCROLL_TOLERANCE && el.scrollLeft < maxScrollLeft - SCROLL_TOLERANCE);
+    }, []);
+
+    const updateSize = useCallback(() => {
+        const card = cardRef.current;
+        if (card) setChevronHeight(card.offsetHeight * CHEVRON_SIZE_RATIO);
+    }, []);
 
     useEffect(() => {
         const el = itemsGridRef.current;
+        const card = cardRef.current;
         if (!el) return;
 
-        const handleWheel = (e: WheelEvent) => {
-            // Only handle vertical wheel input for horizontal scrolling
-            if (e.deltaY === 0) {
-                return;
-            }
-
-            const canScrollHorizontally = el.scrollWidth > el.clientWidth;
-            if (!canScrollHorizontally) {
-                // Let the event bubble to allow normal page scrolling
-                return;
-            }
-
-            const maxScrollLeft = el.scrollWidth - el.clientWidth;
-            const scrollingRight = e.deltaY > 0;
-            const scrollingLeft = e.deltaY < 0;
-            const atLeftEdge = el.scrollLeft <= 0;
-            const atRightEdge = el.scrollLeft >= maxScrollLeft;
-
-            const shouldScrollRight = scrollingRight && !atRightEdge;
-            const shouldScrollLeft = scrollingLeft && !atLeftEdge;
-
-            if (shouldScrollLeft || shouldScrollRight) {
-                e.preventDefault();
-                el.scrollBy({
-                    left: scrollingRight ? getScrollStepPx() : -getScrollStepPx(),
-                    behavior: 'smooth',
-                });
-            }
+        const handleResize = () => {
+            updateSize();
+            updateScrollState();
         };
 
-        el.addEventListener('wheel', handleWheel, { passive: false });
-        return () => el.removeEventListener('wheel', handleWheel);
-    }, []);
+        el.addEventListener('scroll', updateScrollState);
+
+        if (typeof ResizeObserver !== 'undefined') {
+            const resizeObserver = new ResizeObserver(handleResize);
+            if (card) resizeObserver.observe(card);
+            handleResize();
+            return () => {
+                el.removeEventListener('scroll', updateScrollState);
+                resizeObserver.disconnect();
+            };
+        }
+
+        // Fallback when ResizeObserver is unavailable: measure the card height directly
+        updateSize();
+        updateScrollState();
+        return () => {
+            el.removeEventListener('scroll', updateScrollState);
+        };
+    }, [updateScrollState, updateSize]);
+
+    useEffect(() => {
+        // Recompute scroll state when the number of products/items changes,
+        // without tearing down and re-attaching listeners/observers.
+        updateScrollState();
+    }, [updateScrollState, products?.length, items.length]);
+
+    useEffect(() => {
+        // Remeasure card height when hover starts so the chevron size is always
+        // up-to-date when displayed. This also ensures the correct height is picked
+        // up in test environments where ResizeObserver is stubbed as a no-op.
+        if (isHovered) {
+            updateSize();
+            updateScrollState();
+        }
+    }, [isHovered, updateSize, updateScrollState]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (onClick && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
             onClick();
         }
+    };
+
+    const handleScrollLeft = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const el = itemsGridRef.current;
+        if (el) el.scrollBy({ left: -getScrollStepPx(), behavior: 'smooth' });
+    };
+
+    const handleScrollRight = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const el = itemsGridRef.current;
+        if (el) el.scrollBy({ left: getScrollStepPx(), behavior: 'smooth' });
     };
 
     const handleImageError = (index: number) => {
@@ -638,7 +682,12 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
 
     return (
         <div
+            ref={cardRef}
             className="item-preview-card"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onFocus={() => setIsHovered(true)}
+            onBlur={() => setIsHovered(false)}
             onClick={hasItemClickHandler ? undefined : onClick}
             onKeyDown={hasItemClickHandler ? undefined : (onClick ? handleKeyDown : undefined)}
             tabIndex={hasItemClickHandler ? undefined : (onClick ? 0 : undefined)}
@@ -652,7 +701,22 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
             ) : (
                 <h3 className="card-title">{title}</h3>
             )}
-            <div className="items-grid" ref={itemsGridRef}>
+            <div className="items-grid-wrapper">
+                {/* chevronHeight > 0 ensures the button has a visible size before ResizeObserver has measured the card */}
+                {isHovered && canScrollLeft && chevronHeight > 0 && (
+                    <button
+                        type="button"
+                        className="carousel-chevron carousel-chevron-left"
+                        style={{ height: chevronHeight, width: chevronHeight }}
+                        onClick={handleScrollLeft}
+                        aria-label={language === 'fr' ? 'Articles précédents' : 'Previous items'}
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: '100%', height: '100%' }}>
+                            <polyline points="15 18 9 12 15 6" />
+                        </svg>
+                    </button>
+                )}
+                <div className="items-grid" ref={itemsGridRef}>
                 {products !== undefined ? (
                     products.map((product, index) => {
                         if (imageErrors.has(index)) return null;
@@ -701,6 +765,20 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
                             </div>
                         );
                     })
+                )}
+            </div>
+                {isHovered && canScrollRight && chevronHeight > 0 && (
+                    <button
+                        type="button"
+                        className="carousel-chevron carousel-chevron-right"
+                        style={{ height: chevronHeight, width: chevronHeight }}
+                        onClick={handleScrollRight}
+                        aria-label={language === 'fr' ? 'Articles suivants' : 'Next items'}
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: '100%', height: '100%' }}>
+                            <polyline points="9 6 15 12 9 18" />
+                        </svg>
+                    </button>
                 )}
             </div>
         </div>

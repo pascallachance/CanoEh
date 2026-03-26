@@ -356,7 +356,7 @@ button.card-title-btn:focus-visible {
     border-radius: 2px;
 }
 
-/* Horizontal row of items — 1 row × up to 10 items, scrollable via mouse wheel */
+/* Horizontal row of items — 1 row × up to 10 items, scrollable via chevrons */
 .items-grid {
     display: flex;
     flex-direction: row;
@@ -443,6 +443,49 @@ button.card-title-btn:focus-visible {
     color: #999;
     font-size: 11px;
     text-align: center;
+}
+
+/* Wrapper for items-grid that allows chevron buttons to be positioned on top */
+.items-grid-wrapper {
+    position: relative;
+}
+
+/* Navigation chevrons — appear on hover, overlay the left/right edges of items */
+.carousel-chevron {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    padding: 4px;
+    color: #232f3e;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+.carousel-chevron:hover {
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.carousel-chevron:focus-visible {
+    outline: 2px solid #febd69;
+    outline-offset: 2px;
+}
+
+.carousel-chevron-left {
+    left: 0;
+}
+
+.carousel-chevron-right {
+    right: 0;
 }
 
 /* Responsive Design */

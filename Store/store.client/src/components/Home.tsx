@@ -3,8 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
 
-// Number of pixels to scroll per mouse-wheel step (approximately one item + gap)
-const SCROLL_STEP_PX = 122;
+/**
+ * Returns the horizontal scroll step in pixels by reading the rendered --item-width
+ * and --items-gap CSS custom properties. Falls back to 122px if the properties are
+ * not available (e.g. in test environments).
+ */
+function getScrollStepPx(): number {
+    try {
+        const styles = window.getComputedStyle(document.documentElement);
+        const itemWidth = parseFloat(styles.getPropertyValue('--item-width')) || 0;
+        const itemsGap = parseFloat(styles.getPropertyValue('--items-gap')) || 0;
+        const step = itemWidth + itemsGap;
+        return step > 0 ? step : 122;
+    } catch {
+        return 122;
+    }
+}
 
 interface HomeProps {
     isAuthenticated?: boolean;
@@ -85,6 +99,7 @@ const SUGGESTED_ITEMS_COUNT = 10;
 const SUGGESTED_ITEMS_FETCH_COUNT = 20; // Fetch more to ensure we get enough with images
 const OFFERS_COUNT = 10;
 const SUGGESTED_CATEGORIES_FETCH_COUNT = 20;
+const SUGGESTED_CATEGORIES_DISPLAY_COUNT = 10;
 const PRIMARY_IMAGE_PATTERN = /_1\.(jpg|jpeg|png|gif|webp)$/i; // Pattern to match primary product images ending with _1
 
 /**
@@ -339,7 +354,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                setCategoriesProducts(extractProductImages(result.value, language, SUGGESTED_CATEGORIES_FETCH_COUNT, true));
+                setCategoriesProducts(extractProductImages(result.value, language, SUGGESTED_CATEGORIES_DISPLAY_COUNT, true));
             }
         } catch (error) {
             console.error('Error fetching suggested categories products:', error);
@@ -560,9 +575,32 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
         if (!el) return;
 
         const handleWheel = (e: WheelEvent) => {
-            if (e.deltaY !== 0) {
+            // Only handle vertical wheel input for horizontal scrolling
+            if (e.deltaY === 0) {
+                return;
+            }
+
+            const canScrollHorizontally = el.scrollWidth > el.clientWidth;
+            if (!canScrollHorizontally) {
+                // Let the event bubble to allow normal page scrolling
+                return;
+            }
+
+            const maxScrollLeft = el.scrollWidth - el.clientWidth;
+            const scrollingRight = e.deltaY > 0;
+            const scrollingLeft = e.deltaY < 0;
+            const atLeftEdge = el.scrollLeft <= 0;
+            const atRightEdge = el.scrollLeft >= maxScrollLeft;
+
+            const shouldScrollRight = scrollingRight && !atRightEdge;
+            const shouldScrollLeft = scrollingLeft && !atLeftEdge;
+
+            if (shouldScrollLeft || shouldScrollRight) {
                 e.preventDefault();
-                el.scrollBy({ left: e.deltaY > 0 ? SCROLL_STEP_PX : -SCROLL_STEP_PX, behavior: 'smooth' });
+                el.scrollBy({
+                    left: scrollingRight ? getScrollStepPx() : -getScrollStepPx(),
+                    behavior: 'smooth',
+                });
             }
         };
 

@@ -24,6 +24,13 @@ describe('Home - Scroll Navigation', () => {
         vi.unstubAllEnvs();
     });
 
+    /** Helper: make itemsGrid look like it overflows horizontally with room to scroll in both directions */
+    function mockOverflowingGrid(itemsGrid: HTMLElement) {
+        Object.defineProperty(itemsGrid, 'scrollWidth', { writable: true, value: 1200 });
+        Object.defineProperty(itemsGrid, 'clientWidth', { writable: true, value: 600 });
+        Object.defineProperty(itemsGrid, 'scrollLeft', { writable: true, value: 300 }); // mid-scroll (not at either edge)
+    }
+
     it('should not render previous/next carousel buttons', async () => {
         render(
             <BrowserRouter>
@@ -62,7 +69,7 @@ describe('Home - Scroll Navigation', () => {
         });
     });
 
-    it('should scroll items-grid to the right when wheel scrolls down (deltaY > 0)', async () => {
+    it('should scroll items-grid to the right when wheel scrolls down (deltaY > 0) and row overflows', async () => {
         render(
             <BrowserRouter>
                 <Home isAuthenticated={false} />
@@ -78,6 +85,7 @@ describe('Home - Scroll Navigation', () => {
         const itemsGrid = card?.querySelector('.items-grid') as HTMLElement | null;
         expect(itemsGrid).not.toBeNull();
 
+        mockOverflowingGrid(itemsGrid!);
         const scrollByMock = vi.fn();
         itemsGrid!.scrollBy = scrollByMock;
 
@@ -91,7 +99,7 @@ describe('Home - Scroll Navigation', () => {
         expect(arg.left).toBeGreaterThan(0);
     });
 
-    it('should scroll items-grid to the left when wheel scrolls up (deltaY < 0)', async () => {
+    it('should scroll items-grid to the left when wheel scrolls up (deltaY < 0) and row overflows', async () => {
         render(
             <BrowserRouter>
                 <Home isAuthenticated={false} />
@@ -107,6 +115,7 @@ describe('Home - Scroll Navigation', () => {
         const itemsGrid = card?.querySelector('.items-grid') as HTMLElement | null;
         expect(itemsGrid).not.toBeNull();
 
+        mockOverflowingGrid(itemsGrid!);
         const scrollByMock = vi.fn();
         itemsGrid!.scrollBy = scrollByMock;
 
@@ -136,12 +145,103 @@ describe('Home - Scroll Navigation', () => {
         const itemsGrid = card?.querySelector('.items-grid') as HTMLElement | null;
         expect(itemsGrid).not.toBeNull();
 
+        mockOverflowingGrid(itemsGrid!);
         const scrollByMock = vi.fn();
         itemsGrid!.scrollBy = scrollByMock;
 
         // Dispatch wheel event with deltaY = 0 (no vertical scroll — should be ignored)
         const wheelHorizontal = new WheelEvent('wheel', { deltaY: 0, bubbles: true, cancelable: true });
         itemsGrid!.dispatchEvent(wheelHorizontal);
+
+        expect(scrollByMock).not.toHaveBeenCalled();
+    });
+
+    it('should not scroll when the row does not overflow horizontally', async () => {
+        render(
+            <BrowserRouter>
+                <Home isAuthenticated={false} />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText(/Suggested items|Articles suggérés/i)).toBeInTheDocument();
+        });
+
+        const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
+        const card = cardTitle.closest('.item-preview-card');
+        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement | null;
+        expect(itemsGrid).not.toBeNull();
+
+        // Row does NOT overflow — scrollWidth === clientWidth
+        Object.defineProperty(itemsGrid!, 'scrollWidth', { writable: true, value: 500 });
+        Object.defineProperty(itemsGrid!, 'clientWidth', { writable: true, value: 500 });
+
+        const scrollByMock = vi.fn();
+        itemsGrid!.scrollBy = scrollByMock;
+
+        const wheelDown = new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true });
+        itemsGrid!.dispatchEvent(wheelDown);
+
+        // Handler must not consume the event when there is nothing to scroll
+        expect(scrollByMock).not.toHaveBeenCalled();
+    });
+
+    it('should not scroll right when already at the right edge', async () => {
+        render(
+            <BrowserRouter>
+                <Home isAuthenticated={false} />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText(/Suggested items|Articles suggérés/i)).toBeInTheDocument();
+        });
+
+        const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
+        const card = cardTitle.closest('.item-preview-card');
+        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement | null;
+        expect(itemsGrid).not.toBeNull();
+
+        // Row overflows but scrollLeft is at the right edge
+        Object.defineProperty(itemsGrid!, 'scrollWidth', { writable: true, value: 1200 });
+        Object.defineProperty(itemsGrid!, 'clientWidth', { writable: true, value: 600 });
+        Object.defineProperty(itemsGrid!, 'scrollLeft', { writable: true, value: 600 }); // at right edge
+
+        const scrollByMock = vi.fn();
+        itemsGrid!.scrollBy = scrollByMock;
+
+        const wheelDown = new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true });
+        itemsGrid!.dispatchEvent(wheelDown);
+
+        expect(scrollByMock).not.toHaveBeenCalled();
+    });
+
+    it('should not scroll left when already at the left edge', async () => {
+        render(
+            <BrowserRouter>
+                <Home isAuthenticated={false} />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText(/Suggested items|Articles suggérés/i)).toBeInTheDocument();
+        });
+
+        const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
+        const card = cardTitle.closest('.item-preview-card');
+        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement | null;
+        expect(itemsGrid).not.toBeNull();
+
+        // Row overflows but scrollLeft is at the left edge
+        Object.defineProperty(itemsGrid!, 'scrollWidth', { writable: true, value: 1200 });
+        Object.defineProperty(itemsGrid!, 'clientWidth', { writable: true, value: 600 });
+        Object.defineProperty(itemsGrid!, 'scrollLeft', { writable: true, value: 0 }); // at left edge
+
+        const scrollByMock = vi.fn();
+        itemsGrid!.scrollBy = scrollByMock;
+
+        const wheelUp = new WheelEvent('wheel', { deltaY: -100, bubbles: true, cancelable: true });
+        itemsGrid!.dispatchEvent(wheelUp);
 
         expect(scrollByMock).not.toHaveBeenCalled();
     });

@@ -633,13 +633,17 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
     const handleScrollLeft = (e: React.MouseEvent) => {
         e.stopPropagation();
         const el = itemsGridRef.current;
-        if (el) el.scrollBy({ left: -el.clientWidth, behavior: 'smooth' });
+        if (!el) return;
+        const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
+        el.scrollBy({ left: -(el.clientWidth + gap), behavior: 'smooth' });
     };
 
     const handleScrollRight = (e: React.MouseEvent) => {
         e.stopPropagation();
         const el = itemsGridRef.current;
-        if (el) el.scrollBy({ left: el.clientWidth, behavior: 'smooth' });
+        if (!el) return;
+        const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
+        el.scrollBy({ left: el.clientWidth + gap, behavior: 'smooth' });
     };
 
     const handleImageError = (index: number) => {

@@ -165,7 +165,7 @@ describe('Home - Image Filtering', () => {
         // Wait for the fetch to complete
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetRecentlyAddedProducts?count=24')
+                expect.stringContaining('/api/Item/GetRecentlyAddedProducts?count=20')
             );
         });
 

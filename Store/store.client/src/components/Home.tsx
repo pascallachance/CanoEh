@@ -3,11 +3,34 @@ import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
 
+/**
+ * Default scroll step fallback (px) = --item-width (200) + --items-gap (12).
+ * Must be kept in sync with the :root defaults in Home.css.
+ */
+const DEFAULT_SCROLL_STEP_PX = 212;
+
 /** Tolerance (px) used when comparing scrollLeft to the maximum scroll position to account for sub-pixel rounding. */
 const SCROLL_TOLERANCE = 1;
 
 /** Fraction of the card's rendered height used as the chevron button size. */
 const CHEVRON_SIZE_RATIO = 0.25;
+
+/**
+ * Returns the horizontal scroll step in pixels by reading the rendered --item-width
+ * and --items-gap CSS custom properties. Falls back to DEFAULT_SCROLL_STEP_PX if the
+ * properties are not available (e.g. in test environments).
+ */
+function getScrollStepPx(): number {
+    try {
+        const styles = window.getComputedStyle(document.documentElement);
+        const itemWidth = parseFloat(styles.getPropertyValue('--item-width')) || 0;
+        const itemsGap = parseFloat(styles.getPropertyValue('--items-gap')) || 0;
+        const step = itemWidth + itemsGap;
+        return step > 0 ? step : DEFAULT_SCROLL_STEP_PX;
+    } catch {
+        return DEFAULT_SCROLL_STEP_PX;
+    }
+}
 
 interface HomeProps {
     isAuthenticated?: boolean;
@@ -81,14 +104,14 @@ interface ProductPreviewItem {
     offer: number;
 }
 
-const ITEM_PLACEHOLDER_ARRAY = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
-const RECENT_ITEMS_DISPLAY_COUNT = 16;
-const RECENT_ITEMS_FETCH_COUNT = 24; // Fetch more to ensure we get enough with images
-const SUGGESTED_ITEMS_COUNT = 16;
-const SUGGESTED_ITEMS_FETCH_COUNT = 24; // Fetch more to ensure we get enough with images
-const OFFERS_COUNT = 16;
-const SUGGESTED_CATEGORIES_FETCH_COUNT = 24;
-const SUGGESTED_CATEGORIES_DISPLAY_COUNT = 16;
+const ITEM_PLACEHOLDER_ARRAY = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const RECENT_ITEMS_DISPLAY_COUNT = 10;
+const RECENT_ITEMS_FETCH_COUNT = 20; // Fetch more to ensure we get enough with images
+const SUGGESTED_ITEMS_COUNT = 10;
+const SUGGESTED_ITEMS_FETCH_COUNT = 20; // Fetch more to ensure we get enough with images
+const OFFERS_COUNT = 10;
+const SUGGESTED_CATEGORIES_FETCH_COUNT = 20;
+const SUGGESTED_CATEGORIES_DISPLAY_COUNT = 10;
 const PRIMARY_IMAGE_PATTERN = /_1\.(jpg|jpeg|png|gif|webp)$/i; // Pattern to match primary product images ending with _1
 
 /**
@@ -633,17 +656,13 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
     const handleScrollLeft = (e: React.MouseEvent) => {
         e.stopPropagation();
         const el = itemsGridRef.current;
-        if (!el) return;
-        const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
-        el.scrollBy({ left: -(el.clientWidth + gap), behavior: 'smooth' });
+        if (el) el.scrollBy({ left: -getScrollStepPx(), behavior: 'smooth' });
     };
 
     const handleScrollRight = (e: React.MouseEvent) => {
         e.stopPropagation();
         const el = itemsGridRef.current;
-        if (!el) return;
-        const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
-        el.scrollBy({ left: el.clientWidth + gap, behavior: 'smooth' });
+        if (el) el.scrollBy({ left: getScrollStepPx(), behavior: 'smooth' });
     };
 
     const handleImageError = (index: number) => {

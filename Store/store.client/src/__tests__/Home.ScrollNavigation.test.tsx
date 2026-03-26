@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Home from '../components/Home';
 
@@ -24,14 +24,19 @@ describe('Home - Scroll Navigation', () => {
         vi.unstubAllEnvs();
     });
 
-    /** Helper: make itemsGrid look like it overflows horizontally with room to scroll in both directions */
+    /** Helper: make itemsGrid look like it overflows with room to scroll in both directions */
     function mockOverflowingGrid(itemsGrid: HTMLElement) {
         Object.defineProperty(itemsGrid, 'scrollWidth', { writable: true, value: 1200 });
         Object.defineProperty(itemsGrid, 'clientWidth', { writable: true, value: 600 });
-        Object.defineProperty(itemsGrid, 'scrollLeft', { writable: true, value: 300 }); // mid-scroll (not at either edge)
+        Object.defineProperty(itemsGrid, 'scrollLeft', { writable: true, value: 300 }); // mid-scroll
     }
 
-    it('should not render previous/next carousel buttons', async () => {
+    /** Helper: make the card appear to have a measurable height (so chevronHeight > 0) */
+    function mockCardHeight(card: HTMLElement, height = 280) {
+        Object.defineProperty(card, 'offsetHeight', { writable: true, value: height });
+    }
+
+    it('should not render carousel chevrons when mouse is not over the card', async () => {
         render(
             <BrowserRouter>
                 <Home isAuthenticated={false} />
@@ -42,8 +47,8 @@ describe('Home - Scroll Navigation', () => {
             expect(screen.getByText(/Suggested items|Articles suggérés/i)).toBeInTheDocument();
         });
 
-        expect(screen.queryByLabelText(/Previous cards|Cartes précédentes/i)).not.toBeInTheDocument();
-        expect(screen.queryByLabelText(/Next cards|Cartes suivantes/i)).not.toBeInTheDocument();
+        expect(screen.queryByLabelText(/Previous items|Articles précédents/i)).not.toBeInTheDocument();
+        expect(screen.queryByLabelText(/Next items|Articles suivants/i)).not.toBeInTheDocument();
     });
 
     it('should display sections stacked vertically inside cards-section', async () => {
@@ -69,7 +74,7 @@ describe('Home - Scroll Navigation', () => {
         });
     });
 
-    it('should scroll items-grid to the right when wheel scrolls down (deltaY > 0) and row overflows', async () => {
+    it('should show right chevron when hovered and grid overflows to the right', async () => {
         render(
             <BrowserRouter>
                 <Home isAuthenticated={false} />
@@ -81,17 +86,151 @@ describe('Home - Scroll Navigation', () => {
         });
 
         const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
-        const card = cardTitle.closest('.item-preview-card');
-        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement | null;
+        const card = cardTitle.closest('.item-preview-card') as HTMLElement;
+        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement;
         expect(itemsGrid).not.toBeNull();
 
-        mockOverflowingGrid(itemsGrid!);
-        const scrollByMock = vi.fn();
-        itemsGrid!.scrollBy = scrollByMock;
+        // Set up overflow at the left edge (scrollLeft=0) so only right chevron should appear
+        Object.defineProperty(itemsGrid, 'scrollWidth', { writable: true, value: 1200 });
+        Object.defineProperty(itemsGrid, 'clientWidth', { writable: true, value: 600 });
+        Object.defineProperty(itemsGrid, 'scrollLeft', { writable: true, value: 0 });
+        mockCardHeight(card);
 
-        // Dispatch wheel event with deltaY > 0 (scroll down → move items right)
-        const wheelDown = new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true });
-        itemsGrid!.dispatchEvent(wheelDown);
+        fireEvent.mouseEnter(card);
+
+        // Trigger scroll event to update state
+        fireEvent.scroll(itemsGrid);
+
+        await waitFor(() => {
+            expect(screen.queryByLabelText(/Next items|Articles suivants/i)).toBeInTheDocument();
+        });
+        expect(screen.queryByLabelText(/Previous items|Articles précédents/i)).not.toBeInTheDocument();
+    });
+
+    it('should show left chevron when hovered and grid can scroll left', async () => {
+        render(
+            <BrowserRouter>
+                <Home isAuthenticated={false} />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText(/Suggested items|Articles suggérés/i)).toBeInTheDocument();
+        });
+
+        const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
+        const card = cardTitle.closest('.item-preview-card') as HTMLElement;
+        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement;
+        expect(itemsGrid).not.toBeNull();
+
+        // Set up overflow at the right edge so only left chevron should appear
+        Object.defineProperty(itemsGrid, 'scrollWidth', { writable: true, value: 1200 });
+        Object.defineProperty(itemsGrid, 'clientWidth', { writable: true, value: 600 });
+        Object.defineProperty(itemsGrid, 'scrollLeft', { writable: true, value: 600 }); // at right edge
+        mockCardHeight(card);
+
+        fireEvent.mouseEnter(card);
+        fireEvent.scroll(itemsGrid);
+
+        await waitFor(() => {
+            expect(screen.queryByLabelText(/Previous items|Articles précédents/i)).toBeInTheDocument();
+        });
+        expect(screen.queryByLabelText(/Next items|Articles suivants/i)).not.toBeInTheDocument();
+    });
+
+    it('should show both chevrons when hovered and grid is mid-scroll', async () => {
+        render(
+            <BrowserRouter>
+                <Home isAuthenticated={false} />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText(/Suggested items|Articles suggérés/i)).toBeInTheDocument();
+        });
+
+        const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
+        const card = cardTitle.closest('.item-preview-card') as HTMLElement;
+        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement;
+        expect(itemsGrid).not.toBeNull();
+
+        mockOverflowingGrid(itemsGrid);
+        mockCardHeight(card);
+
+        fireEvent.mouseEnter(card);
+        fireEvent.scroll(itemsGrid);
+
+        await waitFor(() => {
+            expect(screen.queryByLabelText(/Previous items|Articles précédents/i)).toBeInTheDocument();
+        });
+        expect(screen.queryByLabelText(/Next items|Articles suivants/i)).toBeInTheDocument();
+    });
+
+    it('should hide chevrons when mouse leaves the card', async () => {
+        render(
+            <BrowserRouter>
+                <Home isAuthenticated={false} />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText(/Suggested items|Articles suggérés/i)).toBeInTheDocument();
+        });
+
+        const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
+        const card = cardTitle.closest('.item-preview-card') as HTMLElement;
+        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement;
+
+        mockOverflowingGrid(itemsGrid);
+        mockCardHeight(card);
+
+        fireEvent.mouseEnter(card);
+        fireEvent.scroll(itemsGrid);
+
+        await waitFor(() => {
+            expect(screen.queryByLabelText(/Previous items|Articles précédents/i)).toBeInTheDocument();
+        });
+
+        fireEvent.mouseLeave(card);
+
+        await waitFor(() => {
+            expect(screen.queryByLabelText(/Previous items|Articles précédents/i)).not.toBeInTheDocument();
+            expect(screen.queryByLabelText(/Next items|Articles suivants/i)).not.toBeInTheDocument();
+        });
+    });
+
+    it('should call scrollBy with positive left when right chevron is clicked', async () => {
+        render(
+            <BrowserRouter>
+                <Home isAuthenticated={false} />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText(/Suggested items|Articles suggérés/i)).toBeInTheDocument();
+        });
+
+        const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
+        const card = cardTitle.closest('.item-preview-card') as HTMLElement;
+        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement;
+
+        Object.defineProperty(itemsGrid, 'scrollWidth', { writable: true, value: 1200 });
+        Object.defineProperty(itemsGrid, 'clientWidth', { writable: true, value: 600 });
+        Object.defineProperty(itemsGrid, 'scrollLeft', { writable: true, value: 0 });
+        mockCardHeight(card);
+
+        const scrollByMock = vi.fn();
+        itemsGrid.scrollBy = scrollByMock;
+
+        fireEvent.mouseEnter(card);
+        fireEvent.scroll(itemsGrid);
+
+        await waitFor(() => {
+            expect(screen.queryByLabelText(/Next items|Articles suivants/i)).toBeInTheDocument();
+        });
+
+        const nextBtn = screen.getByLabelText(/Next items|Articles suivants/i);
+        fireEvent.click(nextBtn);
 
         expect(scrollByMock).toHaveBeenCalledOnce();
         const arg = scrollByMock.mock.calls[0][0] as ScrollToOptions;
@@ -99,7 +238,7 @@ describe('Home - Scroll Navigation', () => {
         expect(arg.left).toBeGreaterThan(0);
     });
 
-    it('should scroll items-grid to the left when wheel scrolls up (deltaY < 0) and row overflows', async () => {
+    it('should call scrollBy with negative left when left chevron is clicked', async () => {
         render(
             <BrowserRouter>
                 <Home isAuthenticated={false} />
@@ -111,17 +250,26 @@ describe('Home - Scroll Navigation', () => {
         });
 
         const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
-        const card = cardTitle.closest('.item-preview-card');
-        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement | null;
-        expect(itemsGrid).not.toBeNull();
+        const card = cardTitle.closest('.item-preview-card') as HTMLElement;
+        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement;
 
-        mockOverflowingGrid(itemsGrid!);
+        Object.defineProperty(itemsGrid, 'scrollWidth', { writable: true, value: 1200 });
+        Object.defineProperty(itemsGrid, 'clientWidth', { writable: true, value: 600 });
+        Object.defineProperty(itemsGrid, 'scrollLeft', { writable: true, value: 600 }); // at right edge
+        mockCardHeight(card);
+
         const scrollByMock = vi.fn();
-        itemsGrid!.scrollBy = scrollByMock;
+        itemsGrid.scrollBy = scrollByMock;
 
-        // Dispatch wheel event with deltaY < 0 (scroll up → move items left)
-        const wheelUp = new WheelEvent('wheel', { deltaY: -100, bubbles: true, cancelable: true });
-        itemsGrid!.dispatchEvent(wheelUp);
+        fireEvent.mouseEnter(card);
+        fireEvent.scroll(itemsGrid);
+
+        await waitFor(() => {
+            expect(screen.queryByLabelText(/Previous items|Articles précédents/i)).toBeInTheDocument();
+        });
+
+        const prevBtn = screen.getByLabelText(/Previous items|Articles précédents/i);
+        fireEvent.click(prevBtn);
 
         expect(scrollByMock).toHaveBeenCalledOnce();
         const arg = scrollByMock.mock.calls[0][0] as ScrollToOptions;
@@ -129,7 +277,7 @@ describe('Home - Scroll Navigation', () => {
         expect(arg.left).toBeLessThan(0);
     });
 
-    it('should not scroll when deltaY is 0', async () => {
+    it('should not show chevrons when grid does not overflow', async () => {
         render(
             <BrowserRouter>
                 <Home isAuthenticated={false} />
@@ -141,108 +289,21 @@ describe('Home - Scroll Navigation', () => {
         });
 
         const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
-        const card = cardTitle.closest('.item-preview-card');
-        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement | null;
-        expect(itemsGrid).not.toBeNull();
+        const card = cardTitle.closest('.item-preview-card') as HTMLElement;
+        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement;
 
-        mockOverflowingGrid(itemsGrid!);
-        const scrollByMock = vi.fn();
-        itemsGrid!.scrollBy = scrollByMock;
+        // No overflow — scrollWidth === clientWidth
+        Object.defineProperty(itemsGrid, 'scrollWidth', { writable: true, value: 500 });
+        Object.defineProperty(itemsGrid, 'clientWidth', { writable: true, value: 500 });
+        Object.defineProperty(itemsGrid, 'scrollLeft', { writable: true, value: 0 });
+        mockCardHeight(card);
 
-        // Dispatch wheel event with deltaY = 0 (no vertical scroll — should be ignored)
-        const wheelHorizontal = new WheelEvent('wheel', { deltaY: 0, bubbles: true, cancelable: true });
-        itemsGrid!.dispatchEvent(wheelHorizontal);
-
-        expect(scrollByMock).not.toHaveBeenCalled();
-    });
-
-    it('should not scroll when the row does not overflow horizontally', async () => {
-        render(
-            <BrowserRouter>
-                <Home isAuthenticated={false} />
-            </BrowserRouter>
-        );
+        fireEvent.mouseEnter(card);
+        fireEvent.scroll(itemsGrid);
 
         await waitFor(() => {
-            expect(screen.getByText(/Suggested items|Articles suggérés/i)).toBeInTheDocument();
+            expect(screen.queryByLabelText(/Previous items|Articles précédents/i)).not.toBeInTheDocument();
+            expect(screen.queryByLabelText(/Next items|Articles suivants/i)).not.toBeInTheDocument();
         });
-
-        const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
-        const card = cardTitle.closest('.item-preview-card');
-        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement | null;
-        expect(itemsGrid).not.toBeNull();
-
-        // Row does NOT overflow — scrollWidth === clientWidth
-        Object.defineProperty(itemsGrid!, 'scrollWidth', { writable: true, value: 500 });
-        Object.defineProperty(itemsGrid!, 'clientWidth', { writable: true, value: 500 });
-
-        const scrollByMock = vi.fn();
-        itemsGrid!.scrollBy = scrollByMock;
-
-        const wheelDown = new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true });
-        itemsGrid!.dispatchEvent(wheelDown);
-
-        // Handler must not consume the event when there is nothing to scroll
-        expect(scrollByMock).not.toHaveBeenCalled();
-    });
-
-    it('should not scroll right when already at the right edge', async () => {
-        render(
-            <BrowserRouter>
-                <Home isAuthenticated={false} />
-            </BrowserRouter>
-        );
-
-        await waitFor(() => {
-            expect(screen.getByText(/Suggested items|Articles suggérés/i)).toBeInTheDocument();
-        });
-
-        const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
-        const card = cardTitle.closest('.item-preview-card');
-        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement | null;
-        expect(itemsGrid).not.toBeNull();
-
-        // Row overflows but scrollLeft is at the right edge
-        Object.defineProperty(itemsGrid!, 'scrollWidth', { writable: true, value: 1200 });
-        Object.defineProperty(itemsGrid!, 'clientWidth', { writable: true, value: 600 });
-        Object.defineProperty(itemsGrid!, 'scrollLeft', { writable: true, value: 600 }); // at right edge
-
-        const scrollByMock = vi.fn();
-        itemsGrid!.scrollBy = scrollByMock;
-
-        const wheelDown = new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true });
-        itemsGrid!.dispatchEvent(wheelDown);
-
-        expect(scrollByMock).not.toHaveBeenCalled();
-    });
-
-    it('should not scroll left when already at the left edge', async () => {
-        render(
-            <BrowserRouter>
-                <Home isAuthenticated={false} />
-            </BrowserRouter>
-        );
-
-        await waitFor(() => {
-            expect(screen.getByText(/Suggested items|Articles suggérés/i)).toBeInTheDocument();
-        });
-
-        const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
-        const card = cardTitle.closest('.item-preview-card');
-        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement | null;
-        expect(itemsGrid).not.toBeNull();
-
-        // Row overflows but scrollLeft is at the left edge
-        Object.defineProperty(itemsGrid!, 'scrollWidth', { writable: true, value: 1200 });
-        Object.defineProperty(itemsGrid!, 'clientWidth', { writable: true, value: 600 });
-        Object.defineProperty(itemsGrid!, 'scrollLeft', { writable: true, value: 0 }); // at left edge
-
-        const scrollByMock = vi.fn();
-        itemsGrid!.scrollBy = scrollByMock;
-
-        const wheelUp = new WheelEvent('wheel', { deltaY: -100, bubbles: true, cancelable: true });
-        itemsGrid!.dispatchEvent(wheelUp);
-
-        expect(scrollByMock).not.toHaveBeenCalled();
     });
 });

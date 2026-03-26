@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
@@ -574,51 +574,59 @@ interface ItemPreviewCardProps {
 
 function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, language = 'en', onClick, onItemClick }: ItemPreviewCardProps) {
     const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
+    const [isHovered, setIsHovered] = useState(false);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(false);
+    const [chevronHeight, setChevronHeight] = useState(0);
     const itemsGridRef = useRef<HTMLDivElement>(null);
+    const cardRef = useRef<HTMLDivElement>(null);
+
+    const updateScrollState = useCallback(() => {
+        const el = itemsGridRef.current;
+        if (!el) return;
+        const maxScrollLeft = el.scrollWidth - el.clientWidth;
+        setCanScrollLeft(el.scrollLeft > 0);
+        setCanScrollRight(maxScrollLeft > 1 && el.scrollLeft < maxScrollLeft - 1);
+    }, []);
 
     useEffect(() => {
         const el = itemsGridRef.current;
+        const card = cardRef.current;
         if (!el) return;
 
-        const handleWheel = (e: WheelEvent) => {
-            // Only handle vertical wheel input for horizontal scrolling
-            if (e.deltaY === 0) {
-                return;
-            }
-
-            const canScrollHorizontally = el.scrollWidth > el.clientWidth;
-            if (!canScrollHorizontally) {
-                // Let the event bubble to allow normal page scrolling
-                return;
-            }
-
-            const maxScrollLeft = el.scrollWidth - el.clientWidth;
-            const scrollingRight = e.deltaY > 0;
-            const scrollingLeft = e.deltaY < 0;
-            const atLeftEdge = el.scrollLeft <= 0;
-            const atRightEdge = el.scrollLeft >= maxScrollLeft;
-
-            const shouldScrollRight = scrollingRight && !atRightEdge;
-            const shouldScrollLeft = scrollingLeft && !atLeftEdge;
-
-            if (shouldScrollLeft || shouldScrollRight) {
-                e.preventDefault();
-                el.scrollBy({
-                    left: scrollingRight ? getScrollStepPx() : -getScrollStepPx(),
-                    behavior: 'smooth',
-                });
-            }
+        const updateSize = () => {
+            if (card) setChevronHeight(card.offsetHeight * 0.25);
+            updateScrollState();
         };
 
-        el.addEventListener('wheel', handleWheel, { passive: false });
-        return () => el.removeEventListener('wheel', handleWheel);
-    }, []);
+        el.addEventListener('scroll', updateScrollState);
+        const resizeObserver = new ResizeObserver(updateSize);
+        if (card) resizeObserver.observe(card);
+        updateSize();
+
+        return () => {
+            el.removeEventListener('scroll', updateScrollState);
+            resizeObserver.disconnect();
+        };
+    }, [products, items, updateScrollState]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (onClick && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
             onClick();
         }
+    };
+
+    const handleScrollLeft = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const el = itemsGridRef.current;
+        if (el) el.scrollBy({ left: -getScrollStepPx(), behavior: 'smooth' });
+    };
+
+    const handleScrollRight = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const el = itemsGridRef.current;
+        if (el) el.scrollBy({ left: getScrollStepPx(), behavior: 'smooth' });
     };
 
     const handleImageError = (index: number) => {
@@ -638,7 +646,10 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
 
     return (
         <div
+            ref={cardRef}
             className="item-preview-card"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
             onClick={hasItemClickHandler ? undefined : onClick}
             onKeyDown={hasItemClickHandler ? undefined : (onClick ? handleKeyDown : undefined)}
             tabIndex={hasItemClickHandler ? undefined : (onClick ? 0 : undefined)}
@@ -652,7 +663,21 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
             ) : (
                 <h3 className="card-title">{title}</h3>
             )}
-            <div className="items-grid" ref={itemsGridRef}>
+            <div className="items-grid-wrapper">
+                {isHovered && canScrollLeft && chevronHeight > 0 && (
+                    <button
+                        type="button"
+                        className="carousel-chevron carousel-chevron-left"
+                        style={{ height: chevronHeight, width: chevronHeight }}
+                        onClick={handleScrollLeft}
+                        aria-label={language === 'fr' ? 'Articles précédents' : 'Previous items'}
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: '100%', height: '100%' }}>
+                            <polyline points="15 18 9 12 15 6" />
+                        </svg>
+                    </button>
+                )}
+                <div className="items-grid" ref={itemsGridRef}>
                 {products !== undefined ? (
                     products.map((product, index) => {
                         if (imageErrors.has(index)) return null;
@@ -701,6 +726,20 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
                             </div>
                         );
                     })
+                )}
+            </div>
+                {isHovered && canScrollRight && chevronHeight > 0 && (
+                    <button
+                        type="button"
+                        className="carousel-chevron carousel-chevron-right"
+                        style={{ height: chevronHeight, width: chevronHeight }}
+                        onClick={handleScrollRight}
+                        aria-label={language === 'fr' ? 'Articles suivants' : 'Next items'}
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: '100%', height: '100%' }}>
+                            <polyline points="9 6 15 12 9 18" />
+                        </svg>
+                    </button>
                 )}
             </div>
         </div>

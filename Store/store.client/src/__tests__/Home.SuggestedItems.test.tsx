@@ -32,13 +32,14 @@ function makeProduct(id: string, variants: object[]) {
 // Empty response used to satisfy fetch calls that aren't under test
 const emptyApiResponse = { isSuccess: true, value: [] };
 
-// Mock all 3 fetch calls made by Home: recently added, suggested, offers
-// The order is: fetchRecentlyAddedProducts → fetchSuggestedProducts → fetchProductsWithOffers
+// Mock all 4 fetch calls made by Home: recently added, suggested, offers, categories
+// The order is: fetchRecentlyAddedProducts → fetchSuggestedProducts → fetchProductsWithOffers → fetchSuggestedCategoriesProducts
 function mockFetchCalls(suggestedResponse: object) {
     (global.fetch as ReturnType<typeof vi.fn>)
         .mockResolvedValueOnce({ ok: true, json: async () => emptyApiResponse })  // recently added
         .mockResolvedValueOnce({ ok: true, json: async () => suggestedResponse }) // suggested
-        .mockResolvedValueOnce({ ok: true, json: async () => emptyApiResponse }); // offers
+        .mockResolvedValueOnce({ ok: true, json: async () => emptyApiResponse })  // offers
+        .mockResolvedValueOnce({ ok: true, json: async () => emptyApiResponse }); // categories
 }
 
 describe('Home - Suggested Items image filtering', () => {
@@ -70,7 +71,7 @@ describe('Home - Suggested Items image filtering', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetSuggestedProducts?count=20')
+                expect.stringContaining('/api/Item/GetSuggestedProducts?count=24')
             );
         });
 
@@ -102,7 +103,7 @@ describe('Home - Suggested Items image filtering', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetSuggestedProducts?count=20')
+                expect.stringContaining('/api/Item/GetSuggestedProducts?count=24')
             );
         });
 
@@ -131,7 +132,7 @@ describe('Home - Suggested Items image filtering', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetSuggestedProducts?count=20')
+                expect.stringContaining('/api/Item/GetSuggestedProducts?count=24')
             );
         });
 
@@ -158,7 +159,7 @@ describe('Home - Suggested Items image filtering', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetSuggestedProducts?count=20')
+                expect.stringContaining('/api/Item/GetSuggestedProducts?count=24')
             );
         });
 
@@ -188,7 +189,7 @@ describe('Home - Suggested Items image filtering', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetSuggestedProducts?count=20')
+                expect.stringContaining('/api/Item/GetSuggestedProducts?count=24')
             );
         });
 
@@ -219,7 +220,7 @@ describe('Home - Suggested Items image filtering', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetSuggestedProducts?count=20')
+                expect.stringContaining('/api/Item/GetSuggestedProducts?count=24')
             );
         });
 
@@ -253,7 +254,7 @@ describe('Home - Suggested Items image filtering', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetSuggestedProducts?count=20')
+                expect.stringContaining('/api/Item/GetSuggestedProducts?count=24')
             );
         });
 
@@ -287,7 +288,7 @@ describe('Home - Suggested Items image filtering', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetSuggestedProducts?count=20')
+                expect.stringContaining('/api/Item/GetSuggestedProducts?count=24')
             );
         });
 

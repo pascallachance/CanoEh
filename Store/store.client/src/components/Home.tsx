@@ -595,26 +595,56 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
         setCanScrollRight(maxScrollLeft > SCROLL_TOLERANCE && el.scrollLeft < maxScrollLeft - SCROLL_TOLERANCE);
     }, []);
 
+    const updateSize = useCallback(() => {
+        const card = cardRef.current;
+        if (card) setChevronHeight(card.offsetHeight * CHEVRON_SIZE_RATIO);
+    }, []);
+
     useEffect(() => {
         const el = itemsGridRef.current;
         const card = cardRef.current;
         if (!el) return;
 
-        const updateSize = () => {
-            if (card) setChevronHeight(card.offsetHeight * CHEVRON_SIZE_RATIO);
+        const handleResize = () => {
+            updateSize();
             updateScrollState();
         };
 
         el.addEventListener('scroll', updateScrollState);
-        const resizeObserver = new ResizeObserver(updateSize);
-        if (card) resizeObserver.observe(card);
-        updateSize();
 
+        if (typeof ResizeObserver !== 'undefined') {
+            const resizeObserver = new ResizeObserver(handleResize);
+            if (card) resizeObserver.observe(card);
+            handleResize();
+            return () => {
+                el.removeEventListener('scroll', updateScrollState);
+                resizeObserver.disconnect();
+            };
+        }
+
+        // Fallback when ResizeObserver is unavailable: measure the card height directly
+        updateSize();
+        updateScrollState();
         return () => {
             el.removeEventListener('scroll', updateScrollState);
-            resizeObserver.disconnect();
         };
-    }, [products, items, updateScrollState]);
+    }, [updateScrollState, updateSize]);
+
+    useEffect(() => {
+        // Recompute scroll state when the number of products/items changes,
+        // without tearing down and re-attaching listeners/observers.
+        updateScrollState();
+    }, [updateScrollState, products?.length, items.length]);
+
+    useEffect(() => {
+        // Remeasure card height when hover starts so the chevron size is always
+        // up-to-date when displayed. This also ensures the correct height is picked
+        // up in test environments where ResizeObserver is stubbed as a no-op.
+        if (isHovered) {
+            updateSize();
+            updateScrollState();
+        }
+    }, [isHovered, updateSize, updateScrollState]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (onClick && (e.key === 'Enter' || e.key === ' ')) {
@@ -656,6 +686,8 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
             className="item-preview-card"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            onFocus={() => setIsHovered(true)}
+            onBlur={() => setIsHovered(false)}
             onClick={hasItemClickHandler ? undefined : onClick}
             onKeyDown={hasItemClickHandler ? undefined : (onClick ? handleKeyDown : undefined)}
             tabIndex={hasItemClickHandler ? undefined : (onClick ? 0 : undefined)}

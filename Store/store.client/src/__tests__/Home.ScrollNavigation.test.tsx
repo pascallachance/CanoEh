@@ -180,6 +180,7 @@ describe('Home - Scroll Navigation', () => {
         const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
         const card = cardTitle.closest('.item-preview-card') as HTMLElement;
         const itemsGrid = card?.querySelector('.items-grid') as HTMLElement;
+        expect(itemsGrid).not.toBeNull();
 
         mockOverflowingGrid(itemsGrid);
         mockCardHeight(card);
@@ -213,6 +214,7 @@ describe('Home - Scroll Navigation', () => {
         const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
         const card = cardTitle.closest('.item-preview-card') as HTMLElement;
         const itemsGrid = card?.querySelector('.items-grid') as HTMLElement;
+        expect(itemsGrid).not.toBeNull();
 
         Object.defineProperty(itemsGrid, 'scrollWidth', { writable: true, value: 1200 });
         Object.defineProperty(itemsGrid, 'clientWidth', { writable: true, value: 600 });
@@ -252,6 +254,7 @@ describe('Home - Scroll Navigation', () => {
         const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
         const card = cardTitle.closest('.item-preview-card') as HTMLElement;
         const itemsGrid = card?.querySelector('.items-grid') as HTMLElement;
+        expect(itemsGrid).not.toBeNull();
 
         Object.defineProperty(itemsGrid, 'scrollWidth', { writable: true, value: 1200 });
         Object.defineProperty(itemsGrid, 'clientWidth', { writable: true, value: 600 });
@@ -291,6 +294,7 @@ describe('Home - Scroll Navigation', () => {
         const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
         const card = cardTitle.closest('.item-preview-card') as HTMLElement;
         const itemsGrid = card?.querySelector('.items-grid') as HTMLElement;
+        expect(itemsGrid).not.toBeNull();
 
         // No overflow — scrollWidth === clientWidth
         Object.defineProperty(itemsGrid, 'scrollWidth', { writable: true, value: 500 });

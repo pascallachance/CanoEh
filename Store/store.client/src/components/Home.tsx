@@ -4,9 +4,15 @@ import './Home.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
 
 /**
+ * Default scroll step fallback (px) = --item-width (200) + --items-gap (12).
+ * Must be kept in sync with the :root defaults in Home.css.
+ */
+const DEFAULT_SCROLL_STEP_PX = 212;
+
+/**
  * Returns the horizontal scroll step in pixels by reading the rendered --item-width
- * and --items-gap CSS custom properties. Falls back to 212px if the properties are
- * not available (e.g. in test environments).
+ * and --items-gap CSS custom properties. Falls back to DEFAULT_SCROLL_STEP_PX if the
+ * properties are not available (e.g. in test environments).
  */
 function getScrollStepPx(): number {
     try {
@@ -14,9 +20,9 @@ function getScrollStepPx(): number {
         const itemWidth = parseFloat(styles.getPropertyValue('--item-width')) || 0;
         const itemsGap = parseFloat(styles.getPropertyValue('--items-gap')) || 0;
         const step = itemWidth + itemsGap;
-        return step > 0 ? step : 212;
+        return step > 0 ? step : DEFAULT_SCROLL_STEP_PX;
     } catch {
-        return 212;
+        return DEFAULT_SCROLL_STEP_PX;
     }
 }
 

@@ -5,7 +5,7 @@ import { toAbsoluteUrl } from '../utils/urlUtils';
 
 /**
  * Returns the horizontal scroll step in pixels by reading the rendered --item-width
- * and --items-gap CSS custom properties. Falls back to 122px if the properties are
+ * and --items-gap CSS custom properties. Falls back to 212px if the properties are
  * not available (e.g. in test environments).
  */
 function getScrollStepPx(): number {
@@ -14,9 +14,9 @@ function getScrollStepPx(): number {
         const itemWidth = parseFloat(styles.getPropertyValue('--item-width')) || 0;
         const itemsGap = parseFloat(styles.getPropertyValue('--items-gap')) || 0;
         const step = itemWidth + itemsGap;
-        return step > 0 ? step : 122;
+        return step > 0 ? step : 212;
     } catch {
-        return 122;
+        return 212;
     }
 }
 

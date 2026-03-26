@@ -1,16 +1,7 @@
 :root {
     --cards-gap: 20px;
-    --card-width: 345px;
-    --cards-visible-count: 5; /* Will be dynamically updated by JavaScript */
-    --carousel-button-width: 50px;
-    --carousel-gap: 0px;
-    /* Calculate visible cards area width to fit the responsive number of cards (varies by screen size) */
-    /* Available space is viewport width */
-    /* Note: buttons are outside the cards-container and do not overlap it */
-    --visible-cards-width: min(
-        calc((var(--cards-visible-count) * var(--card-width)) + ((var(--cards-visible-count) - 1) * var(--cards-gap))),
-        calc(100vw - (2 * var(--carousel-gap)))
-    );
+    --item-width: 110px;
+    --items-gap: 12px;
 }
 
 .home-container {
@@ -302,110 +293,28 @@
     margin: 0;
 }
 
-/* Cards Section */
+/* Cards Section - vertical stack of sections */
 .cards-section {
-    position: relative;
-    padding: 20px 0;
+    padding: 16px 20px;
     width: 100%;
     max-width: 100%;
     margin: 0;
-    overflow-x: hidden;
-    overflow-y: visible;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--carousel-gap);
-    box-sizing: border-box;
-}
-
-.cards-container {
-    display: flex;
+    flex-direction: column;
     gap: var(--cards-gap);
-    overflow-x: auto;
-    overflow-y: visible;
-    scroll-behavior: smooth;
-    padding: 0;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
-    scroll-snap-type: x mandatory;
-    scroll-padding: 0;
-    width: var(--visible-cards-width);
-    max-width: 100%;
-    flex: 0 1 auto;
-    min-width: 0;
     box-sizing: border-box;
-    order: 1; /* Center between prev (0) and next (2) buttons */
-}
-
-.cards-container::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
-}
-
-.carousel-button {
-    position: relative;
-    background-color: rgba(255, 255, 255, 0.95);
-    border: 1px solid #ddd;
-    border-radius: 50%;
-    width: var(--carousel-button-width);
-    height: var(--carousel-button-width);
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 10;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    transition: background-color 0.2s, box-shadow 0.2s;
-}
-
-.carousel-button:hover {
-    background-color: #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-}
-
-.carousel-button:focus-visible {
-    outline: 2px solid #667eea;
-    outline-offset: 2px;
-}
-
-.carousel-button:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-}
-
-.carousel-button.prev {
-    order: 0; /* Left button */
-}
-
-.carousel-button.next {
-    order: 2; /* Right button */
-}
-
-.carousel-button svg {
-    width: 24px;
-    height: 24px;
-    fill: #232f3e;
 }
 
 .item-preview-card {
     background-color: white;
     border-radius: 8px;
-    padding: 20px;
+    padding: 14px 16px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     transition: box-shadow 0.2s;
     outline: none;
-    flex: 0 0 var(--card-width);
-    min-width: var(--card-width);
+    width: 100%;
     box-sizing: border-box;
-    scroll-snap-align: start; /* Snap to start of each card */
-}
-
-/* Progressive enhancement: only apply scroll-snap-stop in browsers that support it */
-@supports (scroll-snap-stop: always) {
-    .item-preview-card {
-        scroll-snap-stop: always; /* Help prevent cards from stopping partially visible */
-    }
 }
 .item-preview-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -447,15 +356,27 @@ button.card-title-btn:focus-visible {
     border-radius: 2px;
 }
 
+/* Horizontal row of items — 1 row × up to 10 items, scrollable via mouse wheel */
 .items-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 10px;
-    min-height: 400px;
+    display: flex;
+    flex-direction: row;
+    gap: var(--items-gap);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scroll-behavior: smooth;
+    padding: 6px 0;
+    align-items: flex-start;
+}
+
+.items-grid::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
 }
 
 .item-placeholder {
+    flex: 0 0 var(--item-width);
+    width: var(--item-width);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -512,7 +433,7 @@ button.card-title-btn:focus-visible {
 
 .item-image-placeholder {
     width: 100%;
-    height: 100%;
+    height: var(--item-width);
     background-color: #f0f0f0;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -520,7 +441,8 @@ button.card-title-btn:focus-visible {
     align-items: center;
     justify-content: center;
     color: #999;
-    font-size: 12px;
+    font-size: 11px;
+    text-align: center;
 }
 
 /* Responsive Design */
@@ -532,17 +454,8 @@ button.card-title-btn:focus-visible {
 
 @media (max-width: 768px) {
     :root {
-        --carousel-button-width: 40px;
-    }
-
-    .carousel-button {
-        width: var(--carousel-button-width);
-        height: var(--carousel-button-width);
-    }
-
-    .carousel-button svg {
-        width: 20px;
-        height: 20px;
+        --item-width: 90px;
+        --items-gap: 8px;
     }
 
     .top-nav {
@@ -556,16 +469,12 @@ button.card-title-btn:focus-visible {
 
 @media (max-width: 480px) {
     :root {
-        --carousel-button-width: 36px;
-        --carousel-gap: 8px;
+        --item-width: 80px;
+        --items-gap: 6px;
     }
-}
 
-@media (max-width: 360px) {
-    :root {
-        --card-width: 320px;
-        --carousel-button-width: 36px;
-        --carousel-gap: 8px;
+    .cards-section {
+        padding: 12px 10px;
     }
 }
 

@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
 
+// Number of pixels to scroll per mouse-wheel step (approximately one item + gap)
+const SCROLL_STEP_PX = 122;
+
 interface HomeProps {
     isAuthenticated?: boolean;
     onLogout?: () => void;
@@ -75,32 +78,14 @@ interface ProductPreviewItem {
     offer: number;
 }
 
-const ITEM_PLACEHOLDER_ARRAY = [1, 2, 3, 4];
-const RECENT_ITEMS_DISPLAY_COUNT = 4;
+const ITEM_PLACEHOLDER_ARRAY = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const RECENT_ITEMS_DISPLAY_COUNT = 10;
 const RECENT_ITEMS_FETCH_COUNT = 20; // Fetch more to ensure we get enough with images
-const SUGGESTED_ITEMS_COUNT = 4;
+const SUGGESTED_ITEMS_COUNT = 10;
 const SUGGESTED_ITEMS_FETCH_COUNT = 20; // Fetch more to ensure we get enough with images
-const OFFERS_COUNT = 4;
+const OFFERS_COUNT = 10;
+const SUGGESTED_CATEGORIES_FETCH_COUNT = 20;
 const PRIMARY_IMAGE_PATTERN = /_1\.(jpg|jpeg|png|gif|webp)$/i; // Pattern to match primary product images ending with _1
-
-// Default CSS variable values (must match :root in Home.css)
-const DEFAULT_CARD_WIDTH = 345;
-const DEFAULT_CARDS_GAP = 20;
-const DEFAULT_CAROUSEL_GAP = 0;
-const RESIZE_DEBOUNCE_MS = 150;
-
-/**
- * Helper function to read CSS card dimension variables
- * @returns Object containing card width, gap, and carousel gap
- */
-function getCSSCardDimensions() {
-    const rootStyle = getComputedStyle(document.documentElement);
-    return {
-        cardWidth: parseInt(rootStyle.getPropertyValue('--card-width')) || DEFAULT_CARD_WIDTH,
-        gap: parseInt(rootStyle.getPropertyValue('--cards-gap')) || DEFAULT_CARDS_GAP,
-        carouselGap: parseInt(rootStyle.getPropertyValue('--carousel-gap')) || DEFAULT_CAROUSEL_GAP
-    };
-}
 
 /**
  * Returns true if the variant has an active (non-expired and started) offer.
@@ -177,20 +162,6 @@ function extractProductImages(
     return result;
 }
 
-/**
- * Debounce utility to limit function execution frequency
- * @param func Function to debounce
- * @param wait Delay in milliseconds
- * @returns Debounced function
- */
-function debounce<T extends (...args: any[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void {
-    let timeout: NodeJS.Timeout | null = null;
-    return (...args: Parameters<T>) => {
-        if (timeout) clearTimeout(timeout);
-        timeout = setTimeout(() => func(...args), wait);
-    };
-}
-
 function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const navigate = useNavigate();
     const [language, setLanguage] = useState<string>('en');
@@ -200,24 +171,6 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const [suggestedProducts, setSuggestedProducts] = useState<ProductPreviewItem[]>([]);
     const [offerProducts, setOfferProducts] = useState<ProductPreviewItem[]>([]);
     const [categoriesProducts, setCategoriesProducts] = useState<ProductPreviewItem[]>([]);
-    const [carouselScrollPosition, setCarouselScrollPosition] = useState<number>(0);
-    const [canScrollNext, setCanScrollNext] = useState<boolean>(false);
-    const carouselRef = useRef<HTMLDivElement>(null);
-    const cardsSectionRef = useRef<HTMLDivElement>(null);
-
-    /**
-     * Updates the carousel scroll state by reading current scroll position
-     * and calculating button enable/disable states
-     */
-    const updateCarouselScrollState = () => {
-        const container = carouselRef.current;
-        if (container) {
-            const scrollLeft = container.scrollLeft;
-            const maxScrollLeft = container.scrollWidth - container.clientWidth;
-            setCarouselScrollPosition(scrollLeft);
-            setCanScrollNext(scrollLeft < maxScrollLeft - 10);
-        }
-    };
 
     useEffect(() => {
         // Set language based on user or system settings
@@ -233,83 +186,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         fetchSuggestedProducts();
         fetchProductsWithOffers();
         fetchSuggestedCategoriesProducts();
-
-        // Add scroll listener to update carousel position
-        const container = carouselRef.current;
-        const handleScroll = () => {
-            updateCarouselScrollState();
-        };
-
-        if (container) {
-            container.addEventListener('scroll', handleScroll);
-            // Initial state check
-            handleScroll();
-        }
-
-        return () => {
-            if (container) {
-                container.removeEventListener('scroll', handleScroll);
-            }
-        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthenticated]);
-
-    // Effect to dynamically adjust visible cards count based on available space
-    useEffect(() => {
-        const updateVisibleCardsCount = () => {
-            // Get card width and gap from CSS variables using helper function
-            const { cardWidth, gap, carouselGap } = getCSSCardDimensions();
-
-            // Calculate available width for cards (viewport width minus carousel gaps)
-            const availableWidth = window.innerWidth - (2 * carouselGap);
-
-            // Calculate how many complete cards can fit
-            // Each card takes up (cardWidth + gap), except the last one which doesn't need a trailing gap
-            // Formula: N * cardWidth + (N - 1) * gap <= availableWidth
-            // Solving for N: N <= (availableWidth + gap) / (cardWidth + gap)
-            let visibleCount = Math.floor((availableWidth + gap) / (cardWidth + gap));
-
-            // Ensure at least 1 card is visible
-            visibleCount = Math.max(1, visibleCount);
-
-            // Update CSS variable with the calculated count
-            document.documentElement.style.setProperty('--cards-visible-count', visibleCount.toString());
-
-            // After updating the visible cards count, trigger scroll state update
-            // This ensures the carousel buttons reflect the new layout
-            // Use requestAnimationFrame to ensure CSS changes are applied and layout is recalculated
-            // before reading scroll dimensions for the carousel
-            window.requestAnimationFrame(() => {
-                updateCarouselScrollState();
-            });
-        };
-
-        // Debounced version for resize events to prevent excessive re-calculations
-        const debouncedUpdate = debounce(updateVisibleCardsCount, RESIZE_DEBOUNCE_MS);
-
-        // Use ResizeObserver to detect when the cards-section changes size
-        // Check if ResizeObserver is available (not in all test environments)
-        const cardsSection = cardsSectionRef.current;
-        let resizeObserver: ResizeObserver | null = null;
-        
-        if (cardsSection && typeof ResizeObserver !== 'undefined') {
-            resizeObserver = new ResizeObserver(debouncedUpdate);
-            resizeObserver.observe(cardsSection);
-        }
-
-        // Update on window resize with debouncing
-        window.addEventListener('resize', debouncedUpdate);
-
-        // Initial update after setup, using requestAnimationFrame to ensure styles are computed
-        requestAnimationFrame(updateVisibleCardsCount);
-
-        return () => {
-            window.removeEventListener('resize', debouncedUpdate);
-            if (resizeObserver) {
-                resizeObserver.disconnect();
-            }
-        };
-    }, []);
 
     const fetchRecentlyAddedProducts = async () => {
         try {
@@ -453,7 +331,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 return;
             }
 
-            const response = await fetch(`${apiBaseUrl}/api/Item/GetSuggestedCategoriesProducts?count=4`);
+            const response = await fetch(`${apiBaseUrl}/api/Item/GetSuggestedCategoriesProducts?count=${SUGGESTED_CATEGORIES_FETCH_COUNT}`);
             if (!response.ok) {
                 console.error('Failed to fetch suggested categories products');
                 return;
@@ -461,7 +339,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                setCategoriesProducts(extractProductImages(result.value, language, undefined, true));
+                setCategoriesProducts(extractProductImages(result.value, language, SUGGESTED_CATEGORIES_FETCH_COUNT, true));
             }
         } catch (error) {
             console.error('Error fetching suggested categories products:', error);
@@ -507,64 +385,6 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         console.log('Card clicked:', title);
     };
 
-    const handleCarouselScroll = (direction: 'prev' | 'next') => {
-        const container = carouselRef.current;
-        if (!container) return;
-
-        // Get card width, gap, and visible cards count from CSS variables
-        const { cardWidth, gap } = getCSSCardDimensions();
-        const rootStyle = getComputedStyle(document.documentElement);
-        const visibleCardsCount = parseInt(rootStyle.getPropertyValue('--cards-visible-count')) || 1;
-        
-        // Calculate page width based on the number of visible cards.
-        // Use visibleCardsCount * (cardWidth + gap) so the boundary aligns with
-        // CSS scroll-snap points (each card occupies cardWidth + gap in the snap grid),
-        // preventing the browser from snapping to a different position than targeted.
-        const pageWidth = visibleCardsCount * (cardWidth + gap);
-
-        const currentScroll = container.scrollLeft;
-        const maxScrollLeft = container.scrollWidth - container.clientWidth;
-        
-        // Calculate current page in a direction-aware way to avoid skipping pages.
-        // Use a small epsilon to handle floating-point drift near exact page boundaries.
-        const rawPage = currentScroll / pageWidth;
-        const EPSILON = 0.001;
-        const nearestIntegerPage = Math.round(rawPage);
-        let currentPage: number;
-        if (Math.abs(rawPage - nearestIntegerPage) < EPSILON) {
-            // Close enough to an integer page index: snap to it regardless of direction
-            currentPage = nearestIntegerPage;
-        } else if (direction === 'next') {
-            // When moving forward, treat the user as being on the earlier page
-            currentPage = Math.floor(rawPage + EPSILON);
-        } else {
-            // When moving backward, treat the user as being on the later page
-            currentPage = Math.ceil(rawPage - EPSILON);
-        }
-        
-        // Calculate target page
-        const targetPage = direction === 'next' ? currentPage + 1 : currentPage - 1;
-        
-        // Calculate exact scroll position for target page
-        const newScroll = targetPage * pageWidth;
-        
-        // Clamp to valid range
-        const clampedScroll = Math.max(0, Math.min(newScroll, maxScrollLeft));
-
-        container.scrollTo({
-            left: clampedScroll,
-            behavior: 'smooth'
-        });
-
-        // State will be updated by the scroll event listener
-    };
-
-    // Threshold in pixels used to determine when the carousel can scroll backwards.
-    // Kept as a constant so it can be shared with scroll state logic that handles
-    // fractional scrollLeft values.
-    const SCROLL_BUTTON_THRESHOLD_PX = 10;
-
-    const canScrollPrev = carouselScrollPosition > SCROLL_BUTTON_THRESHOLD_PX;
     // Get text based on selected language
     const getText = (en: string, fr: string) => language === 'fr' ? fr : en;
 
@@ -642,19 +462,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 </section>
 
                 {/* Cards Section */}
-                <section className="cards-section" ref={cardsSectionRef}>
-                <button
-                    type="button"
-                    className="carousel-button prev"
-                    onClick={() => handleCarouselScroll('prev')}
-                    disabled={!canScrollPrev}
-                    aria-label={getText("Previous cards", "Cartes précédentes")}
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-                    </svg>
-                </button>
-                <div className="cards-container" ref={carouselRef}>
+                <section className="cards-section">
                 <ItemPreviewCard
                     title={getText("Suggested items", "Articles suggérés")}
                     products={suggestedProducts}
@@ -709,18 +517,6 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                         />
                     </>
                 )}
-                </div>
-                <button
-                    type="button"
-                    className="carousel-button next"
-                    onClick={() => handleCarouselScroll('next')}
-                    disabled={!canScrollNext}
-                    aria-label={getText("Next cards", "Cartes suivantes")}
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                    </svg>
-                </button>
                 </section>
             </div>
 
@@ -757,6 +553,22 @@ interface ItemPreviewCardProps {
 
 function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, language = 'en', onClick, onItemClick }: ItemPreviewCardProps) {
     const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
+    const itemsGridRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const el = itemsGridRef.current;
+        if (!el) return;
+
+        const handleWheel = (e: WheelEvent) => {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                el.scrollBy({ left: e.deltaY > 0 ? SCROLL_STEP_PX : -SCROLL_STEP_PX, behavior: 'smooth' });
+            }
+        };
+
+        el.addEventListener('wheel', handleWheel, { passive: false });
+        return () => el.removeEventListener('wheel', handleWheel);
+    }, []);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (onClick && (e.key === 'Enter' || e.key === ' ')) {
@@ -796,7 +608,7 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
             ) : (
                 <h3 className="card-title">{title}</h3>
             )}
-            <div className="items-grid">
+            <div className="items-grid" ref={itemsGridRef}>
                 {products !== undefined ? (
                     products.map((product, index) => {
                         if (imageErrors.has(index)) return null;

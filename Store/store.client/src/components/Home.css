@@ -1,7 +1,6 @@
 :root {
     --cards-gap: 20px;
-    --item-width: 200px;
-    --items-gap: 12px;
+    --items-gap: 20px;
 }
 
 .home-container {
@@ -375,8 +374,8 @@ button.card-title-btn:focus-visible {
 }
 
 .item-placeholder {
-    flex: 0 0 var(--item-width);
-    width: var(--item-width);
+    flex: 0 0 calc((100% - var(--items-gap) * 7) / 8);
+    width: calc((100% - var(--items-gap) * 7) / 8);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -433,7 +432,7 @@ button.card-title-btn:focus-visible {
 
 .item-image-placeholder {
     width: 100%;
-    height: var(--item-width);
+    aspect-ratio: 1;
     background-color: #f0f0f0;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -497,7 +496,6 @@ button.card-title-btn:focus-visible {
 
 @media (max-width: 768px) {
     :root {
-        --item-width: 160px;
         --items-gap: 8px;
     }
 
@@ -512,7 +510,6 @@ button.card-title-btn:focus-visible {
 
 @media (max-width: 480px) {
     :root {
-        --item-width: 140px;
         --items-gap: 6px;
     }
 

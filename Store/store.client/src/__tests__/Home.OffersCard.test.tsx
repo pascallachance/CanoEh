@@ -118,7 +118,7 @@ describe('Home - Offers Card', () => {
         // Wait for all three fetch calls
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetProductsWithOffers?count=10')
+                expect.stringContaining('/api/Item/GetProductsWithOffers?count=16')
             );
         });
 
@@ -240,7 +240,7 @@ describe('Home - Offers Card', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetProductsWithOffers?count=10')
+                expect.stringContaining('/api/Item/GetProductsWithOffers?count=16')
             );
         });
 
@@ -331,7 +331,7 @@ describe('Home - Offers Card', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetProductsWithOffers?count=10')
+                expect.stringContaining('/api/Item/GetProductsWithOffers?count=16')
             );
         });
 
@@ -412,7 +412,7 @@ describe('Home - Offers Card', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetProductsWithOffers?count=10')
+                expect.stringContaining('/api/Item/GetProductsWithOffers?count=16')
             );
         });
 
@@ -490,7 +490,7 @@ describe('Home - Offers Card', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetProductsWithOffers?count=10')
+                expect.stringContaining('/api/Item/GetProductsWithOffers?count=16')
             );
         });
 
@@ -639,7 +639,7 @@ describe('Home - Offers Card', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetProductsWithOffers?count=10')
+                expect.stringContaining('/api/Item/GetProductsWithOffers?count=16')
             );
         });
 
@@ -743,7 +743,7 @@ describe('Home - Offers Card', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/Item/GetProductsWithOffers?count=10')
+                expect.stringContaining('/api/Item/GetProductsWithOffers?count=16')
             );
         });
 

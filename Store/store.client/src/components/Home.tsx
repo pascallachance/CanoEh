@@ -9,6 +9,12 @@ import { toAbsoluteUrl } from '../utils/urlUtils';
  */
 const DEFAULT_SCROLL_STEP_PX = 212;
 
+/** Tolerance (px) used when comparing scrollLeft to the maximum scroll position to account for sub-pixel rounding. */
+const SCROLL_TOLERANCE = 1;
+
+/** Fraction of the card's rendered height used as the chevron button size. */
+const CHEVRON_SIZE_RATIO = 0.25;
+
 /**
  * Returns the horizontal scroll step in pixels by reading the rendered --item-width
  * and --items-gap CSS custom properties. Falls back to DEFAULT_SCROLL_STEP_PX if the
@@ -586,7 +592,7 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
         if (!el) return;
         const maxScrollLeft = el.scrollWidth - el.clientWidth;
         setCanScrollLeft(el.scrollLeft > 0);
-        setCanScrollRight(maxScrollLeft > 1 && el.scrollLeft < maxScrollLeft - 1);
+        setCanScrollRight(maxScrollLeft > SCROLL_TOLERANCE && el.scrollLeft < maxScrollLeft - SCROLL_TOLERANCE);
     }, []);
 
     useEffect(() => {
@@ -595,7 +601,7 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
         if (!el) return;
 
         const updateSize = () => {
-            if (card) setChevronHeight(card.offsetHeight * 0.25);
+            if (card) setChevronHeight(card.offsetHeight * CHEVRON_SIZE_RATIO);
             updateScrollState();
         };
 
@@ -664,6 +670,7 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
                 <h3 className="card-title">{title}</h3>
             )}
             <div className="items-grid-wrapper">
+                {/* chevronHeight > 0 ensures the button has a visible size before ResizeObserver has measured the card */}
                 {isHovered && canScrollLeft && chevronHeight > 0 && (
                     <button
                         type="button"

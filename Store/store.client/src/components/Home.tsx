@@ -79,6 +79,7 @@ interface ProductPreviewItem {
     imageUrl: string;
     name: string;
     offer: number;
+    categoryNodeId?: string;
 }
 
 const ITEM_PLACEHOLDER_ARRAY = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
@@ -159,6 +160,7 @@ function extractProductImages(
                     imageUrl: toAbsoluteUrl(imageUrl),
                     name,
                     offer: isOfferActive(selectedVariant) ? (selectedVariant.offer || 0) : 0,
+                    ...(useCategoryName ? { categoryNodeId: product.categoryNodeID } : {}),
                 });
             }
         }
@@ -486,6 +488,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     products={categoriesProducts}
                     language={language}
                     onClick={() => handleCardClick('categories')}
+                    onItemClick={(product) => navigate(`/categories${product.categoryNodeId ? `?nodeId=${encodeURIComponent(product.categoryNodeId)}` : ''}`)}
                 />
                 <ItemPreviewCard
                     title={getText("Best Sellers", "Meilleures ventes")}

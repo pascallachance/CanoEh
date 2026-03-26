@@ -1,6 +1,6 @@
 :root {
     --cards-gap: 20px;
-    --item-width: 110px;
+    --item-width: 200px;
     --items-gap: 12px;
 }
 
@@ -454,7 +454,7 @@ button.card-title-btn:focus-visible {
 
 @media (max-width: 768px) {
     :root {
-        --item-width: 90px;
+        --item-width: 160px;
         --items-gap: 8px;
     }
 
@@ -469,7 +469,7 @@ button.card-title-btn:focus-visible {
 
 @media (max-width: 480px) {
     :root {
-        --item-width: 80px;
+        --item-width: 140px;
         --items-gap: 6px;
     }
 

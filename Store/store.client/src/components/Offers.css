@@ -154,6 +154,18 @@
     font-weight: bold;
 }
 
+.browse-product-price {
+    font-size: 15px;
+    color: #232f3e;
+    font-weight: bold;
+}
+
+.browse-product-date {
+    font-size: 11px;
+    color: #888;
+    margin: 4px 0 0 0;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
     .offers-layout {

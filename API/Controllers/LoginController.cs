@@ -75,7 +75,7 @@ namespace API.Controllers
             // Set refresh token as a session cookie (no Expires/Max-Age so it is deleted when the browser closes)
             Response.Cookies.Append("RefreshToken", refreshToken, new CookieOptions {
                 HttpOnly = true,
-                Secure = true,
+                Secure = Request.IsHttps,
                 SameSite = SameSiteMode.Strict,
                 IsEssential = true
             });
@@ -166,7 +166,7 @@ namespace API.Controllers
             // Set new refresh token as a session cookie (no Expires/Max-Age so it is deleted when the browser closes)
             Response.Cookies.Append("RefreshToken", newRefreshToken, new CookieOptions {
                 HttpOnly = true,
-                Secure = true,
+                Secure = Request.IsHttps,
                 SameSite = SameSiteMode.Strict,
                 IsEssential = true
             });

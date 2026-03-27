@@ -9,6 +9,8 @@ import Cart from './components/Cart';
 import Offers from './components/Offers';
 import Categories from './components/Categories';
 import Product from './components/Product';
+import SuggestedItems from './components/SuggestedItems';
+import RecentlyAdded from './components/RecentlyAdded';
 
 function AppContent() {
     const navigate = useNavigate();
@@ -83,6 +85,8 @@ function AppContent() {
             <Route path="/cart" element={<Cart />} />
             <Route path="/offers" element={<Offers isAuthenticated={isAuthenticated} onLogout={handleLogout} />} />
             <Route path="/categories" element={<Categories isAuthenticated={isAuthenticated} onLogout={handleLogout} />} />
+            <Route path="/suggested-items" element={<SuggestedItems isAuthenticated={isAuthenticated} onLogout={handleLogout} />} />
+            <Route path="/recently-added" element={<RecentlyAdded isAuthenticated={isAuthenticated} onLogout={handleLogout} />} />
             <Route path="/product/:id" element={<Product isAuthenticated={isAuthenticated} onLogout={handleLogout} />} />
             <Route path="*" element={<Home isAuthenticated={isAuthenticated} onLogout={handleLogout} />} />
         </Routes>

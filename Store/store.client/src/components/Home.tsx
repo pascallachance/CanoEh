@@ -387,6 +387,14 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
             navigate('/categories');
             return;
         }
+        if (title === 'suggested') {
+            navigate('/suggested-items');
+            return;
+        }
+        if (title === 'recentlyadded') {
+            navigate('/recently-added');
+            return;
+        }
         // TODO: Implement navigation to respective category/search pages
         console.log('Card clicked:', title);
     };

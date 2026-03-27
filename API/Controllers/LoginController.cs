@@ -72,12 +72,11 @@ namespace API.Controllers
                 IsEssential = true
             });
             
-            // Set refresh token cookie (long-lived)
+            // Set refresh token as a session cookie (no Expires/Max-Age so it is deleted when the browser closes)
             Response.Cookies.Append("RefreshToken", refreshToken, new CookieOptions {
                 HttpOnly = true,
-                Secure = false, // true in production, false for local dev
-                SameSite = SameSiteMode.Lax,
-                Expires = refreshExpiry,
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.Strict,
                 IsEssential = true
             });
             
@@ -164,12 +163,11 @@ namespace API.Controllers
                 IsEssential = true
             });
             
-            // Set new refresh token cookie
+            // Set new refresh token as a session cookie (no Expires/Max-Age so it is deleted when the browser closes)
             Response.Cookies.Append("RefreshToken", newRefreshToken, new CookieOptions {
                 HttpOnly = true,
-                Secure = false, // true in production, false for local dev
-                SameSite = SameSiteMode.Lax,
-                Expires = refreshExpiry,
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.Strict,
                 IsEssential = true
             });
 

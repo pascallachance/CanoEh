@@ -4,6 +4,7 @@ import './Home.css';
 import './Filters.css';
 import './Offers.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
+import { cheapestActiveVariant, pickPrimaryImage } from '../utils/itemUtils';
 
 interface SuggestedItemsProps {
     isAuthenticated?: boolean;
@@ -44,7 +45,6 @@ interface BrowseProduct {
 }
 
 const SUGGESTED_ITEMS_FETCH_COUNT = 100;
-const PRIMARY_IMAGE_PATTERN = /_1\.(jpg|jpeg|png|gif|webp)$/i;
 
 function SuggestedItems({ isAuthenticated = false, onLogout }: SuggestedItemsProps) {
     const navigate = useNavigate();
@@ -132,37 +132,18 @@ function SuggestedItems({ isAuthenticated = false, onLogout }: SuggestedItemsPro
                     const activeVariants = product.variants.filter(v => !v.deleted);
                     if (activeVariants.length === 0) continue;
 
-                    // Pick the cheapest variant for display price
-                    const cheapestVariant = activeVariants.reduce((prev, curr) =>
-                        curr.price < prev.price ? curr : prev
-                    );
+                    const cheapestVariant = cheapestActiveVariant(activeVariants);
+                    if (!cheapestVariant) continue;
 
-                    // Find the best image across all variants
-                    let imageUrl: string | null = null;
-                    for (const variant of activeVariants) {
-                        if (variant.imageUrls) {
-                            const urls = variant.imageUrls
-                                .split(',')
-                                .map((u: string) => u.trim())
-                                .filter((u: string) => u.length > 0);
-                            const primaryImage = urls.find((u: string) =>
-                                PRIMARY_IMAGE_PATTERN.test(u)
-                            );
-                            imageUrl = primaryImage ?? urls[0] ?? null;
-                        }
-                        if (!imageUrl && variant.thumbnailUrl) {
-                            imageUrl = variant.thumbnailUrl;
-                        }
-                        if (imageUrl) break;
-                    }
-                    if (!imageUrl) continue;
+                    const rawImage = pickPrimaryImage(activeVariants);
+                    if (!rawImage) continue;
 
                     browseProducts.push({
                         id: product.id,
                         name_en: product.name_en,
                         name_fr: product.name_fr,
                         price: cheapestVariant.price,
-                        imageUrl: toAbsoluteUrl(imageUrl),
+                        imageUrl: toAbsoluteUrl(rawImage),
                     });
                 }
 

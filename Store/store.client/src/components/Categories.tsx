@@ -382,8 +382,12 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
         if (path.length > 0) {
             setNavPath(path);
             fetchProductsForNode(encodeURIComponent(nodeId));
+        } else {
+            // nodeId not found in the category tree – fall back to showing all products
+            setNavPath([]);
+            fetchAllProducts();
         }
-    }, [categoryTree, searchParams, fetchProductsForNode]);
+    }, [categoryTree, searchParams, fetchProductsForNode, fetchAllProducts]);
 
     const handleNodeClick = (node: CategoryNodeDto) => {
         // Update breadcrumb path - if node is already in path, navigate to it

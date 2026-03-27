@@ -278,6 +278,49 @@ describe('Categories page – ?nodeId= URL param pre-selection', () => {
     });
 });
 
+describe('Categories page – unknown nodeId fallback', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.stubEnv('VITE_API_STORE_BASE_URL', API_BASE_URL);
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('fetches all products when the nodeId in the URL is not found in the category tree', async () => {
+        // The category tree does NOT contain 'unknown-category'
+        const node = makeCategoryNode({ id: 'electronics', name_en: 'Electronics' });
+        const items = [makeItem({ name_en: 'Fallback Item' })];
+        setupFetch([node], items);
+
+        renderCategories('/categories?nodeId=unknown-category');
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith(
+                expect.stringContaining('/api/Item/GetAllItems')
+            );
+        });
+    });
+
+    it('does not call GetItemsByCategoryNode when the nodeId is not found in the category tree', async () => {
+        const node = makeCategoryNode({ id: 'electronics', name_en: 'Electronics' });
+        setupFetch([node], []);
+
+        renderCategories('/categories?nodeId=unknown-category');
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith(
+                expect.stringContaining('/api/Item/GetAllItems')
+            );
+        });
+
+        expect(global.fetch).not.toHaveBeenCalledWith(
+            expect.stringContaining('/api/Item/GetItemsByCategoryNode')
+        );
+    });
+});
+
 describe('Categories page – list all products when no node is selected', () => {
     beforeEach(() => {
         vi.clearAllMocks();

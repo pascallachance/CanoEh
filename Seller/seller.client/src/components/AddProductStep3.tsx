@@ -664,6 +664,34 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             }
         }
 
+        if ((step1Data.name?.length ?? 0) > 2000) {
+            const errorMessage = t('error.nameEnTooLong');
+            setError(errorMessage);
+            showError(errorMessage);
+            return;
+        }
+
+        if ((step1Data.name_fr?.length ?? 0) > 2000) {
+            const errorMessage = t('error.nameFrTooLong');
+            setError(errorMessage);
+            showError(errorMessage);
+            return;
+        }
+
+        if ((step1Data.description?.length ?? 0) > 2000) {
+            const errorMessage = t('error.descriptionEnTooLong');
+            setError(errorMessage);
+            showError(errorMessage);
+            return;
+        }
+
+        if ((step1Data.description_fr?.length ?? 0) > 2000) {
+            const errorMessage = t('error.descriptionFrTooLong');
+            setError(errorMessage);
+            showError(errorMessage);
+            return;
+        }
+
         const sellerId = companies.length > 0 ? companies[0].ownerID : null;
         if (!sellerId) {
             const errorMessage = t('error.sellerIdMissing');

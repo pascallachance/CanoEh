@@ -70,10 +70,10 @@ function renderOffers() {
 }
 
 async function waitForProductsLoaded() {
-    // The subtitle (.offers-subtitle) only appears when loading is complete.
+    // The subtitle (.browse-subtitle) only appears when loading is complete.
     // We target it directly to avoid matching the empty-state "No offers found" paragraph.
     await waitFor(() => {
-        const subtitle = document.querySelector('.offers-subtitle');
+        const subtitle = document.querySelector('.browse-subtitle');
         expect(subtitle).toBeInTheDocument();
     });
 }
@@ -105,7 +105,7 @@ describe('Offers page – highest-offer variant selection', () => {
         await waitForProductsLoaded();
 
         // Only one product card should be shown
-        const cards = document.querySelectorAll('.offer-product-card');
+        const cards = document.querySelectorAll('.browse-product-card');
         expect(cards.length).toBe(1);
 
         // The card should show the image from the highest-offer variant (50%)
@@ -117,7 +117,7 @@ describe('Offers page – highest-offer variant selection', () => {
         expect(badge?.textContent).toMatch(/50/);
 
         // The original price should be that of the best variant ($200)
-        const originalPrice = cards[0].querySelector('.offer-original-price');
+        const originalPrice = cards[0].querySelector('.browse-original-price');
         expect(originalPrice?.textContent).toContain('200.00');
     });
 
@@ -138,7 +138,7 @@ describe('Offers page – highest-offer variant selection', () => {
         renderOffers();
         await waitForProductsLoaded();
 
-        const cards = document.querySelectorAll('.offer-product-card');
+        const cards = document.querySelectorAll('.browse-product-card');
         expect(cards.length).toBe(1);
 
         // Should display the valid variant, not the expired one
@@ -166,7 +166,7 @@ describe('Offers page – highest-offer variant selection', () => {
         renderOffers();
         await waitForProductsLoaded();
 
-        const cards = document.querySelectorAll('.offer-product-card');
+        const cards = document.querySelectorAll('.browse-product-card');
         expect(cards.length).toBe(1);
 
         const img = cards[0].querySelector('img');
@@ -188,7 +188,7 @@ describe('Offers page – highest-offer variant selection', () => {
         await waitForProductsLoaded();
 
         // No product cards should be shown
-        const cards = document.querySelectorAll('.offer-product-card');
+        const cards = document.querySelectorAll('.browse-product-card');
         expect(cards.length).toBe(0);
 
         // Empty state message should appear
@@ -209,12 +209,12 @@ describe('Offers page – highest-offer variant selection', () => {
         renderOffers();
         await waitForProductsLoaded();
 
-        const cards = document.querySelectorAll('.offer-product-card');
+        const cards = document.querySelectorAll('.browse-product-card');
         expect(cards.length).toBe(1);
 
         // Original: $200.00, 25% off => discounted: $150.00
-        const originalPrice = cards[0].querySelector('.offer-original-price');
-        const discountedPrice = cards[0].querySelector('.offer-discounted-price');
+        const originalPrice = cards[0].querySelector('.browse-original-price');
+        const discountedPrice = cards[0].querySelector('.browse-discounted-price');
         expect(originalPrice?.textContent).toContain('200.00');
         expect(discountedPrice?.textContent).toContain('150.00');
     });
@@ -242,7 +242,7 @@ describe('Offers page – price range filter', () => {
         await waitForProductsLoaded();
 
         // Both products shown initially
-        expect(document.querySelectorAll('.offer-product-card').length).toBe(2);
+        expect(document.querySelectorAll('.browse-product-card').length).toBe(2);
 
         // Set min price to 100 (discounted price >= $100) → only Expensive Product should show
         const minPriceInput = screen.getByLabelText(/Minimum price|Prix minimum/i);
@@ -250,7 +250,7 @@ describe('Offers page – price range filter', () => {
         await user.type(minPriceInput, '100');
 
         await waitFor(() => {
-            expect(document.querySelectorAll('.offer-product-card').length).toBe(1);
+            expect(document.querySelectorAll('.browse-product-card').length).toBe(1);
         });
 
         expect(screen.getByText('Expensive Product')).toBeInTheDocument();
@@ -274,7 +274,7 @@ describe('Offers page – price range filter', () => {
         await user.type(maxPriceInput, '100');
 
         await waitFor(() => {
-            expect(document.querySelectorAll('.offer-product-card').length).toBe(1);
+            expect(document.querySelectorAll('.browse-product-card').length).toBe(1);
         });
 
         expect(screen.getByText('Cheap Product')).toBeInTheDocument();
@@ -322,7 +322,7 @@ describe('Offers page – minimum discount filter', () => {
         renderOffers();
         await waitForProductsLoaded();
 
-        expect(document.querySelectorAll('.offer-product-card').length).toBe(2);
+        expect(document.querySelectorAll('.browse-product-card').length).toBe(2);
 
         // Set minimum discount to 20% → only "Big Discount" (40%) should remain
         const minDiscountInput = screen.getByLabelText(/Minimum discount percentage|Pourcentage de rabais minimum/i);
@@ -330,7 +330,7 @@ describe('Offers page – minimum discount filter', () => {
         await user.type(minDiscountInput, '20');
 
         await waitFor(() => {
-            expect(document.querySelectorAll('.offer-product-card').length).toBe(1);
+            expect(document.querySelectorAll('.browse-product-card').length).toBe(1);
         });
 
         expect(screen.getByText('Big Discount')).toBeInTheDocument();
@@ -352,7 +352,7 @@ describe('Offers page – minimum discount filter', () => {
         await user.type(minDiscountInput, '0');
 
         await waitFor(() => {
-            expect(document.querySelectorAll('.offer-product-card').length).toBe(2);
+            expect(document.querySelectorAll('.browse-product-card').length).toBe(2);
         });
     });
 });
@@ -369,7 +369,7 @@ describe('Offers page – sort modes', () => {
 
     // Helper: return product names in displayed order from offer cards
     function getCardNames() {
-        return Array.from(document.querySelectorAll('.offer-product-name')).map(el => el.textContent ?? '');
+        return Array.from(document.querySelectorAll('.browse-product-name')).map(el => el.textContent ?? '');
     }
 
     it('sorts by discount descending (default)', async () => {
@@ -522,7 +522,7 @@ describe('Offers page – clear filters', () => {
         await user.type(minDiscountInput, '20');
 
         await waitFor(() => {
-            expect(document.querySelectorAll('.offer-product-card').length).toBe(1);
+            expect(document.querySelectorAll('.browse-product-card').length).toBe(1);
         });
 
         // Click "Clear Filters" - find the first clear filters button (in the sidebar)
@@ -530,7 +530,7 @@ describe('Offers page – clear filters', () => {
         await user.click(clearButtons[0]);
 
         await waitFor(() => {
-            expect(document.querySelectorAll('.offer-product-card').length).toBe(2);
+            expect(document.querySelectorAll('.browse-product-card').length).toBe(2);
         });
     });
 });
@@ -581,7 +581,7 @@ describe('Offers page – UI structure', () => {
         renderOffers();
         await waitForProductsLoaded();
 
-        const subtitle = document.querySelector('.offers-subtitle');
+        const subtitle = document.querySelector('.browse-subtitle');
         expect(subtitle?.textContent).toMatch(/2 offers found|2 offres trouvées/i);
     });
 
@@ -597,7 +597,7 @@ describe('Offers page – UI structure', () => {
         renderOffers();
         await waitForProductsLoaded();
 
-        const cards = document.querySelectorAll('.offer-product-card');
+        const cards = document.querySelectorAll('.browse-product-card');
         expect(cards.length).toBe(1);
 
         const img = cards[0].querySelector('img');
@@ -619,31 +619,31 @@ describe('Offers page – UI structure', () => {
         });
     });
 
-    it('renders within offers-layout with sidebar and product area', async () => {
+    it('renders within browse-layout with sidebar and product area', async () => {
         setupFetchMock([]);
         renderOffers();
 
-        const layout = document.querySelector('.offers-layout');
+        const layout = document.querySelector('.browse-layout');
         expect(layout).toBeInTheDocument();
 
-        const sidebar = layout?.querySelector('.offers-filters');
+        const sidebar = layout?.querySelector('.browse-filters');
         expect(sidebar).toBeInTheDocument();
 
-        const productArea = layout?.querySelector('.offers-products');
+        const productArea = layout?.querySelector('.browse-products');
         expect(productArea).toBeInTheDocument();
     });
 
-    it('sidebar takes up 25% width by having the offers-filters class', async () => {
+    it('sidebar takes up 25% width by having the browse-filters class', async () => {
         setupFetchMock([]);
         renderOffers();
 
         // Verify the sidebar has the class that controls its width
-        const sidebar = document.querySelector('.offers-filters');
+        const sidebar = document.querySelector('.browse-filters');
         expect(sidebar).toBeInTheDocument();
         expect(sidebar?.tagName.toLowerCase()).toBe('aside');
     });
 
-    it('renders offer-product-card as a clickable button to navigate to the product page', async () => {
+    it('renders browse-product-card as a clickable button to navigate to the product page', async () => {
         setupFetchMock([
             makeProduct({ id: '1', variants: [makeVariant({ imageUrls: 'https://example.com/img_1.jpg' })] }),
         ]);
@@ -651,7 +651,7 @@ describe('Offers page – UI structure', () => {
         renderOffers();
         await waitForProductsLoaded();
 
-        const card = document.querySelector('.offer-product-card');
+        const card = document.querySelector('.browse-product-card');
         expect(card).toBeInTheDocument();
         // Cards are now clickable to navigate to the product detail page
         expect(card?.getAttribute('role')).toBe('button');
@@ -713,7 +713,7 @@ describe('Offers page – language support', () => {
         await user.selectOptions(screen.getByRole('combobox', { name: /Trier par/i }), 'name-asc');
 
         await waitFor(() => {
-            const names = Array.from(document.querySelectorAll('.offer-product-name')).map(el => el.textContent ?? '');
+            const names = Array.from(document.querySelectorAll('.browse-product-name')).map(el => el.textContent ?? '');
             expect(names[0]).toBe('Pomme FR');
             expect(names[1]).toBe('Zèbre FR');
         });
@@ -746,7 +746,7 @@ describe('Offers page – product image selection', () => {
         renderOffers();
         await waitForProductsLoaded();
 
-        const img = document.querySelector('.offer-product-card img');
+        const img = document.querySelector('.browse-product-card img');
         expect(img?.getAttribute('src')).toContain('product_1.jpg');
     });
 
@@ -766,7 +766,7 @@ describe('Offers page – product image selection', () => {
         renderOffers();
         await waitForProductsLoaded();
 
-        const img = document.querySelector('.offer-product-card img');
+        const img = document.querySelector('.browse-product-card img');
         expect(img?.getAttribute('src')).toContain('first.jpg');
     });
 
@@ -787,7 +787,7 @@ describe('Offers page – product image selection', () => {
         renderOffers();
         await waitForProductsLoaded();
 
-        const img = document.querySelector('.offer-product-card img');
+        const img = document.querySelector('.browse-product-card img');
         expect(img?.getAttribute('src')).toContain('thumbnail.jpg');
     });
 
@@ -812,7 +812,7 @@ describe('Offers page – product image selection', () => {
         renderOffers();
         await waitForProductsLoaded();
 
-        const cards = document.querySelectorAll('.offer-product-card');
+        const cards = document.querySelectorAll('.browse-product-card');
         expect(cards.length).toBe(1);
         expect(screen.getByText('Has Image Product')).toBeInTheDocument();
         expect(screen.queryByText('No Image Product')).not.toBeInTheDocument();

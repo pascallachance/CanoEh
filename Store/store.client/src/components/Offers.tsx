@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import './Filters.css';
-import './Offers.css';
+import './Browse.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
 
 interface OffersProps {
@@ -307,19 +307,19 @@ function Offers({ isAuthenticated = false, onLogout }: OffersProps) {
             {/* Store Content Container */}
             <div className="store-content">
                 {/* Offers Page Header */}
-                <div className="offers-header">
-                    <h1 className="offers-title">
+                <div className="browse-header">
+                    <h1 className="browse-title">
                         {getText("Products with Offers", "Produits en promotion")}
                     </h1>
                     {!loading && (
-                        <p className="offers-subtitle">{offerCountLabel}</p>
+                        <p className="browse-subtitle">{offerCountLabel}</p>
                     )}
                 </div>
 
                 {/* Main Content: Filters (1/4) + Products (3/4) */}
-                <div className="offers-layout">
+                <div className="browse-layout">
                     {/* Filter Panel – Left 1/4 */}
-                    <aside className="offers-filters" aria-label={getText("Filters", "Filtres")}>
+                    <aside className="browse-filters" aria-label={getText("Filters", "Filtres")}>
                         <div className="filters-section">
                             <h2 className="filters-title">
                                 {getText("Sort & Filter", "Trier et filtrer")}
@@ -424,13 +424,13 @@ function Offers({ isAuthenticated = false, onLogout }: OffersProps) {
                     </aside>
 
                     {/* Products Grid – Right 3/4 */}
-                    <main className="offers-products">
+                    <main className="browse-products">
                         {loading ? (
-                            <div className="offers-loading" role="status">
+                            <div className="browse-loading" role="status">
                                 <p>{getText("Loading offers...", "Chargement des offres...")}</p>
                             </div>
                         ) : filteredProducts.length === 0 ? (
-                            <div className="offers-empty">
+                            <div className="browse-empty">
                                 <p>
                                     {getText(
                                         "No offers found matching your criteria.",
@@ -439,14 +439,14 @@ function Offers({ isAuthenticated = false, onLogout }: OffersProps) {
                                 </p>
                                 <button
                                     type="button"
-                                    className="filter-clear-btn offers-empty-btn"
+                                    className="filter-clear-btn browse-empty-btn"
                                     onClick={handleClearFilters}
                                 >
                                     {getText("Clear Filters", "Effacer les filtres")}
                                 </button>
                             </div>
                         ) : (
-                            <div className="offers-grid">
+                            <div className="browse-grid">
                                 {filteredProducts.map((product) => (
                                     <OfferProductCard
                                         key={product.id}
@@ -491,35 +491,35 @@ function OfferProductCard({ product, language, onNavigate }: OfferProductCardPro
 
     return (
         <div
-            className="offer-product-card offer-product-card-clickable"
+            className="browse-product-card browse-product-card-clickable"
             onClick={() => onNavigate(product.id)}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate(product.id); } }}
             aria-label={name}
         >
-            <div className="offer-product-image-wrapper">
+            <div className="browse-product-image-wrapper">
                 {product.imageUrl && !imageError ? (
                     <img
                         src={product.imageUrl}
                         alt={name}
-                        className="offer-product-image"
+                        className="browse-product-image"
                         onError={() => setImageError(true)}
                     />
                 ) : (
-                    <div className="offer-product-image-placeholder">
+                    <div className="browse-product-image-placeholder">
                         {language === 'fr' ? 'Image non disponible' : 'No image'}
                     </div>
                 )}
                 <div className="offer-badge">{offerText}</div>
             </div>
-            <div className="offer-product-info">
-                <p className="offer-product-name" title={name}>{name}</p>
-                <div className="offer-product-prices">
-                    <span className="offer-original-price">
+            <div className="browse-product-info">
+                <p className="browse-product-name" title={name}>{name}</p>
+                <div className="browse-product-prices">
+                    <span className="browse-original-price">
                         ${product.originalPrice.toFixed(2)}
                     </span>
-                    <span className="offer-discounted-price">
+                    <span className="browse-discounted-price">
                         ${product.discountedPrice.toFixed(2)}
                     </span>
                 </div>

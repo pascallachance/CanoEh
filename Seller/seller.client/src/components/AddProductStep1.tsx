@@ -54,14 +54,10 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onSt
 
         if (!formData.name.trim()) {
             newErrors.name = t('error.nameEnRequired');
-        } else if (formData.name.length > 255) {
-            newErrors.name = t('error.nameEnTooLong');
         }
 
         if (!formData.name_fr.trim()) {
             newErrors.name_fr = t('error.nameFrRequired');
-        } else if (formData.name_fr.length > 255) {
-            newErrors.name_fr = t('error.nameFrTooLong');
         }
 
         if (!formData.description.trim()) {
@@ -133,7 +129,6 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onSt
                                 onChange={(e) => handleInputChange('name', e.target.value)}
                                 placeholder={t('placeholder.itemName')}
                                 className={errors.name ? 'error' : ''}
-                                maxLength={255}
                             />
                             {errors.name && (
                                 <span className="error-message">{errors.name}</span>
@@ -149,7 +144,6 @@ function AddProductStep1({ onNext, onCancel, initialData, editMode = false, onSt
                                 onChange={(e) => handleInputChange('name_fr', e.target.value)}
                                 placeholder={t('placeholder.itemNameFr')}
                                 className={errors.name_fr ? 'error' : ''}
-                                maxLength={255}
                             />
                             {errors.name_fr && (
                                 <span className="error-message">{errors.name_fr}</span>

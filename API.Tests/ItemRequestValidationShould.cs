@@ -32,7 +32,7 @@ namespace API.Tests
         }
 
         [Fact]
-        public void CreateItemRequest_ReturnFailure_WhenNameEnExceeds255Characters()
+        public void CreateItemRequest_ReturnSuccess_WhenNameEnExceeds255Characters()
         {
             var request = new CreateItemRequest
             {
@@ -46,13 +46,11 @@ namespace API.Tests
 
             var result = request.Validate();
 
-            Assert.True(result.IsFailure);
-            Assert.Equal("English name cannot exceed 255 characters.", result.Error);
-            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+            Assert.True(result.IsSuccess);
         }
 
         [Fact]
-        public void CreateItemRequest_ReturnFailure_WhenNameFrExceeds255Characters()
+        public void CreateItemRequest_ReturnSuccess_WhenNameFrExceeds255Characters()
         {
             var request = new CreateItemRequest
             {
@@ -66,9 +64,7 @@ namespace API.Tests
 
             var result = request.Validate();
 
-            Assert.True(result.IsFailure);
-            Assert.Equal("French name cannot exceed 255 characters.", result.Error);
-            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+            Assert.True(result.IsSuccess);
         }
 
         [Fact]
@@ -187,7 +183,7 @@ namespace API.Tests
         // ---------------------------------------------------------------
 
         [Fact]
-        public void UpdateItemRequest_ReturnFailure_WhenNameEnExceeds255Characters()
+        public void UpdateItemRequest_ReturnSuccess_WhenNameEnExceeds255Characters()
         {
             var request = new UpdateItemRequest
             {
@@ -202,13 +198,11 @@ namespace API.Tests
 
             var result = request.Validate();
 
-            Assert.True(result.IsFailure);
-            Assert.Equal("English name cannot exceed 255 characters.", result.Error);
-            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+            Assert.True(result.IsSuccess);
         }
 
         [Fact]
-        public void UpdateItemRequest_ReturnFailure_WhenNameFrExceeds255Characters()
+        public void UpdateItemRequest_ReturnSuccess_WhenNameFrExceeds255Characters()
         {
             var request = new UpdateItemRequest
             {
@@ -223,9 +217,7 @@ namespace API.Tests
 
             var result = request.Validate();
 
-            Assert.True(result.IsFailure);
-            Assert.Equal("French name cannot exceed 255 characters.", result.Error);
-            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+            Assert.True(result.IsSuccess);
         }
 
         [Fact]

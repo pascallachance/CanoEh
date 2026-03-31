@@ -316,9 +316,9 @@ function Offers({ isAuthenticated = false, onLogout }: OffersProps) {
                     )}
                 </div>
 
-                {/* Main Content: Filters (1/4) + Products (3/4) */}
+                {/* Main Content: Filters (20%) + Products (80%) */}
                 <div className="browse-layout">
-                    {/* Filter Panel – Left 1/4 */}
+                    {/* Filter Panel – Left 20% */}
                     <aside className="browse-filters" aria-label={getText("Filters", "Filtres")}>
                         <div className="filters-section">
                             <h2 className="filters-title">

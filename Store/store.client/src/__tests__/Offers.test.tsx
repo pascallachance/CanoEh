@@ -633,7 +633,7 @@ describe('Offers page – UI structure', () => {
         expect(productArea).toBeInTheDocument();
     });
 
-    it('sidebar takes up 25% width by having the browse-filters class', async () => {
+    it('sidebar takes up 20% width by having the browse-filters class', async () => {
         setupFetchMock([]);
         renderOffers();
 

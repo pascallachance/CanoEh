@@ -66,7 +66,7 @@ function renderRecentlyAdded() {
 
 async function waitForLoaded() {
     await waitFor(() => {
-        const subtitle = document.querySelector('.offers-subtitle');
+        const subtitle = document.querySelector('.browse-subtitle');
         expect(subtitle).toBeInTheDocument();
     });
 }
@@ -123,7 +123,7 @@ describe('RecentlyAdded page – product rendering', () => {
         renderRecentlyAdded();
         await waitForLoaded();
 
-        const cards = document.querySelectorAll('.offer-product-card');
+        const cards = document.querySelectorAll('.browse-product-card');
         expect(cards.length).toBe(2);
     });
 
@@ -136,7 +136,7 @@ describe('RecentlyAdded page – product rendering', () => {
         renderRecentlyAdded();
         await waitForLoaded();
 
-        const cards = document.querySelectorAll('.offer-product-card');
+        const cards = document.querySelectorAll('.browse-product-card');
         expect(cards.length).toBe(1);
     });
 
@@ -195,7 +195,7 @@ describe('RecentlyAdded page – image selection', () => {
         renderRecentlyAdded();
         await waitForLoaded();
 
-        const img = document.querySelector('.offer-product-image') as HTMLImageElement;
+        const img = document.querySelector('.browse-product-image') as HTMLImageElement;
         expect(img?.src).toContain('img_1.jpg');
     });
 
@@ -210,7 +210,7 @@ describe('RecentlyAdded page – image selection', () => {
         renderRecentlyAdded();
         await waitForLoaded();
 
-        const img = document.querySelector('.offer-product-image') as HTMLImageElement;
+        const img = document.querySelector('.browse-product-image') as HTMLImageElement;
         expect(img?.src).toContain('img_3.jpg');
     });
 
@@ -225,7 +225,7 @@ describe('RecentlyAdded page – image selection', () => {
         renderRecentlyAdded();
         await waitForLoaded();
 
-        const img = document.querySelector('.offer-product-image') as HTMLImageElement;
+        const img = document.querySelector('.browse-product-image') as HTMLImageElement;
         expect(img?.src).toContain('thumb.jpg');
     });
 });
@@ -250,7 +250,7 @@ describe('RecentlyAdded page – default sort (newest first)', () => {
         renderRecentlyAdded();
         await waitForLoaded();
 
-        const names = [...document.querySelectorAll('.offer-product-name')].map(el => el.textContent);
+        const names = [...document.querySelectorAll('.browse-product-name')].map(el => el.textContent);
         expect(names).toEqual(['Newest', 'Newer', 'Older']);
     });
 
@@ -267,7 +267,7 @@ describe('RecentlyAdded page – default sort (newest first)', () => {
         const sortSelect = screen.getByRole('combobox', { name: /sort by|trier par/i });
         await user.selectOptions(sortSelect, 'date-asc');
 
-        const names = [...document.querySelectorAll('.offer-product-name')].map(el => el.textContent);
+        const names = [...document.querySelectorAll('.browse-product-name')].map(el => el.textContent);
         expect(names).toEqual(['Older', 'Newest']);
     });
 });
@@ -295,7 +295,7 @@ describe('RecentlyAdded page – sort & filter', () => {
         const sortSelect = screen.getByRole('combobox', { name: /sort by|trier par/i });
         await user.selectOptions(sortSelect, 'price-asc');
 
-        const names = [...document.querySelectorAll('.offer-product-name')].map(el => el.textContent);
+        const names = [...document.querySelectorAll('.browse-product-name')].map(el => el.textContent);
         expect(names).toEqual(['Cheap', 'Expensive']);
     });
 
@@ -312,7 +312,7 @@ describe('RecentlyAdded page – sort & filter', () => {
         const sortSelect = screen.getByRole('combobox', { name: /sort by|trier par/i });
         await user.selectOptions(sortSelect, 'name-asc');
 
-        const names = [...document.querySelectorAll('.offer-product-name')].map(el => el.textContent);
+        const names = [...document.querySelectorAll('.browse-product-name')].map(el => el.textContent);
         expect(names).toEqual(['Apple', 'Zebra']);
     });
 
@@ -330,7 +330,7 @@ describe('RecentlyAdded page – sort & filter', () => {
         await user.clear(minInput);
         await user.type(minInput, '20');
 
-        const cards = document.querySelectorAll('.offer-product-card');
+        const cards = document.querySelectorAll('.browse-product-card');
         expect(cards.length).toBe(1);
         expect(screen.getByText('Premium')).toBeInTheDocument();
     });
@@ -349,7 +349,7 @@ describe('RecentlyAdded page – sort & filter', () => {
         await user.clear(maxInput);
         await user.type(maxInput, '30');
 
-        const cards = document.querySelectorAll('.offer-product-card');
+        const cards = document.querySelectorAll('.browse-product-card');
         expect(cards.length).toBe(1);
         expect(screen.getByText('Budget')).toBeInTheDocument();
     });
@@ -368,10 +368,10 @@ describe('RecentlyAdded page – sort & filter', () => {
         const maxInput = screen.getByRole('spinbutton', { name: /maximum price|prix maximum/i });
         await user.clear(maxInput);
         await user.type(maxInput, '10');
-        expect(document.querySelectorAll('.offer-product-card').length).toBe(1);
+        expect(document.querySelectorAll('.browse-product-card').length).toBe(1);
 
         await user.click(screen.getAllByRole('button', { name: /clear filters|effacer les filtres/i })[0]);
-        expect(document.querySelectorAll('.offer-product-card').length).toBe(2);
+        expect(document.querySelectorAll('.browse-product-card').length).toBe(2);
     });
 });
 

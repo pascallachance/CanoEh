@@ -1,0 +1,192 @@
+/* Product Browser Pages – shared layout and component styles */
+
+/* Page header */
+.browse-header {
+    padding: 20px 20px 12px 20px;
+    background-color: white;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.browse-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #232f3e;
+    margin: 0 0 4px 0;
+}
+
+.browse-subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+/* Two-column layout */
+.browse-layout {
+    display: flex;
+    align-items: flex-start;
+    min-height: calc(100vh - 180px);
+}
+
+/* ── Filters panel – left column ── */
+.browse-filters {
+    width: 20%;
+    flex-shrink: 0;
+    background-color: white;
+    border-right: 1px solid #e0e0e0;
+    padding: 20px;
+    box-sizing: border-box;
+    align-self: stretch;
+    overflow-y: auto;
+}
+
+/* ── Products area – right column ── */
+.browse-products {
+    flex: 1;
+    min-width: 0;
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: #f5f5f5;
+}
+
+.browse-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.browse-loading,
+.browse-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #666;
+    font-size: 16px;
+    text-align: center;
+    gap: 16px;
+}
+
+.browse-empty-btn {
+    width: auto;
+    padding: 10px 24px;
+}
+
+/* ── Product card ── */
+.browse-product-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.browse-product-card-clickable {
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.browse-product-card-clickable:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.browse-product-card-clickable:focus-visible {
+    outline: 2px solid #febd69;
+    outline-offset: 2px;
+}
+
+.browse-product-image-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background-color: white;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.browse-product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.browse-product-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 12px;
+    background-color: #f0f0f0;
+}
+
+/* Reuse the .offer-badge class from Home.css; no override needed */
+
+.browse-product-info {
+    padding: 12px;
+}
+
+.browse-product-name {
+    font-size: 13px;
+    color: #232f3e;
+    margin: 0 0 8px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.browse-product-prices {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.browse-original-price {
+    font-size: 12px;
+    color: #999;
+    text-decoration: line-through;
+}
+
+.browse-discounted-price {
+    font-size: 15px;
+    color: #b12704;
+    font-weight: bold;
+}
+
+.browse-product-price {
+    font-size: 15px;
+    color: #232f3e;
+    font-weight: bold;
+}
+
+.browse-product-date {
+    font-size: 11px;
+    color: #888;
+    margin: 4px 0 0 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .browse-layout {
+        flex-direction: column;
+    }
+
+    .browse-filters {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .browse-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .browse-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

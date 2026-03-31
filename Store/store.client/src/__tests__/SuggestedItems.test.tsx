@@ -64,7 +64,7 @@ function renderSuggestedItems() {
 
 async function waitForLoaded() {
     await waitFor(() => {
-        const subtitle = document.querySelector('.offers-subtitle');
+        const subtitle = document.querySelector('.browse-subtitle');
         expect(subtitle).toBeInTheDocument();
     });
 }
@@ -121,7 +121,7 @@ describe('SuggestedItems page – product rendering', () => {
         renderSuggestedItems();
         await waitForLoaded();
 
-        const cards = document.querySelectorAll('.offer-product-card');
+        const cards = document.querySelectorAll('.browse-product-card');
         expect(cards.length).toBe(2);
     });
 
@@ -134,7 +134,7 @@ describe('SuggestedItems page – product rendering', () => {
         renderSuggestedItems();
         await waitForLoaded();
 
-        const cards = document.querySelectorAll('.offer-product-card');
+        const cards = document.querySelectorAll('.browse-product-card');
         expect(cards.length).toBe(1);
     });
 
@@ -147,7 +147,7 @@ describe('SuggestedItems page – product rendering', () => {
         renderSuggestedItems();
         await waitForLoaded();
 
-        const cards = document.querySelectorAll('.offer-product-card');
+        const cards = document.querySelectorAll('.browse-product-card');
         expect(cards.length).toBe(1);
     });
 
@@ -203,7 +203,7 @@ describe('SuggestedItems page – image selection', () => {
         renderSuggestedItems();
         await waitForLoaded();
 
-        const img = document.querySelector('.offer-product-image') as HTMLImageElement;
+        const img = document.querySelector('.browse-product-image') as HTMLImageElement;
         expect(img?.src).toContain('img_1.jpg');
     });
 
@@ -218,7 +218,7 @@ describe('SuggestedItems page – image selection', () => {
         renderSuggestedItems();
         await waitForLoaded();
 
-        const img = document.querySelector('.offer-product-image') as HTMLImageElement;
+        const img = document.querySelector('.browse-product-image') as HTMLImageElement;
         expect(img?.src).toContain('img_3.jpg');
     });
 
@@ -233,7 +233,7 @@ describe('SuggestedItems page – image selection', () => {
         renderSuggestedItems();
         await waitForLoaded();
 
-        const img = document.querySelector('.offer-product-image') as HTMLImageElement;
+        const img = document.querySelector('.browse-product-image') as HTMLImageElement;
         expect(img?.src).toContain('thumb.jpg');
     });
 });
@@ -257,7 +257,7 @@ describe('SuggestedItems page – sort & filter', () => {
         renderSuggestedItems();
         await waitForLoaded();
 
-        const names = [...document.querySelectorAll('.offer-product-name')].map(el => el.textContent);
+        const names = [...document.querySelectorAll('.browse-product-name')].map(el => el.textContent);
         expect(names).toEqual(['Apple', 'Zebra']);
     });
 
@@ -274,7 +274,7 @@ describe('SuggestedItems page – sort & filter', () => {
         const sortSelect = screen.getByRole('combobox', { name: /sort by|trier par/i });
         await user.selectOptions(sortSelect, 'price-asc');
 
-        const names = [...document.querySelectorAll('.offer-product-name')].map(el => el.textContent);
+        const names = [...document.querySelectorAll('.browse-product-name')].map(el => el.textContent);
         expect(names).toEqual(['Cheap', 'Expensive']);
     });
 
@@ -292,7 +292,7 @@ describe('SuggestedItems page – sort & filter', () => {
         await user.clear(minInput);
         await user.type(minInput, '20');
 
-        const cards = document.querySelectorAll('.offer-product-card');
+        const cards = document.querySelectorAll('.browse-product-card');
         expect(cards.length).toBe(1);
         expect(screen.getByText('Premium')).toBeInTheDocument();
     });
@@ -311,7 +311,7 @@ describe('SuggestedItems page – sort & filter', () => {
         await user.clear(maxInput);
         await user.type(maxInput, '30');
 
-        const cards = document.querySelectorAll('.offer-product-card');
+        const cards = document.querySelectorAll('.browse-product-card');
         expect(cards.length).toBe(1);
         expect(screen.getByText('Budget')).toBeInTheDocument();
     });
@@ -331,11 +331,11 @@ describe('SuggestedItems page – sort & filter', () => {
         const maxInput = screen.getByRole('spinbutton', { name: /maximum price|prix maximum/i });
         await user.clear(maxInput);
         await user.type(maxInput, '10');
-        expect(document.querySelectorAll('.offer-product-card').length).toBe(1);
+        expect(document.querySelectorAll('.browse-product-card').length).toBe(1);
 
         // Clear filters – both products should return
         await user.click(screen.getAllByRole('button', { name: /clear filters|effacer les filtres/i })[0]);
-        expect(document.querySelectorAll('.offer-product-card').length).toBe(2);
+        expect(document.querySelectorAll('.browse-product-card').length).toBe(2);
     });
 });
 
@@ -366,7 +366,7 @@ describe('SuggestedItems page – product navigation', () => {
         await waitForLoaded();
 
         const user = userEvent.setup();
-        const card = document.querySelector('.offer-product-card-clickable') as HTMLElement;
+        const card = document.querySelector('.browse-product-card-clickable') as HTMLElement;
         expect(card).not.toBeNull();
         await user.click(card);
 
@@ -411,7 +411,7 @@ describe('SuggestedItems page – empty state', () => {
         renderSuggestedItems();
         await waitForLoaded();
 
-        const subtitle = document.querySelector('.offers-subtitle') as HTMLElement;
+        const subtitle = document.querySelector('.browse-subtitle') as HTMLElement;
         expect(subtitle.textContent).toMatch(/2/);
     });
 });
@@ -461,7 +461,7 @@ describe('SuggestedItems page – language', () => {
         const sortSelect = screen.getByRole('combobox', { name: /sort by|trier par/i });
         await user.selectOptions(sortSelect, 'name-asc');
 
-        const names = [...document.querySelectorAll('.offer-product-name')].map(el => el.textContent);
+        const names = [...document.querySelectorAll('.browse-product-name')].map(el => el.textContent);
         expect(names).toEqual(['Abricot FR', 'Zèbre FR']);
     });
 });

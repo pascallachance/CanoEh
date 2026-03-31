@@ -203,6 +203,7 @@
     aspect-ratio: 1;
     overflow: hidden;
     background-color: #f9f9f9;
+    padding: 8px;
 }
 
 .category-product-image {

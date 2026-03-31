@@ -676,6 +676,22 @@ export const translations: TranslationResources = {
     en: 'Product identifier value cannot exceed 100 characters.',
     fr: 'La valeur de l\'identifiant du produit ne peut pas dépasser 100 caractères.'
   },
+  'error.nameEnTooLong': {
+    en: 'Item name (English) cannot exceed 2000 characters.',
+    fr: 'Le nom de l\'article (anglais) ne peut pas dépasser 2000 caractères.'
+  },
+  'error.nameFrTooLong': {
+    en: 'Item name (French) cannot exceed 2000 characters.',
+    fr: 'Le nom de l\'article (français) ne peut pas dépasser 2000 caractères.'
+  },
+  'error.descriptionEnTooLong': {
+    en: 'Description (English) cannot exceed 2000 characters.',
+    fr: 'La description (anglais) ne peut pas dépasser 2000 caractères.'
+  },
+  'error.descriptionFrTooLong': {
+    en: 'Description (French) cannot exceed 2000 characters.',
+    fr: 'La description (français) ne peut pas dépasser 2000 caractères.'
+  },
 
   // Category navigator
   'category.selected': {

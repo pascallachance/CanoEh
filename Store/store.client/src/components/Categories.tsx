@@ -814,11 +814,11 @@ function CategoryProductCard({ product, language, onNavigate }: CategoryProductC
                 <div className="browse-product-prices">
                     {product.hasOffer ? (
                         <>
-                            <span className="browse-discounted-price">
-                                ${product.discountedPrice.toFixed(2)}
-                            </span>
                             <span className="browse-original-price">
                                 ${product.price.toFixed(2)}
+                            </span>
+                            <span className="browse-discounted-price">
+                                ${product.discountedPrice.toFixed(2)}
                             </span>
                         </>
                     ) : (

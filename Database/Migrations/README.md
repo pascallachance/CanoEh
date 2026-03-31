@@ -43,6 +43,15 @@ sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Migrations/001_Add_Langu
 | 003 | 003_Add_Failed_Login_Tracking_To_User.sql | Adds FailedLoginAttempts and LastFailedLoginAttempt columns to prevent brute force attacks | 2026-01-06 |
 | 004 | 004_Add_CategoryNode_Table.sql | Adds CategoryNode table for hierarchical category structure (Departement, Navigation, Category nodes) | 2026-01-28 |
 | 005 | 005_Add_CategoryMandatoryAttribute_Table.sql | Adds CategoryMandatoryAttribute table for category-specific mandatory product attributes | 2026-01-28 |
+| 006 | 006_Add_CategoryMandatoryExtraAttribute_Table.sql | Adds CategoryMandatoryExtraAttribute table for mandatory extra attributes (SKU, Dimensions, etc.) on item variants per category | 2026-01-28 |
+| 007 | 007_Refactor_ItemAttribute_And_CategoryMandatoryAttribute.sql | Moves ItemAttribute FK from Item to ItemVariant, renames ItemAttribute→ItemVariantFeatures and CategoryMandatoryAttribute→CategoryMandatoryFeature, drops ItemVariantExtraAttribute | 2026-02-04 |
+| 008 | 008_Rename_CategoryID_To_CategoryNodeID.sql | Renames CategoryID to CategoryNodeID on the Item table and migrates the FK from Category to CategoryNode | 2026-02-04 |
+| 009 | 009_Drop_Category_Table.sql | Drops the old Category table (now replaced by the CategoryNode hierarchy) | 2026-02-04 |
+| 010 | 010_Add_ItemID_To_ItemVariantFeatures.sql | Adds nullable ItemID column to ItemVariantFeatures to allow item-level feature queries without a join | 2026-02-20 |
+| 011 | 011_Add_Refresh_Token_To_User.sql | Adds refreshToken and refreshTokenExpiry columns to User table for JWT refresh token support | 2026-02-23 |
+| 012 | 012_Add_Offer_Columns_To_ItemVariant.sql | Adds Offer, OfferStart, and OfferEnd columns to ItemVariant for the Manage Offers feature | 2026-03-19 |
+| 013 | 013_Add_ItemVariantAttribute_Table.sql | Creates ItemVariantAttribute table on databases provisioned before it was added to the base schema | 2026-03-19 |
+| 014 | 014_Expand_Item_Name_Columns.sql | Expands Item.Name_en, Item.Name_fr, OrderItem.Name_en, and OrderItem.Name_fr to NVARCHAR(MAX) to support long product names (fixes 500 error on UpdateItem) | 2026-03-31 |
 
 ## Notes
 

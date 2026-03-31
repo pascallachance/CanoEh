@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './Home.css';
 import './Filters.css';
+import './Browse.css';
 import './Categories.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
 
@@ -779,7 +780,7 @@ function CategoryProductCard({ product, language, onNavigate }: CategoryProductC
 
     return (
         <div
-            className="category-product-card"
+            className="browse-product-card browse-product-card-clickable"
             onClick={() => onNavigate(product.id)}
             role="button"
             tabIndex={0}
@@ -791,16 +792,16 @@ function CategoryProductCard({ product, language, onNavigate }: CategoryProductC
             }}
             aria-label={name}
         >
-            <div className="category-product-image-wrapper">
+            <div className="browse-product-image-wrapper">
                 {product.imageUrl && !imageError ? (
                     <img
                         src={product.imageUrl}
                         alt={name}
-                        className="category-product-image"
+                        className="browse-product-image"
                         onError={() => setImageError(true)}
                     />
                 ) : (
-                    <div className="category-product-image-placeholder">
+                    <div className="browse-product-image-placeholder">
                         {language === 'fr' ? 'Image non disponible' : 'No image'}
                     </div>
                 )}
@@ -808,20 +809,20 @@ function CategoryProductCard({ product, language, onNavigate }: CategoryProductC
                     <div className="offer-badge">{offerText}</div>
                 )}
             </div>
-            <div className="category-product-info">
-                <p className="category-product-name" title={name}>{name}</p>
-                <div>
+            <div className="browse-product-info">
+                <p className="browse-product-name" title={name}>{name}</p>
+                <div className="browse-product-prices">
                     {product.hasOffer ? (
                         <>
-                            <span className="category-product-offer-price">
-                                ${product.discountedPrice.toFixed(2)}
-                            </span>
-                            <span className="category-product-original-price">
+                            <span className="browse-original-price">
                                 ${product.price.toFixed(2)}
+                            </span>
+                            <span className="browse-discounted-price">
+                                ${product.discountedPrice.toFixed(2)}
                             </span>
                         </>
                     ) : (
-                        <span className="category-product-price">
+                        <span className="browse-product-price">
                             ${product.price.toFixed(2)}
                         </span>
                     )}

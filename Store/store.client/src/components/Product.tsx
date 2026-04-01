@@ -667,7 +667,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                 </div>
 
                                 {/* Thumbnails */}
-                                {variantImages.length >= 1 && (
+                                {variantImages.length > 0 && (
                                     <ul
                                         className="product-thumbnails"
                                         aria-label={getText('Image thumbnails', 'Miniatures d\'images')}

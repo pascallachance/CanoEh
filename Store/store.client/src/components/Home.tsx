@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
@@ -173,11 +173,61 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const [language, setLanguage] = useState<string>('en');
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [cartItemsCount, setCartItemsCount] = useState<number>(0);
-    const [recentProducts, setRecentProducts] = useState<ProductPreviewItem[]>([]);
-    const [suggestedProducts, setSuggestedProducts] = useState<ProductPreviewItem[]>([]);
-    const [offerProducts, setOfferProducts] = useState<ProductPreviewItem[]>([]);
+    const [rawRecentProducts, setRawRecentProducts] = useState<GetItemResponse[]>([]);
+    const [rawSuggestedProducts, setRawSuggestedProducts] = useState<GetItemResponse[]>([]);
+    const [rawOfferProducts, setRawOfferProducts] = useState<GetItemResponse[]>([]);
     const [rawCategoriesProducts, setRawCategoriesProducts] = useState<GetItemResponse[]>([]);
-    const [categoriesProducts, setCategoriesProducts] = useState<ProductPreviewItem[]>([]);
+
+    const recentProducts = useMemo(
+        () => extractProductImages(rawRecentProducts, language, RECENT_ITEMS_DISPLAY_COUNT),
+        [rawRecentProducts, language]
+    );
+    const suggestedProducts = useMemo(
+        () => extractProductImages(rawSuggestedProducts, language, SUGGESTED_ITEMS_COUNT),
+        [rawSuggestedProducts, language]
+    );
+    const offerProducts = useMemo((): ProductPreviewItem[] => {
+        const productsWithOffers: { variant: ItemVariantDto; productName_en: string; productName_fr: string; productId: string }[] = [];
+        for (const product of rawOfferProducts) {
+            if (productsWithOffers.length >= OFFERS_COUNT) break;
+            if (product.variants && product.variants.length > 0) {
+                const variantWithOffer = product.variants.find(v => isOfferActive(v));
+                if (variantWithOffer) {
+                    productsWithOffers.push({
+                        variant: variantWithOffer,
+                        productName_en: product.name_en,
+                        productName_fr: product.name_fr,
+                        productId: product.id,
+                    });
+                }
+            }
+        }
+        const items: ProductPreviewItem[] = [];
+        for (const { variant, productName_en, productName_fr, productId } of productsWithOffers) {
+            let imageUrl: string | null = null;
+            if (variant.imageUrls) {
+                const urls = variant.imageUrls.split(',').filter((url: string) => url.trim());
+                const imageWith_1 = urls.find((url: string) => PRIMARY_IMAGE_PATTERN.test(url.trim()));
+                imageUrl = imageWith_1 ? imageWith_1.trim() : (urls.length > 0 ? urls[0].trim() : null);
+            }
+            if (!imageUrl && variant.thumbnailUrl) {
+                imageUrl = variant.thumbnailUrl;
+            }
+            if (imageUrl) {
+                items.push({
+                    id: productId,
+                    imageUrl: toAbsoluteUrl(imageUrl),
+                    name: language === 'fr' ? productName_fr : productName_en,
+                    offer: variant.offer!,
+                });
+            }
+        }
+        return items;
+    }, [rawOfferProducts, language]);
+    const categoriesProducts = useMemo(
+        () => extractProductImages(rawCategoriesProducts, language, SUGGESTED_CATEGORIES_DISPLAY_COUNT, true),
+        [rawCategoriesProducts, language]
+    );
 
     useEffect(() => {
         // Set language based on user or system settings
@@ -193,12 +243,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         fetchSuggestedProducts();
         fetchProductsWithOffers();
         fetchSuggestedCategoriesProducts();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthenticated]);
-
-    useEffect(() => {
-        setCategoriesProducts(extractProductImages(rawCategoriesProducts, language, SUGGESTED_CATEGORIES_DISPLAY_COUNT, true));
-    }, [rawCategoriesProducts, language]);
 
     const fetchRecentlyAddedProducts = async () => {
         try {
@@ -217,7 +262,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                setRecentProducts(extractProductImages(result.value, language, RECENT_ITEMS_DISPLAY_COUNT));
+                setRawRecentProducts(result.value);
             }
         } catch (error) {
             console.error('Error fetching recently added products:', error);
@@ -241,7 +286,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                setSuggestedProducts(extractProductImages(result.value, language, SUGGESTED_ITEMS_COUNT));
+                setRawSuggestedProducts(result.value);
             }
         } catch (error) {
             console.error('Error fetching suggested products:', error);
@@ -264,70 +309,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                // Get one variant with offer from each product (4 different products)
-                const productsWithOffers: { variant: ItemVariantDto; productName_en: string; productName_fr: string; productId: string }[] = [];
-                
-                for (const product of result.value) {
-                    // Stop if we already have enough products
-                    if (productsWithOffers.length >= OFFERS_COUNT) {
-                        break;
-                    }
-
-                    if (product.variants && product.variants.length > 0) {
-                        // Find the first variant with an active (non-expired) offer
-                        const variantWithOffer = product.variants.find(v => isOfferActive(v));
-                        
-                        if (variantWithOffer) {
-                            productsWithOffers.push({
-                                variant: variantWithOffer,
-                                productName_en: product.name_en,
-                                productName_fr: product.name_fr,
-                                productId: product.id
-                            });
-                        }
-                    }
-                }
-
-                // Build unified ProductPreviewItem list
-                const items: ProductPreviewItem[] = [];
-                
-                for (const { variant, productName_en, productName_fr, productId } of productsWithOffers) {
-                    let imageUrl: string | null = null;
-
-                    // Try to find image ending with _1 from ImageUrls
-                    if (variant.imageUrls) {
-                        const urls = variant.imageUrls.split(',').filter((url: string) => url.trim());
-                        
-                        // Look for image ending with _1 (before file extension)
-                        const imageWith_1 = urls.find((url: string) => {
-                            const trimmedUrl = url.trim();
-                            // Match pattern like: /path/image_1.jpg or /path/image_1.png
-                            return PRIMARY_IMAGE_PATTERN.test(trimmedUrl);
-                        });
-                        
-                        if (imageWith_1) {
-                            imageUrl = imageWith_1.trim();
-                        } else if (urls.length > 0) {
-                            // Fall back to first image if no _1 image found
-                            imageUrl = urls[0].trim();
-                        }
-                    }
-
-                    // Fall back to ThumbnailUrl if no ImageUrls found
-                    if (!imageUrl && variant.thumbnailUrl) {
-                        imageUrl = variant.thumbnailUrl;
-                    }
-
-                    if (imageUrl) {
-                        items.push({
-                            id: productId,
-                            imageUrl: toAbsoluteUrl(imageUrl),
-                            name: language === 'fr' ? productName_fr : productName_en,
-                            offer: variant.offer!,
-                        });
-                    }
-                }
-                setOfferProducts(items);
+                setRawOfferProducts(result.value);
             }
         } catch (error) {
             console.error('Error fetching products with offers:', error);

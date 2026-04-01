@@ -93,11 +93,10 @@ describe('Home - Explore Categories language', () => {
             </BrowserRouter>
         );
 
-        const card = await screen.findByText(/Explore Categories|Explorer les catégories/);
-        const cardContainer = card.closest('.item-preview-card');
-
         await waitFor(() => {
-            const itemName = cardContainer?.querySelector('.item-name');
+            const title = screen.getByText(/Explore Categories|Explorer les catégories/);
+            const container = title.closest('.item-preview-card');
+            const itemName = container?.querySelector('.item-name');
             expect(itemName?.textContent).toBe('Electronics');
         });
     });
@@ -118,11 +117,10 @@ describe('Home - Explore Categories language', () => {
             </BrowserRouter>
         );
 
-        const card = await screen.findByText(/Explore Categories|Explorer les catégories/);
-        const cardContainer = card.closest('.item-preview-card');
-
         await waitFor(() => {
-            const itemName = cardContainer?.querySelector('.item-name');
+            const title = screen.getByText(/Explore Categories|Explorer les catégories/);
+            const container = title.closest('.item-preview-card');
+            const itemName = container?.querySelector('.item-name');
             expect(itemName?.textContent).toBe('Électronique');
         });
     });
@@ -144,11 +142,10 @@ describe('Home - Explore Categories language', () => {
         );
 
         // Wait for English name to appear first
-        const card = await screen.findByText(/Explore Categories|Explorer les catégories/);
-        const cardContainer = card.closest('.item-preview-card');
-
         await waitFor(() => {
-            const itemName = cardContainer?.querySelector('.item-name');
+            const title = screen.getByText('Explore Categories');
+            const container = title.closest('.item-preview-card');
+            const itemName = container?.querySelector('.item-name');
             expect(itemName?.textContent).toBe('Electronics');
         });
 
@@ -161,8 +158,9 @@ describe('Home - Explore Categories language', () => {
 
         // Category name should now be in French
         await waitFor(() => {
-            const updatedCard = screen.getByText(/Explorer les catégories/).closest('.item-preview-card');
-            const itemName = updatedCard?.querySelector('.item-name');
+            const title = screen.getByText('Explorer les catégories');
+            const container = title.closest('.item-preview-card');
+            const itemName = container?.querySelector('.item-name');
             expect(itemName?.textContent).toBe('Électronique');
         });
     });

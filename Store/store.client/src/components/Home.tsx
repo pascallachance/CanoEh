@@ -176,6 +176,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const [recentProducts, setRecentProducts] = useState<ProductPreviewItem[]>([]);
     const [suggestedProducts, setSuggestedProducts] = useState<ProductPreviewItem[]>([]);
     const [offerProducts, setOfferProducts] = useState<ProductPreviewItem[]>([]);
+    const [rawCategoriesProducts, setRawCategoriesProducts] = useState<GetItemResponse[]>([]);
     const [categoriesProducts, setCategoriesProducts] = useState<ProductPreviewItem[]>([]);
 
     useEffect(() => {
@@ -194,6 +195,10 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         fetchSuggestedCategoriesProducts();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthenticated]);
+
+    useEffect(() => {
+        setCategoriesProducts(extractProductImages(rawCategoriesProducts, language, SUGGESTED_CATEGORIES_DISPLAY_COUNT, true));
+    }, [rawCategoriesProducts, language]);
 
     const fetchRecentlyAddedProducts = async () => {
         try {
@@ -345,7 +350,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
 
             const result: ApiResult<GetItemResponse[]> = await response.json();
             if (result.isSuccess && result.value) {
-                setCategoriesProducts(extractProductImages(result.value, language, SUGGESTED_CATEGORIES_DISPLAY_COUNT, true));
+                setRawCategoriesProducts(result.value);
             }
         } catch (error) {
             console.error('Error fetching suggested categories products:', error);

@@ -482,53 +482,6 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                     <div className="product-detail">
                         {/* Main product section */}
                         <div className="product-main">
-                            {/* Image Gallery */}
-                            <section
-                                className="product-gallery"
-                                aria-label={getText('Product images', 'Images du produit')}
-                            >
-                                <div className="product-main-image-wrapper">
-                                    {mainImage && !mainImageError ? (
-                                        <img
-                                            src={mainImage}
-                                            alt={productName}
-                                            className="product-main-image"
-                                            onError={() => setMainImageError(true)}
-                                        />
-                                    ) : (
-                                        <div className="product-main-image-placeholder">
-                                            {getText('No image available', 'Image non disponible')}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Thumbnails */}
-                                {variantImages.length > 1 && (
-                                    <ul
-                                        className="product-thumbnails"
-                                        aria-label={getText('Image thumbnails', 'Miniatures d\'images')}
-                                    >
-                                        {variantImages.map((imgUrl, idx) => (
-                                            <li key={idx}>
-                                                <button
-                                                    type="button"
-                                                    className={`product-thumbnail-btn${mainImageIndex === idx ? ' active' : ''}`}
-                                                    onClick={() => handleThumbnailClick(idx)}
-                                                    aria-label={getText(`View image ${idx + 1}`, `Voir l'image ${idx + 1}`)}
-                                                    aria-pressed={mainImageIndex === idx}
-                                                >
-                                                    <img
-                                                        src={imgUrl}
-                                                        alt={`${productName} ${idx + 1}`}
-                                                        className="product-thumbnail-img"
-                                                    />
-                                                </button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </section>
-
                             {/* Product Info */}
                             <section
                                 className="product-info"
@@ -690,6 +643,53 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                             </p>
                                         )}
                                     </div>
+                                )}
+                            </section>
+
+                            {/* Image Gallery */}
+                            <section
+                                className="product-gallery"
+                                aria-label={getText('Product images', 'Images du produit')}
+                            >
+                                <div className="product-main-image-wrapper">
+                                    {mainImage && !mainImageError ? (
+                                        <img
+                                            src={mainImage}
+                                            alt={productName}
+                                            className="product-main-image"
+                                            onError={() => setMainImageError(true)}
+                                        />
+                                    ) : (
+                                        <div className="product-main-image-placeholder">
+                                            {getText('No image available', 'Image non disponible')}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Thumbnails */}
+                                {variantImages.length > 0 && (
+                                    <ul
+                                        className="product-thumbnails"
+                                        aria-label={getText('Image thumbnails', 'Miniatures d\'images')}
+                                    >
+                                        {variantImages.map((imgUrl, idx) => (
+                                            <li key={idx}>
+                                                <button
+                                                    type="button"
+                                                    className={`product-thumbnail-btn${mainImageIndex === idx ? ' active' : ''}`}
+                                                    onClick={() => handleThumbnailClick(idx)}
+                                                    aria-label={getText(`View image ${idx + 1}`, `Voir l'image ${idx + 1}`)}
+                                                    aria-pressed={mainImageIndex === idx}
+                                                >
+                                                    <img
+                                                        src={imgUrl}
+                                                        alt={`${productName} ${idx + 1}`}
+                                                        className="product-thumbnail-img"
+                                                    />
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 )}
                             </section>
                         </div>

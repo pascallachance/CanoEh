@@ -862,7 +862,7 @@ describe('Product page – product-breadcrumb', () => {
         setupFetchWithCategories(makeProduct(), [node]);
         renderProduct();
         await waitForProductLoaded();
-        const breadcrumb = document.querySelector('.product-breadcrumb');
+        const breadcrumb = document.querySelector('.product-category');
         expect(breadcrumb).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /^Home$|^Accueil$/i })).not.toBeInTheDocument();
     });
@@ -872,7 +872,7 @@ describe('Product page – product-breadcrumb', () => {
         setupFetchWithCategories(makeProduct(), [node]);
         renderProduct();
         await waitForProductLoaded();
-        const breadcrumb = document.querySelector('.product-breadcrumb');
+        const breadcrumb = document.querySelector('.product-category');
         expect(breadcrumb?.textContent).toMatch(/Electronics/);
     });
 
@@ -881,7 +881,7 @@ describe('Product page – product-breadcrumb', () => {
         setupFetchWithCategories(makeProduct(), [node]);
         renderProduct();
         await waitForProductLoaded();
-        const breadcrumb = document.querySelector('.product-breadcrumb');
+        const breadcrumb = document.querySelector('.product-category');
         const seps = breadcrumb?.querySelectorAll('.breadcrumb-sep');
         expect(seps?.length).toBe(0);
     });
@@ -892,7 +892,7 @@ describe('Product page – product-breadcrumb', () => {
         setupFetchWithCategories(makeProduct(), [parent, child]);
         renderProduct();
         await waitForProductLoaded();
-        const breadcrumb = document.querySelector('.product-breadcrumb');
+        const breadcrumb = document.querySelector('.product-category');
         const seps = breadcrumb?.querySelectorAll('.breadcrumb-sep');
         expect(seps?.length).toBe(1);
         expect(breadcrumb?.textContent).toMatch(/Electronics/);

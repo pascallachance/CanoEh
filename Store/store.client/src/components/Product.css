@@ -40,16 +40,6 @@
 }
 
 /* Breadcrumb */
-.product-breadcrumb {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 4px;
-    font-size: 13px;
-    color: #555;
-    margin-bottom: 20px;
-}
-
 .breadcrumb-link {
     background: none;
     border: none;

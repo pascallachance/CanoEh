@@ -480,22 +480,6 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                     </div>
                 ) : product ? (
                     <div className="product-detail">
-                        {/* Breadcrumb */}
-                        <nav className="product-breadcrumb" aria-label={getText('Breadcrumb', 'Fil d\'Ariane')}>
-                            {categoryPath.map((node, idx) => (
-                                <Fragment key={node.id}>
-                                    {idx > 0 && <span className="breadcrumb-sep" aria-hidden="true">›</span>}
-                                    <button
-                                        type="button"
-                                        className="breadcrumb-link"
-                                        onClick={() => navigate(`/categories?nodeId=${encodeURIComponent(node.id)}`)}
-                                    >
-                                        {getCategoryNodeName(node, language)}
-                                    </button>
-                                </Fragment>
-                            ))}
-                        </nav>
-
                         {/* Main product section */}
                         <div className="product-main">
                             {/* Image Gallery */}
@@ -553,9 +537,25 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                 <h1 className="product-name">{productName}</h1>
 
                                 {categoryPath.length > 0 && (
-                                    <p className="product-category">
-                                        {getText('Category', 'Catégorie')}: {getCategoryNodeName(categoryPath[categoryPath.length - 1], language)}
-                                    </p>
+                                    <div
+                                        className="product-category"
+                                        role="navigation"
+                                        aria-label={getText('Product category breadcrumb', 'Fil d\'Ariane de la catégorie du produit')}
+                                    >
+                                        {getText('Category', 'Catégorie')}:{' '}
+                                        {categoryPath.map((node, idx) => (
+                                            <Fragment key={node.id}>
+                                                {idx > 0 && <span className="breadcrumb-sep" aria-hidden="true">›</span>}
+                                                <button
+                                                    type="button"
+                                                    className="breadcrumb-link"
+                                                    onClick={() => navigate(`/categories?nodeId=${encodeURIComponent(node.id)}`)}
+                                                >
+                                                    {getCategoryNodeName(node, language)}
+                                                </button>
+                                            </Fragment>
+                                        ))}
+                                    </div>
                                 )}
 
                                 {/* Price */}

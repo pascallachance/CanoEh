@@ -32,12 +32,12 @@ namespace API.Tests
         }
 
         [Fact]
-        public void CreateItemRequest_ReturnSuccess_WhenNameEnExceeds255Characters()
+        public void CreateItemRequest_ReturnFailure_WhenNameEnExceeds300Characters()
         {
             var request = new CreateItemRequest
             {
                 SellerID = Guid.NewGuid(),
-                Name_en = new string('A', 256),
+                Name_en = new string('A', 301),
                 Name_fr = "Nom FR",
                 Description_en = "Desc EN",
                 Description_fr = "Desc FR",
@@ -46,17 +46,19 @@ namespace API.Tests
 
             var result = request.Validate();
 
-            Assert.True(result.IsSuccess);
+            Assert.True(result.IsFailure);
+            Assert.Equal("English name cannot exceed 300 characters.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
         }
 
         [Fact]
-        public void CreateItemRequest_ReturnSuccess_WhenNameFrExceeds255Characters()
+        public void CreateItemRequest_ReturnFailure_WhenNameFrExceeds300Characters()
         {
             var request = new CreateItemRequest
             {
                 SellerID = Guid.NewGuid(),
                 Name_en = "Name EN",
-                Name_fr = new string('A', 256),
+                Name_fr = new string('A', 301),
                 Description_en = "Desc EN",
                 Description_fr = "Desc FR",
                 CategoryNodeID = Guid.NewGuid()
@@ -64,16 +66,18 @@ namespace API.Tests
 
             var result = request.Validate();
 
-            Assert.True(result.IsSuccess);
+            Assert.True(result.IsFailure);
+            Assert.Equal("French name cannot exceed 300 characters.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
         }
 
         [Fact]
-        public void CreateItemRequest_ReturnSuccess_WhenNameEnIsExactly255Characters()
+        public void CreateItemRequest_ReturnSuccess_WhenNameEnIsExactly300Characters()
         {
             var request = new CreateItemRequest
             {
                 SellerID = Guid.NewGuid(),
-                Name_en = new string('A', 255),
+                Name_en = new string('A', 300),
                 Name_fr = "Nom FR",
                 Description_en = "Desc EN",
                 Description_fr = "Desc FR",
@@ -183,13 +187,13 @@ namespace API.Tests
         // ---------------------------------------------------------------
 
         [Fact]
-        public void UpdateItemRequest_ReturnSuccess_WhenNameEnExceeds255Characters()
+        public void UpdateItemRequest_ReturnFailure_WhenNameEnExceeds300Characters()
         {
             var request = new UpdateItemRequest
             {
                 Id = Guid.NewGuid(),
                 SellerID = Guid.NewGuid(),
-                Name_en = new string('A', 256),
+                Name_en = new string('A', 301),
                 Name_fr = "Nom FR",
                 Description_en = "Desc EN",
                 Description_fr = "Desc FR",
@@ -198,18 +202,41 @@ namespace API.Tests
 
             var result = request.Validate();
 
-            Assert.True(result.IsSuccess);
+            Assert.True(result.IsFailure);
+            Assert.Equal("English name cannot exceed 300 characters.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
         }
 
         [Fact]
-        public void UpdateItemRequest_ReturnSuccess_WhenNameFrExceeds255Characters()
+        public void UpdateItemRequest_ReturnFailure_WhenNameFrExceeds300Characters()
         {
             var request = new UpdateItemRequest
             {
                 Id = Guid.NewGuid(),
                 SellerID = Guid.NewGuid(),
                 Name_en = "Name EN",
-                Name_fr = new string('A', 256),
+                Name_fr = new string('A', 301),
+                Description_en = "Desc EN",
+                Description_fr = "Desc FR",
+                CategoryNodeID = Guid.NewGuid()
+            };
+
+            var result = request.Validate();
+
+            Assert.True(result.IsFailure);
+            Assert.Equal("French name cannot exceed 300 characters.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public void UpdateItemRequest_ReturnSuccess_WhenNameEnIsExactly300Characters()
+        {
+            var request = new UpdateItemRequest
+            {
+                Id = Guid.NewGuid(),
+                SellerID = Guid.NewGuid(),
+                Name_en = new string('A', 300),
+                Name_fr = "Nom FR",
                 Description_en = "Desc EN",
                 Description_fr = "Desc FR",
                 CategoryNodeID = Guid.NewGuid()

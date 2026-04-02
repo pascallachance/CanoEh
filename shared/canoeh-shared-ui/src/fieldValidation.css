@@ -1,0 +1,16 @@
+.input-invalid {
+    border-color: #c33 !important;
+}
+
+.input-invalid:focus {
+    border-color: #c33 !important;
+    box-shadow: 0 0 0 3px rgba(204, 51, 51, 0.1) !important;
+}
+
+.field-error {
+    display: block;
+    color: #c33;
+    font-size: 12px;
+    margin-top: 4px;
+    cursor: default;
+}

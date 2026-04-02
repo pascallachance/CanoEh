@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Login.css';
+import './fieldValidation.css';
+import { validateEmailFormat, validatePasswordLength } from './validation';
 
 interface LoginRequest {
     email: string;
@@ -32,6 +34,8 @@ export interface LoginProps {
     enableEscapeKeyHandling?: boolean;
 }
 
+type LoginFields = 'email' | 'password';
+
 export function Login({ 
     title, 
     apiBaseUrl, 
@@ -43,6 +47,19 @@ export function Login({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState<Partial<Record<LoginFields, string>>>({});
+    const [touched, setTouched] = useState<Partial<Record<LoginFields, boolean>>>({});
+
+    const validateField = (name: LoginFields, value: string): string => {
+        if (name === 'email') return validateEmailFormat(value);
+        if (name === 'password') return validatePasswordLength(value);
+        return '';
+    };
+
+    const handleFieldChange = (name: LoginFields, value: string) => {
+        setTouched(prev => ({ ...prev, [name]: true }));
+        setFieldErrors(prev => ({ ...prev, [name]: validateField(name, value) }));
+    };
 
     // Add escape key handling for better accessibility
     useEffect(() => {
@@ -127,11 +144,15 @@ export function Login({
                                 type="email"
                                 id="email"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(e) => { setEmail(e.target.value); handleFieldChange('email', e.target.value); }}
                                 required
                                 placeholder="Enter your email"
                                 autoComplete="email"
+                                className={touched.email && fieldErrors.email ? 'input-invalid' : ''}
                             />
+                            {touched.email && fieldErrors.email && (
+                                <span className="field-error" title={fieldErrors.email}>{fieldErrors.email}</span>
+                            )}
                         </div>
 
                         <div className="form-group">
@@ -141,11 +162,12 @@ export function Login({
                                     type={showPassword ? "text" : "password"}
                                     id="password"
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    onChange={(e) => { setPassword(e.target.value); handleFieldChange('password', e.target.value); }}
                                     required
                                     minLength={8}
                                     placeholder="Enter your password (min 8 characters)"
                                     autoComplete="current-password"
+                                    className={touched.password && fieldErrors.password ? 'input-invalid' : ''}
                                 />
                                 <button
                                     type="button"
@@ -166,6 +188,9 @@ export function Login({
                                     )}
                                 </button>
                             </div>
+                            {touched.password && fieldErrors.password && (
+                                <span className="field-error" title={fieldErrors.password}>{fieldErrors.password}</span>
+                            )}
                         </div>
 
                         {error && <div className="error-message">{error}</div>}

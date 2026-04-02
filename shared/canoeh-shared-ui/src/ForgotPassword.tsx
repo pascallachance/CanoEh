@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './ForgotPassword.css';
+import './fieldValidation.css';
+import { validateEmailFormat } from './validation';
 
 interface ForgotPasswordRequest {
     email: string;
@@ -35,6 +37,14 @@ export function ForgotPassword({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+    const [emailError, setEmailError] = useState('');
+    const [emailTouched, setEmailTouched] = useState(false);
+
+    const handleEmailChange = (value: string) => {
+        setEmail(value);
+        setEmailTouched(true);
+        setEmailError(validateEmailFormat(value));
+    };
 
     // Add escape key handling for better accessibility
     useEffect(() => {
@@ -139,11 +149,15 @@ export function ForgotPassword({
                                 type="email"
                                 id="email"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(e) => handleEmailChange(e.target.value)}
                                 required
                                 placeholder="Enter your email"
                                 autoComplete="email"
+                                className={emailTouched && emailError ? 'input-invalid' : ''}
                             />
+                            {emailTouched && emailError && (
+                                <span className="field-error" title={emailError}>{emailError}</span>
+                            )}
                         </div>
 
                         {error && <div className="error-message">{error}</div>}

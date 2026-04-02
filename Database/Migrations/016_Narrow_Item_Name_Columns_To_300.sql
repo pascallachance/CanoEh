@@ -7,6 +7,13 @@
 --   or Name_fr already exceed 300 characters will cause this migration
 --   to abort with an error so that no data is silently truncated.
 --   Run the migration only after verifying (or cleaning up) such rows.
+--
+--   DATALENGTH(col)/2 is used instead of LEN() because LEN ignores
+--   trailing spaces and would miss values whose visible length is
+--   exactly 300 only because of trailing blanks.
+--   THROW is used to abort execution deterministically; RAISERROR at
+--   severity 16 does not reliably prevent subsequent statements from
+--   running.
 -- =============================================
 
 USE CanoEh;
@@ -22,16 +29,14 @@ IF EXISTS (
       AND (max_length = -1 OR max_length / 2 > 300)
 )
 BEGIN
-    IF EXISTS (SELECT 1 FROM dbo.Item WHERE LEN(Name_en) > 300)
+    IF EXISTS (SELECT 1 FROM dbo.Item WHERE DATALENGTH(Name_en) / 2 > 300)
     BEGIN
-        RAISERROR('Cannot narrow dbo.Item.Name_en to NVARCHAR(300): one or more existing rows exceed 300 characters.', 16, 1);
+        THROW 50001, 'Cannot narrow dbo.Item.Name_en to NVARCHAR(300): one or more existing rows exceed 300 characters.', 1;
     END
-    ELSE
-    BEGIN
-        ALTER TABLE dbo.Item
-            ALTER COLUMN Name_en NVARCHAR(300) NOT NULL;
-        PRINT 'Column dbo.Item.Name_en narrowed to NVARCHAR(300).';
-    END
+
+    ALTER TABLE dbo.Item
+        ALTER COLUMN Name_en NVARCHAR(300) NOT NULL;
+    PRINT 'Column dbo.Item.Name_en narrowed to NVARCHAR(300).';
 END
 ELSE
 BEGIN
@@ -49,16 +54,14 @@ IF EXISTS (
       AND (max_length = -1 OR max_length / 2 > 300)
 )
 BEGIN
-    IF EXISTS (SELECT 1 FROM dbo.Item WHERE LEN(Name_fr) > 300)
+    IF EXISTS (SELECT 1 FROM dbo.Item WHERE DATALENGTH(Name_fr) / 2 > 300)
     BEGIN
-        RAISERROR('Cannot narrow dbo.Item.Name_fr to NVARCHAR(300): one or more existing rows exceed 300 characters.', 16, 1);
+        THROW 50002, 'Cannot narrow dbo.Item.Name_fr to NVARCHAR(300): one or more existing rows exceed 300 characters.', 1;
     END
-    ELSE
-    BEGIN
-        ALTER TABLE dbo.Item
-            ALTER COLUMN Name_fr NVARCHAR(300) NOT NULL;
-        PRINT 'Column dbo.Item.Name_fr narrowed to NVARCHAR(300).';
-    END
+
+    ALTER TABLE dbo.Item
+        ALTER COLUMN Name_fr NVARCHAR(300) NOT NULL;
+    PRINT 'Column dbo.Item.Name_fr narrowed to NVARCHAR(300).';
 END
 ELSE
 BEGIN

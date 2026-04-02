@@ -68,14 +68,14 @@ export function CreateUser({
     };
 
     const handleFieldChange = (name: CreateUserFields, value: string) => {
-        setTouched(prev => ({ ...prev, [name]: true }));
+        setTouched((prev: Partial<Record<CreateUserFields, boolean>>) => ({ ...prev, [name]: true }));
         const errMsg = name === 'retypePassword'
             ? validateField(name, value, password)
             : validateField(name, value);
-        setFieldErrors(prev => ({ ...prev, [name]: errMsg }));
+        setFieldErrors((prev: Partial<Record<CreateUserFields, string>>) => ({ ...prev, [name]: errMsg }));
         if (name === 'password' && touched.retypePassword) {
             const retypeErr = retypePassword !== value ? 'Passwords do not match' : '';
-            setFieldErrors(prev => ({ ...prev, retypePassword: retypeErr }));
+            setFieldErrors((prev: Partial<Record<CreateUserFields, string>>) => ({ ...prev, retypePassword: retypeErr }));
         }
     };
 
@@ -108,16 +108,28 @@ export function CreateUser({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validate all fields and mark as touched before submitting
+        const errors: Partial<Record<CreateUserFields, string>> = {
+            email: validateEmailFormat(email),
+            firstname: validateName(firstname, 'First name'),
+            lastname: validateName(lastname, 'Last name'),
+            phone: validatePhone(phone),
+            password: validatePasswordLength(password),
+            retypePassword: !retypePassword
+                ? 'Please retype your password'
+                : password !== retypePassword ? 'Passwords do not match' : '',
+        };
+        setFieldErrors(errors);
+        setTouched({ email: true, firstname: true, lastname: true, phone: true, password: true, retypePassword: true });
+
+        if (Object.values(errors).some(e => e !== '')) {
+            return;
+        }
+
         setLoading(true);
         setError('');
         setSuccess(false);
-
-        // Password match validation
-        if (password !== retypePassword) {
-            setError('Passwords do not match.');
-            setLoading(false);
-            return;
-        }
 
         try {
             const createUserRequest: CreateUserRequest = {
@@ -189,12 +201,15 @@ export function CreateUser({
                             value={email}
                             onChange={(e) => { setEmail(e.target.value); handleFieldChange('email', e.target.value); }}
                             required
+                            maxLength={254}
                             placeholder="Enter your email address"
                             autoComplete="email"
                             className={touched.email && fieldErrors.email ? 'input-invalid' : ''}
+                            aria-invalid={touched.email && !!fieldErrors.email}
+                            aria-describedby={touched.email && fieldErrors.email ? 'email-error' : undefined}
                         />
                         {touched.email && fieldErrors.email && (
-                            <span className="field-error" title={fieldErrors.email}>{fieldErrors.email}</span>
+                            <span id="email-error" className="field-error" role="alert">{fieldErrors.email}</span>
                         )}
                     </div>
 
@@ -206,12 +221,15 @@ export function CreateUser({
                             value={firstname}
                             onChange={(e) => { setFirstname(e.target.value); handleFieldChange('firstname', e.target.value); }}
                             required
+                            maxLength={100}
                             placeholder="Enter your first name"
                             autoComplete="given-name"
                             className={touched.firstname && fieldErrors.firstname ? 'input-invalid' : ''}
+                            aria-invalid={touched.firstname && !!fieldErrors.firstname}
+                            aria-describedby={touched.firstname && fieldErrors.firstname ? 'firstname-error' : undefined}
                         />
                         {touched.firstname && fieldErrors.firstname && (
-                            <span className="field-error" title={fieldErrors.firstname}>{fieldErrors.firstname}</span>
+                            <span id="firstname-error" className="field-error" role="alert">{fieldErrors.firstname}</span>
                         )}
                     </div>
 
@@ -223,12 +241,15 @@ export function CreateUser({
                             value={lastname}
                             onChange={(e) => { setLastname(e.target.value); handleFieldChange('lastname', e.target.value); }}
                             required
+                            maxLength={100}
                             placeholder="Enter your last name"
                             autoComplete="family-name"
                             className={touched.lastname && fieldErrors.lastname ? 'input-invalid' : ''}
+                            aria-invalid={touched.lastname && !!fieldErrors.lastname}
+                            aria-describedby={touched.lastname && fieldErrors.lastname ? 'lastname-error' : undefined}
                         />
                         {touched.lastname && fieldErrors.lastname && (
-                            <span className="field-error" title={fieldErrors.lastname}>{fieldErrors.lastname}</span>
+                            <span id="lastname-error" className="field-error" role="alert">{fieldErrors.lastname}</span>
                         )}
                     </div>
 
@@ -242,9 +263,11 @@ export function CreateUser({
                             placeholder="Enter your phone number"
                             autoComplete="tel"
                             className={touched.phone && fieldErrors.phone ? 'input-invalid' : ''}
+                            aria-invalid={touched.phone && !!fieldErrors.phone}
+                            aria-describedby={touched.phone && fieldErrors.phone ? 'phone-error' : undefined}
                         />
                         {touched.phone && fieldErrors.phone && (
-                            <span className="field-error" title={fieldErrors.phone}>{fieldErrors.phone}</span>
+                            <span id="phone-error" className="field-error" role="alert">{fieldErrors.phone}</span>
                         )}
                     </div>
 
@@ -261,6 +284,8 @@ export function CreateUser({
                                 placeholder="Enter your password (min 8 characters)"
                                 autoComplete="new-password"
                                 className={touched.password && fieldErrors.password ? 'input-invalid' : ''}
+                                aria-invalid={touched.password && !!fieldErrors.password}
+                                aria-describedby={touched.password && fieldErrors.password ? 'password-error' : undefined}
                             />
                             <button
                                 type="button"
@@ -282,7 +307,7 @@ export function CreateUser({
                             </button>
                         </div>
                         {touched.password && fieldErrors.password && (
-                            <span className="field-error" title={fieldErrors.password}>{fieldErrors.password}</span>
+                            <span id="password-error" className="field-error" role="alert">{fieldErrors.password}</span>
                         )}
                     </div>
 
@@ -299,6 +324,8 @@ export function CreateUser({
                                 placeholder="Retype your password"
                                 autoComplete="new-password"
                                 className={touched.retypePassword && fieldErrors.retypePassword ? 'input-invalid' : ''}
+                                aria-invalid={touched.retypePassword && !!fieldErrors.retypePassword}
+                                aria-describedby={touched.retypePassword && fieldErrors.retypePassword ? 'retypePassword-error' : undefined}
                             />
                             <button
                                 type="button"
@@ -320,7 +347,7 @@ export function CreateUser({
                             </button>
                         </div>
                         {touched.retypePassword && fieldErrors.retypePassword && (
-                            <span className="field-error" title={fieldErrors.retypePassword}>{fieldErrors.retypePassword}</span>
+                            <span id="retypePassword-error" className="field-error" role="alert">{fieldErrors.retypePassword}</span>
                         )}
                     </div>
 

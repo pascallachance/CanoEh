@@ -75,6 +75,16 @@ export function ForgotPassword({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validate email and mark as touched before submitting
+        const emailErr = validateEmailFormat(email);
+        setEmailError(emailErr);
+        setEmailTouched(true);
+
+        if (emailErr) {
+            return;
+        }
+
         setLoading(true);
         setError('');
         setSuccess(false);
@@ -154,9 +164,11 @@ export function ForgotPassword({
                                 placeholder="Enter your email"
                                 autoComplete="email"
                                 className={emailTouched && emailError ? 'input-invalid' : ''}
+                                aria-invalid={emailTouched && !!emailError}
+                                aria-describedby={emailTouched && emailError ? 'email-error' : undefined}
                             />
                             {emailTouched && emailError && (
-                                <span className="field-error" title={emailError}>{emailError}</span>
+                                <span id="email-error" className="field-error" role="alert">{emailError}</span>
                             )}
                         </div>
 

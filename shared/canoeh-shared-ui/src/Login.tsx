@@ -57,8 +57,8 @@ export function Login({
     };
 
     const handleFieldChange = (name: LoginFields, value: string) => {
-        setTouched(prev => ({ ...prev, [name]: true }));
-        setFieldErrors(prev => ({ ...prev, [name]: validateField(name, value) }));
+        setTouched((prev: Partial<Record<LoginFields, boolean>>) => ({ ...prev, [name]: true }));
+        setFieldErrors((prev: Partial<Record<LoginFields, string>>) => ({ ...prev, [name]: validateField(name, value) }));
     };
 
     // Add escape key handling for better accessibility
@@ -90,6 +90,17 @@ export function Login({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validate all fields and mark as touched before submitting
+        const emailErr = validateEmailFormat(email);
+        const passwordErr = validatePasswordLength(password);
+        setFieldErrors({ email: emailErr, password: passwordErr });
+        setTouched({ email: true, password: true });
+
+        if (emailErr || passwordErr) {
+            return;
+        }
+
         setLoading(true);
         setError('');
 
@@ -149,9 +160,11 @@ export function Login({
                                 placeholder="Enter your email"
                                 autoComplete="email"
                                 className={touched.email && fieldErrors.email ? 'input-invalid' : ''}
+                                aria-invalid={touched.email && !!fieldErrors.email}
+                                aria-describedby={touched.email && fieldErrors.email ? 'email-error' : undefined}
                             />
                             {touched.email && fieldErrors.email && (
-                                <span className="field-error" title={fieldErrors.email}>{fieldErrors.email}</span>
+                                <span id="email-error" className="field-error" role="alert">{fieldErrors.email}</span>
                             )}
                         </div>
 
@@ -168,6 +181,8 @@ export function Login({
                                     placeholder="Enter your password (min 8 characters)"
                                     autoComplete="current-password"
                                     className={touched.password && fieldErrors.password ? 'input-invalid' : ''}
+                                    aria-invalid={touched.password && !!fieldErrors.password}
+                                    aria-describedby={touched.password && fieldErrors.password ? 'password-error' : undefined}
                                 />
                                 <button
                                     type="button"
@@ -189,7 +204,7 @@ export function Login({
                                 </button>
                             </div>
                             {touched.password && fieldErrors.password && (
-                                <span className="field-error" title={fieldErrors.password}>{fieldErrors.password}</span>
+                                <span id="password-error" className="field-error" role="alert">{fieldErrors.password}</span>
                             )}
                         </div>
 

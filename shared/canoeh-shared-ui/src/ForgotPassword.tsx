@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './ForgotPassword.css';
+import './fieldValidation.css';
+import { validateEmailFormat } from './validation';
 
 interface ForgotPasswordRequest {
     email: string;
@@ -35,6 +37,25 @@ export function ForgotPassword({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+    const [emailError, setEmailError] = useState('');
+    const [emailTouched, setEmailTouched] = useState(false);
+
+    const validateAndSetEmailError = (value: string): string => {
+        const validationError = validateEmailFormat(value);
+        setEmailError(validationError);
+        return validationError;
+    };
+
+    const validateEmailBeforeSubmit = (): boolean => {
+        setEmailTouched(true);
+        return validateAndSetEmailError(email) === '';
+    };
+
+    const handleEmailChange = (value: string) => {
+        setEmail(value);
+        setEmailTouched(true);
+        validateAndSetEmailError(value);
+    };
 
     // Add escape key handling for better accessibility
     useEffect(() => {
@@ -65,6 +86,16 @@ export function ForgotPassword({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validate email and mark as touched before submitting
+        const emailErr = validateEmailFormat(email);
+        setEmailError(emailErr);
+        setEmailTouched(true);
+
+        if (emailErr) {
+            return;
+        }
+
         setLoading(true);
         setError('');
         setSuccess(false);
@@ -139,11 +170,17 @@ export function ForgotPassword({
                                 type="email"
                                 id="email"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(e) => handleEmailChange(e.target.value)}
                                 required
                                 placeholder="Enter your email"
                                 autoComplete="email"
+                                className={emailTouched && emailError ? 'input-invalid' : ''}
+                                aria-invalid={emailTouched && !!emailError}
+                                aria-describedby={emailTouched && emailError ? 'email-error' : undefined}
                             />
+                            {emailTouched && emailError && (
+                                <span id="email-error" className="field-error" role="alert">{emailError}</span>
+                            )}
                         </div>
 
                         {error && <div className="error-message">{error}</div>}

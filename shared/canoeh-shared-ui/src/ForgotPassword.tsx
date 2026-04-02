@@ -40,10 +40,21 @@ export function ForgotPassword({
     const [emailError, setEmailError] = useState('');
     const [emailTouched, setEmailTouched] = useState(false);
 
+    const validateAndSetEmailError = (value: string): string => {
+        const validationError = validateEmailFormat(value);
+        setEmailError(validationError);
+        return validationError;
+    };
+
+    const validateEmailBeforeSubmit = (): boolean => {
+        setEmailTouched(true);
+        return validateAndSetEmailError(email) === '';
+    };
+
     const handleEmailChange = (value: string) => {
         setEmail(value);
         setEmailTouched(true);
-        setEmailError(validateEmailFormat(value));
+        validateAndSetEmailError(value);
     };
 
     // Add escape key handling for better accessibility

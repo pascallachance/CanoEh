@@ -262,8 +262,8 @@ BEGIN
     CREATE TABLE dbo.Item (
         Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
         SellerID UNIQUEIDENTIFIER NOT NULL,
-        Name_en NVARCHAR(2000) NOT NULL,
-        Name_fr NVARCHAR(2000) NOT NULL,
+        Name_en NVARCHAR(300) NOT NULL,
+        Name_fr NVARCHAR(300) NOT NULL,
         Description_en NVARCHAR(2000) NULL,
         Description_fr NVARCHAR(2000) NULL,
         CategoryNodeID UNIQUEIDENTIFIER NOT NULL,

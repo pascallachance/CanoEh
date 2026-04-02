@@ -28,9 +28,19 @@ namespace Domain.Models.Requests
                 return Result.Failure("English name is required.", StatusCodes.Status400BadRequest);
             }
 
+            if (Name_en.Length > 300)
+            {
+                return Result.Failure("English name cannot exceed 300 characters.", StatusCodes.Status400BadRequest);
+            }
+
             if (string.IsNullOrWhiteSpace(Name_fr))
             {
                 return Result.Failure("French name is required.", StatusCodes.Status400BadRequest);
+            }
+
+            if (Name_fr.Length > 300)
+            {
+                return Result.Failure("French name cannot exceed 300 characters.", StatusCodes.Status400BadRequest);
             }
 
             if (string.IsNullOrWhiteSpace(Description_en))

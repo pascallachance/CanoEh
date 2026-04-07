@@ -72,6 +72,7 @@ namespace API.Tests
             Assert.NotNull(variantAttrType.GetProperty("AttributeName_fr"));
             Assert.NotNull(variantAttrType.GetProperty("Attributes_en"));
             Assert.NotNull(variantAttrType.GetProperty("Attributes_fr"));
+            Assert.NotNull(variantAttrType.GetProperty("IsMain"));
         }
 
         [Fact]

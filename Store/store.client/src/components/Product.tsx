@@ -15,6 +15,7 @@ interface ItemVariantAttributeDto {
     attributeName_fr?: string;
     attributes_en: string;
     attributes_fr?: string;
+    isMain?: boolean;
 }
 
 interface ItemVariantFeaturesDto {
@@ -85,11 +86,13 @@ interface CategoryNodeDto {
  * An attribute group for rendering variant options.
  * nameKey / option.valueKey are language-invariant (always EN).
  * displayName / option.displayLabel are localized.
+ * isMain reflects the IsMain flag on the underlying ItemVariantAttribute (main group is shown first).
  */
 interface AttributeGroup {
     nameKey: string;
     displayName: string;
-    options: { valueKey: string; displayLabel: string }[];
+    isMain: boolean;
+    options: { valueKey: string; displayLabel: string; thumbnailUrl?: string }[];
 }
 
 function isOfferActive(variant: ItemVariantDto): boolean {
@@ -122,6 +125,8 @@ function parseImageUrls(imageUrlsStr?: string, thumbnailUrl?: string): string[] 
  * Builds a list of attribute groups from the product variants for rendering the variant selector.
  * nameKey and valueKey are always English (language-invariant) so they can safely be used as
  * keys in selectedAttributes without de-syncing when the display language is changed.
+ * Groups are sorted so that the IsMain group appears first.
+ * Each option carries the thumbnailUrl of the first variant that has that attribute value.
  */
 function buildAttributeGroups(variants: ItemVariantDto[], language: string): AttributeGroup[] {
     const groupMap = new Map<string, AttributeGroup>();
@@ -138,19 +143,28 @@ function buildAttributeGroups(variants: ItemVariantDto[], language: string): Att
                 : attr.attributes_en;
 
             if (!groupMap.has(nameKey)) {
-                groupMap.set(nameKey, { nameKey, displayName, options: [] });
+                groupMap.set(nameKey, { nameKey, displayName, isMain: attr.isMain ?? false, options: [] });
             }
             const group = groupMap.get(nameKey)!;
             group.displayName = displayName; // update in case language changed
+            if (attr.isMain) group.isMain = true;
             if (!group.options.some((o) => o.valueKey === valueKey)) {
-                group.options.push({ valueKey, displayLabel });
+                const thumbnailUrl = variant.thumbnailUrl ? toAbsoluteUrl(variant.thumbnailUrl) : undefined;
+                group.options.push({ valueKey, displayLabel, thumbnailUrl });
             } else {
                 const opt = group.options.find((o) => o.valueKey === valueKey)!;
+                const thumbnailUrl = variant.thumbnailUrl ? toAbsoluteUrl(variant.thumbnailUrl) : undefined;
                 opt.displayLabel = displayLabel; // update localized label
+                if (!opt.thumbnailUrl && thumbnailUrl) {
+                    opt.thumbnailUrl = thumbnailUrl;
+                }
             }
         }
     }
-    return Array.from(groupMap.values());
+    const groups = Array.from(groupMap.values());
+    // Place the IsMain group first; preserve original order for the rest
+    groups.sort((a, b) => Number(b.isMain) - Number(a.isMain));
+    return groups;
 }
 
 /**
@@ -560,17 +574,29 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                     role="group"
                                                     aria-label={group.displayName}
                                                 >
-                                                    {group.options.map((option) => (
-                                                        <button
-                                                            key={option.valueKey}
-                                                            type="button"
-                                                            className={`product-attribute-btn${selectedAttributes[group.nameKey] === option.valueKey ? ' selected' : ''}`}
-                                                            onClick={() => handleAttributeSelect(group.nameKey, option.valueKey)}
-                                                            aria-pressed={selectedAttributes[group.nameKey] === option.valueKey}
-                                                        >
-                                                            {option.displayLabel}
-                                                        </button>
-                                                    ))}
+                                                    {group.options.map((option) => {
+                                                        const isSelected = selectedAttributes[group.nameKey] === option.valueKey;
+                                                        const hasThumbnail = !!option.thumbnailUrl;
+                                                        return (
+                                                            <button
+                                                                key={option.valueKey}
+                                                                type="button"
+                                                                className={`product-attribute-btn${isSelected ? ' selected' : ''}${hasThumbnail ? ' with-thumbnail' : ''}`}
+                                                                onClick={() => handleAttributeSelect(group.nameKey, option.valueKey)}
+                                                                aria-pressed={isSelected}
+                                                            >
+                                                                {hasThumbnail && (
+                                                                    <img
+                                                                        src={option.thumbnailUrl}
+                                                                        alt=""
+                                                                        aria-hidden="true"
+                                                                        className="product-attribute-btn-thumbnail"
+                                                                    />
+                                                                )}
+                                                                <span>{option.displayLabel}</span>
+                                                            </button>
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
                                         ))}

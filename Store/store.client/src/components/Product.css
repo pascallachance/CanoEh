@@ -269,6 +269,22 @@
     outline-offset: 2px;
 }
 
+.product-attribute-btn.with-thumbnail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 8px;
+    min-width: 72px;
+}
+
+.product-attribute-btn-thumbnail {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: 3px;
+}
+
 /* Stock */
 .product-stock {
     font-size: 14px;

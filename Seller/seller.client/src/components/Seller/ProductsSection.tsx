@@ -1421,7 +1421,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                     ThumbnailUrl: null, // Will be set after uploading thumbnail
                     ItemVariantName_en: variant.attributes_en ? Object.entries(variant.attributes_en).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
                     ItemVariantName_fr: variant.attributes_fr ? Object.entries(variant.attributes_fr).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
-                    ItemVariantAttributes: variant.attributes_en ? Object.entries(variant.attributes_en).map(([attrNameEn, attrValueEn]) => {
+                    ItemVariantAttributes: variant.attributes_en ? Object.entries(variant.attributes_en).map(([attrNameEn, attrValueEn], attrIdx) => {
                         // Find the corresponding ItemAttribute to get the French attribute name
                         const itemAttribute = newItem.attributes.find(attr => attr.name_en === attrNameEn);
                         const attrNameFr = itemAttribute?.name_fr || null;
@@ -1431,7 +1431,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                             AttributeName_fr: attrNameFr,
                             Attributes_en: attrValueEn,
                             Attributes_fr: attrValueFr,
-                            IsMain: false
+                            IsMain: attrIdx === 0
                         };
                     }) : [],
                     Deleted: false

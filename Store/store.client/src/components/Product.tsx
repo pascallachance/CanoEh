@@ -576,7 +576,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                 >
                                                     {group.options.map((option) => {
                                                         const isSelected = selectedAttributes[group.nameKey] === option.valueKey;
-                                                        const hasThumbnail = !!option.thumbnailUrl;
+                                                        const hasThumbnail = group.isMain && !!option.thumbnailUrl;
                                                         return (
                                                             <button
                                                                 key={option.valueKey}

@@ -54,7 +54,7 @@ sqlcmd -S (localdb)\MSSQLLocalDB -d CanoEh -i "Database/Migrations/001_Add_Langu
 | 014 | 014_Expand_Item_Name_Columns.sql | Expands Item.Name_en, Item.Name_fr, OrderItem.Name_en, and OrderItem.Name_fr to NVARCHAR(MAX) to support long product names (fixes 500 error on UpdateItem) | 2026-03-31 |
 | 015 | 015_Expand_Item_Text_Columns_To_2000.sql | Alters Name_en, Name_fr, Description_en, and Description_fr on dbo.Item to NVARCHAR(2000) for sellers who need up to 2000 characters | 2026-03-31 |
 | 016 | 016_Narrow_Item_Name_Columns_To_300.sql | Narrows Item.Name_en and Item.Name_fr back to NVARCHAR(300); aborts if any existing rows would be truncated | 2026-04-02 |
-| 017 | 017_Add_IsMain_To_ItemVariantAttribute.sql | Adds IsMain BIT NOT NULL DEFAULT 0 to dbo.ItemVariantAttribute and backfills existing rows so every ItemVariantID has exactly one IsMain=1 attribute | 2026-04-07 |
+| 017 | 017_Add_IsMain_To_ItemVariantAttribute.sql | Adds IsMain BIT NOT NULL DEFAULT 0 to dbo.ItemVariantAttribute and backfills existing rows to ensure each ItemVariantID has at least one IsMain=1 attribute | 2026-04-07 |
 
 ## Notes
 

@@ -182,6 +182,8 @@ VALUES (
                                 {
                                     try
                                     {
+                                        NormalizeIsMain(variantRequest.ItemVariantAttributes);
+
                                         var itemVariantAttributeQuery = @"
 INSERT INTO dbo.ItemVariantAttribute (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr, IsMain)
 OUTPUT INSERTED.Id
@@ -616,6 +618,8 @@ VALUES (
                         var insertedAttributes = new List<ItemVariantAttribute>();
                         if (variant.ItemVariantAttributes != null && variant.ItemVariantAttributes.Count > 0)
                         {
+                            NormalizeIsMain(variant.ItemVariantAttributes);
+
                             var itemVariantAttributeQuery = @"
 INSERT INTO dbo.ItemVariantAttribute (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr, IsMain)
 OUTPUT INSERTED.Id
@@ -1066,6 +1070,63 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
         }
 
         // Helper methods for mapping entities to DTOs
+
+        /// <summary>
+        /// Ensures exactly one attribute in the list is marked IsMain.
+        /// If more than one is marked, keeps only the first one.
+        /// If none is marked, marks the first attribute as main.
+        /// </summary>
+        private static void NormalizeIsMain(IList<CreateItemVariantAttributeRequest> attributes)
+        {
+            if (attributes == null || attributes.Count == 0) return;
+
+            var mainCount = attributes.Count(a => a.IsMain);
+            if (mainCount == 0)
+            {
+                attributes[0].IsMain = true;
+            }
+            else if (mainCount > 1)
+            {
+                var firstMain = true;
+                foreach (var attr in attributes)
+                {
+                    if (attr.IsMain)
+                    {
+                        if (firstMain) firstMain = false;
+                        else attr.IsMain = false;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Ensures exactly one ItemVariantAttribute in the list is marked IsMain.
+        /// If more than one is marked, keeps only the first one.
+        /// If none is marked, marks the first attribute as main.
+        /// </summary>
+        private static void NormalizeIsMain(IList<ItemVariantAttribute> attributes)
+        {
+            if (attributes == null || attributes.Count == 0) return;
+
+            var mainCount = attributes.Count(a => a.IsMain);
+            if (mainCount == 0)
+            {
+                attributes[0].IsMain = true;
+            }
+            else if (mainCount > 1)
+            {
+                var firstMain = true;
+                foreach (var attr in attributes)
+                {
+                    if (attr.IsMain)
+                    {
+                        if (firstMain) firstMain = false;
+                        else attr.IsMain = false;
+                    }
+                }
+            }
+        }
+
         private static ItemVariantAttributeDto MapToItemVariantAttributeDto(ItemVariantAttribute attribute)
         {
             return new ItemVariantAttributeDto

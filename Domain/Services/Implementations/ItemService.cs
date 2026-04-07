@@ -1080,21 +1080,15 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
         {
             if (attributes == null || attributes.Count == 0) return;
 
-            var mainCount = attributes.Count(a => a.IsMain);
-            if (mainCount == 0)
+            if (!attributes.Any(a => a.IsMain))
             {
                 attributes[0].IsMain = true;
             }
-            else if (mainCount > 1)
+            else
             {
-                var firstMain = true;
-                foreach (var attr in attributes)
+                foreach (var attr in attributes.Where(a => a.IsMain).Skip(1))
                 {
-                    if (attr.IsMain)
-                    {
-                        if (firstMain) firstMain = false;
-                        else attr.IsMain = false;
-                    }
+                    attr.IsMain = false;
                 }
             }
         }
@@ -1108,21 +1102,15 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
         {
             if (attributes == null || attributes.Count == 0) return;
 
-            var mainCount = attributes.Count(a => a.IsMain);
-            if (mainCount == 0)
+            if (!attributes.Any(a => a.IsMain))
             {
                 attributes[0].IsMain = true;
             }
-            else if (mainCount > 1)
+            else
             {
-                var firstMain = true;
-                foreach (var attr in attributes)
+                foreach (var attr in attributes.Where(a => a.IsMain).Skip(1))
                 {
-                    if (attr.IsMain)
-                    {
-                        if (firstMain) firstMain = false;
-                        else attr.IsMain = false;
-                    }
+                    attr.IsMain = false;
                 }
             }
         }

@@ -94,22 +94,16 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
     // Normalize isMain: if variant attributes are loaded with no main selected (e.g. pre-migration
     // data where all IsMain=0), auto-promote the first attribute so the radio group always has a
     // selection and the form never saves all-false.
+    const variantAttributesLength = formData.variantAttributes.length;
+    const hasMainAttribute = formData.variantAttributes.some(a => a.isMain);
     useEffect(() => {
-        const hasAttributes = formData.variantAttributes.length > 0;
-        const hasMain = formData.variantAttributes.some(a => a.isMain);
-        if (hasAttributes && !hasMain) {
-            setFormData(prev => {
-                // Guard again inside the updater to avoid stale closure issues
-                if (prev.variantAttributes.length > 0 && !prev.variantAttributes.some(a => a.isMain)) {
-                    return {
-                        ...prev,
-                        variantAttributes: prev.variantAttributes.map((attr, i) => ({ ...attr, isMain: i === 0 }))
-                    };
-                }
-                return prev;
-            });
+        if (variantAttributesLength > 0 && !hasMainAttribute) {
+            setFormData(prev => ({
+                ...prev,
+                variantAttributes: prev.variantAttributes.map((attr, i) => ({ ...attr, isMain: i === 0 }))
+            }));
         }
-    }, [formData.variantAttributes]);
+    }, [variantAttributesLength, hasMainAttribute]);
 
     // Handle escape key to cancel
     useEffect(() => {

@@ -20,8 +20,8 @@ namespace Infrastructure.Repositories.Implementations
             }
 
             var query = @"
-INSERT INTO dbo.ItemVariantAttribute (Id, ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
-VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
+INSERT INTO dbo.ItemVariantAttribute (Id, ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr, IsMain)
+VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr, @IsMain)";
 
             var parameters = new
             {
@@ -30,7 +30,8 @@ VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_e
                 entity.AttributeName_en,
                 entity.AttributeName_fr,
                 entity.Attributes_en,
-                entity.Attributes_fr
+                entity.Attributes_fr,
+                entity.IsMain
             };
 
             await dbConnection.ExecuteAsync(query, parameters);
@@ -104,7 +105,7 @@ VALUES (@Id, @ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_e
             var query = @"
 UPDATE dbo.ItemVariantAttribute 
 SET ItemVariantID = @ItemVariantID, AttributeName_en = @AttributeName_en, AttributeName_fr = @AttributeName_fr, 
-    Attributes_en = @Attributes_en, Attributes_fr = @Attributes_fr
+    Attributes_en = @Attributes_en, Attributes_fr = @Attributes_fr, IsMain = @IsMain
 WHERE Id = @Id";
 
             var parameters = new
@@ -114,7 +115,8 @@ WHERE Id = @Id";
                 entity.AttributeName_en,
                 entity.AttributeName_fr,
                 entity.Attributes_en,
-                entity.Attributes_fr
+                entity.Attributes_fr,
+                entity.IsMain
             };
 
             await dbConnection.ExecuteAsync(query, parameters);

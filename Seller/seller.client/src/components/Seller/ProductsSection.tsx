@@ -46,6 +46,7 @@ interface QuickProductAttribute {
     name_en: string;
     name_fr: string;
     values: BilingualValue[];
+    isMain?: boolean;
 }
 
 interface BilingualValue {
@@ -85,6 +86,7 @@ interface ApiItemVariantAttribute {
     attributeName_fr?: string;
     attributes_en: string;
     attributes_fr?: string;
+    isMain?: boolean;
 }
 
 interface ApiItemVariant {
@@ -681,6 +683,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
             name_en: string;
             name_fr: string;
             values: Array<{ en: string; fr: string }>;
+            isMain: boolean;
         }>();
 
         const activeVariants = item.variants.filter(v => !v.deleted);
@@ -697,7 +700,8 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                     attributesMap.set(key, {
                         name_en: attr.attributeName_en,
                         name_fr: attr.attributeName_fr || '',
-                        values: []
+                        values: [],
+                        isMain: !!attr.isMain
                     });
                 }
                 
@@ -725,7 +729,8 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
             .map(([, attr]) => ({
                 name_en: attr.name_en,
                 name_fr: attr.name_fr,
-                values: attr.values
+                values: attr.values,
+                isMain: attr.isMain
             }));
 
         const featuresMap = new Map<string, {
@@ -1176,14 +1181,18 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
             return;
         }
 
-        setNewItem(prev => ({
-            ...prev,
-            attributes: [...prev.attributes, {
-                name_en: newAttribute.name_en,
-                name_fr: newAttribute.name_fr,
-                values: newAttribute.values
-            }]
-        }));
+        setNewItem(prev => {
+            const isFirstAttribute = prev.attributes.length === 0;
+            return {
+                ...prev,
+                attributes: [...prev.attributes, {
+                    name_en: newAttribute.name_en,
+                    name_fr: newAttribute.name_fr,
+                    values: newAttribute.values,
+                    isMain: isFirstAttribute
+                }]
+            };
+        });
         setNewAttribute({ 
             name_en: '', 
             name_fr: '', 
@@ -1192,9 +1201,20 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     };
 
     const removeAttribute = (index: number) => {
+        setNewItem(prev => {
+            const removedAttr = prev.attributes[index];
+            const filtered = prev.attributes.filter((_, i) => i !== index);
+            if (removedAttr?.isMain && filtered.length > 0) {
+                filtered[0] = { ...filtered[0], isMain: true };
+            }
+            return { ...prev, attributes: filtered };
+        });
+    };
+
+    const setMainAttribute = (index: number) => {
         setNewItem(prev => ({
             ...prev,
-            attributes: prev.attributes.filter((_, i) => i !== index)
+            attributes: prev.attributes.map((attr, i) => ({ ...attr, isMain: i === index }))
         }));
     };
 
@@ -1418,7 +1438,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                     ItemVariantName_en: variant.attributes_en ? Object.entries(variant.attributes_en).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
                     ItemVariantName_fr: variant.attributes_fr ? Object.entries(variant.attributes_fr).map(([k, v]) => `${k}: ${v}`).join(', ') : null,
                     ItemVariantAttributes: variant.attributes_en ? Object.entries(variant.attributes_en).map(([attrNameEn, attrValueEn]) => {
-                        // Find the corresponding ItemAttribute to get the French attribute name
+                        // Find the corresponding ItemAttribute to get the French attribute name and isMain flag
                         const itemAttribute = newItem.attributes.find(attr => attr.name_en === attrNameEn);
                         const attrNameFr = itemAttribute?.name_fr || null;
                         const attrValueFr = attrNameFr && variant.attributes_fr ? variant.attributes_fr[attrNameFr] : null;
@@ -1426,7 +1446,8 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                             AttributeName_en: attrNameEn,
                             AttributeName_fr: attrNameFr,
                             Attributes_en: attrValueEn,
-                            Attributes_fr: attrValueFr
+                            Attributes_fr: attrValueFr,
+                            IsMain: itemAttribute?.isMain ?? false
                         };
                     }) : [],
                     Deleted: false
@@ -1754,7 +1775,16 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                             <div className="products-added-attributes">
                                 <h5>{t('products.attributes')}</h5>
                                 {newItem.attributes.map((attr, index) => (
-                                    <div key={index} className="products-attribute-item">
+                                    <div key={index} className={`products-attribute-item${attr.isMain ? ' products-attribute-item-main' : ''}`}>
+                                        <label className="products-main-attribute-label">
+                                            <input
+                                                type="radio"
+                                                name="mainProductAttribute"
+                                                checked={!!attr.isMain}
+                                                onChange={() => setMainAttribute(index)}
+                                            />
+                                            {t('variantAttr.main')}
+                                        </label>
                                         <span>
                                             <div><strong>EN:</strong> {attr.name_en}: {attr.values?.map(v => v?.en).filter(Boolean).join(', ')}</div>
                                             <div><strong>FR:</strong> {attr.name_fr}: {attr.values?.map(v => v?.fr).filter(Boolean).join(', ')}</div>

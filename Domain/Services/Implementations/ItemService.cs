@@ -182,10 +182,12 @@ VALUES (
                                 {
                                     try
                                     {
+                                        NormalizeIsMain(variantRequest.ItemVariantAttributes);
+
                                         var itemVariantAttributeQuery = @"
-INSERT INTO dbo.ItemVariantAttribute (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
+INSERT INTO dbo.ItemVariantAttribute (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr, IsMain)
 OUTPUT INSERTED.Id
-VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
+VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr, @IsMain)";
 
                                         foreach (var variantAttributeRequest in variantRequest.ItemVariantAttributes)
                                         {
@@ -195,7 +197,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                                                 variantAttributeRequest.AttributeName_en,
                                                 variantAttributeRequest.AttributeName_fr,
                                                 variantAttributeRequest.Attributes_en,
-                                                variantAttributeRequest.Attributes_fr
+                                                variantAttributeRequest.Attributes_fr,
+                                                variantAttributeRequest.IsMain
                                             }, transaction);
 
                                             itemVariantAttributes.Add(new ItemVariantAttribute
@@ -205,7 +208,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                                                 AttributeName_en = variantAttributeRequest.AttributeName_en,
                                                 AttributeName_fr = variantAttributeRequest.AttributeName_fr,
                                                 Attributes_en = variantAttributeRequest.Attributes_en,
-                                                Attributes_fr = variantAttributeRequest.Attributes_fr
+                                                Attributes_fr = variantAttributeRequest.Attributes_fr,
+                                                IsMain = variantAttributeRequest.IsMain
                                             });
                                         }
                                     }
@@ -614,10 +618,12 @@ VALUES (
                         var insertedAttributes = new List<ItemVariantAttribute>();
                         if (variant.ItemVariantAttributes != null && variant.ItemVariantAttributes.Count > 0)
                         {
+                            NormalizeIsMain(variant.ItemVariantAttributes);
+
                             var itemVariantAttributeQuery = @"
-INSERT INTO dbo.ItemVariantAttribute (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
+INSERT INTO dbo.ItemVariantAttribute (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr, IsMain)
 OUTPUT INSERTED.Id
-VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
+VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr, @IsMain)";
 
                             foreach (var attr in variant.ItemVariantAttributes)
                             {
@@ -627,7 +633,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                                     attr.AttributeName_en,
                                     attr.AttributeName_fr,
                                     attr.Attributes_en,
-                                    attr.Attributes_fr
+                                    attr.Attributes_fr,
+                                    attr.IsMain
                                 }, transaction);
 
                                 insertedAttributes.Add(new ItemVariantAttribute
@@ -637,7 +644,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                                     AttributeName_en = attr.AttributeName_en,
                                     AttributeName_fr = attr.AttributeName_fr,
                                     Attributes_en = attr.Attributes_en,
-                                    Attributes_fr = attr.Attributes_fr
+                                    Attributes_fr = attr.Attributes_fr,
+                                    IsMain = attr.IsMain
                                 });
                             }
                         }
@@ -1062,6 +1070,51 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
         }
 
         // Helper methods for mapping entities to DTOs
+
+        /// <summary>
+        /// Ensures exactly one attribute in the list is marked IsMain.
+        /// If more than one is marked, keeps only the first one.
+        /// If none is marked, marks the first attribute as main.
+        /// </summary>
+        private static void NormalizeIsMain(IList<CreateItemVariantAttributeRequest> attributes)
+        {
+            if (attributes == null || attributes.Count == 0) return;
+
+            if (!attributes.Any(a => a.IsMain))
+            {
+                attributes[0].IsMain = true;
+            }
+            else
+            {
+                foreach (var attr in attributes.Where(a => a.IsMain).Skip(1))
+                {
+                    attr.IsMain = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Ensures exactly one ItemVariantAttribute in the list is marked IsMain.
+        /// If more than one is marked, keeps only the first one.
+        /// If none is marked, marks the first attribute as main.
+        /// </summary>
+        private static void NormalizeIsMain(IList<ItemVariantAttribute> attributes)
+        {
+            if (attributes == null || attributes.Count == 0) return;
+
+            if (!attributes.Any(a => a.IsMain))
+            {
+                attributes[0].IsMain = true;
+            }
+            else
+            {
+                foreach (var attr in attributes.Where(a => a.IsMain).Skip(1))
+                {
+                    attr.IsMain = false;
+                }
+            }
+        }
+
         private static ItemVariantAttributeDto MapToItemVariantAttributeDto(ItemVariantAttribute attribute)
         {
             return new ItemVariantAttributeDto
@@ -1070,7 +1123,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 AttributeName_en = attribute.AttributeName_en,
                 AttributeName_fr = attribute.AttributeName_fr,
                 Attributes_en = attribute.Attributes_en,
-                Attributes_fr = attribute.Attributes_fr
+                Attributes_fr = attribute.Attributes_fr,
+                IsMain = attribute.IsMain
             };
         }
 

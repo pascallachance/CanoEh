@@ -362,6 +362,7 @@ BEGIN
         AttributeName_fr NVARCHAR(255) NULL,
         Attributes_en NVARCHAR(MAX) NOT NULL,
         Attributes_fr NVARCHAR(MAX) NULL,
+        IsMain BIT NOT NULL DEFAULT 0,
         CONSTRAINT FK_ItemVariantAttribute_ItemVariant FOREIGN KEY (ItemVariantID) REFERENCES dbo.ItemVariant(Id)
     );
     

@@ -11,5 +11,6 @@ namespace Domain.Models.Responses
         public string? AttributeName_fr { get; set; }
         public string Attributes_en { get; set; } = string.Empty;
         public string? Attributes_fr { get; set; }
+        public bool IsMain { get; set; }
     }
 }

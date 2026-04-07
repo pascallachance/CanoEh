@@ -153,7 +153,11 @@ function buildAttributeGroups(variants: ItemVariantDto[], language: string): Att
                 group.options.push({ valueKey, displayLabel, thumbnailUrl });
             } else {
                 const opt = group.options.find((o) => o.valueKey === valueKey)!;
+                const thumbnailUrl = variant.thumbnailUrl ? toAbsoluteUrl(variant.thumbnailUrl) : undefined;
                 opt.displayLabel = displayLabel; // update localized label
+                if (!opt.thumbnailUrl && thumbnailUrl) {
+                    opt.thumbnailUrl = thumbnailUrl;
+                }
             }
         }
     }
@@ -584,7 +588,8 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                                 {hasThumbnail && (
                                                                     <img
                                                                         src={option.thumbnailUrl}
-                                                                        alt={option.displayLabel}
+                                                                        alt=""
+                                                                        aria-hidden="true"
                                                                         className="product-attribute-btn-thumbnail"
                                                                     />
                                                                 )}

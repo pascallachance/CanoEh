@@ -56,7 +56,7 @@ GO
 
 PRINT '';
 PRINT '==============================================';
-PRINT 'Migration 014 completed successfully!';
+PRINT 'Migration 017 completed successfully!';
 PRINT '==============================================';
 PRINT 'Summary:';
 PRINT '  - Added IsMain column (BIT NOT NULL DEFAULT 0) to dbo.ItemVariantAttribute';

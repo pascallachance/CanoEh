@@ -10,6 +10,7 @@ export interface ItemAttribute {
     name_en: string;
     name_fr: string;
     values: BilingualValue[];
+    isMain?: boolean;
 }
 
 export interface AddProductStep2Data {
@@ -191,28 +192,33 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
         }
 
         if (editingVariantAttrIndex !== null) {
-            // Update existing attribute
+            // Update existing attribute, preserve isMain
             setFormData(prev => ({
                 ...prev,
                 variantAttributes: prev.variantAttributes.map((attr, i) =>
                     i === editingVariantAttrIndex ? {
                         name_en: newVariantAttribute.name_en,
                         name_fr: newVariantAttribute.name_fr,
-                        values: newVariantAttribute.values
+                        values: newVariantAttribute.values,
+                        isMain: attr.isMain
                     } : attr
                 )
             }));
             setEditingVariantAttrIndex(null);
         } else {
-            // Add new attribute
-            setFormData(prev => ({
-                ...prev,
-                variantAttributes: [...prev.variantAttributes, {
-                    name_en: newVariantAttribute.name_en,
-                    name_fr: newVariantAttribute.name_fr,
-                    values: newVariantAttribute.values
-                }]
-            }));
+            // Add new attribute; mark as main if it's the first one
+            setFormData(prev => {
+                const isFirstAttribute = prev.variantAttributes.length === 0;
+                return {
+                    ...prev,
+                    variantAttributes: [...prev.variantAttributes, {
+                        name_en: newVariantAttribute.name_en,
+                        name_fr: newVariantAttribute.name_fr,
+                        values: newVariantAttribute.values,
+                        isMain: isFirstAttribute
+                    }]
+                };
+            });
         }
         
         // Clear error when an attribute is added
@@ -239,10 +245,15 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
             setEditingVariantAttrIndex(editingVariantAttrIndex - 1);
         }
         
-        setFormData(prev => ({
-            ...prev,
-            variantAttributes: prev.variantAttributes.filter((_, i) => i !== index)
-        }));
+        setFormData(prev => {
+            const removedAttr = prev.variantAttributes[index];
+            const filtered = prev.variantAttributes.filter((_, i) => i !== index);
+            // If removed attr was the main one, promote the first remaining as main
+            if (removedAttr?.isMain && filtered.length > 0) {
+                filtered[0] = { ...filtered[0], isMain: true };
+            }
+            return { ...prev, variantAttributes: filtered };
+        });
     };
     
     const editVariantAttribute = (index: number) => {
@@ -264,6 +275,16 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
         });
         
         setEditingVariantAttrIndex(index);
+    };
+
+    const setMainVariantAttribute = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            variantAttributes: prev.variantAttributes.map((attr, i) => ({
+                ...attr,
+                isMain: i === index
+            }))
+        }));
     };
 
     // Variant Features handlers
@@ -538,7 +559,19 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                 <div className="added-attributes">
                                     <h5>{t('variantAttr.addedTitle')}</h5>
                                     {formData.variantAttributes.map((attr, index) => (
-                                        <div key={index} className="attribute-display">
+                                        <div key={index} className={`attribute-display${attr.isMain ? ' attribute-display-main' : ''}`}>
+                                            <div className="attribute-main-selector">
+                                                <label className="main-attribute-label">
+                                                    <input
+                                                        type="radio"
+                                                        name="mainVariantAttribute"
+                                                        checked={!!attr.isMain}
+                                                        onChange={() => setMainVariantAttribute(index)}
+                                                        aria-label={t('variantAttr.setMainAriaLabel')}
+                                                    />
+                                                    {t('variantAttr.main')}
+                                                </label>
+                                            </div>
                                             <div className="attribute-info">
                                                 <div className="attribute-lang-pair">
                                                     <strong>EN</strong> {attr.name_en}: {attr.values.map(v => v.en).join(',')}

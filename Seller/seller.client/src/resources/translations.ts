@@ -774,6 +774,14 @@ export const translations: TranslationResources = {
     en: 'You are currently editing another attribute. Switching will discard any unsaved changes to that attribute. Do you want to continue?',
     fr: 'Vous modifiez actuellement un autre attribut. Le changement supprimera toutes les modifications non enregistrées. Voulez-vous continuer ?'
   },
+  'variantAttr.main': {
+    en: 'Main',
+    fr: 'Principal'
+  },
+  'variantAttr.setMainAriaLabel': {
+    en: 'Set as main variant attribute',
+    fr: 'Définir comme attribut de variante principal'
+  },
 
   // Variant features section
   'variantFeature.title': {

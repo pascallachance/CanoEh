@@ -183,9 +183,9 @@ VALUES (
                                     try
                                     {
                                         var itemVariantAttributeQuery = @"
-INSERT INTO dbo.ItemVariantAttribute (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
+INSERT INTO dbo.ItemVariantAttribute (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr, IsMain)
 OUTPUT INSERTED.Id
-VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
+VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr, @IsMain)";
 
                                         foreach (var variantAttributeRequest in variantRequest.ItemVariantAttributes)
                                         {
@@ -195,7 +195,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                                                 variantAttributeRequest.AttributeName_en,
                                                 variantAttributeRequest.AttributeName_fr,
                                                 variantAttributeRequest.Attributes_en,
-                                                variantAttributeRequest.Attributes_fr
+                                                variantAttributeRequest.Attributes_fr,
+                                                variantAttributeRequest.IsMain
                                             }, transaction);
 
                                             itemVariantAttributes.Add(new ItemVariantAttribute
@@ -205,7 +206,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                                                 AttributeName_en = variantAttributeRequest.AttributeName_en,
                                                 AttributeName_fr = variantAttributeRequest.AttributeName_fr,
                                                 Attributes_en = variantAttributeRequest.Attributes_en,
-                                                Attributes_fr = variantAttributeRequest.Attributes_fr
+                                                Attributes_fr = variantAttributeRequest.Attributes_fr,
+                                                IsMain = variantAttributeRequest.IsMain
                                             });
                                         }
                                     }
@@ -615,9 +617,9 @@ VALUES (
                         if (variant.ItemVariantAttributes != null && variant.ItemVariantAttributes.Count > 0)
                         {
                             var itemVariantAttributeQuery = @"
-INSERT INTO dbo.ItemVariantAttribute (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr)
+INSERT INTO dbo.ItemVariantAttribute (ItemVariantID, AttributeName_en, AttributeName_fr, Attributes_en, Attributes_fr, IsMain)
 OUTPUT INSERTED.Id
-VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr)";
+VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @Attributes_fr, @IsMain)";
 
                             foreach (var attr in variant.ItemVariantAttributes)
                             {
@@ -627,7 +629,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                                     attr.AttributeName_en,
                                     attr.AttributeName_fr,
                                     attr.Attributes_en,
-                                    attr.Attributes_fr
+                                    attr.Attributes_fr,
+                                    attr.IsMain
                                 }, transaction);
 
                                 insertedAttributes.Add(new ItemVariantAttribute
@@ -637,7 +640,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                                     AttributeName_en = attr.AttributeName_en,
                                     AttributeName_fr = attr.AttributeName_fr,
                                     Attributes_en = attr.Attributes_en,
-                                    Attributes_fr = attr.Attributes_fr
+                                    Attributes_fr = attr.Attributes_fr,
+                                    IsMain = attr.IsMain
                                 });
                             }
                         }
@@ -1070,7 +1074,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 AttributeName_en = attribute.AttributeName_en,
                 AttributeName_fr = attribute.AttributeName_fr,
                 Attributes_en = attribute.Attributes_en,
-                Attributes_fr = attribute.Attributes_fr
+                Attributes_fr = attribute.Attributes_fr,
+                IsMain = attribute.IsMain
             };
         }
 

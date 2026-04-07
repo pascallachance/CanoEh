@@ -490,7 +490,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                         AttributeName_en: attrNameEn,
                         AttributeName_fr: attrNameFr,
                         Attributes_en: attrValueEn,
-                        Attributes_fr: attrValueFr
+                        Attributes_fr: attrValueFr,
+                        IsMain: foundAttribute?.isMain ?? false
                     };
                 }) : [],
                 ItemVariantFeatures: variant.features_en ? Object.entries(variant.features_en).map(([featureNameEn, featureValueEn]) => {

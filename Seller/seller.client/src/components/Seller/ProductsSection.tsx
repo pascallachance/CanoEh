@@ -85,6 +85,7 @@ interface ApiItemVariantAttribute {
     attributeName_fr?: string;
     attributes_en: string;
     attributes_fr?: string;
+    isMain?: boolean;
 }
 
 interface ApiItemVariant {
@@ -681,6 +682,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
             name_en: string;
             name_fr: string;
             values: Array<{ en: string; fr: string }>;
+            isMain: boolean;
         }>();
 
         const activeVariants = item.variants.filter(v => !v.deleted);
@@ -697,7 +699,8 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                     attributesMap.set(key, {
                         name_en: attr.attributeName_en,
                         name_fr: attr.attributeName_fr || '',
-                        values: []
+                        values: [],
+                        isMain: !!attr.isMain
                     });
                 }
                 
@@ -725,7 +728,8 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
             .map(([, attr]) => ({
                 name_en: attr.name_en,
                 name_fr: attr.name_fr,
-                values: attr.values
+                values: attr.values,
+                isMain: attr.isMain
             }));
 
         const featuresMap = new Map<string, {
@@ -1426,7 +1430,8 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                             AttributeName_en: attrNameEn,
                             AttributeName_fr: attrNameFr,
                             Attributes_en: attrValueEn,
-                            Attributes_fr: attrValueFr
+                            Attributes_fr: attrValueFr,
+                            IsMain: false
                         };
                     }) : [],
                     Deleted: false

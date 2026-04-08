@@ -90,6 +90,64 @@ namespace API.Tests
         }
 
         [Fact]
+        public void CreateItemRequest_ReturnFailure_WhenDescriptionEnExceeds3000Characters()
+        {
+            var request = new CreateItemRequest
+            {
+                SellerID = Guid.NewGuid(),
+                Name_en = "Name EN",
+                Name_fr = "Nom FR",
+                Description_en = new string('A', 3001),
+                Description_fr = "Desc FR",
+                CategoryNodeID = Guid.NewGuid()
+            };
+
+            var result = request.Validate();
+
+            Assert.True(result.IsFailure);
+            Assert.Equal("English description cannot exceed 3000 characters.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public void CreateItemRequest_ReturnFailure_WhenDescriptionFrExceeds3000Characters()
+        {
+            var request = new CreateItemRequest
+            {
+                SellerID = Guid.NewGuid(),
+                Name_en = "Name EN",
+                Name_fr = "Nom FR",
+                Description_en = "Desc EN",
+                Description_fr = new string('A', 3001),
+                CategoryNodeID = Guid.NewGuid()
+            };
+
+            var result = request.Validate();
+
+            Assert.True(result.IsFailure);
+            Assert.Equal("French description cannot exceed 3000 characters.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public void CreateItemRequest_ReturnSuccess_WhenDescriptionsAreExactly3000Characters()
+        {
+            var request = new CreateItemRequest
+            {
+                SellerID = Guid.NewGuid(),
+                Name_en = "Name EN",
+                Name_fr = "Nom FR",
+                Description_en = new string('A', 3000),
+                Description_fr = new string('B', 3000),
+                CategoryNodeID = Guid.NewGuid()
+            };
+
+            var result = request.Validate();
+
+            Assert.True(result.IsSuccess);
+        }
+
+        [Fact]
         public void CreateItemRequest_ReturnFailure_WhenVariantSkuExceeds100Characters()
         {
             var request = new CreateItemRequest
@@ -239,6 +297,67 @@ namespace API.Tests
                 Name_fr = "Nom FR",
                 Description_en = "Desc EN",
                 Description_fr = "Desc FR",
+                CategoryNodeID = Guid.NewGuid()
+            };
+
+            var result = request.Validate();
+
+            Assert.True(result.IsSuccess);
+        }
+
+        [Fact]
+        public void UpdateItemRequest_ReturnFailure_WhenDescriptionEnExceeds3000Characters()
+        {
+            var request = new UpdateItemRequest
+            {
+                Id = Guid.NewGuid(),
+                SellerID = Guid.NewGuid(),
+                Name_en = "Name EN",
+                Name_fr = "Nom FR",
+                Description_en = new string('A', 3001),
+                Description_fr = "Desc FR",
+                CategoryNodeID = Guid.NewGuid()
+            };
+
+            var result = request.Validate();
+
+            Assert.True(result.IsFailure);
+            Assert.Equal("English description cannot exceed 3000 characters.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public void UpdateItemRequest_ReturnFailure_WhenDescriptionFrExceeds3000Characters()
+        {
+            var request = new UpdateItemRequest
+            {
+                Id = Guid.NewGuid(),
+                SellerID = Guid.NewGuid(),
+                Name_en = "Name EN",
+                Name_fr = "Nom FR",
+                Description_en = "Desc EN",
+                Description_fr = new string('A', 3001),
+                CategoryNodeID = Guid.NewGuid()
+            };
+
+            var result = request.Validate();
+
+            Assert.True(result.IsFailure);
+            Assert.Equal("French description cannot exceed 3000 characters.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public void UpdateItemRequest_ReturnSuccess_WhenDescriptionsAreExactly3000Characters()
+        {
+            var request = new UpdateItemRequest
+            {
+                Id = Guid.NewGuid(),
+                SellerID = Guid.NewGuid(),
+                Name_en = "Name EN",
+                Name_fr = "Nom FR",
+                Description_en = new string('A', 3000),
+                Description_fr = new string('B', 3000),
                 CategoryNodeID = Guid.NewGuid()
             };
 

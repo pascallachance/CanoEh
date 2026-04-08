@@ -41,10 +41,20 @@ namespace Domain.Models.Requests
             {
                 return Result.Failure("English description is required.", StatusCodes.Status400BadRequest);
             }
-            
+
+            if (Description_en.Length > 3000)
+            {
+                return Result.Failure("English description cannot exceed 3000 characters.", StatusCodes.Status400BadRequest);
+            }
+
             if (string.IsNullOrWhiteSpace(Description_fr))
             {
                 return Result.Failure("French description is required.", StatusCodes.Status400BadRequest);
+            }
+
+            if (Description_fr.Length > 3000)
+            {
+                return Result.Failure("French description cannot exceed 3000 characters.", StatusCodes.Status400BadRequest);
             }
             
             if (SellerID == Guid.Empty)

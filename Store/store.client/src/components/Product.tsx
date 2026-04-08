@@ -764,7 +764,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                     `${selectedVariant.stockQuantity} in stock`,
                                                     `${selectedVariant.stockQuantity} en stock`
                                                 )
-                                                : getText('In stock', 'En stock')
+                                                : getText('in stock', 'en stock')
                                             )
                                             : getText('Out of Stock', 'Rupture de stock')}
                                     </p>

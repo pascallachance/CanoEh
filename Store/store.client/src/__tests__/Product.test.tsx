@@ -226,7 +226,7 @@ describe('Product page – successful fetch & initial state', () => {
         expect(stockEl?.textContent).toMatch(/5 in stock/i);
     });
 
-    it('shows "In stock" without count when stockQuantity > 5', async () => {
+    it('shows "in stock" without count when stockQuantity > 5', async () => {
         setupFetchWithCategories(makeProduct({
             variants: [makeVariant({ stockQuantity: 6 })],
         }));

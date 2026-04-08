@@ -168,11 +168,18 @@ function buildAttributeGroups(variants: ItemVariantDto[], language: string): Att
 }
 
 /**
+ * Returns true when the attribute matches the given language-invariant name/value keys.
+ */
+function attributeMatchesKeys(attribute: ItemVariantAttributeDto, nameKey: string, valueKey: string): boolean {
+    return attribute.attributeName_en === nameKey && attribute.attributes_en === valueKey;
+}
+
+/**
  * Returns true if the variant has an attribute matching the given nameKey and valueKey.
  */
 function variantHasAttribute(variant: ItemVariantDto, nameKey: string, valueKey: string): boolean {
     return variant.itemVariantAttributes.some(
-        (a) => a.attributeName_en === nameKey && a.attributes_en === valueKey
+        (a) => attributeMatchesKeys(a, nameKey, valueKey)
     );
 }
 
@@ -185,7 +192,8 @@ function variantHasAttribute(variant: ItemVariantDto, nameKey: string, valueKey:
  *   that combines the currently selected main attribute value AND this secondary attribute
  *   value has stockQuantity > 0.
  *
- * Returns a Set of "nameKey:valueKey" strings for options that should be greyed out.
+ * Returns a Set of JSON-serialized [nameKey, valueKey] pairs for options that should be greyed out.
+ * JSON.stringify is used to avoid key collisions when either value contains the delimiter character.
  */
 function computeOutOfStockOptions(
     variants: ItemVariantDto[],
@@ -198,7 +206,7 @@ function computeOutOfStockOptions(
 
     for (const group of attributeGroups) {
         for (const option of group.options) {
-            const key = `${group.nameKey}:${option.valueKey}`;
+            const key = JSON.stringify([group.nameKey, option.valueKey]);
             if (group.isMain) {
                 // Main option: grey out if no variant with this main value has stock > 0
                 const hasStock = activeVariants.some(
@@ -244,7 +252,7 @@ function findMatchingVariant(
         if (variant.deleted) continue;
         const matches = selectedEntries.every(([nameKey, valueKey]) =>
             variant.itemVariantAttributes.some(
-                (a) => a.attributeName_en === nameKey && a.attributes_en === valueKey
+                (a) => attributeMatchesKeys(a, nameKey, valueKey)
             )
         );
         if (matches) return variant;
@@ -646,7 +654,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                     {group.options.map((option) => {
                                                         const isSelected = selectedAttributes[group.nameKey] === option.valueKey;
                                                         const hasThumbnail = group.isMain && !!option.thumbnailUrl;
-                                                        const isOutOfStock = outOfStockOptions.has(`${group.nameKey}:${option.valueKey}`);
+                                                        const isOutOfStock = outOfStockOptions.has(JSON.stringify([group.nameKey, option.valueKey]));
                                                         return (
                                                             <button
                                                                 key={option.valueKey}

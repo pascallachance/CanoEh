@@ -301,6 +301,37 @@
     font-weight: 500;
 }
 
+.product-stock-low {
+    font-size: 14px;
+    color: #b12704;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Per-option price (displayed under the last attribute group's buttons) */
+.product-option-with-price {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.product-option-price {
+    font-size: 13px;
+    font-weight: bold;
+    color: #0f1111;
+    text-align: center;
+}
+
+.product-option-price.discounted {
+    color: #b12704;
+}
+
+.product-option-price.unavailable {
+    color: #aaa;
+    font-weight: normal;
+}
+
 /* Description */
 .product-description {
     border-top: 1px solid #e8e8e8;

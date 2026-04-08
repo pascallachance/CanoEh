@@ -487,6 +487,21 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         [product, attributeGroups, selectedAttributes]
     );
 
+    // Compute the price map for the last attribute group's options.
+    // Each entry maps an option valueKey to the matching variant given the current
+    // selections for all other groups combined with that option.
+    const lastGroupPriceMap = useMemo(() => {
+        if (attributeGroups.length === 0 || !product) return new Map<string, ItemVariantDto | null>();
+        const lastGrp = attributeGroups[attributeGroups.length - 1];
+        const map = new Map<string, ItemVariantDto | null>();
+        for (const option of lastGrp.options) {
+            const testAttrs = { ...selectedAttributes, [lastGrp.nameKey]: option.valueKey };
+            const variant = findMatchingVariant(product.variants, testAttrs);
+            map.set(option.valueKey, variant);
+        }
+        return map;
+    }, [attributeGroups, product, selectedAttributes]);
+
     const mainImage = variantImages[mainImageIndex] ?? null;
 
     const hasProductAttributes = !!(selectedVariant && (selectedVariant.sku || (selectedVariant.productIdentifierType && selectedVariant.productIdentifierValue)));
@@ -602,39 +617,41 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                     </div>
                                 )}
 
-                                {/* Price */}
-                                {selectedVariant ? (
-                                    <div className="product-price-section">
-                                        {offerActive && discountedPrice !== null ? (
-                                            <>
-                                                <span className="product-original-price">
+                                {/* Price – shown here only when there are no variant attribute groups */}
+                                {attributeGroups.length === 0 && (
+                                    selectedVariant ? (
+                                        <div className="product-price-section">
+                                            {offerActive && discountedPrice !== null ? (
+                                                <>
+                                                    <span className="product-original-price">
+                                                        ${selectedVariant.price.toFixed(2)}
+                                                    </span>
+                                                    <span className="product-discounted-price">
+                                                        ${discountedPrice.toFixed(2)}
+                                                    </span>
+                                                    <span className="product-offer-badge">
+                                                        {getText(
+                                                            `${selectedVariant.offer}% OFF`,
+                                                            `Rabais ${selectedVariant.offer}%`
+                                                        )}
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <span className="product-price">
                                                     ${selectedVariant.price.toFixed(2)}
                                                 </span>
-                                                <span className="product-discounted-price">
-                                                    ${discountedPrice.toFixed(2)}
-                                                </span>
-                                                <span className="product-offer-badge">
-                                                    {getText(
-                                                        `${selectedVariant.offer}% OFF`,
-                                                        `Rabais ${selectedVariant.offer}%`
-                                                    )}
-                                                </span>
-                                            </>
-                                        ) : (
-                                            <span className="product-price">
-                                                ${selectedVariant.price.toFixed(2)}
-                                            </span>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className="product-price-section">
-                                        <span className="product-unavailable">
-                                            {getText(
-                                                'This combination is not available.',
-                                                'Cette combinaison n\'est pas disponible.'
                                             )}
-                                        </span>
-                                    </div>
+                                        </div>
+                                    ) : (
+                                        <div className="product-price-section">
+                                            <span className="product-unavailable">
+                                                {getText(
+                                                    'This combination is not available.',
+                                                    'Cette combinaison n\'est pas disponible.'
+                                                )}
+                                            </span>
+                                        </div>
+                                    )
                                 )}
 
                                 {/* Variant Attribute Selectors */}
@@ -643,54 +660,113 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                         <h2 className="product-variants-title">
                                             {getText('Options', 'Options')}
                                         </h2>
-                                        {attributeGroups.map((group) => (
-                                            <div key={group.nameKey} className="product-attribute-group">
-                                                <p className="product-attribute-name">{group.displayName}</p>
-                                                <div
-                                                    className="product-attribute-options"
-                                                    role="group"
-                                                    aria-label={group.displayName}
-                                                >
-                                                    {group.options.map((option) => {
-                                                        const isSelected = selectedAttributes[group.nameKey] === option.valueKey;
-                                                        const hasThumbnail = group.isMain && !!option.thumbnailUrl;
-                                                        const isOutOfStock = outOfStockOptions.has(JSON.stringify([group.nameKey, option.valueKey]));
-                                                        return (
-                                                            <button
-                                                                key={option.valueKey}
-                                                                type="button"
-                                                                className={`product-attribute-btn${isSelected ? ' selected' : ''}${hasThumbnail ? ' with-thumbnail' : ''}${isOutOfStock ? ' out-of-stock' : ''}`}
-                                                                onClick={isOutOfStock ? undefined : () => handleAttributeSelect(group.nameKey, option.valueKey)}
-                                                                aria-pressed={isSelected}
-                                                                disabled={isOutOfStock}
-                                                            >
-                                                                {hasThumbnail && (
-                                                                    <img
-                                                                        src={option.thumbnailUrl}
-                                                                        alt=""
-                                                                        aria-hidden="true"
-                                                                        className="product-attribute-btn-thumbnail"
-                                                                    />
-                                                                )}
-                                                                <span>{option.displayLabel}</span>
-                                                            </button>
-                                                        );
-                                                    })}
+                                        {attributeGroups.map((group, groupIndex) => {
+                                            const isLastGroup = groupIndex === attributeGroups.length - 1;
+                                            return (
+                                                <div key={group.nameKey} className="product-attribute-group">
+                                                    <p className="product-attribute-name">{group.displayName}</p>
+                                                    <div
+                                                        className="product-attribute-options"
+                                                        role="group"
+                                                        aria-label={group.displayName}
+                                                    >
+                                                        {group.options.map((option) => {
+                                                            const isSelected = selectedAttributes[group.nameKey] === option.valueKey;
+                                                            const hasThumbnail = group.isMain && !!option.thumbnailUrl;
+                                                            const isOutOfStock = outOfStockOptions.has(JSON.stringify([group.nameKey, option.valueKey]));
+                                                            const btn = (
+                                                                <button
+                                                                    key={option.valueKey}
+                                                                    type="button"
+                                                                    className={`product-attribute-btn${isSelected ? ' selected' : ''}${hasThumbnail ? ' with-thumbnail' : ''}${isOutOfStock ? ' out-of-stock' : ''}`}
+                                                                    onClick={isOutOfStock ? undefined : () => handleAttributeSelect(group.nameKey, option.valueKey)}
+                                                                    aria-pressed={isSelected}
+                                                                    disabled={isOutOfStock}
+                                                                >
+                                                                    {hasThumbnail && (
+                                                                        <img
+                                                                            src={option.thumbnailUrl}
+                                                                            alt=""
+                                                                            aria-hidden="true"
+                                                                            className="product-attribute-btn-thumbnail"
+                                                                        />
+                                                                    )}
+                                                                    <span>{option.displayLabel}</span>
+                                                                </button>
+                                                            );
+                                                            if (!isLastGroup) {
+                                                                return btn;
+                                                            }
+                                                            const optVariant = lastGroupPriceMap.get(option.valueKey);
+                                                            const optOfferActive = optVariant ? isOfferActive(optVariant) : false;
+                                                            const optEffectivePrice = optVariant
+                                                                ? (optOfferActive
+                                                                    ? optVariant.price * (1 - (optVariant.offer ?? 0) / 100)
+                                                                    : optVariant.price)
+                                                                : null;
+                                                            const formattedOptEffectivePrice = optEffectivePrice !== null
+                                                                ? `$${optEffectivePrice.toFixed(2)}`
+                                                                : '—';
+                                                            const optionPriceTestId = `product-option-price-${group.nameKey}-${option.valueKey}`;
+                                                            const optionPriceAriaLabel = optEffectivePrice !== null
+                                                                ? `${option.displayLabel} price ${formattedOptEffectivePrice}${optOfferActive ? ' discounted' : ''}`
+                                                                : `${option.displayLabel} price unavailable`;
+                                                            return (
+                                                                <div key={option.valueKey} className="product-option-with-price">
+                                                                    {btn}
+                                                                    {optEffectivePrice !== null ? (
+                                                                        <span
+                                                                            className={`product-option-price${optOfferActive ? ' discounted' : ''}`}
+                                                                            data-testid={optionPriceTestId}
+                                                                            data-option-value={option.valueKey}
+                                                                            aria-label={optionPriceAriaLabel}
+                                                                        >
+                                                                            {formattedOptEffectivePrice}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span
+                                                                            className="product-option-price unavailable"
+                                                                            data-testid={optionPriceTestId}
+                                                                            data-option-value={option.valueKey}
+                                                                            aria-label={optionPriceAriaLabel}
+                                                                        >
+                                                                            —
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
                                                 </div>
+                                            );
+                                        })}
+
+                                        {/* Unavailable combination message */}
+                                        {!selectedVariant && (
+                                            <div className="product-price-section">
+                                                <span className="product-unavailable">
+                                                    {getText(
+                                                        'This combination is not available.',
+                                                        'Cette combinaison n\'est pas disponible.'
+                                                    )}
+                                                </span>
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
                                 )}
 
                                 {/* Stock info */}
                                 {selectedVariant && (
-                                    <p className="product-stock">
+                                    <p className={selectedVariant.stockQuantity > 5 ? 'product-stock' : 'product-stock-low'}>
                                         {selectedVariant.stockQuantity > 0
-                                            ? getText(
-                                                `${selectedVariant.stockQuantity} in stock`,
-                                                `${selectedVariant.stockQuantity} en stock`
+                                            ? (selectedVariant.stockQuantity <= 5
+                                                ? getText(
+                                                    `${selectedVariant.stockQuantity} in stock`,
+                                                    `${selectedVariant.stockQuantity} en stock`
+                                                )
+                                                : getText('in stock', 'en stock')
                                             )
-                                            : getText('Out of stock', 'Rupture de stock')}
+                                            : getText('Out of Stock', 'Rupture de stock')}
                                     </p>
                                 )}
 

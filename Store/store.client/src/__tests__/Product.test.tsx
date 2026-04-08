@@ -204,30 +204,48 @@ describe('Product page – successful fetch & initial state', () => {
     });
 
     it('displays the first variant price', async () => {
-        setupFetchSuccess(makeProduct({
+        setupFetchWithCategories(makeProduct({
             variants: [makeVariant({ price: 79.99 })],
         }));
         renderProduct();
         await waitForProductLoaded();
-        expect(screen.getByText('$79.99')).toBeInTheDocument();
+        // No attribute groups → standalone .product-price section
+        const priceEl = document.querySelector('.product-price');
+        expect(priceEl).toBeInTheDocument();
+        expect(priceEl?.textContent).toContain('79.99');
     });
 
-    it('shows stock quantity when variant has stock', async () => {
-        setupFetchSuccess(makeProduct({
+    it('shows stock quantity when variant has stock (≤5)', async () => {
+        setupFetchWithCategories(makeProduct({
             variants: [makeVariant({ stockQuantity: 5 })],
         }));
         renderProduct();
         await waitForProductLoaded();
-        expect(screen.getByText(/5 in stock/i)).toBeInTheDocument();
+        const stockEl = document.querySelector('.product-stock-low');
+        expect(stockEl).toBeInTheDocument();
+        expect(stockEl?.textContent).toMatch(/5 in stock/i);
+    });
+
+    it('shows "in stock" without count when stockQuantity > 5', async () => {
+        setupFetchWithCategories(makeProduct({
+            variants: [makeVariant({ stockQuantity: 6 })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+        const stockEl = document.querySelector('.product-stock');
+        expect(stockEl).toBeInTheDocument();
+        expect(stockEl?.textContent).toMatch(/^in stock$/i);
     });
 
     it('shows out of stock message when stockQuantity is 0', async () => {
-        setupFetchSuccess(makeProduct({
+        setupFetchWithCategories(makeProduct({
             variants: [makeVariant({ stockQuantity: 0 })],
         }));
         renderProduct();
         await waitForProductLoaded();
-        expect(screen.getByText(/out of stock/i)).toBeInTheDocument();
+        const stockEl = document.querySelector('.product-stock-low');
+        expect(stockEl).toBeInTheDocument();
+        expect(stockEl?.textContent).toMatch(/out of stock/i);
     });
 
     it('renders product description when present', async () => {
@@ -327,8 +345,7 @@ describe('Product page – variant attribute selection', () => {
         expect(screen.getByRole('button', { name: 'White' })).toBeInTheDocument();
     });
 
-    it('selecting a variant attribute updates the displayed price', async () => {
-        const user = userEvent.setup();
+    it('shows per-option prices under each last-group option button', async () => {
         const productWithVariants = makeProduct({
             variants: [
                 makeVariant({
@@ -347,20 +364,15 @@ describe('Product page – variant attribute selection', () => {
                 }),
             ],
         });
-        setupFetchSuccess(productWithVariants);
+        setupFetchWithCategories(productWithVariants);
         renderProduct();
         await waitForProductLoaded();
 
-        // Initially shows Black variant ($50)
-        expect(screen.getByText('$50.00')).toBeInTheDocument();
-
-        // Click White
-        await user.click(screen.getByRole('button', { name: 'White' }));
-
-        // Price should update to $100
-        await waitFor(() => {
-            expect(screen.getByText('$100.00')).toBeInTheDocument();
-        });
+        // Both prices are visible simultaneously under each option button
+        const blackPrice = document.querySelector('[data-testid="product-option-price-Color-Black"]');
+        const whitePrice = document.querySelector('[data-testid="product-option-price-Color-White"]');
+        expect(blackPrice?.textContent).toContain('50.00');
+        expect(whitePrice?.textContent).toContain('100.00');
     });
 
     it('selecting a variant attribute updates the main image', async () => {
@@ -509,7 +521,9 @@ describe('Product page – variant attribute selection', () => {
 
         // Select the White variant in English
         await user.click(screen.getByRole('button', { name: 'White' }));
-        await waitFor(() => expect(screen.getByText('$35.00')).toBeInTheDocument());
+        await waitFor(() => {
+            expect(document.querySelector('[data-testid="product-option-price-Color-White"]')?.textContent).toContain('35.00');
+        });
 
         // Switch to French
         const langSelect = screen.getByRole('combobox', { name: /language|langue/i });
@@ -518,7 +532,8 @@ describe('Product page – variant attribute selection', () => {
         // The White variant should still be selected (shown as "Blanc") and price unchanged
         await waitFor(() => {
             expect(screen.getByRole('button', { name: 'Blanc' })).toHaveAttribute('aria-pressed', 'true');
-            expect(screen.getByText('$35.00')).toBeInTheDocument();
+            // After language switch the group key is still 'Color' and option key 'White' (language-invariant)
+            expect(document.querySelector('[data-testid="product-option-price-Color-White"]')?.textContent).toContain('35.00');
         });
     });
 });
@@ -1069,5 +1084,196 @@ describe('Product page – out-of-stock variant options', () => {
             expect(screen.getByRole('button', { name: 'Small' })).toBeDisabled();
             expect(screen.getByRole('button', { name: 'Large' })).not.toBeDisabled();
         });
+    });
+});
+
+describe('Product page – per-option prices', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.stubEnv('VITE_API_STORE_BASE_URL', API_BASE_URL);
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('shows standalone price section for a product with no attribute groups', async () => {
+        setupFetchWithCategories(makeProduct({
+            variants: [makeVariant({ price: 42 })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        expect(document.querySelector('.product-price-section')).toBeInTheDocument();
+        const priceEl = document.querySelector('.product-price');
+        expect(priceEl).toBeInTheDocument();
+        expect(priceEl?.textContent).toContain('42.00');
+        // No per-option price spans
+        expect(document.querySelector('[data-testid^="product-option-price-"]')).toBeNull();
+    });
+
+    it('shows price under each last-group option and hides standalone price section', async () => {
+        setupFetchWithCategories(makeProduct({
+            variants: [
+                makeVariant({ id: 'v1', price: 30, itemVariantAttributes: [{ id: 'a1', attributeName_en: 'Color', attributes_en: 'Red' }] }),
+                makeVariant({ id: 'v2', price: 45, itemVariantAttributes: [{ id: 'a2', attributeName_en: 'Color', attributes_en: 'Blue' }] }),
+            ],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        // Standalone section is hidden when attribute groups exist
+        expect(document.querySelector('.product-price-section')).toBeNull();
+
+        // Price under each option via data-testid
+        const redPrice = document.querySelector('[data-testid="product-option-price-Color-Red"]');
+        const bluePrice = document.querySelector('[data-testid="product-option-price-Color-Blue"]');
+        expect(redPrice?.textContent).toContain('30.00');
+        expect(bluePrice?.textContent).toContain('45.00');
+    });
+
+    it('updates last-group prices when a non-last group selection changes', async () => {
+        const user = userEvent.setup();
+        // Color (main/first group) × Size (last group)
+        // Black+Large=$80, Black+Small=$50, White+Large=$100, White+Small=$70
+        setupFetchWithCategories(makeProduct({
+            variants: [
+                makeVariant({ id: 'v1', price: 80, itemVariantAttributes: [
+                    { id: 'a1', attributeName_en: 'Color', attributes_en: 'Black', isMain: true },
+                    { id: 'a2', attributeName_en: 'Size', attributes_en: 'Large' },
+                ] }),
+                makeVariant({ id: 'v2', price: 50, itemVariantAttributes: [
+                    { id: 'a3', attributeName_en: 'Color', attributes_en: 'Black', isMain: true },
+                    { id: 'a4', attributeName_en: 'Size', attributes_en: 'Small' },
+                ] }),
+                makeVariant({ id: 'v3', price: 100, itemVariantAttributes: [
+                    { id: 'a5', attributeName_en: 'Color', attributes_en: 'White', isMain: true },
+                    { id: 'a6', attributeName_en: 'Size', attributes_en: 'Large' },
+                ] }),
+                makeVariant({ id: 'v4', price: 70, itemVariantAttributes: [
+                    { id: 'a7', attributeName_en: 'Color', attributes_en: 'White', isMain: true },
+                    { id: 'a8', attributeName_en: 'Size', attributes_en: 'Small' },
+                ] }),
+            ],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        // Black is initially selected; Size prices should reflect Black variants
+        expect(document.querySelector('[data-testid="product-option-price-Size-Large"]')?.textContent).toContain('80.00');
+        expect(document.querySelector('[data-testid="product-option-price-Size-Small"]')?.textContent).toContain('50.00');
+
+        // Switch to White
+        await user.click(screen.getByRole('button', { name: 'White' }));
+
+        await waitFor(() => {
+            expect(document.querySelector('[data-testid="product-option-price-Size-Large"]')?.textContent).toContain('100.00');
+            expect(document.querySelector('[data-testid="product-option-price-Size-Small"]')?.textContent).toContain('70.00');
+        });
+    });
+
+    it('shows "—" for a last-group option with no matching variant combination', async () => {
+        // Only Black+Large and White+Small exist; no Black+Small or White+Large
+        setupFetchWithCategories(makeProduct({
+            variants: [
+                makeVariant({ id: 'v1', price: 80, itemVariantAttributes: [
+                    { id: 'a1', attributeName_en: 'Color', attributes_en: 'Black', isMain: true },
+                    { id: 'a2', attributeName_en: 'Size', attributes_en: 'Large' },
+                ] }),
+                makeVariant({ id: 'v2', price: 70, itemVariantAttributes: [
+                    { id: 'a3', attributeName_en: 'Color', attributes_en: 'White', isMain: true },
+                    { id: 'a4', attributeName_en: 'Size', attributes_en: 'Small' },
+                ] }),
+            ],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        // Black selected; Black+Large exists, Black+Small does not
+        const largePriceEl = document.querySelector('[data-testid="product-option-price-Size-Large"]');
+        const smallPriceEl = document.querySelector('[data-testid="product-option-price-Size-Small"]');
+        expect(largePriceEl?.textContent).toContain('80.00');
+        expect(smallPriceEl?.textContent).toBe('—');
+        expect(smallPriceEl?.className).toContain('unavailable');
+    });
+
+    it('shows discounted price under last-group option when offer is active', async () => {
+        setupFetchWithCategories(makeProduct({
+            variants: [
+                makeVariant({ id: 'v1', price: 100, offer: 20,
+                    offerStart: '2024-01-01T00:00:00Z', offerEnd: '2099-12-31T23:59:59Z',
+                    itemVariantAttributes: [{ id: 'a1', attributeName_en: 'Color', attributes_en: 'Red' }] }),
+                makeVariant({ id: 'v2', price: 50,
+                    itemVariantAttributes: [{ id: 'a2', attributeName_en: 'Color', attributes_en: 'Blue' }] }),
+            ],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const redPrice = document.querySelector('[data-testid="product-option-price-Color-Red"]');
+        expect(redPrice?.textContent).toContain('80.00'); // 20% off $100
+        expect(redPrice?.className).toContain('discounted');
+
+        const bluePrice = document.querySelector('[data-testid="product-option-price-Color-Blue"]');
+        expect(bluePrice?.textContent).toContain('50.00');
+        expect(bluePrice?.className).not.toContain('discounted');
+    });
+
+    it('aria-label on price span describes the option and price', async () => {
+        setupFetchWithCategories(makeProduct({
+            variants: [
+                makeVariant({ id: 'v1', price: 30, itemVariantAttributes: [{ id: 'a1', attributeName_en: 'Color', attributes_en: 'Red' }] }),
+            ],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const priceSpan = document.querySelector('[data-testid="product-option-price-Color-Red"]');
+        expect(priceSpan).toBeInTheDocument();
+        expect(priceSpan?.getAttribute('aria-label')).toMatch(/Red price \$30\.00/);
+    });
+});
+
+describe('Product page – stock display thresholds', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.stubEnv('VITE_API_STORE_BASE_URL', API_BASE_URL);
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('uses product-stock (green) class when stockQuantity > 5', async () => {
+        setupFetchWithCategories(makeProduct({ variants: [makeVariant({ stockQuantity: 6 })] }));
+        renderProduct();
+        await waitForProductLoaded();
+        expect(document.querySelector('.product-stock')).toBeInTheDocument();
+        expect(document.querySelector('.product-stock-low')).toBeNull();
+        expect(document.querySelector('.product-stock')?.textContent).toMatch(/^in stock$/i);
+    });
+
+    it('uses product-stock-low (red) class and shows count when 0 < stockQuantity <= 5', async () => {
+        setupFetchWithCategories(makeProduct({ variants: [makeVariant({ stockQuantity: 3 })] }));
+        renderProduct();
+        await waitForProductLoaded();
+        expect(document.querySelector('.product-stock-low')).toBeInTheDocument();
+        expect(document.querySelector('.product-stock')).toBeNull();
+        expect(document.querySelector('.product-stock-low')?.textContent).toMatch(/3 in stock/i);
+    });
+
+    it('shows exactly boundary count (5) with product-stock-low class', async () => {
+        setupFetchWithCategories(makeProduct({ variants: [makeVariant({ stockQuantity: 5 })] }));
+        renderProduct();
+        await waitForProductLoaded();
+        expect(document.querySelector('.product-stock-low')?.textContent).toMatch(/5 in stock/i);
+    });
+
+    it('uses product-stock-low class for out-of-stock variants', async () => {
+        setupFetchWithCategories(makeProduct({ variants: [makeVariant({ stockQuantity: 0 })] }));
+        renderProduct();
+        await waitForProductLoaded();
+        expect(document.querySelector('.product-stock-low')).toBeInTheDocument();
+        expect(document.querySelector('.product-stock-low')?.textContent).toMatch(/out of stock/i);
     });
 });

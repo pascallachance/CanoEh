@@ -585,6 +585,68 @@ namespace API.Tests
             Assert.True(result.IsSuccess);
         }
 
+        [Fact]
+        public void UpdateItemRequest_ReturnFailure_WhenVariantAttributesExceedMaximum()
+        {
+            var attrs = Enumerable.Range(0, ItemValidationLimits.MaxVariantAttributes + 1)
+                .Select(_ => new ItemVariantAttribute
+                {
+                    AttributeName_en = "Name EN",
+                    Attributes_en = "Value"
+                })
+                .ToList();
+            var request = new UpdateItemRequest
+            {
+                Id = Guid.NewGuid(),
+                SellerID = Guid.NewGuid(),
+                Name_en = "Name EN",
+                Name_fr = "Nom FR",
+                Description_en = "Desc EN",
+                Description_fr = "Desc FR",
+                CategoryNodeID = Guid.NewGuid(),
+                Variants = new List<ItemVariant>
+                {
+                    new ItemVariant { Sku = "SKU-001", ItemVariantAttributes = attrs }
+                }
+            };
+
+            var result = request.Validate();
+
+            Assert.True(result.IsFailure);
+            Assert.Equal($"A variant cannot have more than {ItemValidationLimits.MaxVariantAttributes} attributes.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public void UpdateItemRequest_ReturnSuccess_WhenVariantAttributesAtMaximum()
+        {
+            var attrs = Enumerable.Range(0, ItemValidationLimits.MaxVariantAttributes)
+                .Select(_ => new ItemVariantAttribute
+                {
+                    AttributeName_en = "Name EN",
+                    Attributes_en = "Value"
+                })
+                .ToList();
+            var request = new UpdateItemRequest
+            {
+                Id = Guid.NewGuid(),
+                SellerID = Guid.NewGuid(),
+                Name_en = "Name EN",
+                Name_fr = "Nom FR",
+                Description_en = "Desc EN",
+                Description_fr = "Desc FR",
+                CategoryNodeID = Guid.NewGuid(),
+                Variants = new List<ItemVariant>
+                {
+                    new ItemVariant { Sku = "SKU-001", ItemVariantAttributes = attrs }
+                }
+            };
+
+            var result = request.Validate();
+
+            Assert.True(result.IsSuccess);
+        }
+
         // ---------------------------------------------------------------
         // CreateItemVariantRequest
         // ---------------------------------------------------------------
@@ -772,6 +834,48 @@ namespace API.Tests
             var result = request.Validate();
             Assert.True(result.IsFailure);
             Assert.Equal("Variant name (French) cannot exceed 255 characters.", result.Error);
+        }
+
+        [Fact]
+        public void CreateItemVariantRequest_ReturnFailure_WhenAttributesExceedMaximum()
+        {
+            var attrs = Enumerable.Range(0, ItemValidationLimits.MaxVariantAttributes + 1)
+                .Select(_ => new CreateItemVariantAttributeRequest
+                {
+                    AttributeName_en = "Name EN",
+                    Attributes_en = "Value"
+                })
+                .ToList();
+            var request = new CreateItemVariantRequest
+            {
+                Sku = "SKU-001",
+                Price = 10.0m,
+                ItemVariantAttributes = attrs
+            };
+            var result = request.Validate();
+            Assert.True(result.IsFailure);
+            Assert.Equal($"A variant cannot have more than {ItemValidationLimits.MaxVariantAttributes} attributes.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+        }
+
+        [Fact]
+        public void CreateItemVariantRequest_ReturnSuccess_WhenAttributesAtMaximum()
+        {
+            var attrs = Enumerable.Range(0, ItemValidationLimits.MaxVariantAttributes)
+                .Select(_ => new CreateItemVariantAttributeRequest
+                {
+                    AttributeName_en = "Name EN",
+                    Attributes_en = "Value"
+                })
+                .ToList();
+            var request = new CreateItemVariantRequest
+            {
+                Sku = "SKU-001",
+                Price = 10.0m,
+                ItemVariantAttributes = attrs
+            };
+            var result = request.Validate();
+            Assert.True(result.IsSuccess);
         }
 
         // ---------------------------------------------------------------

@@ -397,7 +397,9 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
         }
     };
     
-    const isAddVariantAttributeDisabled = !newVariantAttribute.name_en || !newVariantAttribute.name_fr || 
+    const MAX_VARIANT_ATTRIBUTES = 3;
+    const variantAttributeLimitReached = editingVariantAttrIndex === null && formData.variantAttributes.length >= MAX_VARIANT_ATTRIBUTES;
+    const isAddVariantAttributeDisabled = variantAttributeLimitReached || !newVariantAttribute.name_en || !newVariantAttribute.name_fr || 
                                            newVariantAttribute.values.length === 0;
     
     const isAddVariantFeatureDisabled = !newVariantFeature.name_en || !newVariantFeature.name_fr;
@@ -542,6 +544,9 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                                 </div>
                                 
                                 <div className="attribute-actions">
+                                    {variantAttributeLimitReached && (
+                                        <p className="attribute-limit-message" role="status" aria-live="polite">{t('variantAttr.maxReached')}</p>
+                                    )}
                                     <button
                                         type="button"
                                         onClick={addVariantAttribute}

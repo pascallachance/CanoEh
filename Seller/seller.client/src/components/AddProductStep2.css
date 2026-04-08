@@ -189,6 +189,16 @@
     cursor: not-allowed;
 }
 
+.attribute-limit-message {
+    color: #856404;
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+    padding: 0.4rem 0.75rem;
+    font-size: 14px;
+    margin-bottom: 0.5rem;
+}
+
 .cancel-edit-btn {
     padding: 10px 20px;
     background: #95a5a6;

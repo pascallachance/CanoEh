@@ -676,6 +676,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                             const isOutOfStock = outOfStockOptions.has(JSON.stringify([group.nameKey, option.valueKey]));
                                                             const btn = (
                                                                 <button
+                                                                    key={option.valueKey}
                                                                     type="button"
                                                                     className={`product-attribute-btn${isSelected ? ' selected' : ''}${hasThumbnail ? ' with-thumbnail' : ''}${isOutOfStock ? ' out-of-stock' : ''}`}
                                                                     onClick={isOutOfStock ? undefined : () => handleAttributeSelect(group.nameKey, option.valueKey)}
@@ -694,7 +695,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                                 </button>
                                                             );
                                                             if (!isLastGroup) {
-                                                                return <Fragment key={option.valueKey}>{btn}</Fragment>;
+                                                                return btn;
                                                             }
                                                             const optVariant = lastGroupPriceMap.get(option.valueKey);
                                                             const optOfferActive = optVariant ? isOfferActive(optVariant) : false;
@@ -746,7 +747,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                 )
                                                 : getText('In Stock', 'En Stock')
                                             )
-                                            : getText('Out of stock', 'Rupture de stock')}
+                                            : getText('Out of Stock', 'Rupture de stock')}
                                     </p>
                                 )}
 

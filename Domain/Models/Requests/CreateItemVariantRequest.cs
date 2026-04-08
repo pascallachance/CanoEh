@@ -57,6 +57,11 @@ namespace Domain.Models.Requests
                 return Result.Failure("Variant name (French) cannot exceed 255 characters.", StatusCodes.Status400BadRequest);
             }
 
+            if (ItemVariantAttributes.Count > 3)
+            {
+                return Result.Failure("A variant cannot have more than 3 attributes.", StatusCodes.Status400BadRequest);
+            }
+
             foreach (var attr in ItemVariantAttributes)
             {
                 var attrResult = attr.Validate();

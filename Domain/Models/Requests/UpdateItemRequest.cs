@@ -107,6 +107,11 @@ namespace Domain.Models.Requests
 
                 if (variant.ItemVariantAttributes != null)
                 {
+                    if (variant.ItemVariantAttributes.Count > 3)
+                    {
+                        return Result.Failure("A variant cannot have more than 3 attributes.", StatusCodes.Status400BadRequest);
+                    }
+
                     foreach (var attr in variant.ItemVariantAttributes)
                     {
                         if (attr.AttributeName_en != null && attr.AttributeName_en.Length > 255)

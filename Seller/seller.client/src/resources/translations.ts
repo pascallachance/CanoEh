@@ -782,6 +782,10 @@ export const translations: TranslationResources = {
     en: 'Set as main variant attribute',
     fr: 'Définir comme attribut de variante principal'
   },
+  'variantAttr.maxReached': {
+    en: 'Maximum of 3 variant attributes reached.',
+    fr: 'Le maximum de 3 attributs de variante a été atteint.'
+  },
 
   // Variant features section
   'variantFeature.title': {

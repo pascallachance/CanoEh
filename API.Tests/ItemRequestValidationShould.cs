@@ -106,6 +106,7 @@ namespace API.Tests
 
             Assert.True(result.IsFailure);
             Assert.Equal("English description cannot exceed 3000 characters.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
         }
 
         [Fact]
@@ -125,6 +126,7 @@ namespace API.Tests
 
             Assert.True(result.IsFailure);
             Assert.Equal("French description cannot exceed 3000 characters.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
         }
 
         [Fact]
@@ -321,6 +323,7 @@ namespace API.Tests
 
             Assert.True(result.IsFailure);
             Assert.Equal("English description cannot exceed 3000 characters.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
         }
 
         [Fact]
@@ -341,6 +344,7 @@ namespace API.Tests
 
             Assert.True(result.IsFailure);
             Assert.Equal("French description cannot exceed 3000 characters.", result.Error);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
         }
 
         [Fact]

@@ -704,15 +704,34 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                                     ? optVariant.price * (1 - (optVariant.offer ?? 0) / 100)
                                                                     : optVariant.price)
                                                                 : null;
+                                                            const formattedOptEffectivePrice = optEffectivePrice !== null
+                                                                ? `$${optEffectivePrice.toFixed(2)}`
+                                                                : '—';
+                                                            const optionPriceTestId = `product-option-price-${group.nameKey}-${option.valueKey}`;
+                                                            const optionPriceAriaLabel = optEffectivePrice !== null
+                                                                ? `${option.displayLabel} price ${formattedOptEffectivePrice}${optOfferActive ? ' discounted' : ''}`
+                                                                : `${option.displayLabel} price unavailable`;
                                                             return (
                                                                 <div key={option.valueKey} className="product-option-with-price">
                                                                     {btn}
                                                                     {optEffectivePrice !== null ? (
-                                                                        <span className={`product-option-price${optOfferActive ? ' discounted' : ''}`}>
-                                                                            ${optEffectivePrice.toFixed(2)}
+                                                                        <span
+                                                                            className={`product-option-price${optOfferActive ? ' discounted' : ''}`}
+                                                                            data-testid={optionPriceTestId}
+                                                                            data-option-value={option.valueKey}
+                                                                            aria-label={optionPriceAriaLabel}
+                                                                        >
+                                                                            {formattedOptEffectivePrice}
                                                                         </span>
                                                                     ) : (
-                                                                        <span className="product-option-price unavailable">—</span>
+                                                                        <span
+                                                                            className="product-option-price unavailable"
+                                                                            data-testid={optionPriceTestId}
+                                                                            data-option-value={option.valueKey}
+                                                                            aria-label={optionPriceAriaLabel}
+                                                                        >
+                                                                            —
+                                                                        </span>
                                                                     )}
                                                                 </div>
                                                             );
@@ -742,10 +761,10 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                         {selectedVariant.stockQuantity > 0
                                             ? (selectedVariant.stockQuantity <= 5
                                                 ? getText(
-                                                    `${selectedVariant.stockQuantity} in Stock`,
-                                                    `${selectedVariant.stockQuantity} en Stock`
+                                                    `${selectedVariant.stockQuantity} in stock`,
+                                                    `${selectedVariant.stockQuantity} en stock`
                                                 )
-                                                : getText('In Stock', 'En Stock')
+                                                : getText('In stock', 'En stock')
                                             )
                                             : getText('Out of Stock', 'Rupture de stock')}
                                     </p>

@@ -168,6 +168,15 @@ function buildAttributeGroups(variants: ItemVariantDto[], language: string): Att
 }
 
 /**
+ * Returns true if the variant has an attribute matching the given nameKey and valueKey.
+ */
+function variantHasAttribute(variant: ItemVariantDto, nameKey: string, valueKey: string): boolean {
+    return variant.itemVariantAttributes.some(
+        (a) => a.attributeName_en === nameKey && a.attributes_en === valueKey
+    );
+}
+
+/**
  * Computes which attribute option buttons should appear out-of-stock (greyed out).
  *
  * - For the main attribute group: an option is out-of-stock when NO non-deleted variant
@@ -195,9 +204,7 @@ function computeOutOfStockOptions(
                 const hasStock = activeVariants.some(
                     (v) =>
                         v.stockQuantity > 0 &&
-                        v.itemVariantAttributes.some(
-                            (a) => a.attributeName_en === group.nameKey && a.attributes_en === option.valueKey
-                        )
+                        variantHasAttribute(v, group.nameKey, option.valueKey)
                 );
                 if (!hasStock) outOfStock.add(key);
             } else {
@@ -207,16 +214,10 @@ function computeOutOfStockOptions(
                 const hasStock = activeVariants.some(
                     (v) =>
                         v.stockQuantity > 0 &&
-                        v.itemVariantAttributes.some(
-                            (a) => a.attributeName_en === group.nameKey && a.attributes_en === option.valueKey
-                        ) &&
+                        variantHasAttribute(v, group.nameKey, option.valueKey) &&
                         (!selectedMainValue ||
                             !mainGroup ||
-                            v.itemVariantAttributes.some(
-                                (a) =>
-                                    a.attributeName_en === mainGroup.nameKey &&
-                                    a.attributes_en === selectedMainValue
-                            ))
+                            variantHasAttribute(v, mainGroup.nameKey, selectedMainValue))
                 );
                 if (!hasStock) outOfStock.add(key);
             }
@@ -651,7 +652,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                                 key={option.valueKey}
                                                                 type="button"
                                                                 className={`product-attribute-btn${isSelected ? ' selected' : ''}${hasThumbnail ? ' with-thumbnail' : ''}${isOutOfStock ? ' out-of-stock' : ''}`}
-                                                                onClick={() => handleAttributeSelect(group.nameKey, option.valueKey)}
+                                                                onClick={isOutOfStock ? undefined : () => handleAttributeSelect(group.nameKey, option.valueKey)}
                                                                 aria-pressed={isSelected}
                                                                 disabled={isOutOfStock}
                                                             >

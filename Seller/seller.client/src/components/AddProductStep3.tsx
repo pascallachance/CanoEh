@@ -679,14 +679,14 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             return;
         }
 
-        if ((step1Data.description?.length ?? 0) > 2000) {
+        if ((step1Data.description?.length ?? 0) > 3000) {
             const errorMessage = t('error.descriptionEnTooLong');
             setError(errorMessage);
             showError(errorMessage);
             return;
         }
 
-        if ((step1Data.description_fr?.length ?? 0) > 2000) {
+        if ((step1Data.description_fr?.length ?? 0) > 3000) {
             const errorMessage = t('error.descriptionFrTooLong');
             setError(errorMessage);
             showError(errorMessage);

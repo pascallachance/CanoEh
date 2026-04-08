@@ -685,12 +685,12 @@ export const translations: TranslationResources = {
     fr: 'Le nom de l\'article (français) ne peut pas dépasser 300 caractères.'
   },
   'error.descriptionEnTooLong': {
-    en: 'Description (English) cannot exceed 2000 characters.',
-    fr: 'La description (anglais) ne peut pas dépasser 2000 caractères.'
+    en: 'Description (English) cannot exceed 3000 characters.',
+    fr: 'La description (anglais) ne peut pas dépasser 3000 caractères.'
   },
   'error.descriptionFrTooLong': {
-    en: 'Description (French) cannot exceed 2000 characters.',
-    fr: 'La description (français) ne peut pas dépasser 2000 caractères.'
+    en: 'Description (French) cannot exceed 3000 characters.',
+    fr: 'La description (français) ne peut pas dépasser 3000 caractères.'
   },
 
   // Category navigator

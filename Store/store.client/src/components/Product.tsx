@@ -615,16 +615,6 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                     </p>
                                 )}
 
-                                {/* Description */}
-                                {productDescription && (
-                                    <div className="product-description">
-                                        <h2 className="product-description-title">
-                                            {getText('Description', 'Description')}
-                                        </h2>
-                                        <p className="product-description-text">{productDescription}</p>
-                                    </div>
-                                )}
-
                                 {/* Variant Features */}
                                 {selectedVariant && selectedVariant.itemVariantFeatures.length > 0 && (
                                     <div className="product-variant-features">
@@ -716,6 +706,16 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                             </li>
                                         ))}
                                     </ul>
+                                )}
+
+                                {/* Description */}
+                                {productDescription && (
+                                    <div className="product-description">
+                                        <h2 className="product-description-title">
+                                            {getText('Description', 'Description')}
+                                        </h2>
+                                        <p className="product-description-text">{productDescription}</p>
+                                    </div>
                                 )}
                             </section>
                         </div>

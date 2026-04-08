@@ -707,17 +707,17 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                         ))}
                                     </ul>
                                 )}
-                            </section>
 
-                            {/* Description */}
-                            {productDescription && (
-                                <div className="product-description">
-                                    <h2 className="product-description-title">
-                                        {getText('Description', 'Description')}
-                                    </h2>
-                                    <p className="product-description-text">{productDescription}</p>
-                                </div>
-                            )}
+                                {/* Description */}
+                                {productDescription && (
+                                    <div className="product-description">
+                                        <h2 className="product-description-title">
+                                            {getText('Description', 'Description')}
+                                        </h2>
+                                        <p className="product-description-text">{productDescription}</p>
+                                    </div>
+                                )}
+                            </section>
                         </div>
                     </div>
                 ) : null}

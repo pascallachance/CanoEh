@@ -837,13 +837,17 @@ describe('Product page – variant features section', () => {
 
         const productInfo = document.querySelector('.product-info');
         expect(productInfo).toBeInTheDocument();
-        const children = Array.from(productInfo!.children);
-        const descIndex = children.findIndex(el => el.classList.contains('product-description'));
-        const featIndex = children.findIndex(el => el.classList.contains('product-variant-features'));
-        const attrIndex = children.findIndex(el => el.classList.contains('product-attributes'));
-        expect(descIndex).toBeGreaterThanOrEqual(0);
-        expect(featIndex).toBeGreaterThan(descIndex);
+        const infoChildren = Array.from(productInfo!.children);
+        const featIndex = infoChildren.findIndex(el => el.classList.contains('product-variant-features'));
+        const attrIndex = infoChildren.findIndex(el => el.classList.contains('product-attributes'));
+        expect(featIndex).toBeGreaterThanOrEqual(0);
         expect(attrIndex).toBeGreaterThan(featIndex);
+
+        const productGallery = document.querySelector('.product-gallery');
+        expect(productGallery).toBeInTheDocument();
+        const galleryChildren = Array.from(productGallery!.children);
+        const descIndex = galleryChildren.findIndex(el => el.classList.contains('product-description'));
+        expect(descIndex).toBeGreaterThanOrEqual(0);
     });
 });
 

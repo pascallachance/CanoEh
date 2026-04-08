@@ -168,6 +168,64 @@ function buildAttributeGroups(variants: ItemVariantDto[], language: string): Att
 }
 
 /**
+ * Computes which attribute option buttons should appear out-of-stock (greyed out).
+ *
+ * - For the main attribute group: an option is out-of-stock when NO non-deleted variant
+ *   with that main attribute value has stockQuantity > 0.
+ * - For secondary attribute groups: an option is out-of-stock when NO non-deleted variant
+ *   that combines the currently selected main attribute value AND this secondary attribute
+ *   value has stockQuantity > 0.
+ *
+ * Returns a Set of "nameKey:valueKey" strings for options that should be greyed out.
+ */
+function computeOutOfStockOptions(
+    variants: ItemVariantDto[],
+    attributeGroups: AttributeGroup[],
+    selectedAttributes: Record<string, string>
+): Set<string> {
+    const outOfStock = new Set<string>();
+    const activeVariants = variants.filter((v) => !v.deleted);
+    const mainGroup = attributeGroups.find((g) => g.isMain);
+
+    for (const group of attributeGroups) {
+        for (const option of group.options) {
+            const key = `${group.nameKey}:${option.valueKey}`;
+            if (group.isMain) {
+                // Main option: grey out if no variant with this main value has stock > 0
+                const hasStock = activeVariants.some(
+                    (v) =>
+                        v.stockQuantity > 0 &&
+                        v.itemVariantAttributes.some(
+                            (a) => a.attributeName_en === group.nameKey && a.attributes_en === option.valueKey
+                        )
+                );
+                if (!hasStock) outOfStock.add(key);
+            } else {
+                // Secondary option: grey out if, given the currently selected main attribute,
+                // no variant with both the selected main value AND this secondary value has stock > 0.
+                const selectedMainValue = mainGroup ? selectedAttributes[mainGroup.nameKey] : null;
+                const hasStock = activeVariants.some(
+                    (v) =>
+                        v.stockQuantity > 0 &&
+                        v.itemVariantAttributes.some(
+                            (a) => a.attributeName_en === group.nameKey && a.attributes_en === option.valueKey
+                        ) &&
+                        (!selectedMainValue ||
+                            !mainGroup ||
+                            v.itemVariantAttributes.some(
+                                (a) =>
+                                    a.attributeName_en === mainGroup.nameKey &&
+                                    a.attributes_en === selectedMainValue
+                            ))
+                );
+                if (!hasStock) outOfStock.add(key);
+            }
+        }
+    }
+    return outOfStock;
+}
+
+/**
  * Finds a variant that matches all selected attribute values.
  * selectedAttributes uses language-invariant keys (attributeName_en → attributes_en).
  * Returns the first matching non-deleted variant, or null if not found.
@@ -406,9 +464,19 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         : null;
 
     // Build localized attribute groups for rendering the variant selector
-    const attributeGroups = product
-        ? buildAttributeGroups(product.variants, language)
-        : [];
+    const attributeGroups = useMemo(
+        () => product ? buildAttributeGroups(product.variants, language) : [],
+        [product, language]
+    );
+
+    // Compute which option buttons should appear out-of-stock (greyed out / disabled)
+    const outOfStockOptions = useMemo(
+        () =>
+            product
+                ? computeOutOfStockOptions(product.variants, attributeGroups, selectedAttributes)
+                : new Set<string>(),
+        [product, attributeGroups, selectedAttributes]
+    );
 
     const mainImage = variantImages[mainImageIndex] ?? null;
 
@@ -577,13 +645,15 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                     {group.options.map((option) => {
                                                         const isSelected = selectedAttributes[group.nameKey] === option.valueKey;
                                                         const hasThumbnail = group.isMain && !!option.thumbnailUrl;
+                                                        const isOutOfStock = outOfStockOptions.has(`${group.nameKey}:${option.valueKey}`);
                                                         return (
                                                             <button
                                                                 key={option.valueKey}
                                                                 type="button"
-                                                                className={`product-attribute-btn${isSelected ? ' selected' : ''}${hasThumbnail ? ' with-thumbnail' : ''}`}
+                                                                className={`product-attribute-btn${isSelected ? ' selected' : ''}${hasThumbnail ? ' with-thumbnail' : ''}${isOutOfStock ? ' out-of-stock' : ''}`}
                                                                 onClick={() => handleAttributeSelect(group.nameKey, option.valueKey)}
                                                                 aria-pressed={isSelected}
+                                                                disabled={isOutOfStock}
                                                             >
                                                                 {hasThumbnail && (
                                                                     <img

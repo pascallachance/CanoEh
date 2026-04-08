@@ -269,6 +269,14 @@
     outline-offset: 2px;
 }
 
+.product-attribute-btn.out-of-stock {
+    opacity: 0.4;
+    cursor: not-allowed;
+    text-decoration: line-through;
+    border-color: #ddd;
+    color: #999;
+}
+
 .product-attribute-btn.with-thumbnail {
     display: flex;
     flex-direction: column;

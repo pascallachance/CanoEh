@@ -903,3 +903,171 @@ describe('Product page – product-breadcrumb', () => {
         expect(breadcrumb?.textContent).toMatch(/Phones/);
     });
 });
+
+describe('Product page – out-of-stock variant options', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.stubEnv('VITE_API_STORE_BASE_URL', API_BASE_URL);
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('greys out a main option when no combination with that option has stock', async () => {
+        // Color (main): Red has stock, Blue has none
+        const product = makeProduct({
+            variants: [
+                makeVariant({
+                    id: 'v1',
+                    stockQuantity: 5,
+                    itemVariantAttributes: [
+                        { id: 'a1', attributeName_en: 'Color', attributes_en: 'Red', isMain: true },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v2',
+                    stockQuantity: 0,
+                    itemVariantAttributes: [
+                        { id: 'a2', attributeName_en: 'Color', attributes_en: 'Blue', isMain: true },
+                    ],
+                }),
+            ],
+        });
+        setupFetchWithCategories(product);
+        renderProduct();
+        await waitForProductLoaded();
+
+        const blueBtn = screen.getByRole('button', { name: 'Blue' });
+        expect(blueBtn).toBeDisabled();
+        expect(blueBtn.className).toContain('out-of-stock');
+
+        const redBtn = screen.getByRole('button', { name: 'Red' });
+        expect(redBtn).not.toBeDisabled();
+        expect(redBtn.className).not.toContain('out-of-stock');
+    });
+
+    it('does not grey out a main option that has at least one in-stock combination', async () => {
+        // Color (main): Blue has Small in stock and Large out of stock → Blue itself is NOT greyed
+        const product = makeProduct({
+            variants: [
+                makeVariant({
+                    id: 'v1',
+                    stockQuantity: 5,
+                    itemVariantAttributes: [
+                        { id: 'a1', attributeName_en: 'Color', attributes_en: 'Blue', isMain: true },
+                        { id: 'a3', attributeName_en: 'Size', attributes_en: 'Small' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v2',
+                    stockQuantity: 0,
+                    itemVariantAttributes: [
+                        { id: 'a2', attributeName_en: 'Color', attributes_en: 'Blue', isMain: true },
+                        { id: 'a4', attributeName_en: 'Size', attributes_en: 'Large' },
+                    ],
+                }),
+            ],
+        });
+        setupFetchWithCategories(product);
+        renderProduct();
+        await waitForProductLoaded();
+
+        const blueBtn = screen.getByRole('button', { name: 'Blue' });
+        expect(blueBtn).not.toBeDisabled();
+        expect(blueBtn.className).not.toContain('out-of-stock');
+    });
+
+    it('greys out a secondary option with no stock for the currently selected main option', async () => {
+        // Color (main): Red — Size: Small in stock, Large out of stock with Red
+        const product = makeProduct({
+            variants: [
+                makeVariant({
+                    id: 'v1',
+                    stockQuantity: 5,
+                    itemVariantAttributes: [
+                        { id: 'a1', attributeName_en: 'Color', attributes_en: 'Red', isMain: true },
+                        { id: 'a3', attributeName_en: 'Size', attributes_en: 'Small' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v2',
+                    stockQuantity: 0,
+                    itemVariantAttributes: [
+                        { id: 'a2', attributeName_en: 'Color', attributes_en: 'Red', isMain: true },
+                        { id: 'a4', attributeName_en: 'Size', attributes_en: 'Large' },
+                    ],
+                }),
+            ],
+        });
+        setupFetchWithCategories(product);
+        renderProduct();
+        await waitForProductLoaded();
+
+        const largeBtn = screen.getByRole('button', { name: 'Large' });
+        expect(largeBtn).toBeDisabled();
+        expect(largeBtn.className).toContain('out-of-stock');
+
+        const smallBtn = screen.getByRole('button', { name: 'Small' });
+        expect(smallBtn).not.toBeDisabled();
+        expect(smallBtn.className).not.toContain('out-of-stock');
+    });
+
+    it('updates secondary out-of-stock state when the main selection changes', async () => {
+        const user = userEvent.setup();
+        // Color (main): Red → Small in stock, Large out of stock
+        //               Blue → Large in stock, Small out of stock
+        const product = makeProduct({
+            variants: [
+                makeVariant({
+                    id: 'v1',
+                    stockQuantity: 5,
+                    itemVariantAttributes: [
+                        { id: 'a1', attributeName_en: 'Color', attributes_en: 'Red', isMain: true },
+                        { id: 'a3', attributeName_en: 'Size', attributes_en: 'Small' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v2',
+                    stockQuantity: 0,
+                    itemVariantAttributes: [
+                        { id: 'a2', attributeName_en: 'Color', attributes_en: 'Red', isMain: true },
+                        { id: 'a4', attributeName_en: 'Size', attributes_en: 'Large' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v3',
+                    stockQuantity: 5,
+                    itemVariantAttributes: [
+                        { id: 'a5', attributeName_en: 'Color', attributes_en: 'Blue', isMain: true },
+                        { id: 'a6', attributeName_en: 'Size', attributes_en: 'Large' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v4',
+                    stockQuantity: 0,
+                    itemVariantAttributes: [
+                        { id: 'a7', attributeName_en: 'Color', attributes_en: 'Blue', isMain: true },
+                        { id: 'a8', attributeName_en: 'Size', attributes_en: 'Small' },
+                    ],
+                }),
+            ],
+        });
+        setupFetchWithCategories(product);
+        renderProduct();
+        await waitForProductLoaded();
+
+        // Initially Red is selected: Large should be disabled, Small enabled
+        expect(screen.getByRole('button', { name: 'Large' })).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'Small' })).not.toBeDisabled();
+
+        // Switch to Blue
+        await user.click(screen.getByRole('button', { name: 'Blue' }));
+
+        // Now Small should be disabled, Large enabled
+        await waitFor(() => {
+            expect(screen.getByRole('button', { name: 'Small' })).toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Large' })).not.toBeDisabled();
+        });
+    });
+});

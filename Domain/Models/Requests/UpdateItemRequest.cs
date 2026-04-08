@@ -107,9 +107,9 @@ namespace Domain.Models.Requests
 
                 if (variant.ItemVariantAttributes != null)
                 {
-                    if (variant.ItemVariantAttributes.Count > 3)
+                    if (variant.ItemVariantAttributes.Count > ItemValidationLimits.MaxVariantAttributes)
                     {
-                        return Result.Failure("A variant cannot have more than 3 attributes.", StatusCodes.Status400BadRequest);
+                        return Result.Failure($"A variant cannot have more than {ItemValidationLimits.MaxVariantAttributes} attributes.", StatusCodes.Status400BadRequest);
                     }
 
                     foreach (var attr in variant.ItemVariantAttributes)

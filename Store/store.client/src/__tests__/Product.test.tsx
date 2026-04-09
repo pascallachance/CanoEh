@@ -1085,6 +1085,76 @@ describe('Product page – out-of-stock variant options', () => {
             expect(screen.getByRole('button', { name: 'Large' })).not.toBeDisabled();
         });
     });
+
+    it('greys out a tertiary option when no stock exists for all selected attributes', async () => {
+        const user = userEvent.setup();
+        // Color (main): Red
+        // Size: S, M
+        // Material: Cotton, Polyester
+        //   Red + S + Cotton    → stock=5  (initial auto-selected variant)
+        //   Red + S + Polyester → stock=0  (Polyester disabled when Size=S)
+        //   Red + M + Polyester → stock=5  (Polyester enabled when Size=M)
+        //   Red + M + Cotton    → stock=5  (ensures Size=M button is not disabled with Cotton selected)
+        const product = makeProduct({
+            variants: [
+                makeVariant({
+                    id: 'v1',
+                    stockQuantity: 5,
+                    itemVariantAttributes: [
+                        { id: 'a1', attributeName_en: 'Color', attributes_en: 'Red', isMain: true },
+                        { id: 'a2', attributeName_en: 'Size', attributes_en: 'S' },
+                        { id: 'a3', attributeName_en: 'Material', attributes_en: 'Cotton' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v2',
+                    stockQuantity: 0,
+                    itemVariantAttributes: [
+                        { id: 'a4', attributeName_en: 'Color', attributes_en: 'Red', isMain: true },
+                        { id: 'a5', attributeName_en: 'Size', attributes_en: 'S' },
+                        { id: 'a6', attributeName_en: 'Material', attributes_en: 'Polyester' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v3',
+                    stockQuantity: 5,
+                    itemVariantAttributes: [
+                        { id: 'a7', attributeName_en: 'Color', attributes_en: 'Red', isMain: true },
+                        { id: 'a8', attributeName_en: 'Size', attributes_en: 'M' },
+                        { id: 'a9', attributeName_en: 'Material', attributes_en: 'Polyester' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v4',
+                    stockQuantity: 5,
+                    itemVariantAttributes: [
+                        { id: 'a10', attributeName_en: 'Color', attributes_en: 'Red', isMain: true },
+                        { id: 'a11', attributeName_en: 'Size', attributes_en: 'M' },
+                        { id: 'a12', attributeName_en: 'Material', attributes_en: 'Cotton' },
+                    ],
+                }),
+            ],
+        });
+        setupFetchWithCategories(product);
+        renderProduct();
+        await waitForProductLoaded();
+
+        // Initially v1 is auto-selected (Red + S + Cotton).
+        // With Size=S selected, no Red+S+Polyester variant has stock → Polyester should be disabled.
+        await waitFor(() => {
+            expect(screen.getByRole('button', { name: 'Polyester' })).toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Polyester' }).className).toContain('out-of-stock');
+        });
+
+        // Switch Size to M
+        await user.click(screen.getByRole('button', { name: 'M' }));
+
+        // With Red + M selected: v3 (Red+M+Polyester+stock=5) exists → Polyester should be enabled.
+        await waitFor(() => {
+            expect(screen.getByRole('button', { name: 'Polyester' })).not.toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Polyester' }).className).not.toContain('out-of-stock');
+        });
+    });
 });
 
 describe('Product page – per-option prices', () => {

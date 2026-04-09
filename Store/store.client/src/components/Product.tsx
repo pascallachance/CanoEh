@@ -188,8 +188,8 @@ function variantHasAttribute(variant: ItemVariantDto, nameKey: string, valueKey:
  *
  * - For the main attribute group: an option is out-of-stock when NO non-deleted variant
  *   with that main attribute value has stockQuantity > 0.
- * - For secondary attribute groups: an option is out-of-stock when NO non-deleted variant
- *   that combines the currently selected main attribute value AND this secondary attribute
+ * - For secondary/tertiary attribute groups: an option is out-of-stock when NO non-deleted variant
+ *   that combines ALL currently selected values from every OTHER group AND this option's attribute
  *   value has stockQuantity > 0.
  *
  * Returns a Set of JSON-serialized [nameKey, valueKey] pairs for options that should be greyed out.
@@ -202,7 +202,6 @@ function computeOutOfStockOptions(
 ): Set<string> {
     const outOfStock = new Set<string>();
     const activeVariants = variants.filter((v) => !v.deleted);
-    const mainGroup = attributeGroups.find((g) => g.isMain);
 
     for (const group of attributeGroups) {
         for (const option of group.options) {
@@ -216,16 +215,19 @@ function computeOutOfStockOptions(
                 );
                 if (!hasStock) outOfStock.add(key);
             } else {
-                // Secondary option: grey out if, given the currently selected main attribute,
-                // no variant with both the selected main value AND this secondary value has stock > 0.
-                const selectedMainValue = mainGroup ? selectedAttributes[mainGroup.nameKey] : null;
+                // Secondary/tertiary option: grey out when no non-deleted variant that has ALL
+                // currently selected attributes from every OTHER group PLUS this option has stock > 0.
                 const hasStock = activeVariants.some(
                     (v) =>
                         v.stockQuantity > 0 &&
                         variantHasAttribute(v, group.nameKey, option.valueKey) &&
-                        (!selectedMainValue ||
-                            !mainGroup ||
-                            variantHasAttribute(v, mainGroup.nameKey, selectedMainValue))
+                        attributeGroups
+                            .filter((g) => g !== group)
+                            .every(
+                                (g) =>
+                                    !selectedAttributes[g.nameKey] ||
+                                    variantHasAttribute(v, g.nameKey, selectedAttributes[g.nameKey])
+                            )
                 );
                 if (!hasStock) outOfStock.add(key);
             }
@@ -764,7 +766,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                     `${selectedVariant.stockQuantity} in stock`,
                                                     `${selectedVariant.stockQuantity} en stock`
                                                 )
-                                                : getText('in stock', 'en stock')
+                                                : getText('In stock', 'En stock')
                                             )
                                             : getText('Out of Stock', 'Rupture de stock')}
                                     </p>

@@ -681,9 +681,8 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                                     key={option.valueKey}
                                                                     type="button"
                                                                     className={`product-attribute-btn${isSelected ? ' selected' : ''}${hasThumbnail ? ' with-thumbnail' : ''}${isOutOfStock ? ' out-of-stock' : ''}`}
-                                                                    onClick={isOutOfStock ? undefined : () => handleAttributeSelect(group.nameKey, option.valueKey)}
+                                                                    onClick={() => handleAttributeSelect(group.nameKey, option.valueKey)}
                                                                     aria-pressed={isSelected}
-                                                                    disabled={isOutOfStock}
                                                                 >
                                                                     {hasThumbnail && (
                                                                         <img

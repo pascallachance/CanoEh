@@ -1585,17 +1585,24 @@ describe('Product page – per-option prices', () => {
         await waitForProductLoaded();
 
         const redPrice = document.querySelector('[data-testid="product-option-price-Color-Red"]');
+        expect(redPrice).toBeInTheDocument();
         expect(redPrice?.textContent).toContain('80.00'); // 20% off $100
         expect(redPrice?.className).toContain('discounted');
 
-        // Original price shown with strikethrough next to discounted price
-        const originalPrices = document.querySelectorAll('.product-option-original-price');
-        expect(originalPrices.length).toBe(1);
-        expect(originalPrices[0].textContent).toContain('100.00');
+        // Original price shown with strikethrough inside the Red option container
+        const redOptionContainer = redPrice?.parentElement;
+        expect(redOptionContainer).toBeInTheDocument();
+        const redOriginalPrice = redOptionContainer?.querySelector('.product-option-original-price');
+        expect(redOriginalPrice).toBeInTheDocument();
+        expect(redOriginalPrice?.textContent).toContain('100.00');
+        expect(redOptionContainer?.querySelectorAll('.product-option-original-price')).toHaveLength(1);
 
         const bluePrice = document.querySelector('[data-testid="product-option-price-Color-Blue"]');
+        expect(bluePrice).toBeInTheDocument();
         expect(bluePrice?.textContent).toContain('50.00');
         expect(bluePrice?.className).not.toContain('discounted');
+        // No original-price span for the non-discounted option
+        expect(bluePrice?.parentElement?.querySelector('.product-option-original-price')).toBeNull();
     });
 
     it('aria-label on price span describes the option and price', async () => {

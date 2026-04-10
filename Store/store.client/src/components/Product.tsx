@@ -530,13 +530,17 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         return map;
     }, [attributeGroups, product, selectedAttributes]);
 
-    // When hovering a variant option, preview that variant's first image; otherwise use the gallery
+    // When hovering a thumbnail, show that image; when hovering a variant option, preview its first image;
+    // otherwise use the gallery at the selected index.
     const mainImage = (() => {
+        if (hoveredImageIndex !== null) {
+            return variantImages[hoveredImageIndex] ?? null;
+        }
         if (hoveredAttributes && displayVariant) {
             const hoverImages = parseImageUrls(displayVariant.imageUrls, displayVariant.thumbnailUrl);
             if (hoverImages.length > 0) return hoverImages[0];
         }
-        return variantImages[hoveredImageIndex ?? mainImageIndex] ?? null;
+        return variantImages[mainImageIndex] ?? null;
     })();
 
     const hasProductAttributes = !!(displayVariant && (displayVariant.sku || (displayVariant.productIdentifierType && displayVariant.productIdentifierValue)));
@@ -716,7 +720,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                                     className={`product-attribute-btn${isSelected ? ' selected' : ''}${hasThumbnail ? ' with-thumbnail' : ''}${isOutOfStock ? ' out-of-stock' : ''}`}
                                                                     onClick={isSelected ? undefined : () => handleAttributeSelect(group.nameKey, option.valueKey)}
                                                                     onMouseEnter={isSelected ? undefined : () => handleAttributeHoverEnter(group.nameKey, option.valueKey)}
-                                                                    onMouseLeave={isSelected ? undefined : handleAttributeHoverLeave}
+                                                                    onMouseLeave={handleAttributeHoverLeave}
                                                                     aria-pressed={isSelected}
                                                                     aria-label={isOutOfStock ? `${option.displayLabel}, ${getText('out of stock', 'rupture de stock')}` : undefined}
                                                                 >

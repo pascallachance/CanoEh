@@ -187,15 +187,15 @@ function variantHasAttribute(variant: ItemVariantDto, nameKey: string, valueKey:
  * Computes which attribute option buttons should appear out-of-stock (greyed out).
  *
  * Groups are ordered with the main (primary) group first, followed by secondary, tertiary, etc.
- * For each group at position i, an option is out-of-stock when NO non-deleted variant that has
- * ALL currently selected values from the groups that appear BEFORE it in the hierarchy (indices
- * 0..i-1) AND this option's attribute value has stockQuantity > 0.
  *
- * This means the main group (i=0) is evaluated independently (no prior groups to constrain it),
- * the secondary group (i=1) is only constrained by the main selection, and the tertiary group
- * (i=2) is constrained by both the main and secondary selections.
- * Consequently, a secondary option is only greyed out when ALL tertiary combinations for the
- * currently selected main value are out of stock – not just the currently selected tertiary value.
+ * - The main group (`isMain === true`) is evaluated independently: an option is out-of-stock
+ *   when NO non-deleted variant with that main attribute value has stockQuantity > 0.
+ * - Each non-main group at array position i is constrained by the selected values of the groups
+ *   at positions 0..i-1 (those that appear before it in the sorted array). Since `buildAttributeGroups`
+ *   places the isMain group first, the main group's selection always acts as a constraint for
+ *   non-main groups. Consequently a secondary option is only greyed out when ALL combinations
+ *   with the currently selected main value are out of stock, not just the currently selected
+ *   tertiary value.
  *
  * Returns a Set of JSON-serialized [nameKey, valueKey] pairs for options that should be greyed out.
  * JSON.stringify is used to avoid key collisions when either value contains the delimiter character.
@@ -210,10 +210,12 @@ function computeOutOfStockOptions(
 
     for (let i = 0; i < attributeGroups.length; i++) {
         const group = attributeGroups[i];
-        // Only check selections from groups that appear before this one in the hierarchy.
-        // This ensures a secondary group is only greyed out when ALL combinations with the
-        // tertiary group are out of stock, not just the currently selected tertiary value.
-        const priorGroups = attributeGroups.slice(0, i);
+        // The main group is evaluated independently (no prior constraints): it is greyed when
+        // no variant with this main value has stock, regardless of other selections.
+        // Non-main groups use only the groups that appear before them in the sorted array as
+        // constraints, so a secondary group is greyed only when ALL combinations involving the
+        // groups that follow it are also OOS, not just the currently selected value.
+        const priorGroups = group.isMain ? [] : attributeGroups.slice(0, i);
         for (const option of group.options) {
             const key = JSON.stringify([group.nameKey, option.valueKey]);
             const hasStock = activeVariants.some(

@@ -1193,12 +1193,11 @@ describe('Product page – out-of-stock variant options', () => {
         // Color (main): Black
         // Style (secondary): Man, Woman
         // Memory (tertiary): 32gb, 64gb
-        //   Black + Man   + 32gb → stock=0   ← currently selected tertiary
+        //   Black + Man   + 32gb → stock=0   ← auto-selected (v1 is first non-deleted variant)
         //   Black + Man   + 64gb → stock=5   ← other tertiary option is in stock
         //   Black + Woman + 32gb → stock=5
         //   Black + Woman + 64gb → stock=5
-        // With Memory=32gb selected: Style=Man should NOT be greyed because 64gb is available.
-        const user = userEvent.setup();
+        // With Man+32gb auto-selected: Style=Man should NOT be greyed because 64gb is available.
         const product = makeProduct({
             variants: [
                 makeVariant({
@@ -1243,13 +1242,9 @@ describe('Product page – out-of-stock variant options', () => {
         renderProduct();
         await waitForProductLoaded();
 
-        // Auto-selected variant is v3 (first in-stock: Woman+32gb).
-        // Click Man to select it (v1 = Man+32gb OOS, v2 = Man+64gb in stock).
-        await user.click(screen.getByRole('button', { name: 'Man' }));
-
+        // v1 (Black+Man+32gb) is auto-selected as the first non-deleted variant (even though OOS).
+        // Style=Man must NOT be greyed because v2 (Man+64gb) is in stock.
         await waitFor(() => {
-            // Man is selected and its combination with 32gb is OOS, but 64gb is in stock
-            // → Style=Man must NOT be greyed out
             const manBtn = screen.getByRole('button', { name: 'Man' });
             expect(manBtn.className).not.toContain('out-of-stock');
         });

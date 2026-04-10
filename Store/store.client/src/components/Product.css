@@ -279,7 +279,6 @@
 
 .product-attribute-btn.selected.out-of-stock {
     border-color: #f08804;
-    border-width: 2px;
 }
 
 .product-attribute-btn.with-thumbnail {

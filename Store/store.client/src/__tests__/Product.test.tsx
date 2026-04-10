@@ -683,6 +683,109 @@ describe('Product page – variant attribute selection', () => {
             expect(document.querySelector('[data-testid="product-option-price-Color-White"]')?.textContent).toContain('35.00');
         });
     });
+
+    it('hovering an option shows its price in the main price section', async () => {
+        const user = userEvent.setup();
+        // Single-group product: Color with two variants at different prices
+        const productWithVariants = makeProduct({
+            variants: [
+                makeVariant({
+                    id: 'v1', price: 50,
+                    imageUrls: 'https://example.com/black.jpg',
+                    itemVariantAttributes: [
+                        { id: 'a1', attributeName_en: 'Color', attributes_en: 'Black' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v2', price: 80,
+                    imageUrls: 'https://example.com/white.jpg',
+                    itemVariantAttributes: [
+                        { id: 'a2', attributeName_en: 'Color', attributes_en: 'White' },
+                    ],
+                }),
+            ],
+        });
+        setupFetchWithCategories(productWithVariants);
+        renderProduct();
+        await waitForProductLoaded();
+
+        // Initial selected variant is Black ($50)
+        const mainPrice = () => document.querySelector('.product-price');
+        expect(mainPrice()?.textContent).toContain('50.00');
+
+        // Hover over White option → main price should update to $80
+        await user.hover(screen.getByRole('button', { name: 'White' }));
+        await waitFor(() => {
+            expect(mainPrice()?.textContent).toContain('80.00');
+        });
+
+        // Leave hover → main price reverts to selected variant ($50)
+        await user.unhover(screen.getByRole('button', { name: 'White' }));
+        await waitFor(() => {
+            expect(mainPrice()?.textContent).toContain('50.00');
+        });
+    });
+
+    it('hovering a non-last-group option updates per-option prices in the last group', async () => {
+        const user = userEvent.setup();
+        // Two groups: Color (main, first) and Size (last, shows per-option prices).
+        // Red+Small=$30, Red+Large=$40, Blue+Small=$60, Blue+Large=$70
+        const productWithVariants = makeProduct({
+            variants: [
+                makeVariant({
+                    id: 'v1', price: 30,
+                    itemVariantAttributes: [
+                        { id: 'a1', attributeName_en: 'Color', attributes_en: 'Red', isMain: true },
+                        { id: 'a2', attributeName_en: 'Size', attributes_en: 'Small' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v2', price: 40,
+                    itemVariantAttributes: [
+                        { id: 'a3', attributeName_en: 'Color', attributes_en: 'Red', isMain: true },
+                        { id: 'a4', attributeName_en: 'Size', attributes_en: 'Large' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v3', price: 60,
+                    itemVariantAttributes: [
+                        { id: 'a5', attributeName_en: 'Color', attributes_en: 'Blue', isMain: true },
+                        { id: 'a6', attributeName_en: 'Size', attributes_en: 'Small' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v4', price: 70,
+                    itemVariantAttributes: [
+                        { id: 'a7', attributeName_en: 'Color', attributes_en: 'Blue', isMain: true },
+                        { id: 'a8', attributeName_en: 'Size', attributes_en: 'Large' },
+                    ],
+                }),
+            ],
+        });
+        setupFetchWithCategories(productWithVariants);
+        renderProduct();
+        await waitForProductLoaded();
+
+        // Initially Red is selected; per-option prices for Size show Red prices
+        const smallPrice = () => document.querySelector('[data-testid="product-option-price-Size-Small"]');
+        const largePrice = () => document.querySelector('[data-testid="product-option-price-Size-Large"]');
+        expect(smallPrice()?.textContent).toContain('30.00');
+        expect(largePrice()?.textContent).toContain('40.00');
+
+        // Hover Blue → per-option prices for Size should update to Blue prices
+        await user.hover(screen.getByRole('button', { name: 'Blue' }));
+        await waitFor(() => {
+            expect(smallPrice()?.textContent).toContain('60.00');
+            expect(largePrice()?.textContent).toContain('70.00');
+        });
+
+        // Leave hover → prices revert to Red prices
+        await user.unhover(screen.getByRole('button', { name: 'Blue' }));
+        await waitFor(() => {
+            expect(smallPrice()?.textContent).toContain('30.00');
+            expect(largePrice()?.textContent).toContain('40.00');
+        });
+    });
 });
 
 describe('Product page – thumbnail gallery', () => {
@@ -1554,7 +1657,7 @@ describe('Product page – per-option prices', () => {
         expect(document.querySelector('[data-testid^="product-option-price-"]')).toBeNull();
     });
 
-    it('shows price under each last-group option and hides standalone price section', async () => {
+    it('shows price under each last-group option and also shows a standalone price section', async () => {
         setupFetchWithCategories(makeProduct({
             variants: [
                 makeVariant({ id: 'v1', price: 30, itemVariantAttributes: [{ id: 'a1', attributeName_en: 'Color', attributes_en: 'Red' }] }),
@@ -1564,8 +1667,10 @@ describe('Product page – per-option prices', () => {
         renderProduct();
         await waitForProductLoaded();
 
-        // Standalone section is hidden when attribute groups exist
-        expect(document.querySelector('.product-price-section')).toBeNull();
+        // Standalone price section is shown inside the variants block when attribute groups exist
+        expect(document.querySelector('.product-price-section')).not.toBeNull();
+        // The main price reflects the initially selected variant
+        expect(document.querySelector('.product-price')?.textContent).toContain('30.00');
 
         // Price under each option via data-testid
         const redPrice = document.querySelector('[data-testid="product-option-price-Color-Red"]');

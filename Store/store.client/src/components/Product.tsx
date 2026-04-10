@@ -524,17 +524,20 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     // Compute the price map for the last attribute group's options.
     // Each entry maps an option valueKey to the matching variant given the current
     // selections for all other groups combined with that option.
+    // When an earlier group is being hovered, hoveredAttributes is used as the base
+    // so the per-option prices update to reflect the hovered combination.
     const lastGroupPriceMap = useMemo(() => {
         if (attributeGroups.length === 0 || !product) return new Map<string, ItemVariantDto | null>();
         const lastGrp = attributeGroups[attributeGroups.length - 1];
+        const baseAttrs = hoveredAttributes ?? selectedAttributes;
         const map = new Map<string, ItemVariantDto | null>();
         for (const option of lastGrp.options) {
-            const testAttrs = { ...selectedAttributes, [lastGrp.nameKey]: option.valueKey };
+            const testAttrs = { ...baseAttrs, [lastGrp.nameKey]: option.valueKey };
             const variant = findMatchingVariant(product.variants, testAttrs);
             map.set(option.valueKey, variant);
         }
         return map;
-    }, [attributeGroups, product, selectedAttributes]);
+    }, [attributeGroups, product, selectedAttributes, hoveredAttributes]);
 
     // Priority: thumbnail hover > variant-option hover > selected gallery image.
     // Thumbnail hover (hoveredImageIndex) takes precedence so that mousing from a variant
@@ -823,6 +826,32 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                         'Cette combinaison n\'est pas disponible.'
                                                     )}
                                                 </span>
+                                            </div>
+                                        )}
+
+                                        {/* Price for the currently hovered or selected variant */}
+                                        {displayVariant && (
+                                            <div className="product-price-section">
+                                                {offerActive && discountedPrice !== null ? (
+                                                    <>
+                                                        <span className="product-original-price">
+                                                            ${displayVariant.price.toFixed(2)}
+                                                        </span>
+                                                        <span className="product-discounted-price">
+                                                            ${discountedPrice.toFixed(2)}
+                                                        </span>
+                                                        <span className="product-offer-badge">
+                                                            {getText(
+                                                                `${displayVariant.offer}% OFF`,
+                                                                `Rabais ${displayVariant.offer}%`
+                                                            )}
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <span className="product-price">
+                                                        ${displayVariant.price.toFixed(2)}
+                                                    </span>
+                                                )}
                                             </div>
                                         )}
                                     </div>

@@ -285,6 +285,53 @@ function getCategoryNodeName(node: CategoryNodeDto, language: string): string {
     return language === 'fr' ? node.name_fr : node.name_en;
 }
 
+/**
+ * Builds a canonical, order-independent lookup key from an attribute name→value map.
+ * Both variantLookupByAttrs (indexed from variants using attributeName_en keys) and
+ * lastGroupPriceMap (queried using selectedAttributes/hoveredAttributes – also keyed by
+ * attributeName_en) use this function to guarantee their keys are always consistent.
+ */
+function buildAttrComboKey(attrs: Record<string, string>): string {
+    return Object.entries(attrs)
+        .map(([n, v]) => `${n}=${v}`)
+        .sort()
+        .join('\0');
+}
+
+/**
+ * Renders the content of a product-price-section for an available variant.
+ * Handles active-offer display (original + discounted price + badge) and regular price.
+ * Extracted to keep both the no-groups and in-variants price sections consistent.
+ */
+function renderVariantPriceSection(
+    variant: ItemVariantDto,
+    offerActive: boolean,
+    discountedPrice: number | null,
+    language: string
+) {
+    const txt = (en: string, fr: string) => language === 'fr' ? fr : en;
+    return offerActive && discountedPrice !== null ? (
+        <>
+            <span className="product-original-price">
+                ${variant.price.toFixed(2)}
+            </span>
+            <span className="product-discounted-price">
+                ${discountedPrice.toFixed(2)}
+            </span>
+            <span className="product-offer-badge">
+                {txt(
+                    `${variant.offer}% OFF`,
+                    `Rabais ${variant.offer}%`
+                )}
+            </span>
+        </>
+    ) : (
+        <span className="product-price">
+            ${variant.price.toFixed(2)}
+        </span>
+    );
+}
+
 function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -521,20 +568,45 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         [product, attributeGroups, selectedAttributes]
     );
 
+    // Pre-index active variants by their canonical attribute combination (sorted nameKey=valueKey pairs
+    // joined by NUL). Rebuilt only when the product changes, giving O(1) lookup per option in
+    // lastGroupPriceMap instead of an O(variants × attributes) linear scan on every hover change.
+    const variantLookupByAttrs = useMemo(() => {
+        if (!product) return new Map<string, ItemVariantDto>();
+        const map = new Map<string, ItemVariantDto>();
+        for (const v of product.variants) {
+            if (v.deleted) continue;
+            // Build the key using the same buildAttrComboKey helper used by lastGroupPriceMap
+            // lookups so both sides always produce identical keys (both use attributeName_en).
+            const attrRecord: Record<string, string> = {};
+            for (const a of v.itemVariantAttributes) {
+                attrRecord[a.attributeName_en] = a.attributes_en;
+            }
+            const key = buildAttrComboKey(attrRecord);
+            if (!map.has(key)) map.set(key, v);
+        }
+        return map;
+    }, [product]);
+
     // Compute the price map for the last attribute group's options.
     // Each entry maps an option valueKey to the matching variant given the current
     // selections for all other groups combined with that option.
+    // When an earlier group is being hovered, hoveredAttributes is used as the base
+    // so the per-option prices update to reflect the hovered combination.
+    // hoveredAttributes is only set while hovering a non-selected option (onMouseEnter is
+    // not wired on the selected button), so we fall back to selectedAttributes otherwise
+    // to show the prices for the current confirmed selection.
     const lastGroupPriceMap = useMemo(() => {
         if (attributeGroups.length === 0 || !product) return new Map<string, ItemVariantDto | null>();
         const lastGrp = attributeGroups[attributeGroups.length - 1];
+        const baseAttrs = hoveredAttributes ?? selectedAttributes;
         const map = new Map<string, ItemVariantDto | null>();
         for (const option of lastGrp.options) {
-            const testAttrs = { ...selectedAttributes, [lastGrp.nameKey]: option.valueKey };
-            const variant = findMatchingVariant(product.variants, testAttrs);
-            map.set(option.valueKey, variant);
+            const testAttrs = { ...baseAttrs, [lastGrp.nameKey]: option.valueKey };
+            map.set(option.valueKey, variantLookupByAttrs.get(buildAttrComboKey(testAttrs)) ?? null);
         }
         return map;
-    }, [attributeGroups, product, selectedAttributes]);
+    }, [attributeGroups, product, selectedAttributes, hoveredAttributes, variantLookupByAttrs]);
 
     // Priority: thumbnail hover > variant-option hover > selected gallery image.
     // Thumbnail hover (hoveredImageIndex) takes precedence so that mousing from a variant
@@ -665,39 +737,19 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
 
                                 {/* Price – shown here only when there are no variant attribute groups */}
                                 {attributeGroups.length === 0 && (
-                                    displayVariant ? (
-                                        <div className="product-price-section">
-                                            {offerActive && discountedPrice !== null ? (
-                                                <>
-                                                    <span className="product-original-price">
-                                                        ${displayVariant.price.toFixed(2)}
-                                                    </span>
-                                                    <span className="product-discounted-price">
-                                                        ${discountedPrice.toFixed(2)}
-                                                    </span>
-                                                    <span className="product-offer-badge">
-                                                        {getText(
-                                                            `${displayVariant.offer}% OFF`,
-                                                            `Rabais ${displayVariant.offer}%`
-                                                        )}
-                                                    </span>
-                                                </>
-                                            ) : (
-                                                <span className="product-price">
-                                                    ${displayVariant.price.toFixed(2)}
+                                    <div className="product-price-section">
+                                        {displayVariant
+                                            ? renderVariantPriceSection(displayVariant, offerActive, discountedPrice, language)
+                                            : (
+                                                <span className="product-unavailable">
+                                                    {getText(
+                                                        'This combination is not available.',
+                                                        'Cette combinaison n\'est pas disponible.'
+                                                    )}
                                                 </span>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className="product-price-section">
-                                            <span className="product-unavailable">
-                                                {getText(
-                                                    'This combination is not available.',
-                                                    'Cette combinaison n\'est pas disponible.'
-                                                )}
-                                            </span>
-                                        </div>
-                                    )
+                                            )
+                                        }
+                                    </div>
                                 )}
 
                                 {/* Variant Attribute Selectors */}
@@ -814,17 +866,20 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                             );
                                         })}
 
-                                        {/* Unavailable combination message */}
-                                        {!displayVariant && (
-                                            <div className="product-price-section">
-                                                <span className="product-unavailable">
-                                                    {getText(
-                                                        'This combination is not available.',
-                                                        'Cette combinaison n\'est pas disponible.'
-                                                    )}
-                                                </span>
-                                            </div>
-                                        )}
+                                        {/* Price – unavailable message or hovered/selected variant price */}
+                                        <div className="product-price-section">
+                                            {displayVariant
+                                                ? renderVariantPriceSection(displayVariant, offerActive, discountedPrice, language)
+                                                : (
+                                                    <span className="product-unavailable">
+                                                        {getText(
+                                                            'This combination is not available.',
+                                                            'Cette combinaison n\'est pas disponible.'
+                                                        )}
+                                                    </span>
+                                                )
+                                            }
+                                        </div>
                                     </div>
                                 )}
 

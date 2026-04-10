@@ -530,8 +530,9 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         return map;
     }, [attributeGroups, product, selectedAttributes]);
 
-    // When hovering a thumbnail, show that image; when hovering a variant option, preview its first image;
-    // otherwise use the gallery at the selected index.
+    // Priority: thumbnail hover > variant-option hover > selected gallery image.
+    // Thumbnail hover (hoveredImageIndex) takes precedence so that mousing from a variant
+    // option directly onto a thumbnail shows the thumbnail image immediately.
     const mainImage = (() => {
         if (hoveredImageIndex !== null) {
             return variantImages[hoveredImageIndex] ?? null;

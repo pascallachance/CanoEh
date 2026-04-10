@@ -716,14 +716,21 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                                 <div key={option.valueKey} className="product-option-with-price">
                                                                     {btn}
                                                                     {optEffectivePrice !== null ? (
-                                                                        <span
-                                                                            className={`product-option-price${optOfferActive ? ' discounted' : ''}`}
-                                                                            data-testid={optionPriceTestId}
-                                                                            data-option-value={option.valueKey}
-                                                                            aria-label={optionPriceAriaLabel}
-                                                                        >
-                                                                            {formattedOptEffectivePrice}
-                                                                        </span>
+                                                                        <>
+                                                                            {optOfferActive && (
+                                                                                <span className="product-option-original-price">
+                                                                                    ${optVariant!.price.toFixed(2)}
+                                                                                </span>
+                                                                            )}
+                                                                            <span
+                                                                                className={`product-option-price${optOfferActive ? ' discounted' : ''}`}
+                                                                                data-testid={optionPriceTestId}
+                                                                                data-option-value={option.valueKey}
+                                                                                aria-label={optionPriceAriaLabel}
+                                                                            >
+                                                                                {formattedOptEffectivePrice}
+                                                                            </span>
+                                                                        </>
                                                                     ) : (
                                                                         <span
                                                                             className="product-option-price unavailable"

@@ -1588,6 +1588,11 @@ describe('Product page – per-option prices', () => {
         expect(redPrice?.textContent).toContain('80.00'); // 20% off $100
         expect(redPrice?.className).toContain('discounted');
 
+        // Original price shown with strikethrough next to discounted price
+        const originalPrices = document.querySelectorAll('.product-option-original-price');
+        expect(originalPrices.length).toBe(1);
+        expect(originalPrices[0].textContent).toContain('100.00');
+
         const bluePrice = document.querySelector('[data-testid="product-option-price-Color-Blue"]');
         expect(bluePrice?.textContent).toContain('50.00');
         expect(bluePrice?.className).not.toContain('discounted');

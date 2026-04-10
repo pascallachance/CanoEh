@@ -271,7 +271,7 @@
 
 .product-attribute-btn.out-of-stock {
     opacity: 0.4;
-    cursor: not-allowed;
+    cursor: pointer;
     text-decoration: line-through;
     border-color: #ddd;
     color: #999;

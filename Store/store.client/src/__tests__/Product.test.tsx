@@ -953,8 +953,8 @@ describe('Product page – out-of-stock variant options', () => {
         renderProduct();
         await waitForProductLoaded();
 
-        const blueBtn = screen.getByRole('button', { name: 'Blue' });
-        expect(blueBtn).toBeDisabled();
+        const blueBtn = screen.getByRole('button', { name: 'Blue, out of stock' });
+        expect(blueBtn).not.toBeDisabled();
         expect(blueBtn.className).toContain('out-of-stock');
 
         const redBtn = screen.getByRole('button', { name: 'Red' });
@@ -1019,8 +1019,8 @@ describe('Product page – out-of-stock variant options', () => {
         renderProduct();
         await waitForProductLoaded();
 
-        const largeBtn = screen.getByRole('button', { name: 'Large' });
-        expect(largeBtn).toBeDisabled();
+        const largeBtn = screen.getByRole('button', { name: 'Large, out of stock' });
+        expect(largeBtn).not.toBeDisabled();
         expect(largeBtn.className).toContain('out-of-stock');
 
         const smallBtn = screen.getByRole('button', { name: 'Small' });
@@ -1072,16 +1072,18 @@ describe('Product page – out-of-stock variant options', () => {
         renderProduct();
         await waitForProductLoaded();
 
-        // Initially Red is selected: Large should be disabled, Small enabled
-        expect(screen.getByRole('button', { name: 'Large' })).toBeDisabled();
+        // Initially Red is selected: Large should have out-of-stock class, Small enabled
+        expect(screen.getByRole('button', { name: 'Large, out of stock' })).not.toBeDisabled();
+        expect(screen.getByRole('button', { name: 'Large, out of stock' }).className).toContain('out-of-stock');
         expect(screen.getByRole('button', { name: 'Small' })).not.toBeDisabled();
 
         // Switch to Blue
         await user.click(screen.getByRole('button', { name: 'Blue' }));
 
-        // Now Small should be disabled, Large enabled
+        // Now Small should have out-of-stock class, Large enabled
         await waitFor(() => {
-            expect(screen.getByRole('button', { name: 'Small' })).toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Small, out of stock' })).not.toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Small, out of stock' }).className).toContain('out-of-stock');
             expect(screen.getByRole('button', { name: 'Large' })).not.toBeDisabled();
         });
     });
@@ -1140,10 +1142,10 @@ describe('Product page – out-of-stock variant options', () => {
         await waitForProductLoaded();
 
         // Initially v1 is auto-selected (Red + S + Cotton).
-        // With Size=S selected, no Red+S+Polyester variant has stock → Polyester should be disabled.
+        // With Size=S selected, no Red+S+Polyester variant has stock → Polyester should be out-of-stock.
         await waitFor(() => {
-            expect(screen.getByRole('button', { name: 'Polyester' })).toBeDisabled();
-            expect(screen.getByRole('button', { name: 'Polyester' }).className).toContain('out-of-stock');
+            expect(screen.getByRole('button', { name: 'Polyester, out of stock' })).not.toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Polyester, out of stock' }).className).toContain('out-of-stock');
         });
 
         // Switch Size to M

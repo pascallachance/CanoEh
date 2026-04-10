@@ -277,6 +277,10 @@
     color: #999;
 }
 
+.product-attribute-btn.selected.out-of-stock {
+    border-color: #f08804;
+}
+
 .product-attribute-btn.with-thumbnail {
     display: flex;
     flex-direction: column;

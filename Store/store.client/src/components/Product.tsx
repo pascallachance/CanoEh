@@ -186,11 +186,16 @@ function variantHasAttribute(variant: ItemVariantDto, nameKey: string, valueKey:
 /**
  * Computes which attribute option buttons should appear out-of-stock (greyed out).
  *
- * - For the main attribute group: an option is out-of-stock when NO non-deleted variant
- *   with that main attribute value has stockQuantity > 0.
- * - For secondary/tertiary attribute groups: an option is out-of-stock when NO non-deleted variant
- *   that combines ALL currently selected values from every OTHER group AND this option's attribute
- *   value has stockQuantity > 0.
+ * Groups are ordered with the main (primary) group first, followed by secondary, tertiary, etc.
+ *
+ * - The main group (`isMain === true`) is evaluated independently: an option is out-of-stock
+ *   when NO non-deleted variant with that main attribute value has stockQuantity > 0.
+ * - Each non-main group at array position i is constrained by the selected values of the groups
+ *   at positions 0..i-1 (those that appear before it in the sorted array). Since `buildAttributeGroups`
+ *   places the isMain group first, the main group's selection always acts as a constraint for
+ *   non-main groups. Consequently a secondary option is only greyed out when ALL combinations
+ *   with the currently selected main value are out of stock, not just the currently selected
+ *   tertiary value.
  *
  * Returns a Set of JSON-serialized [nameKey, valueKey] pairs for options that should be greyed out.
  * JSON.stringify is used to avoid key collisions when either value contains the delimiter character.
@@ -203,34 +208,27 @@ function computeOutOfStockOptions(
     const outOfStock = new Set<string>();
     const activeVariants = variants.filter((v) => !v.deleted);
 
-    for (const group of attributeGroups) {
+    for (let i = 0; i < attributeGroups.length; i++) {
+        const group = attributeGroups[i];
+        // The main group is evaluated independently (no prior constraints): it is greyed when
+        // no variant with this main value has stock, regardless of other selections.
+        // Non-main groups use only the groups that appear before them in the sorted array as
+        // constraints, so a secondary group is greyed only when ALL combinations involving the
+        // groups that follow it are also OOS, not just the currently selected value.
+        const priorGroups = group.isMain ? [] : attributeGroups.slice(0, i);
         for (const option of group.options) {
             const key = JSON.stringify([group.nameKey, option.valueKey]);
-            if (group.isMain) {
-                // Main option: grey out if no variant with this main value has stock > 0
-                const hasStock = activeVariants.some(
-                    (v) =>
-                        v.stockQuantity > 0 &&
-                        variantHasAttribute(v, group.nameKey, option.valueKey)
-                );
-                if (!hasStock) outOfStock.add(key);
-            } else {
-                // Secondary/tertiary option: grey out when no non-deleted variant that has ALL
-                // currently selected attributes from every OTHER group PLUS this option has stock > 0.
-                const hasStock = activeVariants.some(
-                    (v) =>
-                        v.stockQuantity > 0 &&
-                        variantHasAttribute(v, group.nameKey, option.valueKey) &&
-                        attributeGroups
-                            .filter((g) => g !== group)
-                            .every(
-                                (g) =>
-                                    !selectedAttributes[g.nameKey] ||
-                                    variantHasAttribute(v, g.nameKey, selectedAttributes[g.nameKey])
-                            )
-                );
-                if (!hasStock) outOfStock.add(key);
-            }
+            const hasStock = activeVariants.some(
+                (v) =>
+                    v.stockQuantity > 0 &&
+                    variantHasAttribute(v, group.nameKey, option.valueKey) &&
+                    priorGroups.every(
+                        (g) =>
+                            !selectedAttributes[g.nameKey] ||
+                            variantHasAttribute(v, g.nameKey, selectedAttributes[g.nameKey])
+                    )
+            );
+            if (!hasStock) outOfStock.add(key);
         }
     }
     return outOfStock;

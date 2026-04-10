@@ -1157,6 +1157,159 @@ describe('Product page – out-of-stock variant options', () => {
             expect(screen.getByRole('button', { name: 'Polyester' }).className).not.toContain('out-of-stock');
         });
     });
+
+    it('does not grey out a selected out-of-stock button differently than unselected – both get out-of-stock class', async () => {
+        // An out-of-stock option that is also the selected option must carry both 'selected' and
+        // 'out-of-stock' CSS classes so the CSS rule for selected.out-of-stock can apply.
+        const product = makeProduct({
+            variants: [
+                makeVariant({
+                    id: 'v1',
+                    stockQuantity: 0,
+                    itemVariantAttributes: [
+                        { id: 'a1', attributeName_en: 'Color', attributes_en: 'Red', isMain: true },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v2',
+                    stockQuantity: 5,
+                    itemVariantAttributes: [
+                        { id: 'a2', attributeName_en: 'Color', attributes_en: 'Blue', isMain: true },
+                    ],
+                }),
+            ],
+        });
+        setupFetchWithCategories(product);
+        renderProduct();
+        await waitForProductLoaded();
+
+        // Red is auto-selected (first variant) and out of stock → must have both classes
+        const redBtn = screen.getByRole('button', { name: 'Red, out of stock' });
+        expect(redBtn.className).toContain('selected');
+        expect(redBtn.className).toContain('out-of-stock');
+    });
+
+    it('does not grey out secondary option when only the currently selected tertiary option is OOS', async () => {
+        // Color (main): Black
+        // Style (secondary): Man, Woman
+        // Memory (tertiary): 32gb, 64gb
+        //   Black + Man   + 32gb → stock=0   ← auto-selected (v1 is first non-deleted variant)
+        //   Black + Man   + 64gb → stock=5   ← other tertiary option is in stock
+        //   Black + Woman + 32gb → stock=5
+        //   Black + Woman + 64gb → stock=5
+        // With Man+32gb auto-selected: Style=Man should NOT be greyed because 64gb is available.
+        const product = makeProduct({
+            variants: [
+                makeVariant({
+                    id: 'v1',
+                    stockQuantity: 0,
+                    itemVariantAttributes: [
+                        { id: 'a1', attributeName_en: 'Color', attributes_en: 'Black', isMain: true },
+                        { id: 'a2', attributeName_en: 'Style', attributes_en: 'Man' },
+                        { id: 'a3', attributeName_en: 'Memory', attributes_en: '32gb' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v2',
+                    stockQuantity: 5,
+                    itemVariantAttributes: [
+                        { id: 'a4', attributeName_en: 'Color', attributes_en: 'Black', isMain: true },
+                        { id: 'a5', attributeName_en: 'Style', attributes_en: 'Man' },
+                        { id: 'a6', attributeName_en: 'Memory', attributes_en: '64gb' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v3',
+                    stockQuantity: 5,
+                    itemVariantAttributes: [
+                        { id: 'a7', attributeName_en: 'Color', attributes_en: 'Black', isMain: true },
+                        { id: 'a8', attributeName_en: 'Style', attributes_en: 'Woman' },
+                        { id: 'a9', attributeName_en: 'Memory', attributes_en: '32gb' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v4',
+                    stockQuantity: 5,
+                    itemVariantAttributes: [
+                        { id: 'a10', attributeName_en: 'Color', attributes_en: 'Black', isMain: true },
+                        { id: 'a11', attributeName_en: 'Style', attributes_en: 'Woman' },
+                        { id: 'a12', attributeName_en: 'Memory', attributes_en: '64gb' },
+                    ],
+                }),
+            ],
+        });
+        setupFetchWithCategories(product);
+        renderProduct();
+        await waitForProductLoaded();
+
+        // v1 (Black+Man+32gb) is auto-selected as the first non-deleted variant (even though OOS).
+        // Style=Man must NOT be greyed because v2 (Man+64gb) is in stock.
+        await waitFor(() => {
+            const manBtn = screen.getByRole('button', { name: 'Man' });
+            expect(manBtn.className).not.toContain('out-of-stock');
+        });
+    });
+
+    it('greys out secondary option when ALL tertiary combinations for that option are OOS', async () => {
+        // Color (main): Black
+        // Style (secondary): Man, Woman
+        // Memory (tertiary): 32gb, 64gb
+        //   Black + Man   + 32gb → stock=0
+        //   Black + Man   + 64gb → stock=0   ← ALL Man+Memory combinations are OOS
+        //   Black + Woman + 32gb → stock=5
+        //   Black + Woman + 64gb → stock=5
+        // Style=Man should be greyed because every tertiary option is OOS for Black+Man.
+        const product = makeProduct({
+            variants: [
+                makeVariant({
+                    id: 'v1',
+                    stockQuantity: 0,
+                    itemVariantAttributes: [
+                        { id: 'a1', attributeName_en: 'Color', attributes_en: 'Black', isMain: true },
+                        { id: 'a2', attributeName_en: 'Style', attributes_en: 'Man' },
+                        { id: 'a3', attributeName_en: 'Memory', attributes_en: '32gb' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v2',
+                    stockQuantity: 0,
+                    itemVariantAttributes: [
+                        { id: 'a4', attributeName_en: 'Color', attributes_en: 'Black', isMain: true },
+                        { id: 'a5', attributeName_en: 'Style', attributes_en: 'Man' },
+                        { id: 'a6', attributeName_en: 'Memory', attributes_en: '64gb' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v3',
+                    stockQuantity: 5,
+                    itemVariantAttributes: [
+                        { id: 'a7', attributeName_en: 'Color', attributes_en: 'Black', isMain: true },
+                        { id: 'a8', attributeName_en: 'Style', attributes_en: 'Woman' },
+                        { id: 'a9', attributeName_en: 'Memory', attributes_en: '32gb' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v4',
+                    stockQuantity: 5,
+                    itemVariantAttributes: [
+                        { id: 'a10', attributeName_en: 'Color', attributes_en: 'Black', isMain: true },
+                        { id: 'a11', attributeName_en: 'Style', attributes_en: 'Woman' },
+                        { id: 'a12', attributeName_en: 'Memory', attributes_en: '64gb' },
+                    ],
+                }),
+            ],
+        });
+        setupFetchWithCategories(product);
+        renderProduct();
+        await waitForProductLoaded();
+
+        await waitFor(() => {
+            const manBtn = screen.getByRole('button', { name: 'Man, out of stock' });
+            expect(manBtn.className).toContain('out-of-stock');
+            const womanBtn = screen.getByRole('button', { name: 'Woman' });
+            expect(womanBtn.className).not.toContain('out-of-stock');
+        });
+    });
 });
 
 describe('Product page – per-option prices', () => {

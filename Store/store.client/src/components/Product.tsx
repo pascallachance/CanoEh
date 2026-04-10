@@ -716,11 +716,11 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                                 ? `${option.displayLabel} price ${optOriginalPrice !== null ? `$${optOriginalPrice.toFixed(2)} original, ` : ''}${formattedOptEffectivePrice}${optOfferActive ? ' discounted' : ''}`
                                                                 : `${option.displayLabel} price unavailable`;
                                                             return (
-                                                                <div key={option.valueKey} className="product-option-with-price">
+                                                                <div key={option.valueKey} className={`product-option-with-price${optOfferActive ? ' has-offer' : ''}`}>
                                                                     {btn}
                                                                     {optEffectivePrice !== null ? (
-                                                                        <>
-                                                                            {optOriginalPrice !== null && (
+                                                                        optOriginalPrice !== null ? (
+                                                                            <div className="product-option-prices">
                                                                                 <span
                                                                                     className="product-option-original-price"
                                                                                     aria-label={getText(
@@ -730,16 +730,25 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                                                 >
                                                                                     ${optOriginalPrice.toFixed(2)}
                                                                                 </span>
-                                                                            )}
+                                                                                <span
+                                                                                    className="product-option-price discounted"
+                                                                                    data-testid={optionPriceTestId}
+                                                                                    data-option-value={option.valueKey}
+                                                                                    aria-label={optionPriceAriaLabel}
+                                                                                >
+                                                                                    {formattedOptEffectivePrice}
+                                                                                </span>
+                                                                            </div>
+                                                                        ) : (
                                                                             <span
-                                                                                className={`product-option-price${optOfferActive ? ' discounted' : ''}`}
+                                                                                className="product-option-price"
                                                                                 data-testid={optionPriceTestId}
                                                                                 data-option-value={option.valueKey}
                                                                                 aria-label={optionPriceAriaLabel}
                                                                             >
                                                                                 {formattedOptEffectivePrice}
                                                                             </span>
-                                                                        </>
+                                                                        )
                                                                     ) : (
                                                                         <span
                                                                             className="product-option-price unavailable"

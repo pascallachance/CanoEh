@@ -186,11 +186,16 @@ function variantHasAttribute(variant: ItemVariantDto, nameKey: string, valueKey:
 /**
  * Computes which attribute option buttons should appear out-of-stock (greyed out).
  *
- * - For the main attribute group: an option is out-of-stock when NO non-deleted variant
- *   with that main attribute value has stockQuantity > 0.
- * - For secondary/tertiary attribute groups: an option is out-of-stock when NO non-deleted variant
- *   that combines ALL currently selected values from every OTHER group AND this option's attribute
- *   value has stockQuantity > 0.
+ * Groups are ordered with the main (primary) group first, followed by secondary, tertiary, etc.
+ * For each group at position i, an option is out-of-stock when NO non-deleted variant that has
+ * ALL currently selected values from the groups that appear BEFORE it in the hierarchy (indices
+ * 0..i-1) AND this option's attribute value has stockQuantity > 0.
+ *
+ * This means the main group (i=0) is evaluated independently (no prior groups to constrain it),
+ * the secondary group (i=1) is only constrained by the main selection, and the tertiary group
+ * (i=2) is constrained by both the main and secondary selections.
+ * Consequently, a secondary option is only greyed out when ALL tertiary combinations for the
+ * currently selected main value are out of stock – not just the currently selected tertiary value.
  *
  * Returns a Set of JSON-serialized [nameKey, valueKey] pairs for options that should be greyed out.
  * JSON.stringify is used to avoid key collisions when either value contains the delimiter character.
@@ -203,34 +208,25 @@ function computeOutOfStockOptions(
     const outOfStock = new Set<string>();
     const activeVariants = variants.filter((v) => !v.deleted);
 
-    for (const group of attributeGroups) {
+    for (let i = 0; i < attributeGroups.length; i++) {
+        const group = attributeGroups[i];
+        // Only check selections from groups that appear before this one in the hierarchy.
+        // This ensures a secondary group is only greyed out when ALL combinations with the
+        // tertiary group are out of stock, not just the currently selected tertiary value.
+        const priorGroups = attributeGroups.slice(0, i);
         for (const option of group.options) {
             const key = JSON.stringify([group.nameKey, option.valueKey]);
-            if (group.isMain) {
-                // Main option: grey out if no variant with this main value has stock > 0
-                const hasStock = activeVariants.some(
-                    (v) =>
-                        v.stockQuantity > 0 &&
-                        variantHasAttribute(v, group.nameKey, option.valueKey)
-                );
-                if (!hasStock) outOfStock.add(key);
-            } else {
-                // Secondary/tertiary option: grey out when no non-deleted variant that has ALL
-                // currently selected attributes from every OTHER group PLUS this option has stock > 0.
-                const hasStock = activeVariants.some(
-                    (v) =>
-                        v.stockQuantity > 0 &&
-                        variantHasAttribute(v, group.nameKey, option.valueKey) &&
-                        attributeGroups
-                            .filter((g) => g !== group)
-                            .every(
-                                (g) =>
-                                    !selectedAttributes[g.nameKey] ||
-                                    variantHasAttribute(v, g.nameKey, selectedAttributes[g.nameKey])
-                            )
-                );
-                if (!hasStock) outOfStock.add(key);
-            }
+            const hasStock = activeVariants.some(
+                (v) =>
+                    v.stockQuantity > 0 &&
+                    variantHasAttribute(v, group.nameKey, option.valueKey) &&
+                    priorGroups.every(
+                        (g) =>
+                            !selectedAttributes[g.nameKey] ||
+                            variantHasAttribute(v, g.nameKey, selectedAttributes[g.nameKey])
+                    )
+            );
+            if (!hasStock) outOfStock.add(key);
         }
     }
     return outOfStock;

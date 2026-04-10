@@ -526,6 +526,8 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     // selections for all other groups combined with that option.
     // When an earlier group is being hovered, hoveredAttributes is used as the base
     // so the per-option prices update to reflect the hovered combination.
+    // hoveredAttributes is null when the mouse is not over any option, so we fall back
+    // to selectedAttributes to show the prices for the current confirmed selection.
     const lastGroupPriceMap = useMemo(() => {
         if (attributeGroups.length === 0 || !product) return new Map<string, ItemVariantDto | null>();
         const lastGrp = attributeGroups[attributeGroups.length - 1];

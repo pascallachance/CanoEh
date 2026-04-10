@@ -446,6 +446,111 @@ describe('Product page – variant attribute selection', () => {
         });
     });
 
+    it('hovering a variant option updates the main image', async () => {
+        const user = userEvent.setup();
+        const productWithVariants = makeProduct({
+            variants: [
+                makeVariant({
+                    id: 'v1',
+                    imageUrls: 'https://example.com/black.jpg',
+                    itemVariantAttributes: [
+                        { id: 'a1', attributeName_en: 'Color', attributes_en: 'Black' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v2',
+                    imageUrls: 'https://example.com/white.jpg',
+                    itemVariantAttributes: [
+                        { id: 'a2', attributeName_en: 'Color', attributes_en: 'White' },
+                    ],
+                }),
+            ],
+        });
+        setupFetchWithCategories(productWithVariants);
+        renderProduct();
+        await waitForProductLoaded();
+
+        const mainImg = () => document.querySelector('.product-main-image') as HTMLImageElement | null;
+        expect(mainImg()?.src).toContain('black.jpg');
+
+        await user.hover(screen.getByRole('button', { name: 'White' }));
+
+        await waitFor(() => {
+            expect(mainImg()?.src).toContain('white.jpg');
+        });
+    });
+
+    it('hovering a variant option marks it as pressed', async () => {
+        const user = userEvent.setup();
+        const productWithVariants = makeProduct({
+            variants: [
+                makeVariant({
+                    id: 'v1',
+                    imageUrls: 'https://example.com/s.jpg',
+                    itemVariantAttributes: [
+                        { id: 'a1', attributeName_en: 'Size', attributes_en: 'Small' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v2',
+                    imageUrls: 'https://example.com/l.jpg',
+                    itemVariantAttributes: [
+                        { id: 'a2', attributeName_en: 'Size', attributes_en: 'Large' },
+                    ],
+                }),
+            ],
+        });
+        setupFetchWithCategories(productWithVariants);
+        renderProduct();
+        await waitForProductLoaded();
+
+        const smallBtn = screen.getByRole('button', { name: 'Small' });
+        const largeBtn = screen.getByRole('button', { name: 'Large' });
+        expect(smallBtn).toHaveAttribute('aria-pressed', 'true');
+
+        await user.hover(largeBtn);
+
+        await waitFor(() => {
+            expect(largeBtn).toHaveAttribute('aria-pressed', 'true');
+            expect(smallBtn).toHaveAttribute('aria-pressed', 'false');
+        });
+    });
+
+    it('hovering the already-selected option does not cause redundant state update', async () => {
+        const user = userEvent.setup();
+        const productWithVariants = makeProduct({
+            variants: [
+                makeVariant({
+                    id: 'v1',
+                    imageUrls: 'https://example.com/black.jpg',
+                    itemVariantAttributes: [
+                        { id: 'a1', attributeName_en: 'Color', attributes_en: 'Black' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v2',
+                    imageUrls: 'https://example.com/white.jpg',
+                    itemVariantAttributes: [
+                        { id: 'a2', attributeName_en: 'Color', attributes_en: 'White' },
+                    ],
+                }),
+            ],
+        });
+        setupFetchWithCategories(productWithVariants);
+        renderProduct();
+        await waitForProductLoaded();
+
+        const blackBtn = screen.getByRole('button', { name: 'Black' });
+        expect(blackBtn).toHaveAttribute('aria-pressed', 'true');
+
+        // Hover the already-selected option – should stay selected, no change
+        await user.hover(blackBtn);
+
+        expect(blackBtn).toHaveAttribute('aria-pressed', 'true');
+        const mainImg = document.querySelector('.product-main-image') as HTMLImageElement | null;
+        expect(mainImg?.src).toContain('black.jpg');
+    });
+
     it('shows "combination not available" when no variant matches selected attributes', async () => {
         const user = userEvent.setup();
         // Two variants with different Color+Size combos: Black+Small and White+Large
@@ -610,6 +715,50 @@ describe('Product page – thumbnail gallery', () => {
             expect(thumbBtns()[1]).toHaveAttribute('aria-pressed', 'true');
             expect(thumbBtns()[0]).toHaveAttribute('aria-pressed', 'false');
         });
+    });
+
+    it('hovering a thumbnail updates the main image', async () => {
+        const user = userEvent.setup();
+        setupFetchWithCategories(makeProduct({
+            variants: [makeVariant({
+                imageUrls: 'https://example.com/img1.jpg,https://example.com/img2.jpg',
+            })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const mainImg = () => document.querySelector('.product-main-image') as HTMLImageElement | null;
+        expect(mainImg()?.src).toContain('img1.jpg');
+
+        const thumbBtns = screen.getAllByRole('button', { name: /View image/i });
+        await user.hover(thumbBtns[1]);
+
+        await waitFor(() => {
+            expect(mainImg()?.src).toContain('img2.jpg');
+        });
+    });
+
+    it('hovering the active thumbnail does not cause redundant state update', async () => {
+        const user = userEvent.setup();
+        setupFetchWithCategories(makeProduct({
+            variants: [makeVariant({
+                imageUrls: 'https://example.com/img1.jpg,https://example.com/img2.jpg',
+            })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const mainImg = () => document.querySelector('.product-main-image') as HTMLImageElement | null;
+        expect(mainImg()?.src).toContain('img1.jpg');
+
+        // Hovering the already-active first thumbnail should not change the main image
+        const thumbBtns = screen.getAllByRole('button', { name: /View image/i });
+        await user.hover(thumbBtns[0]);
+
+        // Main image should remain unchanged
+        expect(mainImg()?.src).toContain('img1.jpg');
+        // Active thumbnail should still be the first one
+        expect(thumbBtns[0]).toHaveAttribute('aria-pressed', 'true');
     });
 });
 

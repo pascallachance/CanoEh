@@ -679,8 +679,8 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                                     key={option.valueKey}
                                                                     type="button"
                                                                     className={`product-attribute-btn${isSelected ? ' selected' : ''}${hasThumbnail ? ' with-thumbnail' : ''}${isOutOfStock ? ' out-of-stock' : ''}`}
-                                                                    onClick={() => handleAttributeSelect(group.nameKey, option.valueKey)}
-                                                                    onMouseEnter={() => handleAttributeSelect(group.nameKey, option.valueKey)}
+                                                                    onClick={() => { if (!isSelected) { handleAttributeSelect(group.nameKey, option.valueKey); } }}
+                                                                    onMouseEnter={isSelected ? undefined : () => handleAttributeSelect(group.nameKey, option.valueKey)}
                                                                     aria-pressed={isSelected}
                                                                     aria-label={isOutOfStock ? `${option.displayLabel}, ${getText('out of stock', 'rupture de stock')}` : undefined}
                                                                 >
@@ -850,7 +850,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                     type="button"
                                                     className={`product-thumbnail-btn${mainImageIndex === idx ? ' active' : ''}`}
                                                     onClick={() => handleThumbnailClick(idx)}
-                                                    onMouseEnter={() => handleThumbnailClick(idx)}
+                                                    onMouseEnter={mainImageIndex === idx ? undefined : () => handleThumbnailClick(idx)}
                                                     aria-label={getText(`View image ${idx + 1}`, `Voir l'image ${idx + 1}`)}
                                                     aria-pressed={mainImageIndex === idx}
                                                 >

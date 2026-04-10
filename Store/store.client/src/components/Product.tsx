@@ -286,6 +286,19 @@ function getCategoryNodeName(node: CategoryNodeDto, language: string): string {
 }
 
 /**
+ * Builds a canonical, order-independent lookup key from an attribute name→value map.
+ * Both variantLookupByAttrs (indexed from variants using attributeName_en keys) and
+ * lastGroupPriceMap (queried using selectedAttributes/hoveredAttributes – also keyed by
+ * attributeName_en) use this function to guarantee their keys are always consistent.
+ */
+function buildAttrComboKey(attrs: Record<string, string>): string {
+    return Object.entries(attrs)
+        .map(([n, v]) => `${n}=${v}`)
+        .sort()
+        .join('\0');
+}
+
+/**
  * Renders the content of a product-price-section for an available variant.
  * Handles active-offer display (original + discounted price + badge) and regular price.
  * Extracted to keep both the no-groups and in-variants price sections consistent.
@@ -563,10 +576,13 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         const map = new Map<string, ItemVariantDto>();
         for (const v of product.variants) {
             if (v.deleted) continue;
-            const key = v.itemVariantAttributes
-                .map((a) => `${a.attributeName_en}=${a.attributes_en}`)
-                .sort()
-                .join('\0');
+            // Build the key using the same buildAttrComboKey helper used by lastGroupPriceMap
+            // lookups so both sides always produce identical keys (both use attributeName_en).
+            const attrRecord: Record<string, string> = {};
+            for (const a of v.itemVariantAttributes) {
+                attrRecord[a.attributeName_en] = a.attributes_en;
+            }
+            const key = buildAttrComboKey(attrRecord);
             if (!map.has(key)) map.set(key, v);
         }
         return map;
@@ -587,11 +603,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         const map = new Map<string, ItemVariantDto | null>();
         for (const option of lastGrp.options) {
             const testAttrs = { ...baseAttrs, [lastGrp.nameKey]: option.valueKey };
-            const lookupKey = Object.entries(testAttrs)
-                .map(([n, v]) => `${n}=${v}`)
-                .sort()
-                .join('\0');
-            map.set(option.valueKey, variantLookupByAttrs.get(lookupKey) ?? null);
+            map.set(option.valueKey, variantLookupByAttrs.get(buildAttrComboKey(testAttrs)) ?? null);
         }
         return map;
     }, [attributeGroups, product, selectedAttributes, hoveredAttributes, variantLookupByAttrs]);

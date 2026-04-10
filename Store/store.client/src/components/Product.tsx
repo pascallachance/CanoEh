@@ -304,6 +304,10 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
     const [selectedVariant, setSelectedVariant] = useState<ItemVariantDto | null>(null);
 
+    // Hover preview state (temporary – cleared on mouse leave)
+    const [hoveredAttributes, setHoveredAttributes] = useState<Record<string, string> | null>(null);
+    const [hoveredImageIndex, setHoveredImageIndex] = useState<number | null>(null);
+
     // Image gallery
     const [variantImages, setVariantImages] = useState<string[]>([]);
     const [mainImageIndex, setMainImageIndex] = useState<number>(0);
@@ -426,8 +430,30 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         setSelectedAttributes((prev) => ({ ...prev, [nameKey]: valueKey }));
     };
 
+    const handleAttributeHoverEnter = (nameKey: string, valueKey: string) => {
+        setHoveredAttributes({ ...selectedAttributes, [nameKey]: valueKey });
+        setMainImageError(false);
+    };
+
+    const handleAttributeHoverLeave = () => {
+        setHoveredAttributes(null);
+        setMainImageError(false);
+    };
+
     const handleThumbnailClick = (index: number) => {
         setMainImageIndex(index);
+        setMainImageError(false);
+    };
+
+    const handleThumbnailMouseEnter = (index: number) => {
+        if (index !== hoveredImageIndex) {
+            setHoveredImageIndex(index);
+            setMainImageError(false);
+        }
+    };
+
+    const handleThumbnailMouseLeave = () => {
+        setHoveredImageIndex(null);
         setMainImageError(false);
     };
 
@@ -467,9 +493,17 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         [categoryNodeMap, product]
     );
 
-    const offerActive = selectedVariant ? isOfferActive(selectedVariant) : false;
-    const discountedPrice = offerActive && selectedVariant
-        ? selectedVariant.price * (1 - (selectedVariant.offer ?? 0) / 100)
+    // Variant to display (temporary hover preview, or the permanently selected variant)
+    const displayVariant = useMemo(
+        () => (hoveredAttributes && product)
+            ? (findMatchingVariant(product.variants, hoveredAttributes) ?? selectedVariant)
+            : selectedVariant,
+        [hoveredAttributes, product, selectedVariant]
+    );
+
+    const offerActive = displayVariant ? isOfferActive(displayVariant) : false;
+    const discountedPrice = offerActive && displayVariant
+        ? displayVariant.price * (1 - (displayVariant.offer ?? 0) / 100)
         : null;
 
     // Build localized attribute groups for rendering the variant selector
@@ -502,9 +536,21 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         return map;
     }, [attributeGroups, product, selectedAttributes]);
 
-    const mainImage = variantImages[mainImageIndex] ?? null;
+    // Priority: thumbnail hover > variant-option hover > selected gallery image.
+    // Thumbnail hover (hoveredImageIndex) takes precedence so that mousing from a variant
+    // option directly onto a thumbnail shows the thumbnail image immediately.
+    const mainImage = (() => {
+        if (hoveredImageIndex !== null) {
+            return variantImages[hoveredImageIndex] ?? null;
+        }
+        if (hoveredAttributes && displayVariant) {
+            const hoverImages = parseImageUrls(displayVariant.imageUrls, displayVariant.thumbnailUrl);
+            if (hoverImages.length > 0) return hoverImages[0];
+        }
+        return variantImages[mainImageIndex] ?? null;
+    })();
 
-    const hasProductAttributes = !!(selectedVariant && (selectedVariant.sku || (selectedVariant.productIdentifierType && selectedVariant.productIdentifierValue)));
+    const hasProductAttributes = !!(displayVariant && (displayVariant.sku || (displayVariant.productIdentifierType && displayVariant.productIdentifierValue)));
 
     return (
         <div className="home-container">
@@ -619,26 +665,26 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
 
                                 {/* Price – shown here only when there are no variant attribute groups */}
                                 {attributeGroups.length === 0 && (
-                                    selectedVariant ? (
+                                    displayVariant ? (
                                         <div className="product-price-section">
                                             {offerActive && discountedPrice !== null ? (
                                                 <>
                                                     <span className="product-original-price">
-                                                        ${selectedVariant.price.toFixed(2)}
+                                                        ${displayVariant.price.toFixed(2)}
                                                     </span>
                                                     <span className="product-discounted-price">
                                                         ${discountedPrice.toFixed(2)}
                                                     </span>
                                                     <span className="product-offer-badge">
                                                         {getText(
-                                                            `${selectedVariant.offer}% OFF`,
-                                                            `Rabais ${selectedVariant.offer}%`
+                                                            `${displayVariant.offer}% OFF`,
+                                                            `Rabais ${displayVariant.offer}%`
                                                         )}
                                                     </span>
                                                 </>
                                             ) : (
                                                 <span className="product-price">
-                                                    ${selectedVariant.price.toFixed(2)}
+                                                    ${displayVariant.price.toFixed(2)}
                                                 </span>
                                             )}
                                         </div>
@@ -680,7 +726,8 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                                     type="button"
                                                                     className={`product-attribute-btn${isSelected ? ' selected' : ''}${hasThumbnail ? ' with-thumbnail' : ''}${isOutOfStock ? ' out-of-stock' : ''}`}
                                                                     onClick={isSelected ? undefined : () => handleAttributeSelect(group.nameKey, option.valueKey)}
-                                                                    onMouseEnter={isSelected ? undefined : () => handleAttributeSelect(group.nameKey, option.valueKey)}
+                                                                    onMouseEnter={isSelected ? undefined : () => handleAttributeHoverEnter(group.nameKey, option.valueKey)}
+                                                                    onMouseLeave={handleAttributeHoverLeave}
                                                                     aria-pressed={isSelected}
                                                                     aria-label={isOutOfStock ? `${option.displayLabel}, ${getText('out of stock', 'rupture de stock')}` : undefined}
                                                                 >
@@ -768,7 +815,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                         })}
 
                                         {/* Unavailable combination message */}
-                                        {!selectedVariant && (
+                                        {!displayVariant && (
                                             <div className="product-price-section">
                                                 <span className="product-unavailable">
                                                     {getText(
@@ -782,13 +829,13 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                 )}
 
                                 {/* Stock info */}
-                                {selectedVariant && (
-                                    <p className={selectedVariant.stockQuantity > 5 ? 'product-stock' : 'product-stock-low'}>
-                                        {selectedVariant.stockQuantity > 0
-                                            ? (selectedVariant.stockQuantity <= 5
+                                {displayVariant && (
+                                    <p className={displayVariant.stockQuantity > 5 ? 'product-stock' : 'product-stock-low'}>
+                                        {displayVariant.stockQuantity > 0
+                                            ? (displayVariant.stockQuantity <= 5
                                                 ? getText(
-                                                    `${selectedVariant.stockQuantity} in stock`,
-                                                    `${selectedVariant.stockQuantity} en stock`
+                                                    `${displayVariant.stockQuantity} in stock`,
+                                                    `${displayVariant.stockQuantity} en stock`
                                                 )
                                                 : getText('In stock', 'En stock')
                                             )
@@ -797,14 +844,14 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                 )}
 
                                 {/* Variant Features */}
-                                {selectedVariant && selectedVariant.itemVariantFeatures.length > 0 && (
+                                {displayVariant && displayVariant.itemVariantFeatures.length > 0 && (
                                     <div className="product-variant-features">
                                         <h2 className="product-variant-features-title">
                                             {getText('Features', 'Caractéristiques')}
                                         </h2>
                                         <table className="product-variant-features-table">
                                             <tbody>
-                                                {selectedVariant.itemVariantFeatures.map((feature) => (
+                                                {displayVariant.itemVariantFeatures.map((feature) => (
                                                     <tr key={feature.id} className="product-variant-features-row">
                                                         <th className="product-variant-features-name" scope="row">
                                                             {language === 'fr' && feature.attributeName_fr
@@ -824,19 +871,19 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                 )}
 
                                 {/* Product Attributes */}
-                                {hasProductAttributes && selectedVariant && (
+                                {hasProductAttributes && displayVariant && (
                                     <div className="product-attributes">
                                         <h2 className="product-attributes-title">
                                             {getText('Product Details', 'Détails du produit')}
                                         </h2>
-                                        {selectedVariant.sku && (
+                                        {displayVariant.sku && (
                                             <p className="product-attributes-row">
-                                                {getText('SKU', 'UGS')}: {selectedVariant.sku}
+                                                {getText('SKU', 'UGS')}: {displayVariant.sku}
                                             </p>
                                         )}
-                                        {selectedVariant.productIdentifierType && selectedVariant.productIdentifierValue && (
+                                        {displayVariant.productIdentifierType && displayVariant.productIdentifierValue && (
                                             <p className="product-attributes-row">
-                                                {selectedVariant.productIdentifierType}: {selectedVariant.productIdentifierValue}
+                                                {displayVariant.productIdentifierType}: {displayVariant.productIdentifierValue}
                                             </p>
                                         )}
                                     </div>
@@ -875,7 +922,8 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                     type="button"
                                                     className={`product-thumbnail-btn${mainImageIndex === idx ? ' active' : ''}`}
                                                     onClick={() => handleThumbnailClick(idx)}
-                                                    onMouseEnter={mainImageIndex === idx ? undefined : () => handleThumbnailClick(idx)}
+                                                    onMouseEnter={() => handleThumbnailMouseEnter(idx)}
+                                                    onMouseLeave={handleThumbnailMouseLeave}
                                                     aria-label={getText(`View image ${idx + 1}`, `Voir l'image ${idx + 1}`)}
                                                     aria-pressed={mainImageIndex === idx}
                                                 >

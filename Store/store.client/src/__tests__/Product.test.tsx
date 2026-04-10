@@ -480,7 +480,7 @@ describe('Product page – variant attribute selection', () => {
         });
     });
 
-    it('hovering a variant option marks it as pressed', async () => {
+    it('hovering a variant option does not change the selected (aria-pressed) state', async () => {
         const user = userEvent.setup();
         const productWithVariants = makeProduct({
             variants: [
@@ -507,12 +507,14 @@ describe('Product page – variant attribute selection', () => {
         const smallBtn = screen.getByRole('button', { name: 'Small' });
         const largeBtn = screen.getByRole('button', { name: 'Large' });
         expect(smallBtn).toHaveAttribute('aria-pressed', 'true');
+        expect(largeBtn).toHaveAttribute('aria-pressed', 'false');
 
         await user.hover(largeBtn);
 
+        // Hover is a temporary preview – selected state (aria-pressed) must not change
         await waitFor(() => {
-            expect(largeBtn).toHaveAttribute('aria-pressed', 'true');
-            expect(smallBtn).toHaveAttribute('aria-pressed', 'false');
+            expect(smallBtn).toHaveAttribute('aria-pressed', 'true');
+            expect(largeBtn).toHaveAttribute('aria-pressed', 'false');
         });
     });
 
@@ -549,6 +551,46 @@ describe('Product page – variant attribute selection', () => {
         expect(blackBtn).toHaveAttribute('aria-pressed', 'true');
         const mainImg = document.querySelector('.product-main-image') as HTMLImageElement | null;
         expect(mainImg?.src).toContain('black.jpg');
+    });
+
+    it('unhovering a variant option reverts the main image to the selected variant image', async () => {
+        const user = userEvent.setup();
+        const productWithVariants = makeProduct({
+            variants: [
+                makeVariant({
+                    id: 'v1',
+                    imageUrls: 'https://example.com/black.jpg',
+                    itemVariantAttributes: [
+                        { id: 'a1', attributeName_en: 'Color', attributes_en: 'Black' },
+                    ],
+                }),
+                makeVariant({
+                    id: 'v2',
+                    imageUrls: 'https://example.com/white.jpg',
+                    itemVariantAttributes: [
+                        { id: 'a2', attributeName_en: 'Color', attributes_en: 'White' },
+                    ],
+                }),
+            ],
+        });
+        setupFetchWithCategories(productWithVariants);
+        renderProduct();
+        await waitForProductLoaded();
+
+        const mainImg = () => document.querySelector('.product-main-image') as HTMLImageElement | null;
+        expect(mainImg()?.src).toContain('black.jpg');
+
+        const whiteBtn = screen.getByRole('button', { name: 'White' });
+        await user.hover(whiteBtn);
+        await waitFor(() => expect(mainImg()?.src).toContain('white.jpg'));
+
+        // Mouse leave – should revert to the selected (Black) variant image
+        await user.unhover(whiteBtn);
+        await waitFor(() => expect(mainImg()?.src).toContain('black.jpg'));
+
+        // Black should still be the selected option
+        expect(screen.getByRole('button', { name: 'Black' })).toHaveAttribute('aria-pressed', 'true');
+        expect(whiteBtn).toHaveAttribute('aria-pressed', 'false');
     });
 
     it('shows "combination not available" when no variant matches selected attributes', async () => {
@@ -759,6 +801,32 @@ describe('Product page – thumbnail gallery', () => {
         expect(mainImg()?.src).toContain('img1.jpg');
         // Active thumbnail should still be the first one
         expect(thumbBtns[0]).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('unhovering a thumbnail reverts the main image to the selected one', async () => {
+        const user = userEvent.setup();
+        setupFetchWithCategories(makeProduct({
+            variants: [makeVariant({
+                imageUrls: 'https://example.com/img1.jpg,https://example.com/img2.jpg',
+            })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const mainImg = () => document.querySelector('.product-main-image') as HTMLImageElement | null;
+        expect(mainImg()?.src).toContain('img1.jpg');
+
+        const thumbBtns = screen.getAllByRole('button', { name: /View image/i });
+        await user.hover(thumbBtns[1]);
+        await waitFor(() => expect(mainImg()?.src).toContain('img2.jpg'));
+
+        // Move mouse away – should revert to the selected (first) image
+        await user.unhover(thumbBtns[1]);
+        await waitFor(() => expect(mainImg()?.src).toContain('img1.jpg'));
+
+        // The first thumbnail should still be the active (selected) one
+        expect(thumbBtns[0]).toHaveAttribute('aria-pressed', 'true');
+        expect(thumbBtns[1]).toHaveAttribute('aria-pressed', 'false');
     });
 });
 

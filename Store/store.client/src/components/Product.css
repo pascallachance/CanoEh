@@ -336,6 +336,13 @@
     font-weight: normal;
 }
 
+.product-option-original-price {
+    font-size: 11px;
+    color: #999;
+    text-decoration: line-through;
+    text-align: center;
+}
+
 /* Description */
 .product-description {
     border-top: 1px solid #e8e8e8;

@@ -432,10 +432,12 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
 
     const handleAttributeHoverEnter = (nameKey: string, valueKey: string) => {
         setHoveredAttributes({ ...selectedAttributes, [nameKey]: valueKey });
+        setMainImageError(false);
     };
 
     const handleAttributeHoverLeave = () => {
         setHoveredAttributes(null);
+        setMainImageError(false);
     };
 
     const handleThumbnailClick = (index: number) => {
@@ -444,11 +446,15 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     };
 
     const handleThumbnailMouseEnter = (index: number) => {
-        setHoveredImageIndex(index);
+        if (index !== hoveredImageIndex) {
+            setHoveredImageIndex(index);
+            setMainImageError(false);
+        }
     };
 
     const handleThumbnailMouseLeave = () => {
         setHoveredImageIndex(null);
+        setMainImageError(false);
     };
 
     const handleConnectClick = () => {

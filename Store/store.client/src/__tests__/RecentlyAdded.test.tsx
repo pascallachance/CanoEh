@@ -184,7 +184,7 @@ describe('RecentlyAdded page – image selection', () => {
         vi.unstubAllEnvs();
     });
 
-    it('prefers image ending with _1 over others in imageUrls', async () => {
+    it('uses first image in imageUrls as the main image', async () => {
         setupFetchMock([
             makeProduct({
                 id: '1',
@@ -196,10 +196,10 @@ describe('RecentlyAdded page – image selection', () => {
         await waitForLoaded();
 
         const img = document.querySelector('.browse-product-image') as HTMLImageElement;
-        expect(img?.src).toContain('img_1.jpg');
+        expect(img?.src).toContain('img_2.jpg');
     });
 
-    it('falls back to first imageUrl when no _1 image is present', async () => {
+    it('uses the first imageUrl as the main image when no preferred filename ordering applies', async () => {
         setupFetchMock([
             makeProduct({
                 id: '1',

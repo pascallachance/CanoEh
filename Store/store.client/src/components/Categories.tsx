@@ -67,8 +67,6 @@ interface CategoryProduct {
     categoryName_fr: string;
 }
 
-const PRIMARY_IMAGE_PATTERN = /_1\.(jpg|jpeg|png|gif|webp)$/i;
-
 function isOfferActive(variant: ItemVariantDto): boolean {
     if (!variant.offer || variant.offer <= 0) return false;
     if (variant.offerStart && new Date(variant.offerStart) > new Date()) return false;
@@ -82,8 +80,7 @@ function extractBestImageUrl(variant: ItemVariantDto): string | null {
             .split(',')
             .map((u: string) => u.trim())
             .filter((u: string) => u.length > 0);
-        const primary = urls.find((u: string) => PRIMARY_IMAGE_PATTERN.test(u));
-        return primary ?? urls[0] ?? null;
+        return urls[0] ?? null;
     }
     return variant.thumbnailUrl ?? null;
 }

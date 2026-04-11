@@ -921,6 +921,10 @@ export const translations: TranslationResources = {
   'variant.moveRight': {
     en: 'Move right',
     fr: 'Déplacer à droite'
+  },
+  'variant.mainImageLabel': {
+    en: 'Main',
+    fr: 'Principal'
   }
 };
 

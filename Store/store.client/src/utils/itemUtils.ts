@@ -2,9 +2,6 @@
  * Shared helpers for selecting the best variant and primary image from a product.
  */
 
-/** Pattern that identifies a primary product image (filename ends with _1 before the extension). */
-export const PRIMARY_IMAGE_PATTERN = /_1\.(jpg|jpeg|png|gif|webp)$/i;
-
 export interface MinimalVariant {
     price: number;
     imageUrls?: string;
@@ -24,8 +21,7 @@ export function cheapestActiveVariant<T extends MinimalVariant>(variants: T[]): 
 
 /**
  * Picks the best display image from an ordered list of variants.
- * Prefers an image whose filename ends with _1 (PRIMARY_IMAGE_PATTERN);
- * falls back to the first image in imageUrls, then thumbnailUrl.
+ * Uses the first image in imageUrls; falls back to thumbnailUrl.
  * Returns null when no image is found.
  */
 export function pickPrimaryImage(variants: MinimalVariant[]): string | null {
@@ -35,8 +31,7 @@ export function pickPrimaryImage(variants: MinimalVariant[]): string | null {
                 .split(',')
                 .map(u => u.trim())
                 .filter(u => u.length > 0);
-            const primary = urls.find(u => PRIMARY_IMAGE_PATTERN.test(u));
-            const chosen = primary ?? urls[0] ?? null;
+            const chosen = urls[0] ?? null;
             if (chosen) return chosen;
         }
         if (variant.thumbnailUrl) return variant.thumbnailUrl;

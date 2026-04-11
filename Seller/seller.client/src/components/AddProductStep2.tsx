@@ -263,10 +263,10 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
     const variantAttributeLimitReached = formData.variantAttributes.length >= MAX_VARIANT_ATTRIBUTES;
     const lastVariantAttr = formData.variantAttributes[formData.variantAttributes.length - 1];
     const isAddVariantAttributeDisabled = variantAttributeLimitReached ||
-        (formData.variantAttributes.length > 0 && (!lastVariantAttr.name_en || !lastVariantAttr.name_fr || lastVariantAttr.values.length === 0));
+        (formData.variantAttributes.length > 0 && lastVariantAttr != null && (!lastVariantAttr.name_en || !lastVariantAttr.name_fr || lastVariantAttr.values.length === 0));
 
     const lastVariantFeature = formData.variantFeatures[formData.variantFeatures.length - 1];
-    const isAddVariantFeatureDisabled = formData.variantFeatures.length > 0 &&
+    const isAddVariantFeatureDisabled = formData.variantFeatures.length > 0 && lastVariantFeature != null &&
         (!lastVariantFeature.name_en || !lastVariantFeature.name_fr);
 
     return (

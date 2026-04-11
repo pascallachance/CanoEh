@@ -5,7 +5,6 @@ import type { AddProductStep1Data } from './AddProductStep1';
 import StepIndicator from './StepIndicator';
 import BilingualTagInput, { type BilingualValue } from './BilingualTagInput';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useNotifications } from '../contexts/useNotifications';
 
 export interface ItemAttribute {
     clientId: string;
@@ -44,7 +43,6 @@ interface CategoryNode {
 
 function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep2Props) {
     const { t, language } = useLanguage();
-    const { showWarning } = useNotifications();
     const [formData, setFormData] = useState<AddProductStep2Data>(initialData || {
         categoryId: '',
         variantAttributes: [],
@@ -113,7 +111,6 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
 
         if (formData.variantAttributes.length === 0 && !editMode) {
             newErrors.variantAttributes = t('error.variantAttributesRequired');
-            showWarning(t('error.variantAttributesRequired'));
         } else {
             const seenEnglishNames = new Set<string>();
             const seenFrenchNames = new Set<string>();
@@ -481,6 +478,11 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                             ))}
 
                             <div className="attribute-actions">
+                                {variantAttributeLimitReached && (
+                                    <span className="sr-only" role="status" aria-live="polite">
+                                        {t('variantAttr.maxReached')}
+                                    </span>
+                                )}
                                 <button
                                     type="button"
                                     onClick={addNewVariantAttribute}

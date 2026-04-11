@@ -49,7 +49,6 @@ interface OfferProduct {
 }
 
 const OFFERS_FETCH_COUNT = 100;
-const PRIMARY_IMAGE_PATTERN = /_1\.(jpg|jpeg|png|gif|webp)$/i;
 
 function isOfferActive(variant: ItemVariantDto): boolean {
     if (!variant.offer || variant.offer <= 0) return false;
@@ -173,10 +172,7 @@ function Offers({ isAuthenticated = false, onLogout }: OffersProps) {
                             .split(',')
                             .map((u: string) => u.trim())
                             .filter((u: string) => u.length > 0);
-                        const primaryImage = urls.find((u: string) =>
-                            PRIMARY_IMAGE_PATTERN.test(u)
-                        );
-                        imageUrl = primaryImage ?? urls[0] ?? null;
+                        imageUrl = urls[0] ?? null;
                     }
                     if (!imageUrl && bestVariant.thumbnailUrl) {
                         imageUrl = bestVariant.thumbnailUrl;

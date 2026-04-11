@@ -90,7 +90,6 @@ const SUGGESTED_ITEMS_FETCH_COUNT = 24; // Fetch more to ensure we get enough wi
 const OFFERS_COUNT = 16;
 const SUGGESTED_CATEGORIES_FETCH_COUNT = 24;
 const SUGGESTED_CATEGORIES_DISPLAY_COUNT = 16;
-const PRIMARY_IMAGE_PATTERN = /_1\.(jpg|jpeg|png|gif|webp)$/i; // Pattern to match primary product images ending with _1
 
 /**
  * Returns true if the variant has an active (non-expired and started) offer.
@@ -207,8 +206,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
             let imageUrl: string | null = null;
             if (variant.imageUrls) {
                 const urls = variant.imageUrls.split(',').filter((url: string) => url.trim());
-                const imageWith_1 = urls.find((url: string) => PRIMARY_IMAGE_PATTERN.test(url.trim()));
-                imageUrl = imageWith_1 ? imageWith_1.trim() : (urls.length > 0 ? urls[0].trim() : null);
+                imageUrl = urls.length > 0 ? urls[0].trim() : null;
             }
             if (!imageUrl && variant.thumbnailUrl) {
                 imageUrl = variant.thumbnailUrl;

@@ -957,6 +957,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                         alt={`${t('products.productImages')} ${index + 1}`} 
                                                                         className="thumbnail-preview"
                                                                     />
+                                                                    {index === 0 && (
+                                                                        <span className="main-image-label">{t('variant.mainImageLabel')}</span>
+                                                                    )}
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => handleRemoveImage(variant.id, index)}

@@ -730,7 +730,7 @@ describe('Offers page – product image selection', () => {
         vi.unstubAllEnvs();
     });
 
-    it('prefers image ending with _1 when multiple images are present', async () => {
+    it('uses first image in imageUrls as the main image', async () => {
         setupFetchMock([
             makeProduct({
                 id: '1',
@@ -747,7 +747,7 @@ describe('Offers page – product image selection', () => {
         await waitForProductsLoaded();
 
         const img = document.querySelector('.browse-product-card img');
-        expect(img?.getAttribute('src')).toContain('product_1.jpg');
+        expect(img?.getAttribute('src')).toContain('product_3.jpg');
     });
 
     it('falls back to first image when no _1 image is present', async () => {

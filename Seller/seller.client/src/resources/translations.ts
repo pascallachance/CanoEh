@@ -660,6 +660,14 @@ export const translations: TranslationResources = {
     en: 'Please add at least one variant attribute to continue.',
     fr: 'Veuillez ajouter au moins un attribut de variante pour continuer.'
   },
+  'error.variantAttributesIncomplete': {
+    en: 'All variant attributes must have names (EN & FR) and at least one value.',
+    fr: 'Tous les attributs de variante doivent avoir des noms (EN et FR) et au moins une valeur.'
+  },
+  'error.variantFeaturesIncomplete': {
+    en: 'All variant features must have both English and French names.',
+    fr: 'Toutes les caractéristiques de variante doivent avoir des noms en anglais et en français.'
+  },
   'error.invalidVariants': {
     en: 'Please ensure all variants have a SKU and price greater than 0.',
     fr: 'Veuillez vous assurer que toutes les variantes ont un SKU et un prix supérieur à 0.'
@@ -721,6 +729,14 @@ export const translations: TranslationResources = {
   'category.selectCategoryLabel': {
     en: 'Select category',
     fr: 'Sélectionner la catégorie'
+  },
+  'category.doubleClickHint': {
+    en: 'Double-click to change',
+    fr: 'Double-cliquez pour modifier'
+  },
+  'category.changeHint': {
+    en: 'Click (or press Enter/Space) to change',
+    fr: 'Cliquez (ou appuyez sur Entrée/Espace) pour modifier'
   },
 
   // Bilingual tag input

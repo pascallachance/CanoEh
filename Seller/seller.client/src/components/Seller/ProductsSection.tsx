@@ -727,6 +727,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 return orderA - orderB;
             })
             .map(([, attr]) => ({
+                clientId: crypto.randomUUID(),
                 name_en: attr.name_en,
                 name_fr: attr.name_fr,
                 values: attr.values,
@@ -765,6 +766,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 return orderA - orderB;
             })
             .map(([, feature]) => ({
+                clientId: crypto.randomUUID(),
                 name_en: feature.name_en,
                 name_fr: feature.name_fr,
                 values: []

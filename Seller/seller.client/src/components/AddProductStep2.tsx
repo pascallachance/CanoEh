@@ -7,6 +7,7 @@ import BilingualTagInput, { type BilingualValue } from './BilingualTagInput';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export interface ItemAttribute {
+    clientId: string;
     name_en: string;
     name_fr: string;
     values: BilingualValue[];
@@ -50,7 +51,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
 
     const [allCategoryNodes, setAllCategoryNodes] = useState<CategoryNode[]>([]);
     const [navigationPath, setNavigationPath] = useState<CategoryNode[]>([]);
-    const [errors, setErrors] = useState<{ categoryId?: string; variantAttributes?: string }>({});
+    const [errors, setErrors] = useState<{ categoryId?: string; variantAttributes?: string; variantFeatures?: string }>({});
 
     // Fetch all category nodes on mount
     useEffect(() => {
@@ -102,7 +103,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
     }, [onCancel]);
 
     const validateForm = (): boolean => {
-        const newErrors: { categoryId?: string; variantAttributes?: string } = {};
+        const newErrors: { categoryId?: string; variantAttributes?: string; variantFeatures?: string } = {};
 
         if (!formData.categoryId) {
             newErrors.categoryId = t('error.categoryRequired');
@@ -111,12 +112,43 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
         if (formData.variantAttributes.length === 0 && !editMode) {
             newErrors.variantAttributes = t('error.variantAttributesRequired');
         } else {
-            const hasIncomplete = formData.variantAttributes.some(
-                attr => !attr.name_en || !attr.name_fr || attr.values.length === 0
-            );
-            if (hasIncomplete) {
+            const seenEnglishNames = new Set<string>();
+            const seenFrenchNames = new Set<string>();
+
+            const hasInvalidVariantAttributes = formData.variantAttributes.some(attr => {
+                const trimmedNameEn = attr.name_en.trim();
+                const trimmedNameFr = attr.name_fr.trim();
+
+                if (!trimmedNameEn || !trimmedNameFr || attr.values.length === 0) {
+                    return true;
+                }
+
+                const normalizedNameEn = trimmedNameEn.toLowerCase();
+                const normalizedNameFr = trimmedNameFr.toLowerCase();
+
+                if (seenEnglishNames.has(normalizedNameEn) || seenFrenchNames.has(normalizedNameFr)) {
+                    return true;
+                }
+
+                seenEnglishNames.add(normalizedNameEn);
+                seenFrenchNames.add(normalizedNameFr);
+
+                return attr.values.some(value => !value.en.trim() || !value.fr.trim());
+            });
+
+            if (hasInvalidVariantAttributes) {
                 newErrors.variantAttributes = t('error.variantAttributesIncomplete');
             }
+        }
+
+        // Catch partially-filled feature rows (one name filled but not the other)
+        const hasPartialFeature = formData.variantFeatures.some(feat => {
+            const hasEn = feat.name_en.trim().length > 0;
+            const hasFr = feat.name_fr.trim().length > 0;
+            return hasEn !== hasFr;
+        });
+        if (hasPartialFeature) {
+            newErrors.variantFeatures = t('error.variantFeaturesIncomplete');
         }
 
         setErrors(newErrors);
@@ -192,6 +224,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
         setFormData(prev => ({
             ...prev,
             variantAttributes: [...prev.variantAttributes, {
+                clientId: crypto.randomUUID(),
                 name_en: '',
                 name_fr: '',
                 values: [],
@@ -238,6 +271,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
         setFormData(prev => ({
             ...prev,
             variantFeatures: [...prev.variantFeatures, {
+                clientId: crypto.randomUUID(),
                 name_en: '',
                 name_fr: '',
                 values: []
@@ -255,7 +289,14 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (validateForm()) {
-            onNext(formData);
+            // Filter out completely blank feature rows before proceeding
+            const cleanedData: AddProductStep2Data = {
+                ...formData,
+                variantFeatures: formData.variantFeatures.filter(
+                    feat => feat.name_en.trim() || feat.name_fr.trim()
+                )
+            };
+            onNext(cleanedData);
         }
     };
     
@@ -292,11 +333,21 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                             {formData.categoryId && (
                                 <div
                                     className="category-selected-path"
+                                    role="button"
+                                    tabIndex={0}
+                                    title={t('category.changeHint')}
                                     onDoubleClick={() => { setFormData(prev => ({ ...prev, categoryId: '' })); setNavigationPath([]); }}
-                                    title={t('category.doubleClickHint')}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            setFormData(prev => ({ ...prev, categoryId: '' }));
+                                            setNavigationPath([]);
+                                        }
+                                    }}
+                                    aria-label={`${t('category.selected')} ${getCategoryPath(formData.categoryId)}. ${t('category.changeHint')}`}
                                 >
                                     <strong>{t('category.selected')}</strong> {getCategoryPath(formData.categoryId)}
-                                    <span className="category-change-hint">{t('category.doubleClickHint')}</span>
+                                    <span className="category-change-hint">{t('category.changeHint')}</span>
                                 </div>
                             )}
                             {!formData.categoryId && (
@@ -371,7 +422,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                             )}
 
                             {formData.variantAttributes.map((attr, index) => (
-                                <div key={index} className={`attribute-input-container${attr.isMain ? ' attribute-input-container-main' : ''}`}>
+                                <div key={attr.clientId} className={`attribute-input-container${attr.isMain ? ' attribute-input-container-main' : ''}`}>
                                     <div className="attribute-main-selector">
                                         <label className="main-attribute-label">
                                             <input
@@ -450,9 +501,14 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                             <p className="section-description">
                                 {t('variantFeature.description')}
                             </p>
+                            {errors.variantFeatures && (
+                                <div className="error-message" role="alert">
+                                    {errors.variantFeatures}
+                                </div>
+                            )}
 
                             {formData.variantFeatures.map((feat, index) => (
-                                <div key={index} className="attribute-input-container">
+                                <div key={feat.clientId} className="attribute-input-container">
                                     <div className="attribute-names">
                                         <div className="attribute-input-group">
                                             <label>{t('variantFeature.nameEn')}</label>

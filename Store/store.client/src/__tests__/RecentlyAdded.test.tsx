@@ -199,7 +199,7 @@ describe('RecentlyAdded page – image selection', () => {
         expect(img?.src).toContain('img_2.jpg');
     });
 
-    it('falls back to first imageUrl when no _1 image is present', async () => {
+    it('uses the first imageUrl as the main image when no preferred filename ordering applies', async () => {
         setupFetchMock([
             makeProduct({
                 id: '1',

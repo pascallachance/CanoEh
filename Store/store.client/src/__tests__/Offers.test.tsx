@@ -750,7 +750,7 @@ describe('Offers page – product image selection', () => {
         expect(img?.getAttribute('src')).toContain('product_3.jpg');
     });
 
-    it('falls back to first image when no _1 image is present', async () => {
+    it('uses the first image in imageUrls when multiple images are provided', async () => {
         setupFetchMock([
             makeProduct({
                 id: '1',

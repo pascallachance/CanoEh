@@ -412,9 +412,6 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                         {/* Variant Attributes Section */}
                         <div className="variant-attributes-section full-width">
                             <h4>{t('variantAttr.title')}</h4>
-                            <p className="section-description">
-                                <strong>{t('variantAttr.required')}</strong> {t('variantAttr.description')}
-                            </p>
                             {errors.variantAttributes && (
                                 <div className="error-message" role="alert">
                                     {errors.variantAttributes}
@@ -482,13 +479,16 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
 
                             <div className="attribute-actions">
                                 {variantAttributeLimitReached && (
-                                    <p className="attribute-limit-message" role="status" aria-live="polite">{t('variantAttr.maxReached')}</p>
+                                    <span className="sr-only" role="status" aria-live="polite">
+                                        {t('variantAttr.maxReached')}
+                                    </span>
                                 )}
                                 <button
                                     type="button"
                                     onClick={addNewVariantAttribute}
                                     className="add-attribute-btn"
                                     disabled={isAddVariantAttributeDisabled}
+                                    style={variantAttributeLimitReached ? { visibility: 'hidden' } : undefined}
                                 >
                                     {t('products.addAttribute')}
                                 </button>

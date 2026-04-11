@@ -102,6 +102,12 @@
     margin-bottom: 0.5rem;
 }
 
+.variant-attributes-section h4 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    text-align: left;
+}
+
 .section-description {
     color: #666;
     font-size: 0.9rem;

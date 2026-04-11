@@ -1,6 +1,5 @@
 import { useState, useRef, type KeyboardEvent, type ChangeEvent } from 'react';
 import './BilingualTagInput.css';
-import { useLanguage } from '../contexts/LanguageContext';
 
 export interface BilingualValue {
     en: string;
@@ -26,7 +25,6 @@ function BilingualTagInput({
     labelFr = 'Values (French)',
     id 
 }: BilingualTagInputProps) {
-    const { t } = useLanguage();
     const [inputValueEn, setInputValueEn] = useState('');
     const [inputValueFr, setInputValueFr] = useState('');
     const [error, setError] = useState('');
@@ -300,9 +298,6 @@ function BilingualTagInput({
                     {error}
                 </div>
             )}
-            <div className="bilingual-tag-input-help">
-                <p><strong>{t('bilingualInput.helpNoteLabel')}</strong> {t('bilingualInput.helpNoteText')}</p>
-            </div>
         </div>
     );
 }

@@ -39,7 +39,7 @@ export const translations: TranslationResources = {
 
   // Product Actions
   'products.listProducts': {
-    en: 'List Products',
+    en: 'List of Products',
     fr: 'Liste des produits'
   },
   'products.addProduct': {

@@ -287,16 +287,23 @@ function BilingualTagInput({
                                 </div>
                             ))}
                         </div>
-                        <input
-                            id={`${id}-fr`}
-                            type="text"
-                            value={inputValueFr}
-                            onChange={handleInputChangeFr}
-                            onKeyDown={handleKeyDownFr}
-                            placeholder={placeholderFr}
-                            className="bilingual-tag-input-field"
-                            ref={inputRefFr}
-                        />
+                        <div className="bilingual-tag-pair">
+                            <input
+                                id={`${id}-fr`}
+                                type="text"
+                                value={inputValueFr}
+                                onChange={handleInputChangeFr}
+                                onKeyDown={handleKeyDownFr}
+                                placeholder={placeholderFr}
+                                className="bilingual-tag-input-field"
+                                ref={inputRefFr}
+                            />
+                            <div className="bilingual-tag-actions bilingual-tag-actions-spacer" aria-hidden="true">
+                                <button type="button" className="bilingual-tag-move-btn" tabIndex={-1} disabled aria-hidden="true">↑</button>
+                                <button type="button" className="bilingual-tag-move-btn" tabIndex={-1} disabled aria-hidden="true">↓</button>
+                                <button type="button" className="bilingual-tag-remove-btn" tabIndex={-1} disabled aria-hidden="true">×</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

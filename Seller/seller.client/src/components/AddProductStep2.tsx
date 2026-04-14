@@ -498,9 +498,6 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                         {/* Variant Features Section */}
                         <div className="item-attributes-section full-width">
                             <h4>{t('variantFeature.title')}</h4>
-                            <p className="section-description">
-                                {t('variantFeature.description')}
-                            </p>
                             {errors.variantFeatures && (
                                 <div className="error-message" role="alert">
                                     {errors.variantFeatures}

@@ -113,13 +113,13 @@ function Seller({ companies, onLogout, onCompanyUpdate }: SellerProps) {
         if (!productsSectionRef.current) return;
         setActiveProductAction('list');
         productsSectionRef.current.openListProducts();
-    }, [productsSectionRef]);
+    }, []);
 
     const handleAddProductClick = useCallback(() => {
         if (!productsSectionRef.current) return;
         setActiveProductAction('add');
         productsSectionRef.current.openAddProduct();
-    }, [productsSectionRef]);
+    }, []);
 
     const handleManageOffersClick = useCallback(() => {
         if (!productsSectionRef.current) return;
@@ -127,7 +127,7 @@ function Seller({ companies, onLogout, onCompanyUpdate }: SellerProps) {
         productsSectionRef.current.openManageOffers().catch(() => {
             setActiveProductAction(prev => prev === 'manageOffers' ? 'list' : prev);
         });
-    }, [productsSectionRef]);
+    }, []);
 
     const renderContent = () => {
         switch (activeSection) {

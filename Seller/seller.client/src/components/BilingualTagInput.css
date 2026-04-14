@@ -98,8 +98,6 @@
 }
 
 .bilingual-tag-input-field {
-    display: flex;
-    align-items: center;
     width: 100%;
     box-sizing: border-box;
     border: 1px dashed #90caf9;

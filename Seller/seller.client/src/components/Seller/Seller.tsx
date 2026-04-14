@@ -64,6 +64,7 @@ function Seller({ companies, onLogout, onCompanyUpdate }: SellerProps) {
     const [activeSection, setActiveSection] = useState<SellerSection>(() => getInitialSection(location));
     const [analyticsPeriod, setAnalyticsPeriod] = useState<PeriodType>('7d');
     const [isManageOffersDisabled, setIsManageOffersDisabled] = useState(true);
+    const [activeProductAction, setActiveProductAction] = useState<'list' | 'add' | 'manageOffers'>('list');
     const { language, setLanguage, t } = useLanguage();
     const productsSectionRef = useRef<ProductsSectionRef>(null);
     // Track the last navigation key we processed to avoid reprocessing
@@ -97,8 +98,35 @@ function Seller({ companies, onLogout, onCompanyUpdate }: SellerProps) {
         }
     }, [location.key, location.state]);
 
+    // Reset active product action when navigating away from the products section
+    useEffect(() => {
+        if (activeSection !== 'products') {
+            setActiveProductAction('list');
+        }
+    }, [activeSection]);
+
     const handleManageOffersStateChange = useCallback((isLoading: boolean, hasItems: boolean) => {
         setIsManageOffersDisabled(isLoading || !hasItems);
+    }, []);
+
+    const handleListProductsClick = useCallback(() => {
+        setActiveProductAction('list');
+        productsSectionRef.current?.openListProducts();
+    }, []);
+
+    const handleAddProductClick = useCallback(() => {
+        setActiveProductAction('add');
+        productsSectionRef.current?.openAddProduct();
+    }, []);
+
+    const handleManageOffersClick = useCallback(() => {
+        setActiveProductAction('manageOffers');
+        const openResult = productsSectionRef.current?.openManageOffers();
+        if (openResult) {
+            openResult.catch(() => {
+                setActiveProductAction('list');
+            });
+        }
     }, []);
 
     const renderContent = () => {
@@ -135,20 +163,20 @@ function Seller({ companies, onLogout, onCompanyUpdate }: SellerProps) {
                 return (
                     <div className="action-buttons">
                         <button 
-                            className="action-button"
-                            onClick={() => productsSectionRef.current?.openListProducts()}
+                            className={`action-button${activeProductAction === 'list' ? ' active' : ''}`}
+                            onClick={handleListProductsClick}
                         >
                             {t('products.listProducts')}
                         </button>
                         <button 
-                            className="action-button"
-                            onClick={() => productsSectionRef.current?.openAddProduct()}
+                            className={`action-button${activeProductAction === 'add' ? ' active' : ''}`}
+                            onClick={handleAddProductClick}
                         >
                             {t('products.addProduct')}
                         </button>
                         <button 
-                            className="action-button"
-                            onClick={() => productsSectionRef.current?.openManageOffers()}
+                            className={`action-button${activeProductAction === 'manageOffers' ? ' active' : ''}`}
+                            onClick={handleManageOffersClick}
                             disabled={isManageOffersDisabled}
                         >
                             {t('products.manageOffers')}

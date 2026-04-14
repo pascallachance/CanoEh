@@ -36,7 +36,7 @@ interface ProductsSectionProps {
 
 export interface ProductsSectionRef {
     openListProducts: () => void;
-    openManageOffers: () => void;
+    openManageOffers: () => Promise<void>;
     openAddProduct: () => void;
     openEditProduct: (itemId: string) => void;
     isLoadingItems: boolean;
@@ -867,8 +867,8 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     };
 
     // Handle opening manage offers inline view
-    const handleOpenManageOffers = useCallback(() => {
-        void (async () => {
+    const handleOpenManageOffers = useCallback((): Promise<void> => {
+        return (async () => {
             try {
                 // Refresh data to ensure we show the latest offers
                 await fetchSellerItems();
@@ -878,6 +878,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 console.error('Error fetching seller items for manage offers view:', error);
                 // Provide user feedback and do not open on failure
                 showError(t('products.list.error'));
+                throw error;
             }
         })();
     }, [fetchSellerItems, showError, t]);

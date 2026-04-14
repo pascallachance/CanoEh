@@ -496,8 +496,8 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
                         </div>
 
                         {/* Variant Features Section */}
-                        <h4 style={{ textAlign: 'left' }}>{t('variantFeature.title')}</h4>
                         <div className="item-attributes-section full-width">
+                            <h4>{t('variantFeature.title')}</h4>
                             {errors.variantFeatures && (
                                 <div className="error-message" role="alert">
                                     {errors.variantFeatures}

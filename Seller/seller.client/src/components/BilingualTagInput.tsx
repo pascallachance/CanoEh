@@ -237,9 +237,9 @@ function BilingualTagInput({
                                 ref={inputRefEn}
                             />
                             <div className="bilingual-tag-actions bilingual-tag-actions-spacer" aria-hidden="true">
-                                <button type="button" className="bilingual-tag-move-btn" tabIndex={-1} disabled>↑</button>
-                                <button type="button" className="bilingual-tag-move-btn" tabIndex={-1} disabled>↓</button>
-                                <button type="button" className="bilingual-tag-remove-btn" tabIndex={-1}>×</button>
+                                <button type="button" className="bilingual-tag-move-btn" tabIndex={-1} disabled aria-hidden="true">↑</button>
+                                <button type="button" className="bilingual-tag-move-btn" tabIndex={-1} disabled aria-hidden="true">↓</button>
+                                <button type="button" className="bilingual-tag-remove-btn" tabIndex={-1} disabled aria-hidden="true">×</button>
                             </div>
                         </div>
                     </div>

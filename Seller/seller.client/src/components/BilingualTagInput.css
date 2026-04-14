@@ -99,6 +99,16 @@
     border-color: #ef5350;
 }
 
+.bilingual-tag-pair .bilingual-tag-input-field {
+    flex: 1;
+    width: auto;
+}
+
+.bilingual-tag-actions-spacer {
+    visibility: hidden;
+    pointer-events: none;
+}
+
 .bilingual-tag-input-field {
     width: 100%;
     box-sizing: border-box;

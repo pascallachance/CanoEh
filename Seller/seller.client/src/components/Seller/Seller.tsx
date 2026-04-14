@@ -136,16 +136,22 @@ function Seller({ companies, onLogout, onCompanyUpdate }: SellerProps) {
                     <div className="action-buttons">
                         <button 
                             className="action-button"
-                            onClick={() => productsSectionRef.current?.openManageOffers()}
-                            disabled={isManageOffersDisabled}
+                            onClick={() => productsSectionRef.current?.openListProducts()}
                         >
-                            {t('products.manageOffers')}
+                            {t('products.listProducts')}
                         </button>
                         <button 
                             className="action-button"
                             onClick={() => productsSectionRef.current?.openAddProduct()}
                         >
                             {t('products.addProduct')}
+                        </button>
+                        <button 
+                            className="action-button"
+                            onClick={() => productsSectionRef.current?.openManageOffers()}
+                            disabled={isManageOffersDisabled}
+                        >
+                            {t('products.manageOffers')}
                         </button>
                     </div>
                 );

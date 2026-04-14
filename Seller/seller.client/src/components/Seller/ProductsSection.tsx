@@ -35,6 +35,7 @@ interface ProductsSectionProps {
 }
 
 export interface ProductsSectionRef {
+    openListProducts: () => void;
     openManageOffers: () => void;
     openAddProduct: () => void;
     openEditProduct: (itemId: string) => void;
@@ -652,6 +653,11 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     };
 
     // Handlers for inline add/edit product workflow
+    const handleOpenListProducts = useCallback(() => {
+        setInlineProductMode('none');
+        setShowManageOffers(false);
+    }, []);
+
     const handleOpenAddProduct = useCallback(() => {
         setInlineProductMode('add');
         setProductWorkflowStep(1);
@@ -878,12 +884,13 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     
     // Expose methods and state to parent component
     useImperativeHandle(ref, () => ({
+        openListProducts: handleOpenListProducts,
         openManageOffers: handleOpenManageOffers,
         openAddProduct: handleOpenAddProduct,
         openEditProduct: handleOpenEditProduct,
         isLoadingItems,
         hasItems: sellerItems.length > 0
-    }), [isLoadingItems, sellerItems.length, handleOpenManageOffers, handleOpenAddProduct, handleOpenEditProduct]);
+    }), [isLoadingItems, sellerItems.length, handleOpenListProducts, handleOpenManageOffers, handleOpenAddProduct, handleOpenEditProduct]);
 
     // Notify parent of state changes for managing button disabled state
     useEffect(() => {

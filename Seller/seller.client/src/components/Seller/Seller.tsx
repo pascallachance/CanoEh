@@ -110,24 +110,24 @@ function Seller({ companies, onLogout, onCompanyUpdate }: SellerProps) {
     }, []);
 
     const handleListProductsClick = useCallback(() => {
+        if (!productsSectionRef.current) return;
         setActiveProductAction('list');
-        productsSectionRef.current?.openListProducts();
-    }, []);
+        productsSectionRef.current.openListProducts();
+    }, [productsSectionRef]);
 
     const handleAddProductClick = useCallback(() => {
+        if (!productsSectionRef.current) return;
         setActiveProductAction('add');
-        productsSectionRef.current?.openAddProduct();
-    }, []);
+        productsSectionRef.current.openAddProduct();
+    }, [productsSectionRef]);
 
     const handleManageOffersClick = useCallback(() => {
+        if (!productsSectionRef.current) return;
         setActiveProductAction('manageOffers');
-        const openResult = productsSectionRef.current?.openManageOffers();
-        if (openResult) {
-            openResult.catch(() => {
-                setActiveProductAction('list');
-            });
-        }
-    }, []);
+        productsSectionRef.current.openManageOffers().catch(() => {
+            setActiveProductAction(prev => prev === 'manageOffers' ? 'list' : prev);
+        });
+    }, [productsSectionRef]);
 
     const renderContent = () => {
         switch (activeSection) {

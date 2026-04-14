@@ -153,6 +153,11 @@
     outline-offset: 2px;
 }
 
+.seller-content-actions .action-button.active {
+    outline: 2px solid #febd69;
+    outline-offset: 2px;
+}
+
 .seller-content-actions .action-button.secondary {
     background: transparent;
 }

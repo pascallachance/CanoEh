@@ -98,15 +98,27 @@
 }
 
 .bilingual-tag-input-field {
-    border: none;
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px dashed #90caf9;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.9rem;
+    color: #1976d2;
+    background-color: #f0f7ff;
     outline: none;
-    padding: 0.5rem;
-    font-size: 0.95rem;
-    background-color: transparent;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .bilingual-tag-input-field::placeholder {
-    color: #999;
+    color: #90caf9;
+    font-style: italic;
+}
+
+.bilingual-tag-input-field:focus {
+    border-style: solid;
+    border-color: #1976d2;
+    background-color: #e3f2fd;
 }
 
 .bilingual-tag-input-error {

@@ -11,5 +11,8 @@ namespace Domain.Models.Requests
         
         public DateTime? OfferStart { get; set; }
         public DateTime? OfferEnd { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "OfferMaxBuyQty must be greater than 0")]
+        public int? OfferMaxBuyQty { get; set; }
     }
 }

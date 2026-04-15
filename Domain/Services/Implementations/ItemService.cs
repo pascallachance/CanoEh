@@ -1315,6 +1315,12 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     return Result.Failure("Offer must be between 0 and 100", StatusCodes.Status400BadRequest);
                 }
 
+                // Validate OfferMaxBuyQty is not 0
+                if (request.OfferMaxBuyQty.HasValue && request.OfferMaxBuyQty <= 0)
+                {
+                    return Result.Failure("OfferMaxBuyQty must be greater than 0", StatusCodes.Status400BadRequest);
+                }
+
                 if (request.Offer.HasValue)
                 {
                     // If there's an offer, both dates are required
@@ -1349,6 +1355,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 variant.Offer = request.Offer;
                 variant.OfferStart = request.OfferStart;
                 variant.OfferEnd = request.OfferEnd;
+                variant.OfferMaxBuyQty = request.OfferMaxBuyQty;
 
                 // Save changes
                 await _itemVariantRepository.UpdateAsync(variant);
@@ -1378,6 +1385,12 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     if (offerUpdate.Offer.HasValue && (offerUpdate.Offer < 0 || offerUpdate.Offer > 100))
                     {
                         validationErrors.Add($"Variant {offerUpdate.VariantId}: Offer must be between 0 and 100");
+                    }
+
+                    // Validate OfferMaxBuyQty is not 0
+                    if (offerUpdate.OfferMaxBuyQty.HasValue && offerUpdate.OfferMaxBuyQty <= 0)
+                    {
+                        validationErrors.Add($"Variant {offerUpdate.VariantId}: OfferMaxBuyQty must be greater than 0");
                     }
 
                     if (offerUpdate.Offer.HasValue)
@@ -1436,6 +1449,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     variant.Offer = offerUpdate.Offer;
                     variant.OfferStart = offerUpdate.OfferStart;
                     variant.OfferEnd = offerUpdate.OfferEnd;
+                    variant.OfferMaxBuyQty = offerUpdate.OfferMaxBuyQty;
 
                     await _itemVariantRepository.UpdateAsync(variant);
                 }

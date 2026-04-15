@@ -21,5 +21,6 @@ namespace Infrastructure.Data
         public decimal? Offer { get; set; } // Percentage (0-100)
         public DateTime? OfferStart { get; set; }
         public DateTime? OfferEnd { get; set; }
+        public int? OfferMaxBuyQty { get; set; } // Maximum items per transaction (must be > 0 when set)
     }
 }

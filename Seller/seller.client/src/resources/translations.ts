@@ -520,6 +520,18 @@ export const translations: TranslationResources = {
     en: 'Offer',
     fr: 'Offre'
   },
+  'products.offers.offerMaxBuyQty': {
+    en: 'Max Buy Qty',
+    fr: 'Qté max achat'
+  },
+  'products.offers.offerMaxBuyQtyPlaceholder': {
+    en: 'No limit',
+    fr: 'Sans limite'
+  },
+  'products.offers.invalidMaxBuyQty': {
+    en: 'Max Buy Qty must be a whole number greater than 0',
+    fr: 'La quantité maximale d\'achat doit être un entier supérieur à 0'
+  },
   'products.offers.offerStart': {
     en: 'Offer Start',
     fr: 'Début de l\'offre'

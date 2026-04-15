@@ -41,13 +41,25 @@ interface CategoryNode {
     children: CategoryNode[];
 }
 
+const emptyAttribute = (isMain = false): ItemAttribute => ({
+    clientId: crypto.randomUUID(),
+    name_en: '',
+    name_fr: '',
+    values: [],
+    isMain,
+});
+
+const withDefaultRows = (data: AddProductStep2Data): AddProductStep2Data => ({
+    ...data,
+    variantAttributes: data.variantAttributes.length > 0 ? data.variantAttributes : [emptyAttribute(true)],
+    variantFeatures: data.variantFeatures.length > 0 ? data.variantFeatures : [emptyAttribute()],
+});
+
 function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep2Props) {
     const { t, language } = useLanguage();
-    const [formData, setFormData] = useState<AddProductStep2Data>(initialData || {
-        categoryId: '',
-        variantAttributes: [],
-        variantFeatures: []
-    });
+    const [formData, setFormData] = useState<AddProductStep2Data>(
+        withDefaultRows(initialData || { categoryId: '', variantAttributes: [], variantFeatures: [] })
+    );
 
     const [allCategoryNodes, setAllCategoryNodes] = useState<CategoryNode[]>([]);
     const [navigationPath, setNavigationPath] = useState<CategoryNode[]>([]);
@@ -109,13 +121,17 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
             newErrors.categoryId = t('error.categoryRequired');
         }
 
-        if (formData.variantAttributes.length === 0 && !editMode) {
+        const nonBlankAttributes = formData.variantAttributes.filter(
+            attr => attr.name_en.trim() || attr.name_fr.trim() || attr.values.length > 0
+        );
+
+        if (nonBlankAttributes.length === 0 && !editMode) {
             newErrors.variantAttributes = t('error.variantAttributesRequired');
         } else {
             const seenEnglishNames = new Set<string>();
             const seenFrenchNames = new Set<string>();
 
-            const hasInvalidVariantAttributes = formData.variantAttributes.some(attr => {
+            const hasInvalidVariantAttributes = nonBlankAttributes.some(attr => {
                 const trimmedNameEn = attr.name_en.trim();
                 const trimmedNameFr = attr.name_fr.trim();
 
@@ -240,6 +256,9 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
         setFormData(prev => {
             const removedAttr = prev.variantAttributes[index];
             const filtered = prev.variantAttributes.filter((_, i) => i !== index);
+            if (filtered.length === 0) {
+                return { ...prev, variantAttributes: [emptyAttribute(true)] };
+            }
             if (removedAttr?.isMain && filtered.length > 0) {
                 filtered[0] = { ...filtered[0], isMain: true };
             }
@@ -280,18 +299,24 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
     };
 
     const removeVariantFeature = (index: number) => {
-        setFormData(prev => ({
-            ...prev,
-            variantFeatures: prev.variantFeatures.filter((_, i) => i !== index)
-        }));
+        setFormData(prev => {
+            const filtered = prev.variantFeatures.filter((_, i) => i !== index);
+            return {
+                ...prev,
+                variantFeatures: filtered.length > 0 ? filtered : [emptyAttribute()],
+            };
+        });
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (validateForm()) {
-            // Filter out completely blank feature rows before proceeding
+            // Filter out completely blank attribute and feature rows before proceeding
             const cleanedData: AddProductStep2Data = {
                 ...formData,
+                variantAttributes: formData.variantAttributes.filter(
+                    attr => attr.name_en.trim() || attr.name_fr.trim() || attr.values.length > 0
+                ),
                 variantFeatures: formData.variantFeatures.filter(
                     feat => feat.name_en.trim() || feat.name_fr.trim()
                 )

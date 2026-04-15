@@ -434,7 +434,8 @@
     font-weight: 600;
     color: #495057;
     font-size: 0.9rem;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
     padding-top: 0.5rem;
     text-align: left;
 }
@@ -456,7 +457,6 @@
 }
 
 .media-sections-row .variant-field-media {
-    grid-column: auto;
     flex: 1;
 }
 
@@ -470,7 +470,8 @@
     font-weight: 600;
     color: #495057;
     font-size: 0.9rem;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
     padding-top: 0.5rem;
     text-align: left;
 }

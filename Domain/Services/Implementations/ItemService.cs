@@ -1147,7 +1147,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 Deleted = variant.Deleted,
                 Offer = variant.Offer,
                 OfferStart = variant.OfferStart,
-                OfferEnd = variant.OfferEnd
+                OfferEnd = variant.OfferEnd,
+                OfferMaxBuyQty = variant.OfferMaxBuyQty
             };
         }
 
@@ -1315,7 +1316,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     return Result.Failure("Offer must be between 0 and 100", StatusCodes.Status400BadRequest);
                 }
 
-                // Validate OfferMaxBuyQty is not 0
+                // Validate OfferMaxBuyQty must be greater than 0
                 if (request.OfferMaxBuyQty.HasValue && request.OfferMaxBuyQty <= 0)
                 {
                     return Result.Failure("OfferMaxBuyQty must be greater than 0", StatusCodes.Status400BadRequest);
@@ -1387,7 +1388,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                         validationErrors.Add($"Variant {offerUpdate.VariantId}: Offer must be between 0 and 100");
                     }
 
-                    // Validate OfferMaxBuyQty is not 0
+                    // Validate OfferMaxBuyQty must be greater than 0
                     if (offerUpdate.OfferMaxBuyQty.HasValue && offerUpdate.OfferMaxBuyQty <= 0)
                     {
                         validationErrors.Add($"Variant {offerUpdate.VariantId}: OfferMaxBuyQty must be greater than 0");

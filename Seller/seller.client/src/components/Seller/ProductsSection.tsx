@@ -921,8 +921,8 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 }
                 newChanges.set(variantId, { ...current, offer: numValue });
             } else if (field === 'offerMaxBuyQty') {
-                const numValue = value === '' ? undefined : parseInt(value, 10);
-                if (numValue !== undefined && (isNaN(numValue) || numValue <= 0)) {
+                const numValue = value === '' ? undefined : Number(value);
+                if (numValue !== undefined && (!Number.isInteger(numValue) || numValue <= 0)) {
                     showError(t('products.offers.invalidMaxBuyQty'));
                     return prev;
                 }

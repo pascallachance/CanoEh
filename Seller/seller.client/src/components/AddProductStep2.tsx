@@ -55,9 +55,12 @@ const withDefaultRows = (data: AddProductStep2Data): AddProductStep2Data => ({
     variantFeatures: data.variantFeatures.length > 0 ? data.variantFeatures : [emptyAttribute()],
 });
 
+const isNonBlankAttributeRow = (attr: ItemAttribute): boolean =>
+    !!attr.name_en.trim() || !!attr.name_fr.trim() || attr.values.length > 0;
+
 function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = false, onStepNavigate, completedSteps }: AddProductStep2Props) {
     const { t, language } = useLanguage();
-    const [formData, setFormData] = useState<AddProductStep2Data>(
+    const [formData, setFormData] = useState<AddProductStep2Data>(() =>
         withDefaultRows(initialData || { categoryId: '', variantAttributes: [], variantFeatures: [] })
     );
 
@@ -121,9 +124,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
             newErrors.categoryId = t('error.categoryRequired');
         }
 
-        const nonBlankAttributes = formData.variantAttributes.filter(
-            attr => attr.name_en.trim() || attr.name_fr.trim() || attr.values.length > 0
-        );
+        const nonBlankAttributes = formData.variantAttributes.filter(isNonBlankAttributeRow);
 
         if (nonBlankAttributes.length === 0 && !editMode) {
             newErrors.variantAttributes = t('error.variantAttributesRequired');
@@ -314,9 +315,7 @@ function AddProductStep2({ onNext, onBack, onCancel, initialData, editMode = fal
             // Filter out completely blank attribute and feature rows before proceeding
             const cleanedData: AddProductStep2Data = {
                 ...formData,
-                variantAttributes: formData.variantAttributes.filter(
-                    attr => attr.name_en.trim() || attr.name_fr.trim() || attr.values.length > 0
-                ),
+                variantAttributes: formData.variantAttributes.filter(isNonBlankAttributeRow),
                 variantFeatures: formData.variantFeatures.filter(
                     feat => feat.name_en.trim() || feat.name_fr.trim()
                 )

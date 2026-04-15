@@ -460,6 +460,10 @@
     flex: 1;
 }
 
+.media-sections-row .thumbnail-media-section {
+    flex: 0 0 auto;
+}
+
 .media-upload-row {
     display: flex;
     gap: 0.5rem;

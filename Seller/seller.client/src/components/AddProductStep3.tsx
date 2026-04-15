@@ -881,7 +881,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                         {/* Thumbnail + Product Images side by side */}
                                         <div className="media-sections-row">
                                         {/* Thumbnail Section */}
-                                        <div className="variant-field variant-field-media">
+                                        <div className="variant-field variant-field-media thumbnail-media-section">
                                             <div className="media-upload-row">
                                                 <label className="media-label" htmlFor={`thumbnail-${variant.id}`}>{t('variant.thumbnail')}</label>
                                                 <div className="media-controls">

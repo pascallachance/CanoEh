@@ -107,6 +107,7 @@ interface ApiItemVariant {
     offer?: number;
     offerStart?: string;
     offerEnd?: string;
+    offerMaxBuyQty?: number;
 }
 
 interface ApiItem {
@@ -182,7 +183,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     
     // State for manage offers (inline mode)
     const [showManageOffers, setShowManageOffers] = useState(false);
-    const [offerChanges, setOfferChanges] = useState<Map<string, { offer?: number; offerStart?: string; offerEnd?: string }>>(new Map());
+    const [offerChanges, setOfferChanges] = useState<Map<string, { offer?: number; offerStart?: string; offerEnd?: string; offerMaxBuyQty?: number }>>(new Map());
     const [isSavingOffers, setIsSavingOffers] = useState(false);
     
     // State for inline add/edit product workflow
@@ -907,7 +908,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     };
 
     // Handle offer field change for a variant
-    const handleOfferChange = (variantId: string, field: 'offer' | 'offerStart' | 'offerEnd', value: string) => {
+    const handleOfferChange = (variantId: string, field: 'offer' | 'offerStart' | 'offerEnd' | 'offerMaxBuyQty', value: string) => {
         setOfferChanges(prev => {
             const newChanges = new Map(prev);
             const current = newChanges.get(variantId) || {};
@@ -919,6 +920,13 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                     return prev;
                 }
                 newChanges.set(variantId, { ...current, offer: numValue });
+            } else if (field === 'offerMaxBuyQty') {
+                const numValue = value === '' ? undefined : Number(value);
+                if (numValue !== undefined && (!Number.isInteger(numValue) || numValue <= 0)) {
+                    showError(t('products.offers.invalidMaxBuyQty'));
+                    return prev;
+                }
+                newChanges.set(variantId, { ...current, offerMaxBuyQty: numValue });
             } else if (field === 'offerStart' || field === 'offerEnd') {
                 newChanges.set(variantId, { ...current, [field]: value || undefined });
             }
@@ -928,7 +936,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     };
 
     // Get current offer value for a variant (from changes or original)
-    const getCurrentOffer = (variant: ApiItemVariant, field: 'offer' | 'offerStart' | 'offerEnd') => {
+    const getCurrentOffer = (variant: ApiItemVariant, field: 'offer' | 'offerStart' | 'offerEnd' | 'offerMaxBuyQty') => {
         const changes = offerChanges.get(variant.id);
         if (changes && changes[field] !== undefined) {
             return changes[field];
@@ -940,6 +948,8 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
             return variant.offerStart ? variant.offerStart.split('T')[0] : '';
         } else if (field === 'offerEnd') {
             return variant.offerEnd ? variant.offerEnd.split('T')[0] : '';
+        } else if (field === 'offerMaxBuyQty') {
+            return variant.offerMaxBuyQty !== undefined && variant.offerMaxBuyQty !== null ? variant.offerMaxBuyQty : '';
         }
         return '';
     };
@@ -1000,12 +1010,16 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                 const offerEndValue = 'offerEnd' in changes
                     ? toISODateOrUndefined(changes.offerEnd)
                     : variant.offerEnd;
+                const offerMaxBuyQtyValue = 'offerMaxBuyQty' in changes
+                    ? changes.offerMaxBuyQty
+                    : variant.offerMaxBuyQty;
                 
                 return {
                     variantId,
                     offer: offerValue,
                     offerStart: offerStartValue,
-                    offerEnd: offerEndValue
+                    offerEnd: offerEndValue,
+                    offerMaxBuyQty: offerMaxBuyQtyValue
                 };
             });
 
@@ -1039,7 +1053,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
     const handleClearOffer = (variantId: string) => {
         setOfferChanges(prev => {
             const newChanges = new Map(prev);
-            newChanges.set(variantId, { offer: undefined, offerStart: undefined, offerEnd: undefined });
+            newChanges.set(variantId, { offer: undefined, offerStart: undefined, offerEnd: undefined, offerMaxBuyQty: undefined });
             return newChanges;
         });
     };
@@ -2019,6 +2033,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                                             <th>{t('products.itemName')}</th>
                                             <th>{t('products.variant.name')}</th>
                                             <th>{t('products.offers.offer')} (%)</th>
+                                            <th>{t('products.offers.offerMaxBuyQty')}</th>
                                             <th>{t('products.offers.offerStart')}</th>
                                             <th>{t('products.offers.offerEnd')}</th>
                                             <th>{t('products.actions')}</th>
@@ -2045,6 +2060,17 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
                                                             onChange={(e) => handleOfferChange(variant.id, 'offer', e.target.value)}
                                                             className="products-offer-input"
                                                             placeholder="0-100"
+                                                        />
+                                                    </td>
+                                                    <td>
+                                                        <input
+                                                            type="number"
+                                                            min="1"
+                                                            step="1"
+                                                            value={getCurrentOffer(variant, 'offerMaxBuyQty')}
+                                                            onChange={(e) => handleOfferChange(variant.id, 'offerMaxBuyQty', e.target.value)}
+                                                            className="products-offer-input"
+                                                            placeholder={t('products.offers.offerMaxBuyQtyPlaceholder')}
                                                         />
                                                     </td>
                                                     <td>

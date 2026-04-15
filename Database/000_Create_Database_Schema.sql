@@ -307,8 +307,10 @@ BEGIN
         Offer DECIMAL(5, 2) NULL,
         OfferStart DATETIME2 NULL,
         OfferEnd DATETIME2 NULL,
+        OfferMaxBuyQty INT NULL,
         CONSTRAINT FK_ItemVariant_Item FOREIGN KEY (ItemId) REFERENCES dbo.Item(Id),
-        CONSTRAINT CK_ItemVariant_Offer CHECK (Offer IS NULL OR (Offer >= 0 AND Offer <= 100))
+        CONSTRAINT CK_ItemVariant_Offer CHECK (Offer IS NULL OR (Offer >= 0 AND Offer <= 100)),
+        CONSTRAINT CK_ItemVariant_OfferMaxBuyQty CHECK (OfferMaxBuyQty IS NULL OR OfferMaxBuyQty > 0)
     );
     
     CREATE INDEX IX_ItemVariant_ItemId ON dbo.ItemVariant(ItemId);

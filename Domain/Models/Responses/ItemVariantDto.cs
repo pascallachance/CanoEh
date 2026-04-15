@@ -24,5 +24,6 @@ namespace Domain.Models.Responses
         public decimal? Offer { get; set; }
         public DateTime? OfferStart { get; set; }
         public DateTime? OfferEnd { get; set; }
+        public int? OfferMaxBuyQty { get; set; }
     }
 }

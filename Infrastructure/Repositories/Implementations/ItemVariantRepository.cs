@@ -35,7 +35,8 @@ INSERT INTO dbo.ItemVariant (
     Deleted,
     Offer,
     OfferStart,
-    OfferEnd)
+    OfferEnd,
+    OfferMaxBuyQty)
 VALUES (
     @Id,
     @ItemId,
@@ -51,7 +52,8 @@ VALUES (
     @Deleted,
     @Offer,
     @OfferStart,
-    @OfferEnd)";
+    @OfferEnd,
+    @OfferMaxBuyQty)";
 
             var parameters = new
             {
@@ -69,7 +71,8 @@ VALUES (
                 entity.Deleted,
                 entity.Offer,
                 entity.OfferStart,
-                entity.OfferEnd
+                entity.OfferEnd,
+                entity.OfferMaxBuyQty
             };
 
             await dbConnection.ExecuteAsync(query, parameters);
@@ -155,7 +158,8 @@ SET ItemId = @ItemId,
     Deleted = @Deleted,
     Offer = @Offer,
     OfferStart = @OfferStart,
-    OfferEnd = @OfferEnd
+    OfferEnd = @OfferEnd,
+    OfferMaxBuyQty = @OfferMaxBuyQty
 WHERE Id = @Id AND ItemId = @ItemId";
 
             var parameters = new
@@ -174,7 +178,8 @@ WHERE Id = @Id AND ItemId = @ItemId";
                 entity.Deleted,
                 entity.Offer,
                 entity.OfferStart,
-                entity.OfferEnd
+                entity.OfferEnd,
+                entity.OfferMaxBuyQty
             };
 
             await dbConnection.ExecuteAsync(query, parameters);

@@ -878,8 +878,6 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 />
                                             </div>
                                         </div>
-                                        {/* Thumbnail + Product Images side by side */}
-                                        <div className="media-sections-row">
                                         {/* Thumbnail Section */}
                                         <div className="variant-field variant-field-media">
                                             <div className="media-upload-row">
@@ -1002,7 +1000,6 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 </div>
                                             </div>
                                         </div>
-                                        </div>{/* end media-sections-row */}
 
                                         {/* Video Section - DISABLED: Backend video upload endpoint not yet implemented */}
                                         {/* Uncomment when backend supports video uploads via /api/Item/UploadVideo endpoint */}

@@ -1,7 +1,9 @@
 :root {
     --cards-gap: 20px;
     --items-gap: 20px;
-    --item-preview-width: 140px;
+    --item-preview-width: 170px;
+    --items-per-card: 10;
+    --card-horizontal-padding: 32px;
 }
 
 .home-container {
@@ -301,8 +303,10 @@
     margin: 0;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: var(--cards-gap);
     box-sizing: border-box;
+    overflow-x: auto;
 }
 
 .item-preview-card {
@@ -313,7 +317,16 @@
     cursor: pointer;
     transition: box-shadow 0.2s;
     outline: none;
-    width: 100%;
+    width: calc(
+        (var(--items-per-card) * var(--item-preview-width))
+        + ((var(--items-per-card) - 1) * var(--items-gap))
+        + var(--card-horizontal-padding)
+    );
+    max-width: calc(
+        (var(--items-per-card) * var(--item-preview-width))
+        + ((var(--items-per-card) - 1) * var(--items-gap))
+        + var(--card-horizontal-padding)
+    );
     box-sizing: border-box;
 }
 .item-preview-card:hover {
@@ -361,6 +374,10 @@ button.card-title-btn:focus-visible {
     display: flex;
     flex-direction: row;
     gap: var(--items-gap);
+    width: calc(
+        (var(--items-per-card) * var(--item-preview-width))
+        + ((var(--items-per-card) - 1) * var(--items-gap))
+    );
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none; /* Firefox */
@@ -496,10 +513,6 @@ button.card-title-btn:focus-visible {
 }
 
 @media (max-width: 768px) {
-    :root {
-        --items-gap: 8px;
-    }
-
     .top-nav {
         flex-wrap: wrap;
     }
@@ -510,11 +523,6 @@ button.card-title-btn:focus-visible {
 }
 
 @media (max-width: 480px) {
-    :root {
-        --items-gap: 6px;
-        --item-preview-width: 120px;
-    }
-
     .cards-section {
         padding: 12px 10px;
     }

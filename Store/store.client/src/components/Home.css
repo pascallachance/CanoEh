@@ -4,6 +4,11 @@
     --item-preview-width: 170px;
     --items-per-card: 10;
     --card-horizontal-padding: 32px;
+    --items-row-width: calc(
+        (var(--items-per-card) * var(--item-preview-width))
+        + ((var(--items-per-card) - 1) * var(--items-gap))
+    );
+    --item-preview-card-width: calc(var(--items-row-width) + var(--card-horizontal-padding));
 }
 
 .home-container {
@@ -316,11 +321,7 @@
     cursor: pointer;
     transition: box-shadow 0.2s;
     outline: none;
-    width: calc(
-        (var(--items-per-card) * var(--item-preview-width))
-        + ((var(--items-per-card) - 1) * var(--items-gap))
-        + var(--card-horizontal-padding)
-    );
+    width: var(--item-preview-card-width);
     box-sizing: border-box;
 }
 .item-preview-card:hover {
@@ -368,10 +369,7 @@ button.card-title-btn:focus-visible {
     display: flex;
     flex-direction: row;
     gap: var(--items-gap);
-    width: calc(
-        (var(--items-per-card) * var(--item-preview-width))
-        + ((var(--items-per-card) - 1) * var(--items-gap))
-    );
+    width: var(--items-row-width);
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none; /* Firefox */

@@ -323,7 +323,7 @@
     cursor: pointer;
     transition: box-shadow 0.2s;
     outline: none;
-    width: var(--item-preview-card-width);
+    width: min(100%, var(--item-preview-card-width));
     box-sizing: border-box;
 }
 .item-preview-card:hover {
@@ -371,7 +371,7 @@ button.card-title-btn:focus-visible {
     display: flex;
     flex-direction: row;
     gap: var(--items-gap);
-    width: var(--items-row-width);
+    width: min(100%, var(--items-row-width));
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none; /* Firefox */

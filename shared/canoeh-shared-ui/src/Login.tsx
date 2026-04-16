@@ -189,7 +189,9 @@ export function Login({
                                         setPassword(e.target.value);
                                         handleFieldChange('password', e.target.value);
                                     }}
+                                    onKeyDown={checkCapsLockState}
                                     onKeyUp={checkCapsLockState}
+                                    onBlur={() => setIsCapsLockOn(false)}
                                     required
                                     minLength={8}
                                     placeholder="Enter your password (min 8 characters)"

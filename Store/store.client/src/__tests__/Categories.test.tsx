@@ -354,6 +354,16 @@ describe('Categories page – list all products when no node is selected', () =>
         });
     });
 
+    it('shows "All Categories" in the breadcrumb when no node is selected', async () => {
+        setupFetch([makeCategoryNode()]);
+        renderCategories('/categories');
+
+        await waitFor(() => {
+            const breadcrumb = document.querySelector('.categories-breadcrumb');
+            expect(breadcrumb?.textContent).toMatch(/All Categories/);
+        });
+    });
+
     it('does not show the "Select a department" prompt', async () => {
         setupFetch([makeCategoryNode()]);
         renderCategories('/categories');

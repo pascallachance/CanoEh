@@ -147,6 +147,11 @@ export function Login({
         }
     };
 
+    const passwordAriaDescribedBy = [
+        isCapsLockOn ? 'capslock-warning' : '',
+        touched.password && fieldErrors.password ? 'password-error' : ''
+    ].filter(Boolean).join(' ') || undefined;
+
     return (
         <div className="centered-container">
             <div className="login-container">
@@ -191,7 +196,7 @@ export function Login({
                                     autoComplete="current-password"
                                     className={touched.password && fieldErrors.password ? 'input-invalid' : ''}
                                     aria-invalid={touched.password && !!fieldErrors.password}
-                                    aria-describedby={touched.password && fieldErrors.password ? 'password-error' : undefined}
+                                    aria-describedby={passwordAriaDescribedBy}
                                 />
                                 <button
                                     type="button"
@@ -213,7 +218,7 @@ export function Login({
                                 </button>
                             </div>
                             {isCapsLockOn && (
-                                <span className="capslock-warning" role="status">
+                                <span id="capslock-warning" className="capslock-warning" role="status">
                                     CAPSLOCK is on!
                                 </span>
                             )}

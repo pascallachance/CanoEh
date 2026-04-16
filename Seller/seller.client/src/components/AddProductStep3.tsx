@@ -456,6 +456,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
         if (variants.length > 0) {
             return variants.some(variant =>
                 !variant.sku.trim() || variant.price <= 0 ||
+                !variant.thumbnailUrl ||
+                !variant.imageUrls || variant.imageUrls.length === 0 ||
                 variant.sku.length > 100 ||
                 (variant.productIdentifierValue != null && variant.productIdentifierValue.length > 100)
             );
@@ -659,6 +661,16 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             );
             if (hasProductIdValueTooLong) {
                 const errorMessage = t('error.productIdValueTooLong');
+                setError(errorMessage);
+                showError(errorMessage);
+                return;
+            }
+
+            const hasMissingVariantMedia = variants.some(variant =>
+                !variant.thumbnailUrl || !variant.imageUrls || variant.imageUrls.length === 0
+            );
+            if (hasMissingVariantMedia) {
+                const errorMessage = t('error.variantMediaRequired');
                 setError(errorMessage);
                 showError(errorMessage);
                 return;

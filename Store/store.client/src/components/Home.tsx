@@ -626,20 +626,70 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
         }
     };
 
+    const getHorizontalGap = (el: HTMLDivElement) => {
+        const computedStyle = getComputedStyle(el);
+        const parseGapValue = (value: string) => value === 'normal' ? 0 : parseFloat(value);
+
+        const columnGap = parseGapValue(computedStyle.columnGap);
+        if (!Number.isNaN(columnGap)) return columnGap;
+
+        const fallbackGap = parseGapValue(computedStyle.gap);
+        return Number.isNaN(fallbackGap) ? 0 : fallbackGap;
+    };
+
+    const getScrollMetrics = (el: HTMLDivElement) => {
+        const firstItem = el.querySelector<HTMLElement>('.item-placeholder');
+        const itemWidth = firstItem?.offsetWidth ?? 0;
+        const gap = getHorizontalGap(el);
+        if (itemWidth <= 0) {
+            return null;
+        }
+        const itemStep = itemWidth + gap;
+
+        if (itemStep <= 0) {
+            return null;
+        }
+
+        const visibleItemsPerPage = Math.max(1, Math.floor((el.clientWidth + gap) / itemStep));
+        const maxScrollLeft = Math.max(0, el.scrollWidth - el.clientWidth);
+        const maxItemIndex = Math.floor(maxScrollLeft / itemStep);
+        const currentItemIndex = Math.round(el.scrollLeft / itemStep);
+
+        return { itemStep, visibleItemsPerPage, maxScrollLeft, maxItemIndex, currentItemIndex };
+    };
+
     const handleScrollLeft = (e: React.MouseEvent) => {
         e.stopPropagation();
         const el = itemsGridRef.current;
         if (!el) return;
-        const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
-        el.scrollBy({ left: -(el.clientWidth + gap), behavior: 'smooth' });
+        const metrics = getScrollMetrics(el);
+
+        if (!metrics) {
+            const gap = getHorizontalGap(el);
+            el.scrollBy({ left: -(el.clientWidth + gap), behavior: 'smooth' });
+            return;
+        }
+
+        const targetItemIndex = Math.max(0, metrics.currentItemIndex - metrics.visibleItemsPerPage);
+        const targetLeft = targetItemIndex * metrics.itemStep;
+        el.scrollTo({ left: targetLeft, behavior: 'smooth' });
     };
 
     const handleScrollRight = (e: React.MouseEvent) => {
         e.stopPropagation();
         const el = itemsGridRef.current;
         if (!el) return;
-        const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
-        el.scrollBy({ left: el.clientWidth + gap, behavior: 'smooth' });
+        const metrics = getScrollMetrics(el);
+
+        if (!metrics) {
+            const gap = getHorizontalGap(el);
+            el.scrollBy({ left: el.clientWidth + gap, behavior: 'smooth' });
+            return;
+        }
+
+        const targetItemIndex = Math.min(metrics.maxItemIndex, metrics.currentItemIndex + metrics.visibleItemsPerPage);
+        const targetLeft = Math.min(metrics.maxScrollLeft, targetItemIndex * metrics.itemStep);
+        el.scrollTo({ left: targetLeft, behavior: 'smooth' });
     };
 
     const handleImageError = (index: number) => {

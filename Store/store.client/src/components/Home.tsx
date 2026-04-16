@@ -628,10 +628,12 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
 
     const getHorizontalGap = (el: HTMLDivElement) => {
         const computedStyle = getComputedStyle(el);
-        const columnGap = parseFloat(computedStyle.columnGap);
+        const parseGap = (value: string) => value === 'normal' ? 0 : parseFloat(value);
+
+        const columnGap = parseGap(computedStyle.columnGap);
         if (!Number.isNaN(columnGap)) return columnGap;
 
-        const fallbackGap = parseFloat(computedStyle.gap);
+        const fallbackGap = parseGap(computedStyle.gap);
         return Number.isNaN(fallbackGap) ? 0 : fallbackGap;
     };
 

@@ -344,18 +344,7 @@ describe('Home - Scroll Navigation', () => {
         Object.defineProperty(itemsGrid, 'clientWidth', { writable: true, value: 600 });
         Object.defineProperty(itemsGrid, 'scrollLeft', { writable: true, value: 0 });
         mockCardHeight(card);
-        const originalGetComputedStyle = window.getComputedStyle;
-        const getComputedStyleSpy = vi.spyOn(window, 'getComputedStyle').mockImplementation((element: Element) => {
-            const styles = originalGetComputedStyle(element);
-            if (element === itemsGrid) {
-                return {
-                    ...styles,
-                    columnGap: `${MOCK_GRID_GAP}px`,
-                    gap: `${MOCK_GRID_GAP}px`,
-                } as CSSStyleDeclaration;
-            }
-            return styles;
-        });
+        itemsGrid.style.columnGap = `${MOCK_GRID_GAP}px`;
 
         vi.spyOn(itemsGrid, 'querySelector').mockReturnValue(null);
         const scrollByMock = vi.fn();
@@ -374,6 +363,5 @@ describe('Home - Scroll Navigation', () => {
         expect(scrollByMock).toHaveBeenCalledOnce();
         const arg = scrollByMock.mock.calls[0][0] as ScrollToOptions;
         expect(arg.left).toBe(600 + MOCK_GRID_GAP);
-        getComputedStyleSpy.mockRestore();
     });
 });

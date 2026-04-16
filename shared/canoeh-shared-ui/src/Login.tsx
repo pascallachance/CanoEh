@@ -214,7 +214,7 @@ export function Login({
                             </div>
                             {isCapsLockOn && (
                                 <span className="capslock-warning" role="status">
-                                    Warning: Caps Lock is on.
+                                    CAPSLOCK is on!
                                 </span>
                             )}
                             {touched.password && fieldErrors.password && (

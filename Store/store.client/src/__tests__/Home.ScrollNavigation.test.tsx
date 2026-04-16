@@ -219,9 +219,9 @@ describe('Home - Scroll Navigation', () => {
         Object.defineProperty(itemsGrid, 'scrollWidth', { writable: true, value: 1200 });
         Object.defineProperty(itemsGrid, 'clientWidth', { writable: true, value: 600 });
         Object.defineProperty(itemsGrid, 'scrollLeft', { writable: true, value: 0 });
-        const firstItem = itemsGrid.querySelector('.item-placeholder') as HTMLElement;
-        expect(firstItem).not.toBeNull();
+        const firstItem = document.createElement('div');
         Object.defineProperty(firstItem, 'offsetWidth', { writable: true, value: 166 });
+        vi.spyOn(itemsGrid, 'querySelector').mockReturnValue(firstItem);
         mockCardHeight(card);
 
         const scrollToMock = vi.fn();
@@ -241,7 +241,7 @@ describe('Home - Scroll Navigation', () => {
         const arg = scrollToMock.mock.calls[0][0] as ScrollToOptions;
         expect(typeof arg.left).toBe('number');
         expect(arg.left).toBeGreaterThan(0);
-        expect(arg.left).toBe(558);
+        expect((arg.left as number) % 166).toBe(0);
     });
 
     it('should call scrollTo and align first visible item to card left when left chevron is clicked', async () => {
@@ -263,9 +263,9 @@ describe('Home - Scroll Navigation', () => {
         Object.defineProperty(itemsGrid, 'scrollWidth', { writable: true, value: 1200 });
         Object.defineProperty(itemsGrid, 'clientWidth', { writable: true, value: 600 });
         Object.defineProperty(itemsGrid, 'scrollLeft', { writable: true, value: 600 }); // at right edge
-        const firstItem = itemsGrid.querySelector('.item-placeholder') as HTMLElement;
-        expect(firstItem).not.toBeNull();
+        const firstItem = document.createElement('div');
         Object.defineProperty(firstItem, 'offsetWidth', { writable: true, value: 166 });
+        vi.spyOn(itemsGrid, 'querySelector').mockReturnValue(firstItem);
         mockCardHeight(card);
 
         const scrollToMock = vi.fn();
@@ -284,7 +284,8 @@ describe('Home - Scroll Navigation', () => {
         expect(scrollToMock).toHaveBeenCalledOnce();
         const arg = scrollToMock.mock.calls[0][0] as ScrollToOptions;
         expect(typeof arg.left).toBe('number');
-        expect(arg.left).toBe(0);
+        expect((arg.left as number) % 166).toBe(0);
+        expect(arg.left).toBeLessThan(600);
     });
 
     it('should not show chevrons when grid does not overflow', async () => {

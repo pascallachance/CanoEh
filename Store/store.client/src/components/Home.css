@@ -306,7 +306,6 @@
     align-items: flex-start;
     gap: var(--cards-gap);
     box-sizing: border-box;
-    overflow-x: auto;
 }
 
 .item-preview-card {
@@ -318,11 +317,6 @@
     transition: box-shadow 0.2s;
     outline: none;
     width: calc(
-        (var(--items-per-card) * var(--item-preview-width))
-        + ((var(--items-per-card) - 1) * var(--items-gap))
-        + var(--card-horizontal-padding)
-    );
-    max-width: calc(
         (var(--items-per-card) * var(--item-preview-width))
         + ((var(--items-per-card) - 1) * var(--items-gap))
         + var(--card-horizontal-padding)

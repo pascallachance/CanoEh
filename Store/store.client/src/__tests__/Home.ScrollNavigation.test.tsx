@@ -5,6 +5,7 @@ import Home from '../components/Home';
 
 // Mock fetch globally
 global.fetch = vi.fn();
+const MOCK_ITEM_WIDTH = 166;
 
 describe('Home - Scroll Navigation', () => {
     beforeEach(() => {
@@ -220,7 +221,7 @@ describe('Home - Scroll Navigation', () => {
         Object.defineProperty(itemsGrid, 'clientWidth', { writable: true, value: 600 });
         Object.defineProperty(itemsGrid, 'scrollLeft', { writable: true, value: 0 });
         const firstItem = document.createElement('div');
-        Object.defineProperty(firstItem, 'offsetWidth', { writable: true, value: 166 });
+        Object.defineProperty(firstItem, 'offsetWidth', { writable: true, value: MOCK_ITEM_WIDTH });
         vi.spyOn(itemsGrid, 'querySelector').mockReturnValue(firstItem);
         mockCardHeight(card);
 
@@ -241,7 +242,7 @@ describe('Home - Scroll Navigation', () => {
         const arg = scrollToMock.mock.calls[0][0] as ScrollToOptions;
         expect(typeof arg.left).toBe('number');
         expect(arg.left).toBeGreaterThan(0);
-        expect((arg.left as number) % 166).toBe(0);
+        expect((arg.left as number) % MOCK_ITEM_WIDTH).toBe(0);
     });
 
     it('should call scrollTo and align first visible item to card left when left chevron is clicked', async () => {
@@ -264,7 +265,7 @@ describe('Home - Scroll Navigation', () => {
         Object.defineProperty(itemsGrid, 'clientWidth', { writable: true, value: 600 });
         Object.defineProperty(itemsGrid, 'scrollLeft', { writable: true, value: 600 }); // at right edge
         const firstItem = document.createElement('div');
-        Object.defineProperty(firstItem, 'offsetWidth', { writable: true, value: 166 });
+        Object.defineProperty(firstItem, 'offsetWidth', { writable: true, value: MOCK_ITEM_WIDTH });
         vi.spyOn(itemsGrid, 'querySelector').mockReturnValue(firstItem);
         mockCardHeight(card);
 
@@ -284,7 +285,7 @@ describe('Home - Scroll Navigation', () => {
         expect(scrollToMock).toHaveBeenCalledOnce();
         const arg = scrollToMock.mock.calls[0][0] as ScrollToOptions;
         expect(typeof arg.left).toBe('number');
-        expect((arg.left as number) % 166).toBe(0);
+        expect((arg.left as number) % MOCK_ITEM_WIDTH).toBe(0);
         expect(arg.left).toBeLessThan(600);
     });
 

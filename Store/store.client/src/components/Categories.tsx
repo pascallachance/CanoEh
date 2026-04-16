@@ -609,7 +609,7 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                         >
                             {navPath.length === 0 && (
                                 <span className="breadcrumb-current">
-                                    {getText('All Categories', 'Toutes les catégories')}
+                                    {getText('All Products', 'Tous les produits')}
                                 </span>
                             )}
                             {navPath.length > 0 && (

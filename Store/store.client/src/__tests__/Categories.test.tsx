@@ -259,12 +259,8 @@ describe('Categories page – ?nodeId= URL param pre-selection', () => {
 
         renderCategories('/categories?nodeId=electronics');
 
-        // Wait until the node breadcrumb is visible
-        await waitFor(() => {
-            expect(document.querySelector('.categories-breadcrumb')?.textContent).toMatch(/All Products/);
-        });
-
-        const allProductsBtn = screen.getByRole('button', { name: /All Products/i });
+        // Wait until the root breadcrumb is rendered as a clickable button
+        const allProductsBtn = await screen.findByRole('button', { name: /All Products/i });
         await act(async () => { allProductsBtn.click(); });
 
         await waitFor(() => {
@@ -354,13 +350,13 @@ describe('Categories page – list all products when no node is selected', () =>
         });
     });
 
-    it('shows "All Categories" in the breadcrumb when no node is selected', async () => {
+    it('shows "All Products" in the breadcrumb when no node is selected', async () => {
         setupFetch([makeCategoryNode()]);
         renderCategories('/categories');
 
         await waitFor(() => {
             const breadcrumb = document.querySelector('.categories-breadcrumb');
-            expect(breadcrumb?.textContent).toMatch(/All Categories/);
+            expect(breadcrumb?.textContent).toMatch(/All Products/);
         });
     });
 

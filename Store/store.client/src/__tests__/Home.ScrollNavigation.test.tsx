@@ -319,4 +319,44 @@ describe('Home - Scroll Navigation', () => {
             expect(screen.queryByLabelText(/Next items|Articles suivants/i)).not.toBeInTheDocument();
         });
     });
+
+    it('should fall back to scrollBy when item width cannot be measured', async () => {
+        render(
+            <BrowserRouter>
+                <Home isAuthenticated={false} />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText(/Suggested items|Articles suggérés/i)).toBeInTheDocument();
+        });
+
+        const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
+        const card = cardTitle.closest('.item-preview-card') as HTMLElement;
+        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement;
+        expect(itemsGrid).not.toBeNull();
+
+        Object.defineProperty(itemsGrid, 'scrollWidth', { writable: true, value: 1200 });
+        Object.defineProperty(itemsGrid, 'clientWidth', { writable: true, value: 600 });
+        Object.defineProperty(itemsGrid, 'scrollLeft', { writable: true, value: 0 });
+        mockCardHeight(card);
+
+        vi.spyOn(itemsGrid, 'querySelector').mockReturnValue(null);
+        const scrollByMock = vi.fn();
+        itemsGrid.scrollBy = scrollByMock;
+
+        fireEvent.mouseEnter(card);
+        fireEvent.scroll(itemsGrid);
+
+        await waitFor(() => {
+            expect(screen.queryByLabelText(/Next items|Articles suivants/i)).toBeInTheDocument();
+        });
+
+        const nextBtn = screen.getByLabelText(/Next items|Articles suivants/i);
+        fireEvent.click(nextBtn);
+
+        expect(scrollByMock).toHaveBeenCalledOnce();
+        const arg = scrollByMock.mock.calls[0][0] as ScrollToOptions;
+        expect(arg.left).toBe(600);
+    });
 });

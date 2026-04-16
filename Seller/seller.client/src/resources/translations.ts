@@ -696,6 +696,10 @@ export const translations: TranslationResources = {
     en: 'Product identifier value cannot exceed 100 characters.',
     fr: 'La valeur de l\'identifiant du produit ne peut pas dépasser 100 caractères.'
   },
+  'error.variantMediaRequired': {
+    en: 'Each variant must include a thumbnail and at least one product image.',
+    fr: 'Chaque variante doit inclure une miniature et au moins une image du produit.'
+  },
   'error.nameEnTooLong': {
     en: 'Item name (English) cannot exceed 300 characters.',
     fr: 'Le nom de l\'article (anglais) ne peut pas dépasser 300 caractères.'

@@ -3,7 +3,9 @@
     --items-gap: 20px;
     --item-preview-width: 170px;
     --items-per-card: 10;
-    --card-horizontal-padding: 32px;
+    --item-preview-card-padding-x: 16px;
+    --item-preview-card-padding-y: 14px;
+    --card-horizontal-padding: calc(var(--item-preview-card-padding-x) * 2);
     --items-row-width: calc(
         (var(--items-per-card) * var(--item-preview-width))
         + ((var(--items-per-card) - 1) * var(--items-gap))
@@ -316,7 +318,7 @@
 .item-preview-card {
     background-color: white;
     border-radius: 8px;
-    padding: 14px 16px;
+    padding: var(--item-preview-card-padding-y) var(--item-preview-card-padding-x);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     transition: box-shadow 0.2s;

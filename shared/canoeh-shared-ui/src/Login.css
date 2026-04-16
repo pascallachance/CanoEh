@@ -141,6 +141,13 @@
     font-size: 14px;
 }
 
+.capslock-warning {
+    display: block;
+    margin-top: 6px;
+    color: #b45309;
+    font-size: 13px;
+}
+
 .separator {
     border-top: 1px solid #e1e1e1;
     margin-top: 25px;

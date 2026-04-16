@@ -47,6 +47,7 @@ export function Login({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [isCapsLockOn, setIsCapsLockOn] = useState(false);
     const [fieldErrors, setFieldErrors] = useState<Partial<Record<LoginFields, string>>>({});
     const [touched, setTouched] = useState<Partial<Record<LoginFields, boolean>>>({});
 
@@ -59,6 +60,10 @@ export function Login({
     const handleFieldChange = (name: LoginFields, value: string) => {
         setTouched((prev: Partial<Record<LoginFields, boolean>>) => ({ ...prev, [name]: true }));
         setFieldErrors((prev: Partial<Record<LoginFields, string>>) => ({ ...prev, [name]: validateField(name, value) }));
+    };
+
+    const checkCapsLockState = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        setIsCapsLockOn(event.getModifierState('CapsLock'));
     };
 
     // Add escape key handling for better accessibility
@@ -175,7 +180,11 @@ export function Login({
                                     type={showPassword ? "text" : "password"}
                                     id="password"
                                     value={password}
-                                    onChange={(e) => { setPassword(e.target.value); handleFieldChange('password', e.target.value); }}
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                        handleFieldChange('password', e.target.value);
+                                    }}
+                                    onKeyUp={checkCapsLockState}
                                     required
                                     minLength={8}
                                     placeholder="Enter your password (min 8 characters)"
@@ -203,6 +212,11 @@ export function Login({
                                     )}
                                 </button>
                             </div>
+                            {isCapsLockOn && (
+                                <span className="capslock-warning" role="status">
+                                    Warning: Caps Lock is on.
+                                </span>
+                            )}
                             {touched.password && fieldErrors.password && (
                                 <span id="password-error" className="field-error" role="alert">{fieldErrors.password}</span>
                             )}

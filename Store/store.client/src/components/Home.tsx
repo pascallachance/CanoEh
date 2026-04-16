@@ -630,16 +630,46 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
         e.stopPropagation();
         const el = itemsGridRef.current;
         if (!el) return;
-        const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
-        el.scrollBy({ left: -(el.clientWidth + gap), behavior: 'smooth' });
+        const firstItem = el.querySelector<HTMLElement>('.item-placeholder');
+        const itemWidth = firstItem?.offsetWidth ?? 0;
+        const gap = parseFloat(getComputedStyle(el).columnGap || getComputedStyle(el).gap) || 0;
+        const itemStep = itemWidth + gap;
+
+        if (itemStep <= 0) {
+            const fallbackGap = parseFloat(getComputedStyle(el).columnGap || getComputedStyle(el).gap) || 0;
+            el.scrollBy({ left: -(el.clientWidth + fallbackGap), behavior: 'smooth' });
+            return;
+        }
+
+        const visibleItemsPerPage = Math.max(1, Math.floor((el.clientWidth + gap) / itemStep));
+        const currentItemIndex = Math.round(el.scrollLeft / itemStep);
+        const targetItemIndex = Math.max(0, currentItemIndex - visibleItemsPerPage);
+        const targetLeft = targetItemIndex * itemStep;
+        el.scrollTo({ left: targetLeft, behavior: 'smooth' });
     };
 
     const handleScrollRight = (e: React.MouseEvent) => {
         e.stopPropagation();
         const el = itemsGridRef.current;
         if (!el) return;
-        const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
-        el.scrollBy({ left: el.clientWidth + gap, behavior: 'smooth' });
+        const firstItem = el.querySelector<HTMLElement>('.item-placeholder');
+        const itemWidth = firstItem?.offsetWidth ?? 0;
+        const gap = parseFloat(getComputedStyle(el).columnGap || getComputedStyle(el).gap) || 0;
+        const itemStep = itemWidth + gap;
+
+        if (itemStep <= 0) {
+            const fallbackGap = parseFloat(getComputedStyle(el).columnGap || getComputedStyle(el).gap) || 0;
+            el.scrollBy({ left: el.clientWidth + fallbackGap, behavior: 'smooth' });
+            return;
+        }
+
+        const visibleItemsPerPage = Math.max(1, Math.floor((el.clientWidth + gap) / itemStep));
+        const maxScrollLeft = Math.max(0, el.scrollWidth - el.clientWidth);
+        const maxItemIndex = Math.floor(maxScrollLeft / itemStep);
+        const currentItemIndex = Math.round(el.scrollLeft / itemStep);
+        const targetItemIndex = Math.min(maxItemIndex, currentItemIndex + visibleItemsPerPage);
+        const targetLeft = Math.min(maxScrollLeft, targetItemIndex * itemStep);
+        el.scrollTo({ left: targetLeft, behavior: 'smooth' });
     };
 
     const handleImageError = (index: number) => {

@@ -213,7 +213,7 @@ export function Login({
                                 </button>
                             </div>
                             {isCapsLockOn && (
-                                <span className="capslock-warning" role="alert" aria-live="polite">
+                                <span className="capslock-warning" role="status">
                                     Warning: Caps Lock is on.
                                 </span>
                             )}

@@ -183,7 +183,6 @@ export function Login({
                                     onChange={(e) => { setPassword(e.target.value); handleFieldChange('password', e.target.value); }}
                                     onKeyDown={handlePasswordKeyEvent}
                                     onKeyUp={handlePasswordKeyEvent}
-                                    onFocus={(e) => setIsCapsLockOn(e.getModifierState('CapsLock'))}
                                     onBlur={() => setIsCapsLockOn(false)}
                                     required
                                     minLength={8}

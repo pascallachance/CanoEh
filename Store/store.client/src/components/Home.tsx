@@ -652,7 +652,7 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
 
         const visibleItemsPerPage = Math.max(1, Math.floor((el.clientWidth + gap) / itemStep));
         const maxScrollLeft = Math.max(0, el.scrollWidth - el.clientWidth);
-        const maxItemIndex = Math.floor(maxScrollLeft / itemStep);
+        const maxItemIndex = Math.max(0, Math.ceil(maxScrollLeft / itemStep));
         const currentItemIndex = Math.round(el.scrollLeft / itemStep);
 
         return { itemStep, visibleItemsPerPage, maxScrollLeft, maxItemIndex, currentItemIndex };

@@ -248,6 +248,52 @@ describe('Home - Scroll Navigation', () => {
         expect((arg.left as number) % MOCK_ITEM_STEP).toBe(0);
     });
 
+    it('should scroll to maxScrollLeft for a final partial page in a narrow viewport', async () => {
+        render(
+            <BrowserRouter>
+                <Home isAuthenticated={false} />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText(/Suggested items|Articles suggérés/i)).toBeInTheDocument();
+        });
+
+        const cardTitle = screen.getByText(/Suggested items|Articles suggérés/i);
+        const card = cardTitle.closest('.item-preview-card') as HTMLElement;
+        const itemsGrid = card?.querySelector('.items-grid') as HTMLElement;
+        expect(itemsGrid).not.toBeNull();
+
+        const scrollWidth = 1840;
+        const clientWidth = 1302;
+        const maxScrollLeft = scrollWidth - clientWidth;
+
+        Object.defineProperty(itemsGrid, 'scrollWidth', { writable: true, value: scrollWidth });
+        Object.defineProperty(itemsGrid, 'clientWidth', { writable: true, value: clientWidth });
+        Object.defineProperty(itemsGrid, 'scrollLeft', { writable: true, value: 0 });
+        itemsGrid.style.columnGap = `${MOCK_GRID_GAP}px`;
+        const firstItem = document.createElement('div');
+        Object.defineProperty(firstItem, 'offsetWidth', { writable: true, value: MOCK_ITEM_WIDTH });
+        vi.spyOn(itemsGrid, 'querySelector').mockReturnValue(firstItem);
+        mockCardHeight(card);
+
+        const scrollToMock = vi.fn();
+        itemsGrid.scrollTo = scrollToMock;
+
+        fireEvent.mouseEnter(card);
+        fireEvent.scroll(itemsGrid);
+
+        await waitFor(() => {
+            expect(screen.queryByLabelText(/Next items|Articles suivants/i)).toBeInTheDocument();
+        });
+
+        fireEvent.click(screen.getByLabelText(/Next items|Articles suivants/i));
+
+        expect(scrollToMock).toHaveBeenCalledOnce();
+        const arg = scrollToMock.mock.calls[0][0] as ScrollToOptions;
+        expect(arg.left).toBe(maxScrollLeft);
+    });
+
     it('should call scrollTo and align first visible item to card left when left chevron is clicked', async () => {
         render(
             <BrowserRouter>

@@ -626,11 +626,22 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
         }
     };
 
+    const getHorizontalGap = (el: HTMLDivElement) => {
+        const computedStyle = getComputedStyle(el);
+        const columnGap = parseFloat(computedStyle.columnGap);
+        if (!Number.isNaN(columnGap)) return columnGap;
+
+        const fallbackGap = parseFloat(computedStyle.gap);
+        return Number.isNaN(fallbackGap) ? 0 : fallbackGap;
+    };
+
     const getScrollMetrics = (el: HTMLDivElement) => {
         const firstItem = el.querySelector<HTMLElement>('.item-placeholder');
         const itemWidth = firstItem?.offsetWidth ?? 0;
-        const computedStyle = getComputedStyle(el);
-        const gap = parseFloat(computedStyle.columnGap || computedStyle.gap) || 0;
+        const gap = getHorizontalGap(el);
+        if (itemWidth <= 0) {
+            return null;
+        }
         const itemStep = itemWidth + gap;
 
         if (itemStep <= 0) {
@@ -652,7 +663,8 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
         const metrics = getScrollMetrics(el);
 
         if (!metrics) {
-            el.scrollBy({ left: -el.clientWidth, behavior: 'smooth' });
+            const gap = getHorizontalGap(el);
+            el.scrollBy({ left: -(el.clientWidth + gap), behavior: 'smooth' });
             return;
         }
 
@@ -668,7 +680,8 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
         const metrics = getScrollMetrics(el);
 
         if (!metrics) {
-            el.scrollBy({ left: el.clientWidth, behavior: 'smooth' });
+            const gap = getHorizontalGap(el);
+            el.scrollBy({ left: el.clientWidth + gap, behavior: 'smooth' });
             return;
         }
 

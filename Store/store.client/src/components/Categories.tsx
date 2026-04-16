@@ -607,6 +607,11 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                             className="categories-breadcrumb"
                             aria-label={getText("Category navigation", "Navigation par catégorie")}
                         >
+                            {navPath.length === 0 && (
+                                <span className="breadcrumb-current">
+                                    {getText('All Categories', 'Toutes les catégories')}
+                                </span>
+                            )}
                             {navPath.length > 0 && (
                                 <>
                                     <button

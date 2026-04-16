@@ -62,7 +62,7 @@ export function Login({
         setFieldErrors((prev: Partial<Record<LoginFields, string>>) => ({ ...prev, [name]: validateField(name, value) }));
     };
 
-    const handlePasswordCapsLockCheck = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const checkCapsLockState = (event: React.KeyboardEvent<HTMLInputElement>) => {
         setIsCapsLockOn(event.getModifierState('CapsLock'));
     };
 
@@ -180,10 +180,11 @@ export function Login({
                                     type={showPassword ? "text" : "password"}
                                     id="password"
                                     value={password}
-                                    onChange={(e) => { setPassword(e.target.value); handleFieldChange('password', e.target.value); }}
-                                    onKeyDown={handlePasswordCapsLockCheck}
-                                    onKeyUp={handlePasswordCapsLockCheck}
-                                    onBlur={() => setIsCapsLockOn(false)}
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                        handleFieldChange('password', e.target.value);
+                                    }}
+                                    onKeyUp={checkCapsLockState}
                                     required
                                     minLength={8}
                                     placeholder="Enter your password (min 8 characters)"

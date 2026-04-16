@@ -632,12 +632,12 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
         if (!el) return;
         const firstItem = el.querySelector<HTMLElement>('.item-placeholder');
         const itemWidth = firstItem?.offsetWidth ?? 0;
-        const gap = parseFloat(getComputedStyle(el).columnGap || getComputedStyle(el).gap) || 0;
+        const computedStyle = getComputedStyle(el);
+        const gap = parseFloat(computedStyle.columnGap || computedStyle.gap) || 0;
         const itemStep = itemWidth + gap;
 
         if (itemStep <= 0) {
-            const fallbackGap = parseFloat(getComputedStyle(el).columnGap || getComputedStyle(el).gap) || 0;
-            el.scrollBy({ left: -(el.clientWidth + fallbackGap), behavior: 'smooth' });
+            el.scrollBy({ left: -(el.clientWidth + gap), behavior: 'smooth' });
             return;
         }
 
@@ -654,12 +654,12 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
         if (!el) return;
         const firstItem = el.querySelector<HTMLElement>('.item-placeholder');
         const itemWidth = firstItem?.offsetWidth ?? 0;
-        const gap = parseFloat(getComputedStyle(el).columnGap || getComputedStyle(el).gap) || 0;
+        const computedStyle = getComputedStyle(el);
+        const gap = parseFloat(computedStyle.columnGap || computedStyle.gap) || 0;
         const itemStep = itemWidth + gap;
 
         if (itemStep <= 0) {
-            const fallbackGap = parseFloat(getComputedStyle(el).columnGap || getComputedStyle(el).gap) || 0;
-            el.scrollBy({ left: el.clientWidth + fallbackGap, behavior: 'smooth' });
+            el.scrollBy({ left: el.clientWidth + gap, behavior: 'smooth' });
             return;
         }
 

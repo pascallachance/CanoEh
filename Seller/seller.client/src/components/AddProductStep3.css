@@ -328,6 +328,7 @@
 
 .back-btn,
 .next-btn,
+.preview-btn,
 .submit-btn {
     width: 100%;
     padding: 8px 16px 8px 16px;
@@ -346,7 +347,12 @@
     background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
 }
 
+.preview-btn {
+    background: linear-gradient(135deg, #2d7ff9 0%, #1967d2 100%);
+}
+
 .back-btn:hover:not(:disabled),
+.preview-btn:hover:not(:disabled),
 .next-btn:hover:not(:disabled),
 .submit-btn:hover:not(:disabled) {
     transform: translateY(-2px);
@@ -354,9 +360,206 @@
 }
 
 .submit-btn:disabled,
+.preview-btn:disabled,
 .back-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+.preview-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+.preview-modal-content {
+    background: #fff;
+    border-radius: 12px;
+    width: min(1100px, 100%);
+    max-height: 90vh;
+    overflow: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.preview-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.preview-modal-header h3 {
+    margin: 0;
+    color: #1f2937;
+}
+
+.preview-close-btn {
+    border: none;
+    background: transparent;
+    font-size: 1.75rem;
+    line-height: 1;
+    color: #4b5563;
+    cursor: pointer;
+}
+
+.preview-modal-body {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 1.5rem;
+    padding: 1.25rem;
+}
+
+.preview-product-info h2 {
+    margin: 0 0 0.75rem;
+    color: #111827;
+}
+
+.preview-options-section {
+    margin-bottom: 1rem;
+}
+
+.preview-options-section h4,
+.preview-features h4,
+.preview-description h4 {
+    margin: 0 0 0.5rem;
+    color: #1f2937;
+}
+
+.preview-option-group {
+    margin-bottom: 0.75rem;
+}
+
+.preview-option-group p {
+    margin: 0 0 0.4rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.preview-option-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.preview-option-btn {
+    border: 1px solid #d1d5db;
+    background: #fff;
+    color: #111827;
+    border-radius: 999px;
+    padding: 0.35rem 0.8rem;
+    cursor: pointer;
+}
+
+.preview-option-btn.selected {
+    border-color: #2563eb;
+    color: #2563eb;
+    font-weight: 600;
+}
+
+.preview-product-price {
+    margin: 0.4rem 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.preview-stock {
+    margin: 0.3rem 0 0.75rem;
+    font-weight: 600;
+}
+
+.preview-stock.in-stock {
+    color: #0b7a36;
+}
+
+.preview-stock.out-of-stock {
+    color: #b91c1c;
+}
+
+.preview-product-details p {
+    margin: 0.25rem 0;
+    color: #374151;
+}
+
+.preview-features table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.preview-features th,
+.preview-features td {
+    text-align: left;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.preview-main-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+}
+
+.preview-main-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.preview-image-placeholder {
+    color: #6b7280;
+    text-align: center;
+    padding: 1rem;
+}
+
+.preview-thumbnails {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.75rem;
+}
+
+.preview-thumbnail-btn {
+    border: 1px solid #d1d5db;
+    background: #fff;
+    border-radius: 6px;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.preview-thumbnail-btn.active {
+    border-color: #2563eb;
+}
+
+.preview-thumbnail-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.preview-description {
+    margin-top: 0.9rem;
+}
+
+.preview-description p {
+    margin: 0;
+    color: #374151;
+    white-space: pre-wrap;
 }
 
 /* Responsive design */
@@ -370,6 +573,10 @@
     }
 
     .attribute-names {
+        grid-template-columns: 1fr;
+    }
+
+    .preview-modal-body {
         grid-template-columns: 1fr;
     }
 }

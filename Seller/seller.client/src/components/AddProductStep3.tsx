@@ -55,6 +55,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
     const [variants, setVariants] = useState<ItemVariant[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string>('');
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [previewSelectedAttributes, setPreviewSelectedAttributes] = useState<Record<string, string>>({});
+    const [previewSelectedImageIndex, setPreviewSelectedImageIndex] = useState(0);
     const variantsRef = useRef<ItemVariant[]>([]);
 
     // Keep ref in sync with variants state
@@ -68,13 +71,17 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             const target = event.target as HTMLElement;
             const isInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
             if (event.key === 'Escape' && !isInputField) {
+                if (isPreviewOpen) {
+                    setIsPreviewOpen(false);
+                    return;
+                }
                 onCancel();
             }
         };
 
         document.addEventListener('keydown', handleEscape);
         return () => document.removeEventListener('keydown', handleEscape);
-    }, [onCancel]);
+    }, [onCancel, isPreviewOpen]);
 
     // Product identifier types
     const identifierTypes = [
@@ -772,6 +779,108 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
         }
     };
 
+    const getPreviewText = (en: string, fr: string) => (language === 'fr' ? fr : en);
+
+    const previewAttributeGroups = useMemo(
+        () => step2Data.variantAttributes.map(attribute => ({
+            name_en: attribute.name_en,
+            name_fr: attribute.name_fr,
+            values: attribute.values
+        })),
+        [step2Data.variantAttributes]
+    );
+
+    const getInitialPreviewAttributes = () => {
+        const firstVariant = variants[0];
+        if (!firstVariant) {
+            return {};
+        }
+
+        return previewAttributeGroups.reduce((acc, group) => {
+            const selectedValue = firstVariant.attributes_en[group.name_en];
+            if (selectedValue) {
+                acc[group.name_en] = selectedValue;
+            }
+            return acc;
+        }, {} as Record<string, string>);
+    };
+
+    const previewVariant = useMemo(() => {
+        if (variants.length === 0) {
+            return null;
+        }
+
+        if (previewAttributeGroups.length === 0) {
+            return variants[0];
+        }
+
+        const matchingVariant = variants.find(variant =>
+            previewAttributeGroups.every(group => {
+                const selectedValue = previewSelectedAttributes[group.name_en];
+                return !selectedValue || variant.attributes_en[group.name_en] === selectedValue;
+            })
+        );
+
+        return matchingVariant || variants[0];
+    }, [variants, previewAttributeGroups, previewSelectedAttributes]);
+
+    const previewImages = useMemo(() => {
+        if (!previewVariant) {
+            return [];
+        }
+        if (previewVariant.imageUrls && previewVariant.imageUrls.length > 0) {
+            return previewVariant.imageUrls;
+        }
+        if (previewVariant.thumbnailUrl) {
+            return [previewVariant.thumbnailUrl];
+        }
+        return [];
+    }, [previewVariant]);
+
+    useEffect(() => {
+        if (previewSelectedImageIndex >= previewImages.length) {
+            setPreviewSelectedImageIndex(0);
+        }
+    }, [previewImages, previewSelectedImageIndex]);
+
+    const handleOpenPreview = () => {
+        if (variants.length === 0) {
+            return;
+        }
+        setPreviewSelectedAttributes(getInitialPreviewAttributes());
+        setPreviewSelectedImageIndex(0);
+        setIsPreviewOpen(true);
+    };
+
+    const handlePreviewAttributeSelect = (attributeNameEn: string, valueEn: string) => {
+        setPreviewSelectedAttributes(prev => {
+            const tentativeSelection = {
+                ...prev,
+                [attributeNameEn]: valueEn
+            };
+
+            const matchedVariant = variants.find(variant =>
+                previewAttributeGroups.every(group => {
+                    const selectedValue = tentativeSelection[group.name_en];
+                    return !selectedValue || variant.attributes_en[group.name_en] === selectedValue;
+                })
+            );
+
+            if (!matchedVariant) {
+                return tentativeSelection;
+            }
+
+            return previewAttributeGroups.reduce((acc, group) => {
+                const variantValue = matchedVariant.attributes_en[group.name_en];
+                if (variantValue) {
+                    acc[group.name_en] = variantValue;
+                }
+                return acc;
+            }, {} as Record<string, string>);
+        });
+        setPreviewSelectedImageIndex(0);
+    };
+
     return (
         <div className="add-product-step3-container">
             <div className="add-product-step3-content">
@@ -1121,6 +1230,14 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                     </button>
                     <button
                         type="button"
+                        className="preview-btn"
+                        onClick={handleOpenPreview}
+                        disabled={variants.length === 0 || isSaving}
+                    >
+                        {getPreviewText('Preview Product', 'Aperçu du produit')}
+                    </button>
+                    <button
+                        type="button"
                         onClick={handleSaveItem}
                         disabled={isFormInvalid || isSaving}
                         className={`submit-btn${(isFormInvalid || isSaving) ? ' disabled' : ''}`}
@@ -1130,6 +1247,149 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                             : (editMode ? t('variant.updateProduct') : t('variant.createProduct'))}
                     </button>
                 </div>
+
+                {isPreviewOpen && (
+                    <div
+                        className="preview-modal-overlay"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={getPreviewText('Store product page preview', 'Aperçu de la page produit')}
+                    >
+                        <div className="preview-modal-content">
+                            <div className="preview-modal-header">
+                                <h3>{getPreviewText('Store product page preview', 'Aperçu de la page produit')}</h3>
+                                <button
+                                    type="button"
+                                    className="preview-close-btn"
+                                    onClick={() => setIsPreviewOpen(false)}
+                                    aria-label={getPreviewText('Close preview', 'Fermer l’aperçu')}
+                                >
+                                    ×
+                                </button>
+                            </div>
+
+                            <div className="preview-modal-body">
+                                <section className="preview-product-info">
+                                    <h2>{language === 'fr' ? step1Data.name_fr : step1Data.name}</h2>
+
+                                    {previewAttributeGroups.length > 0 && (
+                                        <div className="preview-options-section">
+                                            <h4>{getPreviewText('Options', 'Options')}</h4>
+                                            {previewAttributeGroups.map(group => (
+                                                <div key={group.name_en} className="preview-option-group">
+                                                    <p>{language === 'fr' ? group.name_fr : group.name_en}</p>
+                                                    <div className="preview-option-buttons">
+                                                        {group.values.map(value => {
+                                                            const selectedValue = previewSelectedAttributes[group.name_en];
+                                                            const optionValue = value.en;
+                                                            return (
+                                                                <button
+                                                                    key={`${group.name_en}-${optionValue}`}
+                                                                    type="button"
+                                                                    className={`preview-option-btn${selectedValue === optionValue ? ' selected' : ''}`}
+                                                                    onClick={() => handlePreviewAttributeSelect(group.name_en, optionValue)}
+                                                                >
+                                                                    {language === 'fr' ? value.fr : value.en}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {previewVariant && (
+                                        <>
+                                            <p className="preview-product-price">
+                                                ${previewVariant.price.toFixed(2)}
+                                            </p>
+                                            <p className={`preview-stock ${previewVariant.stock > 0 ? 'in-stock' : 'out-of-stock'}`}>
+                                                {previewVariant.stock > 0
+                                                    ? getPreviewText('In stock', 'En stock')
+                                                    : getPreviewText('Out of stock', 'Rupture de stock')}
+                                            </p>
+
+                                            <div className="preview-product-details">
+                                                {previewVariant.sku && (
+                                                    <p><strong>{t('products.variant.sku')}:</strong> {previewVariant.sku}</p>
+                                                )}
+                                                {previewVariant.productIdentifierType && previewVariant.productIdentifierValue && (
+                                                    <p><strong>{previewVariant.productIdentifierType}:</strong> {previewVariant.productIdentifierValue}</p>
+                                                )}
+                                            </div>
+
+                                            {step2Data.variantFeatures.length > 0 && (
+                                                <div className="preview-features">
+                                                    <h4>{t('variant.features')}</h4>
+                                                    <table>
+                                                        <tbody>
+                                                            {step2Data.variantFeatures.map(feature => {
+                                                                const featureName = language === 'fr' ? feature.name_fr : feature.name_en;
+                                                                const featureValue = language === 'fr'
+                                                                    ? (previewVariant.features_fr[feature.name_fr] || '')
+                                                                    : (previewVariant.features_en[feature.name_en] || '');
+                                                                if (!featureValue) {
+                                                                    return null;
+                                                                }
+                                                                return (
+                                                                    <tr key={`${previewVariant.id}-${feature.name_en}`}>
+                                                                        <th>{featureName}</th>
+                                                                        <td>{featureValue}</td>
+                                                                    </tr>
+                                                                );
+                                                            })}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </section>
+
+                                <section className="preview-product-gallery">
+                                    <div className="preview-main-image">
+                                        {previewImages.length > 0 ? (
+                                            <img
+                                                src={previewImages[previewSelectedImageIndex]}
+                                                alt={language === 'fr' ? step1Data.name_fr : step1Data.name}
+                                            />
+                                        ) : (
+                                            <div className="preview-image-placeholder">
+                                                {getPreviewText('No image available', 'Aucune image disponible')}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {previewImages.length > 0 && (
+                                        <div className="preview-thumbnails">
+                                            {previewImages.map((imageUrl, index) => (
+                                                <button
+                                                    key={`${imageUrl}-${index}`}
+                                                    type="button"
+                                                    className={`preview-thumbnail-btn${previewSelectedImageIndex === index ? ' active' : ''}`}
+                                                    onClick={() => setPreviewSelectedImageIndex(index)}
+                                                >
+                                                    <img
+                                                        src={imageUrl}
+                                                        alt={`${language === 'fr' ? step1Data.name_fr : step1Data.name} ${index + 1}`}
+                                                    />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {(language === 'fr' ? step1Data.description_fr : step1Data.description) && (
+                                        <div className="preview-description">
+                                            <h4>{getPreviewText('Description', 'Description')}</h4>
+                                            <p>{language === 'fr' ? step1Data.description_fr : step1Data.description}</p>
+                                        </div>
+                                    )}
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -1330,126 +1330,152 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                             </div>
 
                             <div className="preview-modal-body">
-                                <section className="preview-product-info">
-                                    <h2>{language === 'fr' ? step1Data.name_fr : step1Data.name}</h2>
+                                <div className="product-detail preview-product-detail">
+                                    <div className="product-main">
+                                        <section
+                                            className="product-info"
+                                            aria-label={getPreviewText('Product information', 'Informations sur le produit')}
+                                        >
+                                            <h4 className="product-name">{language === 'fr' ? step1Data.name_fr : step1Data.name}</h4>
 
-                                    {previewAttributeGroups.length > 0 && (
-                                        <div className="preview-options-section">
-                                            <h4>{getPreviewText('Options', 'Options')}</h4>
-                                            {previewAttributeGroups.map(group => (
-                                                <div key={group.name_en} className="preview-option-group">
-                                                    <p>{language === 'fr' ? group.name_fr : group.name_en}</p>
-                                                    <div className="preview-option-buttons">
-                                                        {group.values.map(value => {
-                                                            const selectedValue = previewSelectedAttributes[group.name_en];
-                                                            const optionValue = value.en;
-                                                            return (
-                                                                <button
-                                                                    key={`${group.name_en}-${optionValue}`}
-                                                                    type="button"
-                                                                    className={`preview-option-btn${selectedValue === optionValue ? ' selected' : ''}`}
-                                                                    onClick={() => handlePreviewAttributeSelect(group.name_en, optionValue)}
-                                                                    aria-pressed={selectedValue === optionValue}
-                                                                >
-                                                                    {language === 'fr' ? value.fr : value.en}
-                                                                </button>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {previewVariant && (
-                                        <>
-                                            <p className="preview-product-price">
-                                                ${previewVariant.price.toFixed(2)}
-                                            </p>
-                                            <p className={`preview-stock ${previewVariant.stock > 0 ? 'in-stock' : 'out-of-stock'}`}>
-                                                {previewVariant.stock > 0
-                                                    ? getPreviewText('In stock', 'En stock')
-                                                    : getPreviewText('Out of stock', 'Rupture de stock')}
-                                            </p>
-
-                                            <div className="preview-product-details">
-                                                {previewVariant.sku && (
-                                                    <p><strong>{t('products.variant.sku')}:</strong> {previewVariant.sku}</p>
-                                                )}
-                                                {previewVariant.productIdentifierType && previewVariant.productIdentifierValue && (
-                                                    <p><strong>{previewVariant.productIdentifierType}:</strong> {previewVariant.productIdentifierValue}</p>
-                                                )}
-                                            </div>
-
-                                            {step2Data.variantFeatures.length > 0 && (
-                                                <div className="preview-features">
-                                                    <h4>{t('variant.features')}</h4>
-                                                    <table>
-                                                        <tbody>
-                                                            {step2Data.variantFeatures.map(feature => {
-                                                                const featureName = language === 'fr' ? feature.name_fr : feature.name_en;
-                                                                const featureValue = language === 'fr'
-                                                                    ? (previewVariant.features_fr[feature.name_fr] || '')
-                                                                    : (previewVariant.features_en[feature.name_en] || '');
-                                                                if (!featureValue) {
-                                                                    return null;
-                                                                }
-                                                                return (
-                                                                    <tr key={`${previewVariant.id}-${feature.name_en}`}>
-                                                                        <th>{featureName}</th>
-                                                                        <td>{featureValue}</td>
-                                                                    </tr>
-                                                                );
-                                                            })}
-                                                        </tbody>
-                                                    </table>
+                                            {previewAttributeGroups.length > 0 && (
+                                                <div className="product-variants">
+                                                    <h5 className="product-variants-title">{getPreviewText('Options', 'Options')}</h5>
+                                                    {previewAttributeGroups.map(group => (
+                                                        <div key={group.name_en} className="product-attribute-group">
+                                                            <p className="product-attribute-name">{language === 'fr' ? group.name_fr : group.name_en}</p>
+                                                            <div className="product-attribute-options" role="group" aria-label={language === 'fr' ? group.name_fr : group.name_en}>
+                                                                {group.values.map(value => {
+                                                                    const selectedValue = previewSelectedAttributes[group.name_en];
+                                                                    const optionValue = value.en;
+                                                                    return (
+                                                                        <button
+                                                                            key={`${group.name_en}-${optionValue}`}
+                                                                            type="button"
+                                                                            className={`product-attribute-btn${selectedValue === optionValue ? ' selected' : ''}`}
+                                                                            onClick={() => handlePreviewAttributeSelect(group.name_en, optionValue)}
+                                                                            aria-pressed={selectedValue === optionValue}
+                                                                        >
+                                                                            {language === 'fr' ? value.fr : value.en}
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             )}
-                                        </>
-                                    )}
-                                </section>
 
-                                <section className="preview-product-gallery">
-                                    <div className="preview-main-image">
-                                        {previewImages.length > 0 ? (
-                                            <img
-                                                src={previewImages[previewSelectedImageIndex]}
-                                                alt={language === 'fr' ? step1Data.name_fr : step1Data.name}
-                                            />
-                                        ) : (
-                                            <div className="preview-image-placeholder">
-                                                {getPreviewText('No image available', 'Aucune image disponible')}
-                                            </div>
-                                        )}
-                                    </div>
+                                            {previewVariant ? (
+                                                <>
+                                                    <div className="product-price-section">
+                                                        <span className="product-price">${previewVariant.price.toFixed(2)}</span>
+                                                    </div>
+                                                    <p className={previewVariant.stock > 5 ? 'product-stock' : 'product-stock-low'}>
+                                                        {previewVariant.stock > 0
+                                                            ? (previewVariant.stock <= 5
+                                                                ? getPreviewText(`${previewVariant.stock} in stock`, `${previewVariant.stock} en stock`)
+                                                                : getPreviewText('In stock', 'En stock'))
+                                                            : getPreviewText('Out of stock', 'Rupture de stock')}
+                                                    </p>
 
-                                    {previewImages.length > 0 && (
-                                        <div className="preview-thumbnails">
-                                            {previewImages.map((imageUrl, index) => (
-                                                <button
-                                                    key={`${imageUrl}-${index}`}
-                                                    type="button"
-                                                    className={`preview-thumbnail-btn${previewSelectedImageIndex === index ? ' active' : ''}`}
-                                                    onClick={() => setPreviewSelectedImageIndex(index)}
-                                                    aria-label={getPreviewText(`Select image ${index + 1}`, `Sélectionner l'image ${index + 1}`)}
-                                                    aria-pressed={previewSelectedImageIndex === index}
-                                                >
+                                                    {(previewVariant.sku || (previewVariant.productIdentifierType && previewVariant.productIdentifierValue)) && (
+                                                        <div className="product-attributes">
+                                                            <h5 className="product-attributes-title">{getPreviewText('Product Details', 'Détails du produit')}</h5>
+                                                            {previewVariant.sku && (
+                                                                <p className="product-attributes-row">
+                                                                    {t('products.variant.sku')}: {previewVariant.sku}
+                                                                </p>
+                                                            )}
+                                                            {previewVariant.productIdentifierType && previewVariant.productIdentifierValue && (
+                                                                <p className="product-attributes-row">
+                                                                    {previewVariant.productIdentifierType}: {previewVariant.productIdentifierValue}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    {step2Data.variantFeatures.length > 0 && (
+                                                        <div className="product-variant-features">
+                                                            <h5 className="product-variant-features-title">{t('variant.features')}</h5>
+                                                            <table className="product-variant-features-table">
+                                                                <tbody>
+                                                                    {step2Data.variantFeatures.map(feature => {
+                                                                        const featureName = language === 'fr' ? feature.name_fr : feature.name_en;
+                                                                        const featureValue = language === 'fr'
+                                                                            ? (previewVariant.features_fr[feature.name_fr] || '')
+                                                                            : (previewVariant.features_en[feature.name_en] || '');
+                                                                        if (!featureValue) {
+                                                                            return null;
+                                                                        }
+                                                                        return (
+                                                                            <tr key={`${previewVariant.id}-${feature.name_en}`} className="product-variant-features-row">
+                                                                                <th className="product-variant-features-name" scope="row">{featureName}</th>
+                                                                                <td className="product-variant-features-value">{featureValue}</td>
+                                                                            </tr>
+                                                                        );
+                                                                    })}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <span className="product-unavailable">
+                                                    {getPreviewText('This combination is not available.', 'Cette combinaison n’est pas disponible.')}
+                                                </span>
+                                            )}
+                                        </section>
+
+                                        <section
+                                            className="product-gallery"
+                                            aria-label={getPreviewText('Product images', 'Images du produit')}
+                                        >
+                                            <div className="product-main-image-wrapper">
+                                                {previewImages.length > 0 ? (
                                                     <img
-                                                        src={imageUrl}
-                                                        alt={`${language === 'fr' ? step1Data.name_fr : step1Data.name} ${index + 1}`}
+                                                        src={previewImages[previewSelectedImageIndex]}
+                                                        alt={language === 'fr' ? step1Data.name_fr : step1Data.name}
+                                                        className="product-main-image"
                                                     />
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
+                                                ) : (
+                                                    <div className="product-main-image-placeholder">
+                                                        {getPreviewText('No image available', 'Aucune image disponible')}
+                                                    </div>
+                                                )}
+                                            </div>
 
-                                    {(language === 'fr' ? step1Data.description_fr : step1Data.description) && (
-                                        <div className="preview-description">
-                                            <h4>{getPreviewText('Description', 'Description')}</h4>
-                                            <p>{language === 'fr' ? step1Data.description_fr : step1Data.description}</p>
-                                        </div>
-                                    )}
-                                </section>
+                                            {previewImages.length > 0 && (
+                                                <ul className="product-thumbnails" aria-label={getPreviewText('Image thumbnails', 'Miniatures d’images')}>
+                                                    {previewImages.map((imageUrl, index) => (
+                                                        <li key={`${imageUrl}-${index}`}>
+                                                            <button
+                                                                type="button"
+                                                                className={`product-thumbnail-btn${previewSelectedImageIndex === index ? ' active' : ''}`}
+                                                                onClick={() => setPreviewSelectedImageIndex(index)}
+                                                                aria-label={getPreviewText(`Select image ${index + 1}`, `Sélectionner l’image ${index + 1}`)}
+                                                                aria-pressed={previewSelectedImageIndex === index}
+                                                            >
+                                                                <img
+                                                                    src={imageUrl}
+                                                                    alt={`${language === 'fr' ? step1Data.name_fr : step1Data.name} ${index + 1}`}
+                                                                    className="product-thumbnail-img"
+                                                                />
+                                                            </button>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
+
+                                            {(language === 'fr' ? step1Data.description_fr : step1Data.description) && (
+                                                <div className="product-description">
+                                                    <h5 className="product-description-title">{getPreviewText('Description', 'Description')}</h5>
+                                                    <p className="product-description-text">{language === 'fr' ? step1Data.description_fr : step1Data.description}</p>
+                                                </div>
+                                            )}
+                                        </section>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

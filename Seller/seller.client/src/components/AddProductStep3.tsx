@@ -58,6 +58,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [previewSelectedAttributes, setPreviewSelectedAttributes] = useState<Record<string, string>>({});
     const [previewSelectedImageIndex, setPreviewSelectedImageIndex] = useState(0);
+    const previewModalRef = useRef<HTMLDivElement>(null);
     const variantsRef = useRef<ItemVariant[]>([]);
 
     // Keep ref in sync with variants state
@@ -794,6 +795,15 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
         variants.find(variant =>
             previewAttributeGroups.every(group => {
                 const selectedValue = selection[group.name_en];
+                return !!selectedValue && variant.attributes_en[group.name_en] === selectedValue;
+            })
+        ) || null
+    ), [variants, previewAttributeGroups]);
+
+    const findCompatibleVariant = useCallback((selection: Record<string, string>) => (
+        variants.find(variant =>
+            previewAttributeGroups.every(group => {
+                const selectedValue = selection[group.name_en];
                 return !selectedValue || variant.attributes_en[group.name_en] === selectedValue;
             })
         ) || null
@@ -840,10 +850,49 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
     }, [previewVariant]);
 
     useEffect(() => {
-        if (previewSelectedImageIndex >= previewImages.length) {
+        if (previewImages.length > 0 && previewSelectedImageIndex >= previewImages.length) {
             setPreviewSelectedImageIndex(0);
         }
     }, [previewImages, previewSelectedImageIndex]);
+
+    useEffect(() => {
+        if (!isPreviewOpen || !previewModalRef.current) {
+            return;
+        }
+
+        const focusableElements = previewModalRef.current.querySelectorAll<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const focusable = Array.from(focusableElements).filter(el => !el.hasAttribute('disabled'));
+
+        if (focusable.length > 0) {
+            focusable[0].focus();
+        }
+
+        const handleTabKey = (event: KeyboardEvent) => {
+            if (event.key !== 'Tab' || focusable.length === 0) {
+                return;
+            }
+
+            const firstElement = focusable[0];
+            const lastElement = focusable[focusable.length - 1];
+
+            if (event.shiftKey) {
+                if (document.activeElement === firstElement) {
+                    event.preventDefault();
+                    lastElement.focus();
+                }
+            } else if (document.activeElement === lastElement) {
+                event.preventDefault();
+                firstElement.focus();
+            }
+        };
+
+        document.addEventListener('keydown', handleTabKey);
+        return () => {
+            document.removeEventListener('keydown', handleTabKey);
+        };
+    }, [isPreviewOpen]);
 
     const handleOpenPreview = () => {
         if (variants.length === 0) {
@@ -861,7 +910,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 [attributeNameEn]: valueEn
             };
 
-            const matchedVariant = findVariantBySelection(tentativeSelection);
+            const matchedVariant = findVariantBySelection(tentativeSelection) || findCompatibleVariant(tentativeSelection);
 
             if (!matchedVariant) {
                 return tentativeSelection;
@@ -1251,8 +1300,13 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                         role="dialog"
                         aria-modal="true"
                         aria-label={getPreviewText('Store product page preview', 'Aperçu de la page produit')}
+                        onClick={() => setIsPreviewOpen(false)}
                     >
-                        <div className="preview-modal-content">
+                        <div
+                            className="preview-modal-content"
+                            ref={previewModalRef}
+                            onClick={(event) => event.stopPropagation()}
+                        >
                             <div className="preview-modal-header">
                                 <h3>{getPreviewText('Store product page preview', 'Aperçu de la page produit')}</h3>
                                 <button
@@ -1366,6 +1420,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                     type="button"
                                                     className={`preview-thumbnail-btn${previewSelectedImageIndex === index ? ' active' : ''}`}
                                                     onClick={() => setPreviewSelectedImageIndex(index)}
+                                                    aria-label={getPreviewText(`Select image ${index + 1}`, `Sélectionner l'image ${index + 1}`)}
                                                 >
                                                     <img
                                                         src={imageUrl}

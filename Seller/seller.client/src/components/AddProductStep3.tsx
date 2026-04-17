@@ -835,18 +835,21 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
     const getPreviewText = (en: string, fr: string) => (language === 'fr' ? fr : en);
 
     const previewAttributeGroups = useMemo(
-        () => step2Data.variantAttributes.map((attribute) => ({
-            name_en: attribute.name_en,
-            name_fr: attribute.name_fr,
-            values: attribute.values.map((value) => ({
-                ...value,
-                thumbnailUrl: variants.find(
-                    (variant) =>
-                        variant.attributes_en[attribute.name_en] === value.en &&
-                        !!variant.thumbnailUrl
-                )?.thumbnailUrl
+        () => step2Data.variantAttributes
+            .map((attribute) => ({
+                name_en: attribute.name_en,
+                name_fr: attribute.name_fr,
+                isMain: attribute.isMain ?? false,
+                values: attribute.values.map((value) => ({
+                    ...value,
+                    thumbnailUrl: variants.find(
+                        (variant) =>
+                            variant.attributes_en[attribute.name_en] === value.en &&
+                            !!variant.thumbnailUrl
+                    )?.thumbnailUrl
+                }))
             }))
-        })),
+            .sort((a, b) => Number(b.isMain) - Number(a.isMain)),
         [step2Data.variantAttributes, variants]
     );
 
@@ -1427,7 +1430,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                 {group.values.map(value => {
                                                                     const selectedValue = previewSelectedAttributes[group.name_en];
                                                                     const optionValue = value.en;
-                                                                    const hasThumbnail = groupIndex === 0 && !!value.thumbnailUrl;
+                                                                    const hasThumbnail = group.isMain && !!value.thumbnailUrl;
                                                                     const button = (
                                                                         <button
                                                                             key={`${group.name_en}-${optionValue}`}
@@ -1463,6 +1466,13 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                     const optOriginalPrice = optOfferActive && optVariant
                                                                         ? optVariant.price
                                                                         : null;
+                                                                    const formattedOptEffectivePrice = optEffectivePrice !== null
+                                                                        ? `$${optEffectivePrice.toFixed(2)}`
+                                                                        : '—';
+                                                                    const optionLabel = language === 'fr' ? value.fr : value.en;
+                                                                    const optionPriceAriaLabel = optEffectivePrice !== null
+                                                                        ? `${optionLabel} price ${optOriginalPrice !== null ? `$${optOriginalPrice.toFixed(2)} original, ` : ''}${formattedOptEffectivePrice}${optOfferActive ? ' discounted' : ''}`
+                                                                        : `${optionLabel} price unavailable`;
 
                                                                     return (
                                                                         <div
@@ -1473,20 +1483,37 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                             {optEffectivePrice !== null ? (
                                                                                 optOriginalPrice !== null ? (
                                                                                     <div className="product-option-prices">
-                                                                                        <span className="product-option-original-price">
+                                                                                        <span
+                                                                                            className="product-option-original-price"
+                                                                                            aria-label={getPreviewText(
+                                                                                                `Original price $${optOriginalPrice.toFixed(2)}`,
+                                                                                                `Prix original $${optOriginalPrice.toFixed(2)}`
+                                                                                            )}
+                                                                                        >
                                                                                             ${optOriginalPrice.toFixed(2)}
                                                                                         </span>
-                                                                                        <span className="product-option-price discounted">
-                                                                                            ${optEffectivePrice.toFixed(2)}
+                                                                                        <span
+                                                                                            className="product-option-price discounted"
+                                                                                            aria-label={optionPriceAriaLabel}
+                                                                                        >
+                                                                                            {formattedOptEffectivePrice}
                                                                                         </span>
                                                                                     </div>
                                                                                 ) : (
-                                                                                    <span className="product-option-price">
-                                                                                        ${optEffectivePrice.toFixed(2)}
+                                                                                    <span
+                                                                                        className="product-option-price"
+                                                                                        aria-label={optionPriceAriaLabel}
+                                                                                    >
+                                                                                        {formattedOptEffectivePrice}
                                                                                     </span>
                                                                                 )
                                                                             ) : (
-                                                                                <span className="product-option-price unavailable">—</span>
+                                                                                <span
+                                                                                    className="product-option-price unavailable"
+                                                                                    aria-label={optionPriceAriaLabel}
+                                                                                >
+                                                                                    {formattedOptEffectivePrice}
+                                                                                </span>
                                                                             )}
                                                                         </div>
                                                                     );

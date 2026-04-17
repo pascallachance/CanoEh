@@ -378,7 +378,7 @@
 }
 
 .preview-modal-content {
-    background: #fff;
+    background: #242424;
     border-radius: 12px;
     width: min(1100px, 100%);
     max-height: 90vh;
@@ -391,12 +391,12 @@
     align-items: center;
     justify-content: space-between;
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #3a3a3a;
 }
 
 .preview-modal-header h3 {
     margin: 0;
-    color: #1f2937;
+    color: #f3f4f6;
 }
 
 .preview-close-btn {
@@ -404,12 +404,13 @@
     background: transparent;
     font-size: 1.75rem;
     line-height: 1;
-    color: #4b5563;
+    color: #d1d5db;
     cursor: pointer;
 }
 
 .preview-modal-body {
     padding: 0;
+    background-color: #242424;
 }
 
 .preview-modal-body .preview-product-detail.product-detail {
@@ -418,6 +419,8 @@
     width: 100%;
     box-sizing: border-box;
     padding: 1.25rem;
+    background-color: #fff;
+    border-radius: 8px;
 }
 
 .preview-modal-body .product-main {
@@ -501,6 +504,8 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    align-items: flex-start;
+    text-align: left;
 }
 
 .preview-modal-body .product-name {
@@ -522,6 +527,27 @@
     font-size: 22px;
     font-weight: bold;
     color: #0f1111;
+}
+
+.preview-modal-body .product-original-price {
+    font-size: 16px;
+    color: #999;
+    text-decoration: line-through;
+}
+
+.preview-modal-body .product-discounted-price {
+    font-size: 22px;
+    font-weight: bold;
+    color: #b12704;
+}
+
+.preview-modal-body .product-offer-badge {
+    background-color: #cc0c39;
+    color: white;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 4px;
 }
 
 .preview-modal-body .product-unavailable {
@@ -583,6 +609,63 @@
     background-color: #fff8ee;
     font-weight: bold;
     color: #0f1111;
+}
+
+.preview-modal-body .product-attribute-btn.with-thumbnail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 8px;
+    min-width: 72px;
+}
+
+.preview-modal-body .product-attribute-btn-thumbnail {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: 3px;
+}
+
+.preview-modal-body .product-option-with-price {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.preview-modal-body .product-option-price {
+    font-size: 13px;
+    font-weight: bold;
+    color: #0f1111;
+    text-align: center;
+}
+
+.preview-modal-body .product-option-price.discounted {
+    color: #b12704;
+}
+
+.preview-modal-body .product-option-price.unavailable {
+    color: #aaa;
+    font-weight: normal;
+}
+
+.preview-modal-body .product-option-prices {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+}
+
+.preview-modal-body .product-option-with-price.has-offer .product-attribute-btn {
+    text-decoration: none;
+}
+
+.preview-modal-body .product-option-original-price {
+    font-size: 11px;
+    color: #999;
+    text-decoration: line-through;
+    text-align: center;
 }
 
 .preview-modal-body .product-stock {

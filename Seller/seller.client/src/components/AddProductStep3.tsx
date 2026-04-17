@@ -20,6 +20,9 @@ interface ItemVariant {
     stock: number;
     productIdentifierType?: string;
     productIdentifierValue?: string;
+    offer?: number | null;
+    offerStart?: string | null;
+    offerEnd?: string | null;
     thumbnailUrl?: string;
     imageUrls?: string[];
     thumbnailFile?: File;
@@ -47,6 +50,42 @@ interface AddProductStep3Props {
     existingVariants?: any[];
     onStepNavigate?: (step: number) => void;
     completedSteps?: number[];
+}
+
+function isPreviewOfferActive(variant: ItemVariant): boolean {
+    if (!variant.offer || variant.offer <= 0) return false;
+    if (variant.offerStart && new Date(variant.offerStart) > new Date()) return false;
+    if (variant.offerEnd && new Date(variant.offerEnd) < new Date()) return false;
+    return true;
+}
+
+function renderPreviewVariantPriceSection(
+    variant: ItemVariant,
+    offerActive: boolean,
+    discountedPrice: number | null,
+    language: string
+) {
+    const txt = (en: string, fr: string) => language === 'fr' ? fr : en;
+    return offerActive && discountedPrice !== null ? (
+        <>
+            <span className="product-original-price">
+                ${variant.price.toFixed(2)}
+            </span>
+            <span className="product-discounted-price">
+                ${discountedPrice.toFixed(2)}
+            </span>
+            <span className="product-offer-badge">
+                {txt(
+                    `${variant.offer}% OFF`,
+                    `Rabais ${variant.offer}%`
+                )}
+            </span>
+        </>
+    ) : (
+        <span className="product-price">
+            ${variant.price.toFixed(2)}
+        </span>
+    );
 }
 
 function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, companies, editMode = false, itemId, existingVariants, onStepNavigate, completedSteps }: AddProductStep3Props) {
@@ -169,6 +208,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                         stock: matchingExisting.stockQuantity || genVariant.stock,
                         productIdentifierType: matchingExisting.productIdentifierType || genVariant.productIdentifierType,
                         productIdentifierValue: matchingExisting.productIdentifierValue || genVariant.productIdentifierValue,
+                        offer: matchingExisting.offer ?? genVariant.offer,
+                        offerStart: matchingExisting.offerStart ?? genVariant.offerStart,
+                        offerEnd: matchingExisting.offerEnd ?? genVariant.offerEnd,
                         thumbnailUrl: convertedThumbnailUrl || genVariant.thumbnailUrl,
                         imageUrls: convertedImageUrls.length > 0 ? convertedImageUrls : genVariant.imageUrls,
                         features_en,
@@ -228,6 +270,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 stock: 0,
                 productIdentifierType: '',
                 productIdentifierValue: '',
+                offer: null,
+                offerStart: null,
+                offerEnd: null,
                 thumbnailUrl: '',
                 imageUrls: [],
                 thumbnailFile: undefined,
@@ -277,6 +322,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             stock: 0,
             productIdentifierType: '',
             productIdentifierValue: '',
+            offer: null,
+            offerStart: null,
+            offerEnd: null,
             thumbnailUrl: '',
             imageUrls: [],
             thumbnailFile: undefined,
@@ -787,12 +835,22 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
     const getPreviewText = (en: string, fr: string) => (language === 'fr' ? fr : en);
 
     const previewAttributeGroups = useMemo(
-        () => step2Data.variantAttributes.map(attribute => ({
-            name_en: attribute.name_en,
-            name_fr: attribute.name_fr,
-            values: attribute.values
-        })),
-        [step2Data.variantAttributes]
+        () => step2Data.variantAttributes
+            .map((attribute) => ({
+                name_en: attribute.name_en,
+                name_fr: attribute.name_fr,
+                isMain: attribute.isMain ?? false,
+                values: attribute.values.map((value) => ({
+                    ...value,
+                    thumbnailUrl: variants.find(
+                        (variant) =>
+                            variant.attributes_en[attribute.name_en] === value.en &&
+                            !!variant.thumbnailUrl
+                    )?.thumbnailUrl
+                }))
+            }))
+            .sort((a, b) => Number(b.isMain) - Number(a.isMain)),
+        [step2Data.variantAttributes, variants]
     );
 
     const findVariantForSelection = useCallback((
@@ -849,6 +907,30 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
         }
         return [];
     }, [previewVariant]);
+
+    const previewLastGroupPriceMap = useMemo(() => {
+        if (previewAttributeGroups.length === 0) {
+            return new Map<string, ItemVariant | null>();
+        }
+
+        const lastGroup = previewAttributeGroups[previewAttributeGroups.length - 1];
+        const map = new Map<string, ItemVariant | null>();
+
+        lastGroup.values.forEach((option) => {
+            const selection = { ...previewSelectedAttributes, [lastGroup.name_en]: option.en };
+            const matchedVariant =
+                findVariantForSelection(selection, true) ||
+                findVariantForSelection(selection, false);
+            map.set(option.en, matchedVariant);
+        });
+
+        return map;
+    }, [previewAttributeGroups, previewSelectedAttributes, findVariantForSelection]);
+
+    const previewOfferActive = previewVariant ? isPreviewOfferActive(previewVariant) : false;
+    const previewDiscountedPrice = previewOfferActive && previewVariant
+        ? previewVariant.price * (1 - (previewVariant.offer ?? 0) / 100)
+        : null;
 
     useEffect(() => {
         if (previewImages.length > 0 && previewSelectedImageIndex >= previewImages.length) {
@@ -1341,23 +1423,99 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                             {previewAttributeGroups.length > 0 && (
                                                 <div className="product-variants">
                                                     <h5 className="product-variants-title">{getPreviewText('Options', 'Options')}</h5>
-                                                    {previewAttributeGroups.map(group => (
+                                                    {previewAttributeGroups.map((group, groupIndex) => (
                                                         <div key={group.name_en} className="product-attribute-group">
                                                             <p className="product-attribute-name">{language === 'fr' ? group.name_fr : group.name_en}</p>
                                                             <div className="product-attribute-options" role="group" aria-label={language === 'fr' ? group.name_fr : group.name_en}>
                                                                 {group.values.map(value => {
                                                                     const selectedValue = previewSelectedAttributes[group.name_en];
                                                                     const optionValue = value.en;
-                                                                    return (
+                                                                    const hasThumbnail = group.isMain && !!value.thumbnailUrl;
+                                                                    const button = (
                                                                         <button
                                                                             key={`${group.name_en}-${optionValue}`}
                                                                             type="button"
-                                                                            className={`product-attribute-btn${selectedValue === optionValue ? ' selected' : ''}`}
+                                                                            className={`product-attribute-btn${selectedValue === optionValue ? ' selected' : ''}${hasThumbnail ? ' with-thumbnail' : ''}`}
                                                                             onClick={() => handlePreviewAttributeSelect(group.name_en, optionValue)}
                                                                             aria-pressed={selectedValue === optionValue}
                                                                         >
+                                                                            {hasThumbnail && (
+                                                                                <img
+                                                                                    src={value.thumbnailUrl}
+                                                                                    alt=""
+                                                                                    aria-hidden="true"
+                                                                                    className="product-attribute-btn-thumbnail"
+                                                                                />
+                                                                            )}
                                                                             {language === 'fr' ? value.fr : value.en}
                                                                         </button>
+                                                                    );
+
+                                                                    const isLastGroup = groupIndex === previewAttributeGroups.length - 1;
+                                                                    if (!isLastGroup) {
+                                                                        return button;
+                                                                    }
+
+                                                                    const optVariant = previewLastGroupPriceMap.get(optionValue);
+                                                                    const optOfferActive = optVariant ? isPreviewOfferActive(optVariant) : false;
+                                                                    const optEffectivePrice = optVariant
+                                                                        ? (optOfferActive
+                                                                            ? optVariant.price * (1 - (optVariant.offer ?? 0) / 100)
+                                                                            : optVariant.price)
+                                                                        : null;
+                                                                    const optOriginalPrice = optOfferActive && optVariant
+                                                                        ? optVariant.price
+                                                                        : null;
+                                                                    const formattedOptEffectivePrice = optEffectivePrice !== null
+                                                                        ? `$${optEffectivePrice.toFixed(2)}`
+                                                                        : '—';
+                                                                    const optionLabel = language === 'fr' ? value.fr : value.en;
+                                                                    const optionPriceAriaLabel = optEffectivePrice !== null
+                                                                        ? `${optionLabel} price ${optOriginalPrice !== null ? `$${optOriginalPrice.toFixed(2)} original, ` : ''}${formattedOptEffectivePrice}${optOfferActive ? ' discounted' : ''}`
+                                                                        : `${optionLabel} price unavailable`;
+
+                                                                    return (
+                                                                        <div
+                                                                            key={`${group.name_en}-${optionValue}`}
+                                                                            className={`product-option-with-price${optOfferActive ? ' has-offer' : ''}`}
+                                                                        >
+                                                                            {button}
+                                                                            {optEffectivePrice !== null ? (
+                                                                                optOriginalPrice !== null ? (
+                                                                                    <div className="product-option-prices">
+                                                                                        <span
+                                                                                            className="product-option-original-price"
+                                                                                            aria-label={getPreviewText(
+                                                                                                `Original price $${optOriginalPrice.toFixed(2)}`,
+                                                                                                `Prix original $${optOriginalPrice.toFixed(2)}`
+                                                                                            )}
+                                                                                        >
+                                                                                            ${optOriginalPrice.toFixed(2)}
+                                                                                        </span>
+                                                                                        <span
+                                                                                            className="product-option-price discounted"
+                                                                                            aria-label={optionPriceAriaLabel}
+                                                                                        >
+                                                                                            {formattedOptEffectivePrice}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    <span
+                                                                                        className="product-option-price"
+                                                                                        aria-label={optionPriceAriaLabel}
+                                                                                    >
+                                                                                        {formattedOptEffectivePrice}
+                                                                                    </span>
+                                                                                )
+                                                                            ) : (
+                                                                                <span
+                                                                                    className="product-option-price unavailable"
+                                                                                    aria-label={optionPriceAriaLabel}
+                                                                                >
+                                                                                    {formattedOptEffectivePrice}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
                                                                     );
                                                                 })}
                                                             </div>
@@ -1369,7 +1527,12 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                             {previewVariant ? (
                                                 <>
                                                     <div className="product-price-section">
-                                                        <span className="product-price">${previewVariant.price.toFixed(2)}</span>
+                                                        {renderPreviewVariantPriceSection(
+                                                            previewVariant,
+                                                            previewOfferActive,
+                                                            previewDiscountedPrice,
+                                                            language
+                                                        )}
                                                     </div>
                                                     <p className={previewVariant.stock > 5 ? 'product-stock' : 'product-stock-low'}>
                                                         {previewVariant.stock > 0

@@ -791,20 +791,17 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
         [step2Data.variantAttributes]
     );
 
-    const findVariantBySelection = useCallback((selection: Record<string, string>) => (
+    const findVariantForSelection = useCallback((
+        selection: Record<string, string>,
+        requireAllSelected: boolean
+    ) => (
         variants.find(variant =>
             previewAttributeGroups.every(group => {
                 const selectedValue = selection[group.name_en];
-                return !!selectedValue && variant.attributes_en[group.name_en] === selectedValue;
-            })
-        ) || null
-    ), [variants, previewAttributeGroups]);
-
-    const findCompatibleVariant = useCallback((selection: Record<string, string>) => (
-        variants.find(variant =>
-            previewAttributeGroups.every(group => {
-                const selectedValue = selection[group.name_en];
-                return !selectedValue || variant.attributes_en[group.name_en] === selectedValue;
+                if (!selectedValue) {
+                    return !requireAllSelected;
+                }
+                return variant.attributes_en[group.name_en] === selectedValue;
             })
         ) || null
     ), [variants, previewAttributeGroups]);
@@ -833,8 +830,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             return variants[0];
         }
 
-        return findVariantBySelection(previewSelectedAttributes) || variants[0];
-    }, [variants, previewAttributeGroups, previewSelectedAttributes, findVariantBySelection]);
+        return findVariantForSelection(previewSelectedAttributes, true) || variants[0];
+    }, [variants, previewAttributeGroups, previewSelectedAttributes, findVariantForSelection]);
 
     const previewImages = useMemo(() => {
         if (!previewVariant) {
@@ -910,7 +907,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 [attributeNameEn]: valueEn
             };
 
-            const matchedVariant = findVariantBySelection(tentativeSelection) || findCompatibleVariant(tentativeSelection);
+            const matchedVariant = findVariantForSelection(tentativeSelection, true)
+                || findVariantForSelection(tentativeSelection, false);
 
             if (!matchedVariant) {
                 return tentativeSelection;
@@ -1416,7 +1414,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                         <div className="preview-thumbnails">
                                             {previewImages.map((imageUrl, index) => (
                                                 <button
-                                                    key={`${imageUrl}-${index}`}
+                                                    key={imageUrl}
                                                     type="button"
                                                     className={`preview-thumbnail-btn${previewSelectedImageIndex === index ? ' active' : ''}`}
                                                     onClick={() => setPreviewSelectedImageIndex(index)}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import './AddProductStep3.css';
 import { ApiClient } from '../utils/apiClient';
 import { formatVariantAttribute } from '../utils/bilingualArrayUtils';
@@ -790,7 +790,16 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
         [step2Data.variantAttributes]
     );
 
-    const getInitialPreviewAttributes = () => {
+    const findVariantBySelection = useCallback((selection: Record<string, string>) => (
+        variants.find(variant =>
+            previewAttributeGroups.every(group => {
+                const selectedValue = selection[group.name_en];
+                return !selectedValue || variant.attributes_en[group.name_en] === selectedValue;
+            })
+        ) || null
+    ), [variants, previewAttributeGroups]);
+
+    const getInitialPreviewAttributes = useCallback(() => {
         const firstVariant = variants[0];
         if (!firstVariant) {
             return {};
@@ -803,7 +812,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             }
             return acc;
         }, {} as Record<string, string>);
-    };
+    }, [variants, previewAttributeGroups]);
 
     const previewVariant = useMemo(() => {
         if (variants.length === 0) {
@@ -814,15 +823,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             return variants[0];
         }
 
-        const matchingVariant = variants.find(variant =>
-            previewAttributeGroups.every(group => {
-                const selectedValue = previewSelectedAttributes[group.name_en];
-                return !selectedValue || variant.attributes_en[group.name_en] === selectedValue;
-            })
-        );
-
-        return matchingVariant || variants[0];
-    }, [variants, previewAttributeGroups, previewSelectedAttributes]);
+        return findVariantBySelection(previewSelectedAttributes) || variants[0];
+    }, [variants, previewAttributeGroups, previewSelectedAttributes, findVariantBySelection]);
 
     const previewImages = useMemo(() => {
         if (!previewVariant) {
@@ -859,12 +861,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 [attributeNameEn]: valueEn
             };
 
-            const matchedVariant = variants.find(variant =>
-                previewAttributeGroups.every(group => {
-                    const selectedValue = tentativeSelection[group.name_en];
-                    return !selectedValue || variant.attributes_en[group.name_en] === selectedValue;
-                })
-            );
+            const matchedVariant = findVariantBySelection(tentativeSelection);
 
             if (!matchedVariant) {
                 return tentativeSelection;

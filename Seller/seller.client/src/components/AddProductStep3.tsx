@@ -1336,11 +1336,11 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                             className="product-info"
                                             aria-label={getPreviewText('Product information', 'Informations sur le produit')}
                                         >
-                                            <h1 className="product-name">{language === 'fr' ? step1Data.name_fr : step1Data.name}</h1>
+                                            <h2 className="product-name">{language === 'fr' ? step1Data.name_fr : step1Data.name}</h2>
 
                                             {previewAttributeGroups.length > 0 && (
                                                 <div className="product-variants">
-                                                    <h2 className="product-variants-title">{getPreviewText('Options', 'Options')}</h2>
+                                                    <h3 className="product-variants-title">{getPreviewText('Options', 'Options')}</h3>
                                                     {previewAttributeGroups.map(group => (
                                                         <div key={group.name_en} className="product-attribute-group">
                                                             <p className="product-attribute-name">{language === 'fr' ? group.name_fr : group.name_en}</p>
@@ -1381,7 +1381,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
 
                                                     {(previewVariant.sku || (previewVariant.productIdentifierType && previewVariant.productIdentifierValue)) && (
                                                         <div className="product-attributes">
-                                                            <h2 className="product-attributes-title">{getPreviewText('Product Details', 'Détails du produit')}</h2>
+                                                            <h3 className="product-attributes-title">{getPreviewText('Product Details', 'Détails du produit')}</h3>
                                                             {previewVariant.sku && (
                                                                 <p className="product-attributes-row">
                                                                     {t('products.variant.sku')}: {previewVariant.sku}
@@ -1397,7 +1397,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
 
                                                     {step2Data.variantFeatures.length > 0 && (
                                                         <div className="product-variant-features">
-                                                            <h2 className="product-variant-features-title">{t('variant.features')}</h2>
+                                                            <h3 className="product-variant-features-title">{t('variant.features')}</h3>
                                                             <table className="product-variant-features-table">
                                                                 <tbody>
                                                                     {step2Data.variantFeatures.map(feature => {
@@ -1453,7 +1453,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                 type="button"
                                                                 className={`product-thumbnail-btn${previewSelectedImageIndex === index ? ' active' : ''}`}
                                                                 onClick={() => setPreviewSelectedImageIndex(index)}
-                                                                aria-label={getPreviewText(`View image ${index + 1}`, `Voir l’image ${index + 1}`)}
+                                                                aria-label={getPreviewText(`Select image ${index + 1}`, `Sélectionner l’image ${index + 1}`)}
                                                                 aria-pressed={previewSelectedImageIndex === index}
                                                             >
                                                                 <img
@@ -1469,7 +1469,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
 
                                             {(language === 'fr' ? step1Data.description_fr : step1Data.description) && (
                                                 <div className="product-description">
-                                                    <h2 className="product-description-title">{getPreviewText('Description', 'Description')}</h2>
+                                                    <h3 className="product-description-title">{getPreviewText('Description', 'Description')}</h3>
                                                     <p className="product-description-text">{language === 'fr' ? step1Data.description_fr : step1Data.description}</p>
                                                 </div>
                                             )}

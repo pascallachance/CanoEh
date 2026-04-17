@@ -70,7 +70,11 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
     useEffect(() => {
         const handleEscape = (event: KeyboardEvent) => {
             const target = event.target as HTMLElement;
-            const isInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+            const isInputField =
+                target.tagName === 'INPUT' ||
+                target.tagName === 'TEXTAREA' ||
+                target.tagName === 'SELECT' ||
+                target.isContentEditable;
             if (event.key === 'Escape' && !isInputField) {
                 if (isPreviewOpen) {
                     setIsPreviewOpen(false);
@@ -857,22 +861,30 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             return;
         }
 
-        const focusableElements = previewModalRef.current.querySelectorAll<HTMLElement>(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        const focusable = Array.from(focusableElements).filter(el => !el.hasAttribute('disabled'));
+        const getFocusableElements = () =>
+            Array.from(
+                previewModalRef.current?.querySelectorAll<HTMLElement>(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                ) ?? []
+            ).filter(el => !el.hasAttribute('disabled'));
 
+        const focusable = getFocusableElements();
         if (focusable.length > 0) {
             focusable[0].focus();
         }
 
         const handleTabKey = (event: KeyboardEvent) => {
-            if (event.key !== 'Tab' || focusable.length === 0) {
+            if (event.key !== 'Tab') {
                 return;
             }
 
-            const firstElement = focusable[0];
-            const lastElement = focusable[focusable.length - 1];
+            const currentFocusable = getFocusableElements();
+            if (currentFocusable.length === 0) {
+                return;
+            }
+
+            const firstElement = currentFocusable[0];
+            const lastElement = currentFocusable[currentFocusable.length - 1];
 
             if (event.shiftKey) {
                 if (document.activeElement === firstElement) {
@@ -1337,6 +1349,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                     type="button"
                                                                     className={`preview-option-btn${selectedValue === optionValue ? ' selected' : ''}`}
                                                                     onClick={() => handlePreviewAttributeSelect(group.name_en, optionValue)}
+                                                                    aria-pressed={selectedValue === optionValue}
                                                                 >
                                                                     {language === 'fr' ? value.fr : value.en}
                                                                 </button>
@@ -1414,11 +1427,12 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                         <div className="preview-thumbnails">
                                             {previewImages.map((imageUrl, index) => (
                                                 <button
-                                                    key={imageUrl}
+                                                    key={`${imageUrl}-${index}`}
                                                     type="button"
                                                     className={`preview-thumbnail-btn${previewSelectedImageIndex === index ? ' active' : ''}`}
                                                     onClick={() => setPreviewSelectedImageIndex(index)}
                                                     aria-label={getPreviewText(`Select image ${index + 1}`, `Sélectionner l'image ${index + 1}`)}
+                                                    aria-pressed={previewSelectedImageIndex === index}
                                                 >
                                                     <img
                                                         src={imageUrl}

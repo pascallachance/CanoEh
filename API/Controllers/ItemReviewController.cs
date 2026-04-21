@@ -11,6 +11,7 @@ namespace API.Controllers
     [ApiController]
     public class ItemReviewController(IItemReviewService itemReviewService, IUserService userService) : ControllerBase
     {
+        private const int ReviewReminderDelayMonths = 3;
         private readonly IItemReviewService _itemReviewService = itemReviewService;
         private readonly IUserService _userService = userService;
 
@@ -208,7 +209,7 @@ namespace API.Controllers
         {
             try
             {
-                var cutoffUtc = DateTime.UtcNow.AddMonths(-3);
+                var cutoffUtc = DateTime.UtcNow.AddMonths(-ReviewReminderDelayMonths);
                 var result = await _itemReviewService.GetPendingReviewReminderCandidatesAsync(cutoffUtc);
                 if (result.IsFailure)
                 {

@@ -87,6 +87,15 @@ interface ProductPreviewItem {
     categoryNodeId?: string;
 }
 
+interface OfferPreviewSource {
+    variant: ItemVariantDto;
+    productName_en: string;
+    productName_fr: string;
+    productId: string;
+    averageRating: number;
+    ratingCount: number;
+}
+
 const ITEM_PLACEHOLDER_ARRAY = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
 const RECENT_ITEMS_DISPLAY_COUNT = 16;
 const RECENT_ITEMS_FETCH_COUNT = 24; // Fetch more to ensure we get enough with images
@@ -193,7 +202,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         [rawSuggestedProducts, language]
     );
     const offerProducts = useMemo((): ProductPreviewItem[] => {
-        const productsWithOffers: { variant: ItemVariantDto; productName_en: string; productName_fr: string; productId: string; averageRating: number; ratingCount: number }[] = [];
+        const productsWithOffers: OfferPreviewSource[] = [];
         for (const product of rawOfferProducts) {
             if (productsWithOffers.length >= OFFERS_COUNT) break;
             if (product.variants && product.variants.length > 0) {

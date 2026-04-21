@@ -424,6 +424,19 @@ button.card-title-btn:focus-visible {
     z-index: 1;
 }
 
+.maple-rating-badge-home {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    background-color: rgba(35, 47, 62, 0.9);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    z-index: 1;
+}
+
 .item-image {
     width: 100%;
     aspect-ratio: 1;

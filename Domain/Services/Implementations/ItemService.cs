@@ -17,6 +17,7 @@ namespace Domain.Services.Implementations
         IItemVariantFeaturesRepository itemVariantFeaturesRepository,
         IItemVariantAttributeRepository itemVariantAttributeRepository,
         ICategoryNodeRepository categoryNodeRepository,
+        IItemReviewRepository itemReviewRepository,
         string connectionString) : IItemService
     {
         private readonly IItemRepository _itemRepository = itemRepository;
@@ -24,6 +25,7 @@ namespace Domain.Services.Implementations
         private readonly IItemVariantFeaturesRepository _itemVariantFeaturesRepository = itemVariantFeaturesRepository;
         private readonly IItemVariantAttributeRepository _itemVariantAttributeRepository = itemVariantAttributeRepository;
         private readonly ICategoryNodeRepository _categoryNodeRepository = categoryNodeRepository;
+        private readonly IItemReviewRepository _itemReviewRepository = itemReviewRepository;
         private readonly string _connectionString = connectionString;
 
         private const string InsertItemVariantFeaturesSql = @"
@@ -375,7 +377,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             try
             {
                 var items = await _itemRepository.GetAllWithVariantsAsync();
-                var response = items.Select(item => MapItemToGetItemResponse(item));
+                var response = await MapItemsToGetItemResponsesWithRatingsAsync(items);
 
                 return Result.Success(response);
             }
@@ -395,7 +397,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     return Result.Failure<GetItemResponse>("Item not found.", StatusCodes.Status404NotFound);
                 }
 
-                var response = MapItemToGetItemResponse(item);
+                var response = await MapItemToGetItemResponseWithRatingAsync(item);
                 return Result.Success(response);
             }
             catch (Exception ex)
@@ -412,7 +414,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 // This differs from GetItemByIdAsync which excludes deleted items
                 // Note: GetByIdAsync throws InvalidOperationException if item is not found (never returns null)
                 var item = await _itemRepository.GetByIdAsync(id);
-                var response = MapItemToGetItemResponse(item);
+                var response = await MapItemToGetItemResponseWithRatingAsync(item);
                 return Result.Success(response);
             }
             catch (InvalidOperationException)
@@ -447,8 +449,48 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 ItemVariantFeatures = MapToItemVariantFeaturesDtos(item.ItemVariantFeatures),
                 CreatedAt = item.CreatedAt,
                 UpdatedAt = item.UpdatedAt,
+                AverageRating = 0,
+                RatingCount = 0,
                 Deleted = item.Deleted
             };
+        }
+
+        private async Task<GetItemResponse> MapItemToGetItemResponseWithRatingAsync(Item item)
+        {
+            var response = MapItemToGetItemResponse(item);
+            var summaries = await _itemReviewRepository.GetRatingSummariesAsync([item.Id]);
+            var summary = summaries.FirstOrDefault();
+            if (summary != null)
+            {
+                response.AverageRating = summary.AverageRating;
+                response.RatingCount = summary.RatingCount;
+            }
+
+            return response;
+        }
+
+        private async Task<IEnumerable<GetItemResponse>> MapItemsToGetItemResponsesWithRatingsAsync(IEnumerable<Item> items)
+        {
+            var itemList = items.ToList();
+            if (itemList.Count == 0)
+            {
+                return Enumerable.Empty<GetItemResponse>();
+            }
+
+            var responses = itemList.Select(MapItemToGetItemResponse).ToList();
+            var summaries = await _itemReviewRepository.GetRatingSummariesAsync(itemList.Select(i => i.Id));
+            var summaryMap = summaries.ToDictionary(s => s.ItemID);
+
+            foreach (var response in responses)
+            {
+                if (summaryMap.TryGetValue(response.Id, out var summary))
+                {
+                    response.AverageRating = summary.AverageRating;
+                    response.RatingCount = summary.RatingCount;
+                }
+            }
+
+            return responses;
         }
 
         public async Task<Result<IEnumerable<GetItemResponse>>> GetAllItemsFromSellerAsync(Guid sellerId, bool includeDeleted = false)
@@ -456,7 +498,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             try
             {
                 var items = await _itemRepository.GetBySellerIdAsync(sellerId, includeDeleted);
-                var response = items.Select(item => MapItemToGetItemResponse(item));
+                var response = await MapItemsToGetItemResponsesWithRatingsAsync(items);
 
                 return Result.Success(response);
             }
@@ -917,7 +959,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     return Result.Failure<GetItemResponse>("Variant not found or you do not have permission to access this item.", StatusCodes.Status404NotFound);
                 }
 
-                var response = MapItemToGetItemResponse(item);
+                var response = await MapItemToGetItemResponseWithRatingAsync(item);
 
                 return Result.Success(response);
             }
@@ -1187,7 +1229,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             try
             {
                 var items = await _itemRepository.GetRecentlyAddedProductsAsync(count);
-                var response = items.Select(item => MapItemToGetItemResponse(item));
+                var response = await MapItemsToGetItemResponsesWithRatingsAsync(items);
 
                 return Result.Success(response);
             }
@@ -1202,7 +1244,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             try
             {
                 var items = await _itemRepository.GetSuggestedProductsAsync(count);
-                var response = items.Select(item => MapItemToGetItemResponse(item));
+                var response = await MapItemsToGetItemResponsesWithRatingsAsync(items);
 
                 return Result.Success(response);
             }
@@ -1219,7 +1261,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 // Query to get items with variants that have offers
                 // Sort by best offer (highest percentage) first
                 var items = await _itemRepository.GetProductsWithOffersAsync(count);
-                var response = items.Select(item => MapItemToGetItemResponse(item));
+                var response = await MapItemsToGetItemResponsesWithRatingsAsync(items);
 
                 return Result.Success(response);
             }
@@ -1242,6 +1284,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 var categoryIds = items.Select(i => i.CategoryNodeID).Distinct().ToHashSet();
                 var categoryNodes = await _categoryNodeRepository.GetByIdsAsync(categoryIds) ?? Enumerable.Empty<BaseNode>();
                 var categoryNodeMap = categoryNodes.ToDictionary(n => n.Id);
+                var ratingSummaryMap = (await _itemReviewRepository.GetRatingSummariesAsync(items.Select(i => i.Id))).ToDictionary(s => s.ItemID);
 
                 var responseList = items.Select(item =>
                 {
@@ -1250,6 +1293,11 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     {
                         response.CategoryName_en = categoryNode.Name_en;
                         response.CategoryName_fr = categoryNode.Name_fr;
+                    }
+                    if (ratingSummaryMap.TryGetValue(item.Id, out var ratingSummary))
+                    {
+                        response.AverageRating = ratingSummary.AverageRating;
+                        response.RatingCount = ratingSummary.RatingCount;
                     }
                     return response;
                 }).ToList();
@@ -1282,6 +1330,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 var categoryIds = items.Select(i => i.CategoryNodeID).Distinct().ToHashSet();
                 var categoryNodes = await _categoryNodeRepository.GetByIdsAsync(categoryIds) ?? Enumerable.Empty<BaseNode>();
                 var categoryNodeMap = categoryNodes.ToDictionary(n => n.Id);
+                var ratingSummaryMap = (await _itemReviewRepository.GetRatingSummariesAsync(items.Select(i => i.Id))).ToDictionary(s => s.ItemID);
 
                 var responseList = items.Select(item =>
                 {
@@ -1290,6 +1339,11 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                     {
                         response.CategoryName_en = categoryNode.Name_en;
                         response.CategoryName_fr = categoryNode.Name_fr;
+                    }
+                    if (ratingSummaryMap.TryGetValue(item.Id, out var ratingSummary))
+                    {
+                        response.AverageRating = ratingSummary.AverageRating;
+                        response.RatingCount = ratingSummary.RatingCount;
                     }
                     return response;
                 }).ToList();

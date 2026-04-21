@@ -5,6 +5,7 @@ import './Filters.css';
 import './Browse.css';
 import './Categories.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
+import { mapleLeavesFromRating } from '../utils/ratingUtils';
 
 interface CategoriesProps {
     isAuthenticated?: boolean;
@@ -42,6 +43,8 @@ interface GetItemResponse {
     categoryNodeID: string;
     categoryName_en?: string;
     categoryName_fr?: string;
+    averageRating: number;
+    ratingCount: number;
     variants: ItemVariantDto[];
     deleted: boolean;
 }
@@ -65,6 +68,8 @@ interface CategoryProduct {
     categoryNodeID: string;
     categoryName_en: string;
     categoryName_fr: string;
+    averageRating: number;
+    ratingCount: number;
 }
 
 function isOfferActive(variant: ItemVariantDto): boolean {
@@ -159,6 +164,8 @@ function mapItemsToCategoryProducts(items: GetItemResponse[]): CategoryProduct[]
             categoryNodeID: item.categoryNodeID,
             categoryName_en: item.categoryName_en ?? '',
             categoryName_fr: item.categoryName_fr ?? '',
+            averageRating: item.averageRating ?? 0,
+            ratingCount: item.ratingCount ?? 0,
         });
     }
 
@@ -810,6 +817,9 @@ function CategoryProductCard({ product, language, onNavigate }: CategoryProductC
                 {product.hasOffer && (
                     <div className="offer-badge">{offerText}</div>
                 )}
+                <div className="maple-rating-badge">
+                    {mapleLeavesFromRating(product.averageRating)}
+                </div>
             </div>
             <div className="browse-product-info">
                 <p className="browse-product-name" title={name}>{name}</p>

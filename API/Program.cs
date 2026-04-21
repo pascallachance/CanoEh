@@ -105,9 +105,11 @@ public class Program
             var itemVariantFeaturesRepository = provider.GetRequiredService<IItemVariantFeaturesRepository>();
             var itemVariantAttributeRepository = provider.GetRequiredService<IItemVariantAttributeRepository>();
             var categoryNodeRepository = provider.GetRequiredService<ICategoryNodeRepository>();
+            var itemReviewRepository = provider.GetRequiredService<IItemReviewRepository>();
             return new ItemService(itemRepository, itemVariantRepository, itemVariantFeaturesRepository, 
-                                 itemVariantAttributeRepository, categoryNodeRepository, connectionString);
+                                 itemVariantAttributeRepository, categoryNodeRepository, itemReviewRepository, connectionString);
         });
+        builder.Services.AddScoped<IItemReviewService, ItemReviewService>();
         builder.Services.AddScoped<ICategoryNodeService, CategoryNodeService>();
         builder.Services.AddScoped<ICompanyService, CompanyService>();
         builder.Services.AddScoped<IAddressService, AddressService>();
@@ -157,6 +159,13 @@ public class Program
             var config = provider.GetRequiredService<IConfiguration>();
             var connectionString = config.GetConnectionString("DefaultConnection");
             return new ItemVariantRepository(connectionString);
+        });
+
+        builder.Services.AddScoped<IItemReviewRepository>(provider =>
+        {
+            var config = provider.GetRequiredService<IConfiguration>();
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            return new ItemReviewRepository(connectionString);
         });
 
         builder.Services.AddScoped<ICategoryNodeRepository>(provider =>

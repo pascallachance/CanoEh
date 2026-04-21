@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
+import { mapleLeavesFromRating } from '../utils/ratingUtils';
 
 /** Tolerance (px) used when comparing scrollLeft to the maximum scroll position to account for sub-pixel rounding. */
 const SCROLL_TOLERANCE = 1;
@@ -64,6 +65,8 @@ interface GetItemResponse {
     itemAttributes: ItemAttributeDto[];
     createdAt: string;
     updatedAt?: string;
+    averageRating: number;
+    ratingCount: number;
     deleted: boolean;
 }
 
@@ -79,7 +82,18 @@ interface ProductPreviewItem {
     imageUrl: string;
     name: string;
     offer: number;
+    averageRating: number;
+    ratingCount: number;
     categoryNodeId?: string;
+}
+
+interface OfferPreviewSource {
+    variant: ItemVariantDto;
+    productName_en: string;
+    productName_fr: string;
+    productId: string;
+    averageRating: number;
+    ratingCount: number;
 }
 
 const ITEM_PLACEHOLDER_ARRAY = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
@@ -159,6 +173,8 @@ function extractProductImages(
                     imageUrl: toAbsoluteUrl(imageUrl),
                     name,
                     offer: isOfferActive(selectedVariant) ? (selectedVariant.offer || 0) : 0,
+                    averageRating: product.averageRating ?? 0,
+                    ratingCount: product.ratingCount ?? 0,
                     ...(useCategoryName ? { categoryNodeId: product.categoryNodeID } : {}),
                 });
             }
@@ -186,7 +202,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         [rawSuggestedProducts, language]
     );
     const offerProducts = useMemo((): ProductPreviewItem[] => {
-        const productsWithOffers: { variant: ItemVariantDto; productName_en: string; productName_fr: string; productId: string }[] = [];
+        const productsWithOffers: OfferPreviewSource[] = [];
         for (const product of rawOfferProducts) {
             if (productsWithOffers.length >= OFFERS_COUNT) break;
             if (product.variants && product.variants.length > 0) {
@@ -197,12 +213,14 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                         productName_en: product.name_en,
                         productName_fr: product.name_fr,
                         productId: product.id,
+                        averageRating: product.averageRating ?? 0,
+                        ratingCount: product.ratingCount ?? 0,
                     });
                 }
             }
         }
         const items: ProductPreviewItem[] = [];
-        for (const { variant, productName_en, productName_fr, productId } of productsWithOffers) {
+        for (const { variant, productName_en, productName_fr, productId, averageRating, ratingCount } of productsWithOffers) {
             let imageUrl: string | null = null;
             if (variant.imageUrls) {
                 const urls = variant.imageUrls.split(',').filter((url: string) => url.trim());
@@ -217,6 +235,8 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                     imageUrl: toAbsoluteUrl(imageUrl),
                     name: language === 'fr' ? productName_fr : productName_en,
                     offer: variant.offer!,
+                    averageRating,
+                    ratingCount,
                 });
             }
         }
@@ -756,6 +776,9 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
                                     className="item-image"
                                     onError={() => handleImageError(index)}
                                 />
+                                <div className="maple-rating-badge-home">
+                                    {mapleLeavesFromRating(product.averageRating)}
+                                </div>
                                 {product.offer > 0 && (
                                     <div className="offer-badge">{getOfferText(product.offer)}</div>
                                 )}

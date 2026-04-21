@@ -105,6 +105,11 @@ const OFFERS_COUNT = 16;
 const SUGGESTED_CATEGORIES_FETCH_COUNT = 24;
 const SUGGESTED_CATEGORIES_DISPLAY_COUNT = 16;
 
+function formatRatingValue(rating: number): string {
+    const safeRating = Number.isFinite(rating) ? Math.min(5, Math.max(0, rating)) : 0;
+    return safeRating.toFixed(1).replace(/\.0$/, '');
+}
+
 /**
  * Returns true if the variant has an active (non-expired and started) offer.
  * An offer is considered not yet active when offerStart is set and is in the future,
@@ -776,8 +781,11 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
                                     className="item-image"
                                     onError={() => handleImageError(index)}
                                 />
-                                <div className="maple-rating-badge-home">
-                                    {mapleLeavesFromRating(product.averageRating)}
+                                <div className="maple-rating-badge-home" aria-label={`${formatRatingValue(product.averageRating)}/5`}>
+                                    <span className="maple-rating-leaf-home" aria-hidden="true">
+                                        {mapleLeavesFromRating(product.averageRating) || '🍁'}
+                                    </span>
+                                    <span className="maple-rating-number-home">{formatRatingValue(product.averageRating)}</span>
                                 </div>
                                 {product.offer > 0 && (
                                     <div className="offer-badge">{getOfferText(product.offer)}</div>

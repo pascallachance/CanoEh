@@ -11,10 +11,14 @@ export function mapleLeavesFromRating(rating: number): string {
     return rounded > 0 ? '🍁'.repeat(rounded) : '';
 }
 
+export function formatRatingValue(rating: number): string {
+    return clampRating(rating).toFixed(1).replace(/\.0$/, '');
+}
+
 export function formatMapleRating(rating: number, ratingCount: number, language: string): string {
     const normalizedRating = clampRating(rating);
     const leaves = mapleLeavesFromRating(normalizedRating) || '🍁';
-    const formattedRating = normalizedRating.toFixed(1).replace(/\.0$/, '');
+    const formattedRating = formatRatingValue(normalizedRating);
     const countLabel = language === 'fr'
         ? `${ratingCount} avis`
         : `${ratingCount} reviews`;

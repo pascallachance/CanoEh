@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
-import { clampRating } from '../utils/ratingUtils';
+import { formatRatingValue } from '../utils/ratingUtils';
 
 /** Tolerance (px) used when comparing scrollLeft to the maximum scroll position to account for sub-pixel rounding. */
 const SCROLL_TOLERANCE = 1;
@@ -104,11 +104,6 @@ const SUGGESTED_ITEMS_FETCH_COUNT = 24; // Fetch more to ensure we get enough wi
 const OFFERS_COUNT = 16;
 const SUGGESTED_CATEGORIES_FETCH_COUNT = 24;
 const SUGGESTED_CATEGORIES_DISPLAY_COUNT = 16;
-
-function formatRatingValue(rating: number): string {
-    const safeRating = clampRating(rating);
-    return safeRating.toFixed(1).replace(/\.0$/, '');
-}
 
 /**
  * Returns true if the variant has an active (non-expired and started) offer.
@@ -785,7 +780,7 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
                                     <span className="maple-rating-leaf-home" aria-hidden="true">
                                         🍁
                                     </span>
-                                    <span className="maple-rating-number-home">{formatRatingValue(product.averageRating)}</span>
+                                    <span className="maple-rating-number-home" aria-hidden="true">{formatRatingValue(product.averageRating)}</span>
                                 </div>
                                 {product.offer > 0 && (
                                     <div className="offer-badge">{getOfferText(product.offer)}</div>

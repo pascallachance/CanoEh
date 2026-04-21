@@ -3,6 +3,7 @@ using Domain.Models.Responses;
 using Domain.Services.Interfaces;
 using Helpers.Common;
 using Infrastructure.Data;
+using Infrastructure.Repositories.Exceptions;
 using Infrastructure.Repositories.Interfaces;
 using Microsoft.AspNetCore.Http;
 
@@ -51,7 +52,15 @@ namespace Domain.Services.Implementations
                     UpdatedAt = null
                 };
 
-                var created = await _itemReviewRepository.AddAsync(entity);
+                ItemReview created;
+                try
+                {
+                    created = await _itemReviewRepository.AddAsync(entity);
+                }
+                catch (DuplicateItemReviewException)
+                {
+                    return Result.Failure<CreateItemReviewResponse>("You have already reviewed this product.", StatusCodes.Status409Conflict);
+                }
 
                 return Result.Success(new CreateItemReviewResponse
                 {
@@ -252,7 +261,6 @@ namespace Domain.Services.Implementations
             {
                 Id = review.Id,
                 ItemID = review.ItemID,
-                UserID = review.UserID,
                 Rating = review.Rating,
                 ReviewText = review.ReviewText,
                 CreatedAt = review.CreatedAt,

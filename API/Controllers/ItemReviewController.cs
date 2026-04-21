@@ -202,7 +202,7 @@ namespace API.Controllers
         }
 
         [HttpGet("GetPendingReviewReminderCandidates")]
-        [AllowAnonymous]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetPendingReviewReminderCandidates()

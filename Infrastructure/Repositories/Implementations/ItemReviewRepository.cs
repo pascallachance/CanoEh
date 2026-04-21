@@ -1,12 +1,17 @@
 using System.Data;
 using Dapper;
 using Infrastructure.Data;
+using Infrastructure.Repositories.Exceptions;
 using Infrastructure.Repositories.Interfaces;
+using Microsoft.Data.SqlClient;
 
 namespace Infrastructure.Repositories.Implementations
 {
     public class ItemReviewRepository(string connectionString) : GenericRepository<ItemReview>(connectionString), IItemReviewRepository
     {
+        private const int SqlUniqueIndexViolationErrorCode = 2601;
+        private const int SqlUniqueConstraintViolationErrorCode = 2627;
+
         public override async Task<ItemReview> AddAsync(ItemReview entity)
         {
             if (dbConnection.State != ConnectionState.Open)
@@ -19,7 +24,16 @@ INSERT INTO dbo.ItemReview (ItemID, UserID, Rating, ReviewText, CreatedAt, Updat
 OUTPUT INSERTED.Id
 VALUES (@ItemID, @UserID, @Rating, @ReviewText, @CreatedAt, @UpdatedAt)";
 
-            var id = await dbConnection.ExecuteScalarAsync<Guid>(query, entity);
+            Guid id;
+            try
+            {
+                id = await dbConnection.ExecuteScalarAsync<Guid>(query, entity);
+            }
+            catch (SqlException ex) when (ex.Number == SqlUniqueIndexViolationErrorCode || ex.Number == SqlUniqueConstraintViolationErrorCode)
+            {
+                throw new DuplicateItemReviewException("Duplicate item review.", ex);
+            }
+
             entity.Id = id;
             return entity;
         }
@@ -184,9 +198,10 @@ INNER JOIN dbo.OrderItem oi ON oi.OrderID = o.ID
 INNER JOIN dbo.[User] u ON u.ID = o.UserID
 INNER JOIN dbo.Item i ON i.Id = oi.ItemID
 LEFT JOIN dbo.ItemReview ir ON ir.ItemID = oi.ItemID AND ir.UserID = o.UserID
-WHERE oi.DeliveredAt IS NOT NULL
-  AND oi.DeliveredAt <= @cutoffUtc
-  AND ir.Id IS NULL";
+ WHERE oi.DeliveredAt IS NOT NULL
+   AND oi.DeliveredAt <= @cutoffUtc
+   AND u.Deleted = 0
+   AND ir.Id IS NULL";
 
             return await dbConnection.QueryAsync<ReviewReminderCandidate>(query, new { cutoffUtc });
         }

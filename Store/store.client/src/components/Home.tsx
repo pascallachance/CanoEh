@@ -776,7 +776,11 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
                                     className="item-image"
                                     onError={() => handleImageError(index)}
                                 />
-                                <div className="maple-rating-badge-home" aria-label={`${formatRatingValue(product.averageRating)}/5`}>
+                                <div
+                                    className="maple-rating-badge-home"
+                                    role="img"
+                                    aria-label={`${language === 'fr' ? 'Note' : 'Rating'} ${formatRatingValue(product.averageRating)}/5`}
+                                >
                                     <span className="maple-rating-leaf-home" aria-hidden="true">
                                         🍁
                                     </span>

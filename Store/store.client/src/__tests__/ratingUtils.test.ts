@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { formatMapleRating, mapleLeavesFromRating } from '../utils/ratingUtils';
 
 describe('ratingUtils', () => {
-    it('uses a maple leaf when rounded rating is zero', () => {
-        expect(mapleLeavesFromRating(0)).toBe('🍁');
-        expect(mapleLeavesFromRating(0.4)).toBe('🍁');
+    it('returns no leaves when rounded rating is zero', () => {
+        expect(mapleLeavesFromRating(0)).toBe('');
+        expect(mapleLeavesFromRating(0.4)).toBe('');
     });
 
     it('omits trailing .0 in formatted rating values', () => {
@@ -14,5 +14,10 @@ describe('ratingUtils', () => {
 
     it('keeps one decimal place when needed', () => {
         expect(formatMapleRating(1.4, 7, 'en')).toBe('🍁 1.4/5 • 7 reviews');
+    });
+
+    it('uses a maple leaf placeholder in formatted product rating when rounded leaves are zero', () => {
+        expect(formatMapleRating(0, 1, 'en')).toBe('🍁 0/5 • 1 reviews');
+        expect(formatMapleRating(0.4, 4, 'fr')).toBe('🍁 0.4/5 • 4 avis');
     });
 });

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
-import { mapleLeavesFromRating } from '../utils/ratingUtils';
+import { clampRating } from '../utils/ratingUtils';
 
 /** Tolerance (px) used when comparing scrollLeft to the maximum scroll position to account for sub-pixel rounding. */
 const SCROLL_TOLERANCE = 1;
@@ -106,7 +106,7 @@ const SUGGESTED_CATEGORIES_FETCH_COUNT = 24;
 const SUGGESTED_CATEGORIES_DISPLAY_COUNT = 16;
 
 function formatRatingValue(rating: number): string {
-    const safeRating = Number.isFinite(rating) ? Math.min(5, Math.max(0, rating)) : 0;
+    const safeRating = clampRating(rating);
     return safeRating.toFixed(1).replace(/\.0$/, '');
 }
 
@@ -783,7 +783,7 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
                                 />
                                 <div className="maple-rating-badge-home" aria-label={`${formatRatingValue(product.averageRating)}/5`}>
                                     <span className="maple-rating-leaf-home" aria-hidden="true">
-                                        {mapleLeavesFromRating(product.averageRating) || '🍁'}
+                                        🍁
                                     </span>
                                     <span className="maple-rating-number-home">{formatRatingValue(product.averageRating)}</span>
                                 </div>

@@ -379,6 +379,36 @@ END
 GO
 
 -- =============================================
+-- Create ItemReview Table
+-- =============================================
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ItemReview' AND schema_id = SCHEMA_ID('dbo'))
+BEGIN
+    CREATE TABLE dbo.ItemReview (
+        Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+        ItemID UNIQUEIDENTIFIER NOT NULL,
+        UserID UNIQUEIDENTIFIER NOT NULL,
+        Rating INT NOT NULL,
+        ReviewText NVARCHAR(2000) NULL,
+        CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+        UpdatedAt DATETIME2 NULL,
+        CONSTRAINT FK_ItemReview_Item FOREIGN KEY (ItemID) REFERENCES dbo.Item(Id),
+        CONSTRAINT FK_ItemReview_User FOREIGN KEY (UserID) REFERENCES dbo.[User](Id),
+        CONSTRAINT CK_ItemReview_Rating CHECK (Rating >= 0 AND Rating <= 5),
+        CONSTRAINT UQ_ItemReview_Item_User UNIQUE (ItemID, UserID)
+    );
+    
+    CREATE INDEX IX_ItemReview_ItemID ON dbo.ItemReview(ItemID);
+    CREATE INDEX IX_ItemReview_UserID ON dbo.ItemReview(UserID);
+    
+    PRINT 'Table ItemReview created successfully.';
+END
+ELSE
+BEGIN
+    PRINT 'Table ItemReview already exists.';
+END
+GO
+
+-- =============================================
 -- Create OrderStatus Table (Lookup Table)
 -- =============================================
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'OrderStatus' AND schema_id = SCHEMA_ID('dbo'))

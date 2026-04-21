@@ -4,6 +4,7 @@ import './Home.css';
 import './Filters.css';
 import './Browse.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
+import { mapleLeavesFromRating } from '../utils/ratingUtils';
 
 interface OffersProps {
     isAuthenticated?: boolean;
@@ -27,6 +28,8 @@ interface GetItemResponse {
     id: string;
     name_en: string;
     name_fr: string;
+    averageRating: number;
+    ratingCount: number;
     variants: ItemVariantDto[];
     deleted: boolean;
 }
@@ -46,6 +49,8 @@ interface OfferProduct {
     offerPercentage: number;
     discountedPrice: number;
     imageUrl: string;
+    averageRating: number;
+    ratingCount: number;
 }
 
 const OFFERS_FETCH_COUNT = 100;
@@ -187,6 +192,8 @@ function Offers({ isAuthenticated = false, onLogout }: OffersProps) {
                         offerPercentage: bestOffer,
                         discountedPrice: bestVariant.price * (1 - bestOffer / 100),
                         imageUrl: toAbsoluteUrl(imageUrl),
+                        averageRating: product.averageRating ?? 0,
+                        ratingCount: product.ratingCount ?? 0,
                     });
                 }
 
@@ -505,6 +512,9 @@ function OfferProductCard({ product, language, onNavigate }: OfferProductCardPro
                         {language === 'fr' ? 'Image non disponible' : 'No image'}
                     </div>
                 )}
+                <div className="maple-rating-badge">
+                    {mapleLeavesFromRating(product.averageRating)}
+                </div>
                 <div className="offer-badge">{offerText}</div>
             </div>
             <div className="browse-product-info">

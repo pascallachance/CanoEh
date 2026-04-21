@@ -14,6 +14,7 @@ namespace API.Tests
         private readonly Mock<IItemVariantFeaturesRepository> _mockItemVariantFeaturesRepository;
         private readonly Mock<IItemVariantAttributeRepository> _mockItemVariantAttributeRepository;
         private readonly Mock<ICategoryNodeRepository> _mockCategoryNodeRepository;
+        private readonly Mock<IItemReviewRepository> _mockItemReviewRepository;
         private readonly ItemService _itemService;
 
         public ItemServiceShould()
@@ -23,12 +24,17 @@ namespace API.Tests
             _mockItemVariantFeaturesRepository = new Mock<IItemVariantFeaturesRepository>();
             _mockItemVariantAttributeRepository = new Mock<IItemVariantAttributeRepository>();
             _mockCategoryNodeRepository = new Mock<ICategoryNodeRepository>();
+            _mockItemReviewRepository = new Mock<IItemReviewRepository>();
+            _mockItemReviewRepository
+                .Setup(x => x.GetRatingSummariesAsync(It.IsAny<IEnumerable<Guid>>()))
+                .ReturnsAsync(new List<ItemRatingSummary>());
             _itemService = new ItemService(
                 _mockItemRepository.Object, 
                 _mockItemVariantRepository.Object,
                 _mockItemVariantFeaturesRepository.Object,
                 _mockItemVariantAttributeRepository.Object,
                 _mockCategoryNodeRepository.Object,
+                _mockItemReviewRepository.Object,
                 "Server=(localdb)\\MSSQLLocalDB;Database=CanoEh;Trusted_Connection=True;TrustServerCertificate=True;");
         }
 

@@ -5,6 +5,7 @@ import './Filters.css';
 import './Browse.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
 import { cheapestActiveVariant, pickPrimaryImage } from '../utils/itemUtils';
+import { mapleLeavesFromRating } from '../utils/ratingUtils';
 
 interface SuggestedItemsProps {
     isAuthenticated?: boolean;
@@ -25,6 +26,8 @@ interface GetItemResponse {
     id: string;
     name_en: string;
     name_fr: string;
+    averageRating: number;
+    ratingCount: number;
     variants: ItemVariantDto[];
     deleted: boolean;
 }
@@ -42,6 +45,8 @@ interface BrowseProduct {
     name_fr: string;
     price: number;
     imageUrl: string;
+    averageRating: number;
+    ratingCount: number;
 }
 
 const SUGGESTED_ITEMS_FETCH_COUNT = 100;
@@ -144,6 +149,8 @@ function SuggestedItems({ isAuthenticated = false, onLogout }: SuggestedItemsPro
                         name_fr: product.name_fr,
                         price: cheapestVariant.price,
                         imageUrl: toAbsoluteUrl(rawImage),
+                        averageRating: product.averageRating ?? 0,
+                        ratingCount: product.ratingCount ?? 0,
                     });
                 }
 
@@ -420,6 +427,9 @@ function BrowseProductCard({ product, language, onNavigate }: BrowseProductCardP
                         {language === 'fr' ? 'Image non disponible' : 'No image'}
                     </div>
                 )}
+                <div className="maple-rating-badge">
+                    {mapleLeavesFromRating(product.averageRating)}
+                </div>
             </div>
             <div className="browse-product-info">
                 <p className="browse-product-name" title={name}>{name}</p>

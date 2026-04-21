@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import './Home.css';
 import './Product.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
+import { formatMapleRating } from '../utils/ratingUtils';
 
 interface ProductProps {
     isAuthenticated?: boolean;
@@ -61,6 +62,8 @@ interface GetItemResponse {
     itemVariantFeatures: ItemVariantFeaturesDto[];
     createdAt: string;
     updatedAt?: string;
+    averageRating: number;
+    ratingCount: number;
     deleted: boolean;
 }
 
@@ -712,6 +715,9 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                 aria-label={getText('Product information', 'Informations sur le produit')}
                             >
                                 <h1 className="product-name">{productName}</h1>
+                                <p className="product-rating">
+                                    {formatMapleRating(product.averageRating ?? 0, product.ratingCount ?? 0, language)}
+                                </p>
 
                                 {categoryPath.length > 0 && (
                                     <div
@@ -1022,4 +1028,3 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
 }
 
 export default Product;
-

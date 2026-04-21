@@ -16,6 +16,8 @@ namespace Domain.Models.Responses
         public List<ItemVariantFeaturesDto> ItemVariantFeatures { get; set; } = new();
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public decimal AverageRating { get; set; }
+        public int RatingCount { get; set; }
         public bool Deleted { get; set; }
     }
 }

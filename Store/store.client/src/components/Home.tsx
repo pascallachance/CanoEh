@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
-import { mapleLeavesFromRating } from '../utils/ratingUtils';
+import { formatRatingValue } from '../utils/ratingUtils';
 
 /** Tolerance (px) used when comparing scrollLeft to the maximum scroll position to account for sub-pixel rounding. */
 const SCROLL_TOLERANCE = 1;
@@ -776,8 +776,15 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
                                     className="item-image"
                                     onError={() => handleImageError(index)}
                                 />
-                                <div className="maple-rating-badge-home">
-                                    {mapleLeavesFromRating(product.averageRating)}
+                                <div
+                                    className="maple-rating-badge-home"
+                                    role="img"
+                                    aria-label={`${language === 'fr' ? 'Note' : 'Rating'} ${formatRatingValue(product.averageRating)}/5`}
+                                >
+                                    <span className="maple-rating-leaf-home" aria-hidden="true">
+                                        🍁
+                                    </span>
+                                    <span className="maple-rating-number-home" aria-hidden="true">{formatRatingValue(product.averageRating)}</span>
                                 </div>
                                 {product.offer > 0 && (
                                     <div className="offer-badge">{getOfferText(product.offer)}</div>

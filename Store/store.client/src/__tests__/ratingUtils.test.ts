@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatMapleRating, mapleLeavesFromRating } from '../utils/ratingUtils';
+import { formatMapleRating, formatRatingValue, mapleLeavesFromRating } from '../utils/ratingUtils';
 
 describe('ratingUtils', () => {
     it('returns no leaves when rounded rating is zero', () => {
@@ -19,5 +19,12 @@ describe('ratingUtils', () => {
     it('uses a maple leaf placeholder in formatted product rating when rounded leaves are zero', () => {
         expect(formatMapleRating(0, 1, 'en')).toBe('🍁 0/5 • 1 reviews');
         expect(formatMapleRating(0.4, 4, 'fr')).toBe('🍁 0.4/5 • 4 avis');
+    });
+
+    it('formats badge rating values without trailing .0 and clamps to range', () => {
+        expect(formatRatingValue(4)).toBe('4');
+        expect(formatRatingValue(4.2)).toBe('4.2');
+        expect(formatRatingValue(8)).toBe('5');
+        expect(formatRatingValue(-2)).toBe('0');
     });
 });

@@ -58,9 +58,9 @@ interface GetItemResponse {
     description_en?: string;
     description_fr?: string;
     imageUrl?: string;
-    categoryNodeID: string;
-    categoryName_en?: string;
-    categoryName_fr?: string;
+    categoryNodeID: string | null;
+    categoryName_en?: string | null;
+    categoryName_fr?: string | null;
     variants: ItemVariantDto[];
     itemAttributes: ItemAttributeDto[];
     createdAt: string;
@@ -165,8 +165,9 @@ function extractProductImages(
             }
 
             if (imageUrl) {
-                // Skip items with no assigned category when building the categories card
-                if (useCategoryName && !product.categoryNodeID) continue;
+                // Skip items with no assigned category or an unknown (unresolved) category
+                // when building the categories card
+                if (useCategoryName && (!product.categoryNodeID || (!product.categoryName_en && !product.categoryName_fr))) continue;
 
                 const name = useCategoryName
                     ? (language === 'fr' ? (product.categoryName_fr || product.name_fr) : (product.categoryName_en || product.name_en))

@@ -21,6 +21,7 @@ export function mapleLeafDisplayPartsFromRating(rating: number): MapleLeafDispla
     const roundedToTenth = Math.round(normalized * 10) / 10;
     const integerPoints = Math.floor(roundedToTenth);
     const decimalTenths = Math.round((roundedToTenth - integerPoints) * 10);
+    // decimalTenths is 1..9, so +4 maps it to the requested 5..13px range (.1=>5px ... .9=>13px).
     const decimalLeafSize = decimalTenths > 0 ? decimalTenths + 4 : null;
 
     return {

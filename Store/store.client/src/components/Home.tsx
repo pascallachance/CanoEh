@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
-import { mapleLeafDisplayPartsFromRating } from '../utils/ratingUtils';
+import { formatRatingValue, mapleLeafDisplayPartsFromRating } from '../utils/ratingUtils';
 
 /** Tolerance (px) used when comparing scrollLeft to the maximum scroll position to account for sub-pixel rounding. */
 const SCROLL_TOLERANCE = 1;
@@ -782,7 +782,7 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
                                     <div
                                         className="maple-rating-badge-home"
                                         role="img"
-                                        aria-label={`${language === 'fr' ? 'Note' : 'Rating'} ${product.averageRating}/5`}
+                                        aria-label={`${language === 'fr' ? 'Note' : 'Rating'} ${formatRatingValue(product.averageRating)}/5`}
                                     >
                                         <span className="maple-rating-leaves-home" aria-hidden="true">
                                             {ratingParts.fullLeaves}
@@ -790,6 +790,7 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
                                                 <span
                                                     className="maple-rating-decimal-leaf-home"
                                                     style={{ fontSize: `${ratingParts.decimalLeafSize}px` }}
+                                                    aria-hidden="true"
                                                 >
                                                     🍁
                                                 </span>

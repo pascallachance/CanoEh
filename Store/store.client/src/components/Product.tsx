@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import './Home.css';
 import './Product.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
-import { mapleLeafDisplayPartsFromRating } from '../utils/ratingUtils';
+import { formatRatingValue, mapleLeafDisplayPartsFromRating } from '../utils/ratingUtils';
 
 interface ProductProps {
     isAuthenticated?: boolean;
@@ -533,7 +533,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     const productRatingParts = mapleLeafDisplayPartsFromRating(product?.averageRating ?? 0);
     const reviewCountLabel = language === 'fr'
         ? `${productRatingCount} avis`
-        : `${productRatingCount} reviews`;
+        : `${productRatingCount} ${productRatingCount === 1 ? 'review' : 'reviews'}`;
 
     const categoryNodeMap = useMemo(() => {
         const map = new Map<string, CategoryNodeDto>();
@@ -725,7 +725,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                         <span
                                             className="product-rating-leaves"
                                             role="img"
-                                            aria-label={`${language === 'fr' ? 'Note' : 'Rating'} ${product.averageRating ?? 0}/5`}
+                                            aria-label={`${language === 'fr' ? 'Note' : 'Rating'} ${formatRatingValue(product.averageRating ?? 0)}/5`}
                                         >
                                             {productRatingParts.fullLeaves}
                                             {productRatingParts.decimalLeafSize !== null && (

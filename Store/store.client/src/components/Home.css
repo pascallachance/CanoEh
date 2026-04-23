@@ -426,10 +426,10 @@ button.card-title-btn:focus-visible {
 
 .maple-rating-badge-home {
     position: absolute;
-    bottom: 5px;
+    bottom: 0;
     left: 5px;
-    background-color: rgba(35, 47, 62, 0.9);
-    color: #fff;
+    background-color: transparent;
+    color: inherit;
     padding: 3px 7px;
     border-radius: 4px;
     font-size: 11px;
@@ -454,6 +454,11 @@ button.card-title-btn:focus-visible {
     aspect-ratio: 1;
     object-fit: contain;
     border-radius: 4px;
+}
+
+.item-image-wrapper {
+    width: 100%;
+    position: relative;
 }
 
 .item-name {

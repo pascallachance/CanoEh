@@ -530,10 +530,14 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         ? (language === 'fr' ? product.description_fr : product.description_en)
         : '';
     const productRatingCount = product?.ratingCount ?? 0;
+    const productRatingValue = formatRatingValue(product?.averageRating ?? 0);
     const productRatingParts = mapleLeafDisplayPartsFromRating(product?.averageRating ?? 0);
     const reviewCountLabel = language === 'fr'
         ? `${productRatingCount} avis`
         : `${productRatingCount} ${productRatingCount === 1 ? 'review' : 'reviews'}`;
+    const productRatingAriaLabel = language === 'fr'
+        ? `Note ${productRatingValue}/5, ${reviewCountLabel}`
+        : `Rating ${productRatingValue}/5, ${reviewCountLabel}`;
 
     const categoryNodeMap = useMemo(() => {
         const map = new Map<string, CategoryNodeDto>();
@@ -720,12 +724,11 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                 aria-label={getText('Product information', 'Informations sur le produit')}
                             >
                                 <h1 className="product-name">{productName}</h1>
-                                <p className="product-rating">
+                                <p className="product-rating" aria-label={productRatingAriaLabel}>
                                     {productRatingCount > 0 ? (
                                         <span
                                             className="product-rating-leaves"
-                                            role="img"
-                                            aria-label={`${language === 'fr' ? 'Note' : 'Rating'} ${formatRatingValue(product.averageRating ?? 0)}/5`}
+                                            aria-hidden="true"
                                         >
                                             {productRatingParts.fullLeaves}
                                             {productRatingParts.fullLeaves === '' && productRatingParts.decimalLeafSize === null && '🍁'}
@@ -742,13 +745,13 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                     ) : (
                                         <span
                                             className="product-rating-leaves product-rating-leaves-empty"
-                                            role="img"
-                                            aria-label={language === 'fr' ? 'Aucun avis' : 'No reviews'}
+                                            aria-hidden="true"
                                         >
                                             🍁
                                         </span>
                                     )}
-                                    <span>{` • ${reviewCountLabel}`}</span>
+                                    <span>{`${productRatingValue}/5`}</span>
+                                    <span>{reviewCountLabel}</span>
                                 </p>
 
                                 {categoryPath.length > 0 && (

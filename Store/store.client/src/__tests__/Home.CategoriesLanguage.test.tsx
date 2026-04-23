@@ -271,6 +271,59 @@ describe('Home - Explore Categories language', () => {
         });
     });
 
+    it('excludes items with a categoryNodeID but no resolved category names from the Explore Categories card', async () => {
+        vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US');
+
+        mockFetchByUrl({
+            categories: {
+                isSuccess: true,
+                value: [
+                    // Has a valid category – should appear
+                    makeCategoryProduct('1', 'Electronics', 'Électronique'),
+                    // Has a categoryNodeID but category names are null (category was deleted / unknown)
+                    {
+                        id: '4',
+                        sellerID: 'seller4',
+                        name_en: 'Unknown Category Product',
+                        name_fr: 'Produit catégorie inconnue',
+                        categoryNodeID: 'deleted-cat-id',
+                        categoryName_en: null,
+                        categoryName_fr: null,
+                        createdAt: '2024-01-04',
+                        deleted: false,
+                        variants: [
+                            {
+                                id: 'var4',
+                                price: 40,
+                                stockQuantity: 3,
+                                sku: 'SKU4',
+                                imageUrls: 'https://example.com/4.jpg',
+                                itemVariantAttributes: [],
+                                deleted: false,
+                            },
+                        ],
+                        itemAttributes: [],
+                    },
+                ],
+            },
+        });
+
+        render(
+            <BrowserRouter>
+                <Home />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            const title = screen.getByText(/Explore Categories|Explorer les catégories/);
+            const container = title.closest('.item-preview-card');
+            const items = container?.querySelectorAll('.item-placeholder');
+            // Only the item with a resolved category should be rendered
+            expect(items?.length).toBe(1);
+            expect(container?.querySelector('.item-name')?.textContent).toBe('Electronics');
+        });
+    });
+
     it('categorized items still appear in the Explore Categories card', async () => {
         vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US');
 

@@ -728,6 +728,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                             aria-label={`${language === 'fr' ? 'Note' : 'Rating'} ${formatRatingValue(product.averageRating ?? 0)}/5`}
                                         >
                                             {productRatingParts.fullLeaves}
+                                            {productRatingParts.fullLeaves === '' && productRatingParts.decimalLeafSize === null && '🍁'}
                                             {productRatingParts.decimalLeafSize !== null && (
                                                 <span
                                                     className="product-rating-decimal-leaf"

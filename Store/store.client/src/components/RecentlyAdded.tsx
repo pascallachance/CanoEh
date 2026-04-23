@@ -5,7 +5,7 @@ import './Filters.css';
 import './Browse.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
 import { cheapestActiveVariant, pickPrimaryImage } from '../utils/itemUtils';
-import { mapleLeavesFromRating } from '../utils/ratingUtils';
+import { mapleLeafDisplayPartsFromRating } from '../utils/ratingUtils';
 
 interface RecentlyAddedProps {
     isAuthenticated?: boolean;
@@ -419,6 +419,7 @@ function RecentProductCard({ product, language, onNavigate }: RecentProductCardP
     const [imageError, setImageError] = useState<boolean>(false);
 
     const name = language === 'fr' ? product.name_fr : product.name_en;
+    const ratingParts = mapleLeafDisplayPartsFromRating(product.averageRating);
     const dateLabel = language === 'fr' ? 'Ajouté le' : 'Added';
     const formattedDate = new Date(product.createdAt).toLocaleDateString(
         language === 'fr' ? 'fr-CA' : 'en-CA',
@@ -449,7 +450,13 @@ function RecentProductCard({ product, language, onNavigate }: RecentProductCardP
                 )}
                 {product.ratingCount > 0 && (
                     <div className="maple-rating-badge">
-                        {mapleLeavesFromRating(product.averageRating)}
+                        {ratingParts.fullLeaves}
+                        {ratingParts.fullLeaves === '' && ratingParts.decimalLeafSize === null && '🍁'}
+                        {ratingParts.decimalLeafSize !== null && (
+                            <span style={{ fontSize: `${ratingParts.decimalLeafSize}px`, lineHeight: 1 }}>
+                                🍁
+                            </span>
+                        )}
                     </div>
                 )}
             </div>

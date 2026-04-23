@@ -786,6 +786,7 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
                                     >
                                         <span className="maple-rating-leaves-home" aria-hidden="true">
                                             {ratingParts.fullLeaves}
+                                            {ratingParts.fullLeaves === '' && ratingParts.decimalLeafSize === null && '🍁'}
                                             {ratingParts.decimalLeafSize !== null && (
                                                 <span
                                                     className="maple-rating-decimal-leaf-home"

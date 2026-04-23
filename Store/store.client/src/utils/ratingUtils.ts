@@ -7,8 +7,7 @@ export function clampRating(rating: number): number {
 }
 
 export function mapleLeavesFromRating(rating: number): string {
-    const integerPoints = Math.floor(clampRating(rating));
-    return integerPoints > 0 ? '🍁'.repeat(integerPoints) : '';
+    return mapleLeafDisplayPartsFromRating(rating).fullLeaves;
 }
 
 export interface MapleLeafDisplayParts {

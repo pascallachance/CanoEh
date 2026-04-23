@@ -5,7 +5,7 @@ import './Filters.css';
 import './Browse.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
 import { cheapestActiveVariant, pickPrimaryImage } from '../utils/itemUtils';
-import { mapleLeavesFromRating } from '../utils/ratingUtils';
+import { mapleLeafDisplayPartsFromRating } from '../utils/ratingUtils';
 
 interface SuggestedItemsProps {
     isAuthenticated?: boolean;
@@ -404,6 +404,7 @@ function BrowseProductCard({ product, language, onNavigate }: BrowseProductCardP
     const [imageError, setImageError] = useState<boolean>(false);
 
     const name = language === 'fr' ? product.name_fr : product.name_en;
+    const ratingParts = mapleLeafDisplayPartsFromRating(product.averageRating);
 
     return (
         <div
@@ -429,7 +430,13 @@ function BrowseProductCard({ product, language, onNavigate }: BrowseProductCardP
                 )}
                 {product.ratingCount > 0 && (
                     <div className="maple-rating-badge">
-                        {mapleLeavesFromRating(product.averageRating)}
+                        {ratingParts.fullLeaves}
+                        {ratingParts.fullLeaves === '' && ratingParts.decimalLeafSize === null && '🍁'}
+                        {ratingParts.decimalLeafSize !== null && (
+                            <span style={{ fontSize: `${ratingParts.decimalLeafSize}px`, lineHeight: 1 }}>
+                                🍁
+                            </span>
+                        )}
                     </div>
                 )}
             </div>

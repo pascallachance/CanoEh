@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './Home.css';
 import './Filters.css';
@@ -446,10 +446,6 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
         ? `${productCount} produit${productCount !== 1 ? 's' : ''} trouvé${productCount !== 1 ? 's' : ''}`
         : `${productCount} product${productCount !== 1 ? 's' : ''} found`;
 
-    const currentNodeName = currentNode
-        ? (language === 'fr' ? currentNode.name_fr : currentNode.name_en)
-        : getText('All Products', 'Tous les produits');
-
     return (
         <div className="home-container">
             {/* Top Navigation Bar */}
@@ -525,10 +521,49 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                     <h1 className="categories-title">
                         {getText("Browse by Category", "Parcourir par catégorie")}
                     </h1>
-                    <p className="categories-subtitle">
-                        {currentNodeName}
-                        {!loadingProducts && ` 🍁 ${productCountLabel}`}
-                    </p>
+                    <div className="categories-subtitle">
+                        <nav
+                            className="categories-breadcrumb"
+                            aria-label={getText("Category navigation", "Navigation par catégorie")}
+                        >
+                            {navPath.length === 0 && (
+                                <span className="breadcrumb-current">
+                                    {getText('All Products', 'Tous les produits')}
+                                </span>
+                            )}
+                            {navPath.length > 0 && (
+                                <>
+                                    <button
+                                        type="button"
+                                        className="breadcrumb-item"
+                                        onClick={() => handleBreadcrumbClick(-1)}
+                                    >
+                                        {getText('All Products', 'Tous les produits')}
+                                    </button>
+                                    <span className="breadcrumb-sep" aria-hidden="true">›</span>
+                                </>
+                            )}
+                            {navPath.map((node, idx) => (
+                                <React.Fragment key={node.id}>
+                                    {idx > 0 && <span className="breadcrumb-sep" aria-hidden="true">›</span>}
+                                    {idx < navPath.length - 1 ? (
+                                        <button
+                                            type="button"
+                                            className="breadcrumb-item"
+                                            onClick={() => handleBreadcrumbClick(idx)}
+                                        >
+                                            {language === 'fr' ? node.name_fr : node.name_en}
+                                        </button>
+                                    ) : (
+                                        <span className="breadcrumb-current">
+                                            {language === 'fr' ? node.name_fr : node.name_en}
+                                        </span>
+                                    )}
+                                </React.Fragment>
+                            ))}
+                        </nav>
+                        {!loadingProducts && <span className="categories-subtitle-count"> 🍁 {productCountLabel}</span>}
+                    </div>
                 </div>
 
                 {/* Main Content */}
@@ -609,48 +644,6 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
 
                     {/* Products Area – Right 80% */}
                     <main className="categories-products">
-                        {/* Breadcrumb */}
-                        <nav
-                            className="categories-breadcrumb"
-                            aria-label={getText("Category navigation", "Navigation par catégorie")}
-                        >
-                            {navPath.length === 0 && (
-                                <span className="breadcrumb-current">
-                                    {getText('All Products', 'Tous les produits')}
-                                </span>
-                            )}
-                            {navPath.length > 0 && (
-                                <>
-                                    <button
-                                        type="button"
-                                        className="breadcrumb-item"
-                                        onClick={() => handleBreadcrumbClick(-1)}
-                                    >
-                                        {getText('All Products', 'Tous les produits')}
-                                    </button>
-                                    <span className="breadcrumb-sep" aria-hidden="true">›</span>
-                                </>
-                            )}
-                            {navPath.map((node, idx) => (
-                                <span key={node.id} style={{ display: 'contents' }}>
-                                    {idx > 0 && <span className="breadcrumb-sep" aria-hidden="true">›</span>}
-                                    {idx < navPath.length - 1 ? (
-                                        <button
-                                            type="button"
-                                            className="breadcrumb-item"
-                                            onClick={() => handleBreadcrumbClick(idx)}
-                                        >
-                                            {language === 'fr' ? node.name_fr : node.name_en}
-                                        </button>
-                                    ) : (
-                                        <span className="breadcrumb-current">
-                                            {language === 'fr' ? node.name_fr : node.name_en}
-                                        </span>
-                                    )}
-                                </span>
-                            ))}
-                        </nav>
-
                         {/* Category Node Chips */}
                         {loadingNodes ? (
                             <div className="categories-loading" role="status">
@@ -818,17 +811,6 @@ function CategoryProductCard({ product, language, onNavigate }: CategoryProductC
                 {product.hasOffer && (
                     <div className="offer-badge">{offerText}</div>
                 )}
-                {product.ratingCount > 0 && (
-                    <div className="maple-rating-badge">
-                        {ratingParts.fullLeaves}
-                        {ratingParts.fullLeaves === '' && ratingParts.decimalLeafSize === null && '🍁'}
-                        {ratingParts.decimalLeafSize !== null && (
-                            <span style={{ fontSize: `${ratingParts.decimalLeafSize}px`, lineHeight: 1 }}>
-                                🍁
-                            </span>
-                        )}
-                    </div>
-                )}
             </div>
             <div className="browse-product-info">
                 <p className="browse-product-name" title={name}>{name}</p>
@@ -846,6 +828,17 @@ function CategoryProductCard({ product, language, onNavigate }: CategoryProductC
                         <span className="browse-product-price">
                             ${product.price.toFixed(2)}
                         </span>
+                    )}
+                    {product.ratingCount > 0 && (
+                        <div className="maple-rating-badge">
+                            {ratingParts.fullLeaves}
+                            {ratingParts.fullLeaves === '' && ratingParts.decimalLeafSize === null && '🍁'}
+                            {ratingParts.decimalLeafSize !== null && (
+                                <span style={{ fontSize: `${ratingParts.decimalLeafSize}px`, lineHeight: 1 }}>
+                                    🍁
+                                </span>
+                            )}
+                        </div>
                     )}
                 </div>
             </div>

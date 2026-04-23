@@ -165,6 +165,9 @@ function extractProductImages(
             }
 
             if (imageUrl) {
+                // Skip items with no assigned category when building the categories card
+                if (useCategoryName && !product.categoryNodeID) continue;
+
                 const name = useCategoryName
                     ? (language === 'fr' ? (product.categoryName_fr || product.name_fr) : (product.categoryName_en || product.name_en))
                     : (language === 'fr' ? product.name_fr : product.name_en);

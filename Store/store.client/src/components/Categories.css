@@ -18,6 +18,10 @@
     font-size: 14px;
     color: #666;
     margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
 }
 
 /* Two-column layout */
@@ -48,15 +52,19 @@
     background-color: #f5f5f5;
 }
 
-/* ── Category navigation breadcrumb ── */
+/* ── Category navigation breadcrumb (in header subtitle) ── */
 .categories-breadcrumb {
-    display: flex;
+    display: inline-flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 4px;
-    margin-bottom: 16px;
     font-size: 14px;
     color: #555;
+}
+
+.categories-subtitle-count {
+    font-size: 14px;
+    color: #666;
 }
 
 .breadcrumb-item {

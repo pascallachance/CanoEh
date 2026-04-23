@@ -164,4 +164,136 @@ describe('Home - Explore Categories language', () => {
             expect(itemName?.textContent).toBe('Électronique');
         });
     });
+
+    it('excludes items with empty categoryNodeID from the Explore Categories card', async () => {
+        vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US');
+
+        mockFetchByUrl({
+            categories: {
+                isSuccess: true,
+                value: [
+                    // Has a valid category – should appear
+                    makeCategoryProduct('1', 'Electronics', 'Électronique'),
+                    // No category – should be filtered out
+                    {
+                        id: '2',
+                        sellerID: 'seller2',
+                        name_en: 'Uncategorized Product',
+                        name_fr: 'Produit sans catégorie',
+                        categoryNodeID: '',
+                        categoryName_en: '',
+                        categoryName_fr: '',
+                        createdAt: '2024-01-02',
+                        deleted: false,
+                        variants: [
+                            {
+                                id: 'var2',
+                                price: 20,
+                                stockQuantity: 5,
+                                sku: 'SKU2',
+                                imageUrls: 'https://example.com/2.jpg',
+                                itemVariantAttributes: [],
+                                deleted: false,
+                            },
+                        ],
+                        itemAttributes: [],
+                    },
+                ],
+            },
+        });
+
+        render(
+            <BrowserRouter>
+                <Home />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            const title = screen.getByText(/Explore Categories|Explorer les catégories/);
+            const container = title.closest('.item-preview-card');
+            const items = container?.querySelectorAll('.item-placeholder');
+            // Only the categorized item should be rendered
+            expect(items?.length).toBe(1);
+            expect(container?.querySelector('.item-name')?.textContent).toBe('Electronics');
+        });
+    });
+
+    it('excludes items with null categoryNodeID from the Explore Categories card', async () => {
+        vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US');
+
+        mockFetchByUrl({
+            categories: {
+                isSuccess: true,
+                value: [
+                    // Has a valid category – should appear
+                    makeCategoryProduct('1', 'Clothing', 'Vêtements'),
+                    // null categoryNodeID – should be filtered out
+                    {
+                        id: '3',
+                        sellerID: 'seller3',
+                        name_en: 'No Category Product',
+                        name_fr: 'Produit sans catégorie',
+                        categoryNodeID: null,
+                        categoryName_en: null,
+                        categoryName_fr: null,
+                        createdAt: '2024-01-03',
+                        deleted: false,
+                        variants: [
+                            {
+                                id: 'var3',
+                                price: 30,
+                                stockQuantity: 8,
+                                sku: 'SKU3',
+                                imageUrls: 'https://example.com/3.jpg',
+                                itemVariantAttributes: [],
+                                deleted: false,
+                            },
+                        ],
+                        itemAttributes: [],
+                    },
+                ],
+            },
+        });
+
+        render(
+            <BrowserRouter>
+                <Home />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            const title = screen.getByText(/Explore Categories|Explorer les catégories/);
+            const container = title.closest('.item-preview-card');
+            const items = container?.querySelectorAll('.item-placeholder');
+            // Only the categorized item should be rendered
+            expect(items?.length).toBe(1);
+            expect(container?.querySelector('.item-name')?.textContent).toBe('Clothing');
+        });
+    });
+
+    it('categorized items still appear in the Explore Categories card', async () => {
+        vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US');
+
+        const categorizedProducts = [
+            makeCategoryProduct('1', 'Electronics', 'Électronique'),
+            makeCategoryProduct('2', 'Books', 'Livres'),
+        ];
+
+        mockFetchByUrl({
+            categories: { isSuccess: true, value: categorizedProducts },
+        });
+
+        render(
+            <BrowserRouter>
+                <Home />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            const title = screen.getByText(/Explore Categories|Explorer les catégories/);
+            const container = title.closest('.item-preview-card');
+            const items = container?.querySelectorAll('.item-placeholder');
+            expect(items?.length).toBe(2);
+        });
+    });
 });

@@ -448,17 +448,6 @@ function RecentProductCard({ product, language, onNavigate }: RecentProductCardP
                         {language === 'fr' ? 'Image non disponible' : 'No image'}
                     </div>
                 )}
-                {product.ratingCount > 0 && (
-                    <div className="maple-rating-badge">
-                        {ratingParts.fullLeaves}
-                        {ratingParts.fullLeaves === '' && ratingParts.decimalLeafSize === null && '🍁'}
-                        {ratingParts.decimalLeafSize !== null && (
-                            <span style={{ fontSize: `${ratingParts.decimalLeafSize}px`, lineHeight: 1 }}>
-                                🍁
-                            </span>
-                        )}
-                    </div>
-                )}
             </div>
             <div className="browse-product-info">
                 <p className="browse-product-name" title={name}>{name}</p>
@@ -466,6 +455,17 @@ function RecentProductCard({ product, language, onNavigate }: RecentProductCardP
                     <span className="browse-product-price">
                         ${product.price.toFixed(2)}
                     </span>
+                    {product.ratingCount > 0 && (
+                        <div className="maple-rating-badge">
+                            {ratingParts.fullLeaves}
+                            {ratingParts.fullLeaves === '' && ratingParts.decimalLeafSize === null && '🍁'}
+                            {ratingParts.decimalLeafSize !== null && (
+                                <span style={{ fontSize: `${ratingParts.decimalLeafSize}px`, lineHeight: 1 }}>
+                                    🍁
+                                </span>
+                            )}
+                        </div>
+                    )}
                 </div>
                 <p className="browse-product-date">
                     {dateLabel}: {formattedDate}

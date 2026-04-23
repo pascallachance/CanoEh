@@ -772,36 +772,38 @@ function ItemPreviewCard({ title, items = ITEM_PLACEHOLDER_ARRAY, products, lang
 
                         const itemContent = (
                             <>
-                                <img
-                                    src={product.imageUrl}
-                                    alt={product.name}
-                                    className="item-image"
-                                    onError={() => handleImageError(index)}
-                                />
-                                {hasRatings && (
-                                    <div
-                                        className="maple-rating-badge-home"
-                                        role="img"
-                                        aria-label={`${language === 'fr' ? 'Note' : 'Rating'} ${formatRatingValue(product.averageRating)}/5`}
-                                    >
-                                        <span className="maple-rating-leaves-home" aria-hidden="true">
-                                            {ratingParts.fullLeaves}
-                                            {ratingParts.fullLeaves === '' && ratingParts.decimalLeafSize === null && '🍁'}
-                                            {ratingParts.decimalLeafSize !== null && (
-                                                <span
-                                                    className="maple-rating-decimal-leaf-home"
-                                                    style={{ fontSize: `${ratingParts.decimalLeafSize}px` }}
-                                                    aria-hidden="true"
-                                                >
-                                                    🍁
-                                                </span>
-                                            )}
-                                        </span>
-                                    </div>
-                                )}
-                                {product.offer > 0 && (
-                                    <div className="offer-badge">{getOfferText(product.offer)}</div>
-                                )}
+                                <div className="item-image-wrapper">
+                                    <img
+                                        src={product.imageUrl}
+                                        alt={product.name}
+                                        className="item-image"
+                                        onError={() => handleImageError(index)}
+                                    />
+                                    {hasRatings && (
+                                        <div
+                                            className="maple-rating-badge-home"
+                                            role="img"
+                                            aria-label={`${language === 'fr' ? 'Note' : 'Rating'} ${formatRatingValue(product.averageRating)}/5`}
+                                        >
+                                            <span className="maple-rating-leaves-home" aria-hidden="true">
+                                                {ratingParts.fullLeaves}
+                                                {ratingParts.fullLeaves === '' && ratingParts.decimalLeafSize === null && '🍁'}
+                                                {ratingParts.decimalLeafSize !== null && (
+                                                    <span
+                                                        className="maple-rating-decimal-leaf-home"
+                                                        style={{ fontSize: `${ratingParts.decimalLeafSize}px` }}
+                                                        aria-hidden="true"
+                                                    >
+                                                        🍁
+                                                    </span>
+                                                )}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {product.offer > 0 && (
+                                        <div className="offer-badge">{getOfferText(product.offer)}</div>
+                                    )}
+                                </div>
                                 <div className="item-name">{product.name}</div>
                             </>
                         );

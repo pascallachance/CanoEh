@@ -530,6 +530,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         ? (language === 'fr' ? product.description_fr : product.description_en)
         : '';
     const productRatingCount = product?.ratingCount ?? 0;
+    const productRatingValue = formatRatingValue(product?.averageRating ?? 0);
     const productRatingParts = mapleLeafDisplayPartsFromRating(product?.averageRating ?? 0);
     const reviewCountLabel = language === 'fr'
         ? `${productRatingCount} avis`
@@ -748,7 +749,8 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                             🍁
                                         </span>
                                     )}
-                                    <span>{` • ${reviewCountLabel}`}</span>
+                                    <span>{`${productRatingValue}/5`}</span>
+                                    <span>{reviewCountLabel}</span>
                                 </p>
 
                                 {categoryPath.length > 0 && (

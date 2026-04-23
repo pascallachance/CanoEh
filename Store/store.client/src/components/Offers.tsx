@@ -374,7 +374,7 @@ function Offers({ isAuthenticated = false, onLogout }: OffersProps) {
                                         step="0.01"
                                         aria-label={getText("Minimum price", "Prix minimum")}
                                     />
-                                    <span className="filter-range-sep" aria-hidden="true">—</span>
+                                    <span className="filter-range-sep" aria-hidden="true">🍁</span>
                                     <input
                                         type="number"
                                         className="filter-input"
@@ -512,9 +512,11 @@ function OfferProductCard({ product, language, onNavigate }: OfferProductCardPro
                         {language === 'fr' ? 'Image non disponible' : 'No image'}
                     </div>
                 )}
-                <div className="maple-rating-badge">
-                    {mapleLeavesFromRating(product.averageRating)}
-                </div>
+                {product.ratingCount > 0 && (
+                    <div className="maple-rating-badge">
+                        {mapleLeavesFromRating(product.averageRating)}
+                    </div>
+                )}
                 <div className="offer-badge">{offerText}</div>
             </div>
             <div className="browse-product-info">

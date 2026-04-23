@@ -527,7 +527,7 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                     </h1>
                     <p className="categories-subtitle">
                         {currentNodeName}
-                        {!loadingProducts && ` — ${productCountLabel}`}
+                        {!loadingProducts && ` 🍁 ${productCountLabel}`}
                     </p>
                 </div>
 
@@ -582,7 +582,7 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                                         step="0.01"
                                         aria-label={getText("Minimum price", "Prix minimum")}
                                     />
-                                    <span className="filter-range-sep" aria-hidden="true">—</span>
+                                    <span className="filter-range-sep" aria-hidden="true">🍁</span>
                                     <input
                                         type="number"
                                         className="filter-input"
@@ -817,9 +817,11 @@ function CategoryProductCard({ product, language, onNavigate }: CategoryProductC
                 {product.hasOffer && (
                     <div className="offer-badge">{offerText}</div>
                 )}
-                <div className="maple-rating-badge">
-                    {mapleLeavesFromRating(product.averageRating)}
-                </div>
+                {product.ratingCount > 0 && (
+                    <div className="maple-rating-badge">
+                        {mapleLeavesFromRating(product.averageRating)}
+                    </div>
+                )}
             </div>
             <div className="browse-product-info">
                 <p className="browse-product-name" title={name}>{name}</p>

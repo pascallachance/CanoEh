@@ -5,7 +5,7 @@ import './Filters.css';
 import './Browse.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
 import { cheapestActiveVariant, pickPrimaryImage } from '../utils/itemUtils';
-import { mapleLeavesFromRating } from '../utils/ratingUtils';
+import { mapleLeafDisplayPartsFromRating } from '../utils/ratingUtils';
 
 interface SuggestedItemsProps {
     isAuthenticated?: boolean;
@@ -318,7 +318,7 @@ function SuggestedItems({ isAuthenticated = false, onLogout }: SuggestedItemsPro
                                         step="0.01"
                                         aria-label={getText("Minimum price", "Prix minimum")}
                                     />
-                                    <span className="filter-range-sep" aria-hidden="true">—</span>
+                                    <span className="filter-range-sep" aria-hidden="true">🍁</span>
                                     <input
                                         type="number"
                                         className="filter-input"
@@ -404,6 +404,7 @@ function BrowseProductCard({ product, language, onNavigate }: BrowseProductCardP
     const [imageError, setImageError] = useState<boolean>(false);
 
     const name = language === 'fr' ? product.name_fr : product.name_en;
+    const ratingParts = mapleLeafDisplayPartsFromRating(product.averageRating);
 
     return (
         <div
@@ -427,9 +428,17 @@ function BrowseProductCard({ product, language, onNavigate }: BrowseProductCardP
                         {language === 'fr' ? 'Image non disponible' : 'No image'}
                     </div>
                 )}
-                <div className="maple-rating-badge">
-                    {mapleLeavesFromRating(product.averageRating)}
-                </div>
+                {product.ratingCount > 0 && (
+                    <div className="maple-rating-badge">
+                        {ratingParts.fullLeaves}
+                        {ratingParts.fullLeaves === '' && ratingParts.decimalLeafSize === null && '🍁'}
+                        {ratingParts.decimalLeafSize !== null && (
+                            <span style={{ fontSize: `${ratingParts.decimalLeafSize}px`, lineHeight: 1 }}>
+                                🍁
+                            </span>
+                        )}
+                    </div>
+                )}
             </div>
             <div className="browse-product-info">
                 <p className="browse-product-name" title={name}>{name}</p>

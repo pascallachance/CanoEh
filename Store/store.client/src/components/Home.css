@@ -426,28 +426,27 @@ button.card-title-btn:focus-visible {
 
 .maple-rating-badge-home {
     position: absolute;
-    top: 5px;
+    bottom: 5px;
     left: 5px;
-    width: 30px;
-    height: 30px;
-    display: grid;
-    place-items: center;
+    background-color: rgba(35, 47, 62, 0.9);
+    color: #fff;
+    padding: 3px 7px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: baseline;
     z-index: 1;
 }
 
-.maple-rating-leaf-home {
-    font-size: 24px;
+.maple-rating-leaves-home {
+    display: inline-flex;
+    align-items: baseline;
     line-height: 1;
-    grid-area: 1 / 1;
 }
 
-.maple-rating-number-home {
-    grid-area: 1 / 1;
-    font-size: 10px;
+.maple-rating-decimal-leaf-home {
     line-height: 1;
-    font-weight: bold;
-    color: #fff;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
 }
 
 .item-image {

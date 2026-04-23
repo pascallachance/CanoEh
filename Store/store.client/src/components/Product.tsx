@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import './Home.css';
 import './Product.css';
 import { toAbsoluteUrl } from '../utils/urlUtils';
-import { formatMapleRating } from '../utils/ratingUtils';
+import { formatRatingValue, mapleLeafDisplayPartsFromRating } from '../utils/ratingUtils';
 
 interface ProductProps {
     isAuthenticated?: boolean;
@@ -529,6 +529,11 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     const productDescription = product
         ? (language === 'fr' ? product.description_fr : product.description_en)
         : '';
+    const productRatingCount = product?.ratingCount ?? 0;
+    const productRatingParts = mapleLeafDisplayPartsFromRating(product?.averageRating ?? 0);
+    const reviewCountLabel = language === 'fr'
+        ? `${productRatingCount} avis`
+        : `${productRatingCount} ${productRatingCount === 1 ? 'review' : 'reviews'}`;
 
     const categoryNodeMap = useMemo(() => {
         const map = new Map<string, CategoryNodeDto>();
@@ -716,7 +721,34 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                             >
                                 <h1 className="product-name">{productName}</h1>
                                 <p className="product-rating">
-                                    {formatMapleRating(product.averageRating ?? 0, product.ratingCount ?? 0, language)}
+                                    {productRatingCount > 0 ? (
+                                        <span
+                                            className="product-rating-leaves"
+                                            role="img"
+                                            aria-label={`${language === 'fr' ? 'Note' : 'Rating'} ${formatRatingValue(product.averageRating ?? 0)}/5`}
+                                        >
+                                            {productRatingParts.fullLeaves}
+                                            {productRatingParts.fullLeaves === '' && productRatingParts.decimalLeafSize === null && '🍁'}
+                                            {productRatingParts.decimalLeafSize !== null && (
+                                                <span
+                                                    className="product-rating-decimal-leaf"
+                                                    style={{ fontSize: `${productRatingParts.decimalLeafSize}px` }}
+                                                    aria-hidden="true"
+                                                >
+                                                    🍁
+                                                </span>
+                                            )}
+                                        </span>
+                                    ) : (
+                                        <span
+                                            className="product-rating-leaves product-rating-leaves-empty"
+                                            role="img"
+                                            aria-label={language === 'fr' ? 'Aucun avis' : 'No reviews'}
+                                        >
+                                            🍁
+                                        </span>
+                                    )}
+                                    <span>{` • ${reviewCountLabel}`}</span>
                                 </p>
 
                                 {categoryPath.length > 0 && (

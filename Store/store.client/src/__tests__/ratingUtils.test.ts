@@ -1,10 +1,30 @@
 import { describe, expect, it } from 'vitest';
-import { formatMapleRating, formatRatingValue, mapleLeavesFromRating } from '../utils/ratingUtils';
+import {
+    formatMapleRating,
+    formatRatingValue,
+    mapleLeafDisplayPartsFromRating,
+    mapleLeavesFromRating,
+} from '../utils/ratingUtils';
 
 describe('ratingUtils', () => {
-    it('returns no leaves when rounded rating is zero', () => {
+    it('returns no full leaves when rating is below one point', () => {
         expect(mapleLeavesFromRating(0)).toBe('');
-        expect(mapleLeavesFromRating(0.4)).toBe('');
+        expect(mapleLeavesFromRating(0.9)).toBe('');
+    });
+
+    it('returns one leaf per full rating point', () => {
+        expect(mapleLeavesFromRating(1.9)).toBe('🍁');
+        expect(mapleLeavesFromRating(4.8)).toBe('🍁🍁🍁🍁');
+        expect(mapleLeavesFromRating(4.96)).toBe('🍁🍁🍁🍁🍁');
+    });
+
+    it('returns decimal leaf size mapped from tenths (.1=>5 ... .9=>13)', () => {
+        expect(mapleLeafDisplayPartsFromRating(0)).toEqual({ fullLeaves: '', decimalLeafSize: null });
+        expect(mapleLeafDisplayPartsFromRating(3.1)).toEqual({ fullLeaves: '🍁🍁🍁', decimalLeafSize: 5 });
+        expect(mapleLeafDisplayPartsFromRating(3.7)).toEqual({ fullLeaves: '🍁🍁🍁', decimalLeafSize: 11 });
+        expect(mapleLeafDisplayPartsFromRating(3.9)).toEqual({ fullLeaves: '🍁🍁🍁', decimalLeafSize: 13 });
+        expect(mapleLeafDisplayPartsFromRating(4)).toEqual({ fullLeaves: '🍁🍁🍁🍁', decimalLeafSize: null });
+        expect(mapleLeafDisplayPartsFromRating(4.96)).toEqual({ fullLeaves: '🍁🍁🍁🍁🍁', decimalLeafSize: null });
     });
 
     it('omits trailing .0 in formatted rating values', () => {

@@ -58,9 +58,9 @@ interface GetItemResponse {
     description_en?: string;
     description_fr?: string;
     imageUrl?: string;
-    categoryNodeID: string;
-    categoryName_en?: string;
-    categoryName_fr?: string;
+    categoryNodeID: string | null;
+    categoryName_en?: string | null;
+    categoryName_fr?: string | null;
     variants: ItemVariantDto[];
     itemAttributes: ItemAttributeDto[];
     createdAt: string;

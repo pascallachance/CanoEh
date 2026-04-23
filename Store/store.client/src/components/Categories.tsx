@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './Home.css';
 import './Filters.css';
@@ -544,7 +544,7 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                                 </>
                             )}
                             {navPath.map((node, idx) => (
-                                <span key={node.id} style={{ display: 'contents' }}>
+                                <React.Fragment key={node.id}>
                                     {idx > 0 && <span className="breadcrumb-sep" aria-hidden="true">›</span>}
                                     {idx < navPath.length - 1 ? (
                                         <button
@@ -559,7 +559,7 @@ function Categories({ isAuthenticated = false, onLogout }: CategoriesProps) {
                                             {language === 'fr' ? node.name_fr : node.name_en}
                                         </span>
                                     )}
-                                </span>
+                                </React.Fragment>
                             ))}
                         </nav>
                         {!loadingProducts && <span className="categories-subtitle-count"> 🍁 {productCountLabel}</span>}

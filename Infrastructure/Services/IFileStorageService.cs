@@ -15,6 +15,15 @@ namespace Infrastructure.Services
         Task<Result<string>> UploadFileAsync(IFormFile file, string? fileName = null, string? subPath = null);
 
         /// <summary>
+        /// Uploads a video file to the storage system.
+        /// </summary>
+        /// <param name="file">The video file to upload.</param>
+        /// <param name="fileName">Optional custom file name. If not provided, a unique name will be generated.</param>
+        /// <param name="subPath">Optional subdirectory path (e.g., "companyId/variantId"). Directories will be created automatically.</param>
+        /// <returns>A Result containing the file URL if successful, or an error message.</returns>
+        Task<Result<string>> UploadVideoAsync(IFormFile file, string? fileName = null, string? subPath = null);
+
+        /// <summary>
         /// Gets the URL for accessing a file.
         /// </summary>
         /// <param name="filePath">The relative path to the file (can include subdirectories).</param>

@@ -36,6 +36,7 @@ interface ItemVariantDto {
     productIdentifierValue?: string;
     imageUrls?: string;
     thumbnailUrl?: string;
+    videoUrl?: string;
     itemVariantName_en?: string;
     itemVariantName_fr?: string;
     itemVariantAttributes: ItemVariantAttributeDto[];
@@ -362,6 +363,8 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     const [variantImages, setVariantImages] = useState<string[]>([]);
     const [mainImageIndex, setMainImageIndex] = useState<number>(0);
     const [mainImageError, setMainImageError] = useState<boolean>(false);
+    const [isVideoActive, setIsVideoActive] = useState<boolean>(false);
+    const [variantVideoUrl, setVariantVideoUrl] = useState<string | null>(null);
 
     const getText = (en: string, fr: string) => language === 'fr' ? fr : en;
 
@@ -455,8 +458,10 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         setSelectedVariant(firstVariant);
         const images = parseImageUrls(firstVariant.imageUrls, firstVariant.thumbnailUrl);
         setVariantImages(images);
+        setVariantVideoUrl(firstVariant.videoUrl ?? null);
         setMainImageIndex(0);
         setMainImageError(false);
+        setIsVideoActive(false);
     };
 
     // Whenever selectedAttributes or product change, find the matching variant
@@ -467,12 +472,16 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         if (variant) {
             const images = parseImageUrls(variant.imageUrls, variant.thumbnailUrl);
             setVariantImages(images);
+            setVariantVideoUrl(variant.videoUrl ?? null);
             setMainImageIndex(0);
             setMainImageError(false);
+            setIsVideoActive(false);
         } else {
             setVariantImages([]);
+            setVariantVideoUrl(null);
             setMainImageIndex(0);
             setMainImageError(false);
+            setIsVideoActive(false);
         }
     }, [selectedAttributes, product]);
 
@@ -491,11 +500,21 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     };
 
     const handleThumbnailClick = (index: number) => {
-        setMainImageIndex(index);
-        setMainImageError(false);
+        if (variantVideoUrl && index === variantImages.length) {
+            setIsVideoActive(true);
+            setMainImageIndex(index);
+        } else {
+            setIsVideoActive(false);
+            setMainImageIndex(index);
+            setMainImageError(false);
+        }
     };
 
     const handleThumbnailMouseEnter = (index: number) => {
+        if (variantVideoUrl && index === variantImages.length) {
+            // Don't preview video on hover
+            return;
+        }
         if (index !== hoveredImageIndex) {
             setHoveredImageIndex(index);
             setMainImageError(false);
@@ -992,7 +1011,14 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                 aria-label={getText('Product images', 'Images du produit')}
                             >
                                 <div className="product-main-image-wrapper">
-                                    {mainImage && !mainImageError ? (
+                                    {isVideoActive && variantVideoUrl ? (
+                                        <video
+                                            src={variantVideoUrl}
+                                            className="product-main-video"
+                                            controls
+                                            autoPlay
+                                        />
+                                    ) : mainImage && !mainImageError ? (
                                         <img
                                             src={mainImage}
                                             alt={productName}
@@ -1007,7 +1033,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                 </div>
 
                                 {/* Thumbnails */}
-                                {variantImages.length > 0 && (
+                                {(variantImages.length > 0 || variantVideoUrl) && (
                                     <ul
                                         className="product-thumbnails"
                                         aria-label={getText('Image thumbnails', 'Miniatures d\'images')}
@@ -1016,12 +1042,12 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                             <li key={idx}>
                                                 <button
                                                     type="button"
-                                                    className={`product-thumbnail-btn${mainImageIndex === idx ? ' active' : ''}`}
+                                                    className={`product-thumbnail-btn${!isVideoActive && mainImageIndex === idx ? ' active' : ''}`}
                                                     onClick={() => handleThumbnailClick(idx)}
                                                     onMouseEnter={() => handleThumbnailMouseEnter(idx)}
                                                     onMouseLeave={handleThumbnailMouseLeave}
                                                     aria-label={getText(`View image ${idx + 1}`, `Voir l'image ${idx + 1}`)}
-                                                    aria-pressed={mainImageIndex === idx}
+                                                    aria-pressed={!isVideoActive && mainImageIndex === idx}
                                                 >
                                                     <img
                                                         src={imgUrl}
@@ -1031,6 +1057,26 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                 </button>
                                             </li>
                                         ))}
+                                        {variantVideoUrl && (
+                                            <li>
+                                                <button
+                                                    type="button"
+                                                    className={`product-thumbnail-btn product-thumbnail-video-btn${isVideoActive ? ' active' : ''}`}
+                                                    onClick={() => handleThumbnailClick(variantImages.length)}
+                                                    aria-label={getText('Play product video', 'Lire la vidéo du produit')}
+                                                    aria-pressed={isVideoActive}
+                                                >
+                                                    <video
+                                                        src={variantVideoUrl}
+                                                        className="product-thumbnail-img"
+                                                        muted
+                                                        playsInline
+                                                        preload="metadata"
+                                                    />
+                                                    <span className="product-video-play-icon" aria-hidden="true">▶</span>
+                                                </button>
+                                            </li>
+                                        )}
                                     </ul>
                                 )}
 

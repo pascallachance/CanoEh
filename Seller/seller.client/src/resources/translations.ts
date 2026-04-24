@@ -941,6 +941,22 @@ export const translations: TranslationResources = {
   'variant.mainImageLabel': {
     en: 'Main',
     fr: 'Principal'
+  },
+  'variant.video': {
+    en: 'Video',
+    fr: 'Vidéo'
+  },
+  'variant.chooseVideo': {
+    en: 'Choose Video',
+    fr: 'Choisir une vidéo'
+  },
+  'variant.uploadVideoAriaLabel': {
+    en: 'Upload video for variant',
+    fr: 'Télécharger la vidéo pour la variante'
+  },
+  'variant.removeVideo': {
+    en: 'Remove video',
+    fr: 'Supprimer la vidéo'
   }
 };
 

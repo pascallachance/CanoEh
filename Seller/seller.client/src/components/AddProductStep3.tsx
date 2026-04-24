@@ -97,6 +97,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [previewSelectedAttributes, setPreviewSelectedAttributes] = useState<Record<string, string>>({});
     const [previewSelectedImageIndex, setPreviewSelectedImageIndex] = useState(0);
+    const [previewIsVideoActive, setPreviewIsVideoActive] = useState(false);
     const previewModalRef = useRef<HTMLDivElement>(null);
     const variantsRef = useRef<ItemVariant[]>([]);
 
@@ -213,6 +214,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                         offerEnd: matchingExisting.offerEnd ?? genVariant.offerEnd,
                         thumbnailUrl: convertedThumbnailUrl || genVariant.thumbnailUrl,
                         imageUrls: convertedImageUrls.length > 0 ? convertedImageUrls : genVariant.imageUrls,
+                        videoUrl: matchingExisting.videoUrl ? toAbsoluteUrl(matchingExisting.videoUrl) : genVariant.videoUrl,
                         features_en,
                         features_fr
                     };
@@ -479,9 +481,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
         }));
     };
 
-    // Video upload handlers - disabled pending backend support
-    // Uncomment when backend supports video uploads via /api/Item/UploadVideo endpoint
-    /*
+    // Video upload handlers
     const handleVideoChange = (variantId: string, file: File | null) => {
         const currentVariant = variants.find(v => v.id === variantId);
         if (currentVariant?.videoUrl && currentVariant.videoUrl.startsWith('blob:')) {
@@ -509,7 +509,6 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             v.id === variantId ? { ...v, videoUrl: '', videoFile: undefined } : v
         ));
     };
-    */
 
     // Validation logic
     const isFormInvalid = useMemo(() => {
@@ -608,6 +607,17 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                             ? toRelativeUrl(variant.thumbnailUrl)
                             : null;
 
+                // Determine the video URL to preserve in DB.
+                // If a new videoFile is provided the upload step will overwrite it, so pass null.
+                const syncedVideoUrl =
+                    variant.videoFile
+                        ? null
+                        : variant.videoUrl &&
+                          !variant.videoUrl.startsWith('blob:') &&
+                          !variant.videoUrl.startsWith('data:')
+                            ? toRelativeUrl(variant.videoUrl)
+                            : (variant.videoUrl === '' ? '' : null);
+
                 const syncResponse = await fetch(
                     `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/UpdateVariantImageUrls`,
                     {
@@ -618,6 +628,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                             VariantId: apiVariantId,
                             ThumbnailUrl: syncedThumbnailUrl,
                             ImageUrls: syncedImageUrls,
+                            VideoUrl: syncedVideoUrl,
                         }),
                     }
                 );
@@ -690,6 +701,30 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 } catch (error) {
                     console.error(`Error uploading image ${imageIndex + 1} for variant ${apiVariantId}:`, error);
                 }
+            }
+        }
+
+        // Upload video if a new video file is present
+        if (variant.videoFile) {
+            try {
+                const formData = new FormData();
+                formData.append('file', variant.videoFile);
+
+                const uploadResponse = await fetch(
+                    `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/UploadVideo?variantId=${apiVariantId}`,
+                    {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData,
+                    }
+                );
+
+                if (!uploadResponse.ok) {
+                    const errorText = await uploadResponse.text();
+                    console.error(`Failed to upload video for variant ${apiVariantId}: ${uploadResponse.status} ${uploadResponse.statusText}`, errorText);
+                }
+            } catch (error) {
+                console.error(`Error uploading video for variant ${apiVariantId}:`, error);
             }
         }
     };
@@ -991,6 +1026,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
         }
         setPreviewSelectedAttributes(getInitialPreviewAttributes());
         setPreviewSelectedImageIndex(0);
+        setPreviewIsVideoActive(false);
         setIsPreviewOpen(true);
     };
 
@@ -1017,6 +1053,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             }, {} as Record<string, string>);
         });
         setPreviewSelectedImageIndex(0);
+        setPreviewIsVideoActive(false);
     };
 
     return (
@@ -1263,39 +1300,39 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                         </div>
                                         </div>{/* end media-sections-row */}
 
-                                        {/* Video Section - DISABLED: Backend video upload endpoint not yet implemented */}
-                                        {/* Uncomment when backend supports video uploads via /api/Item/UploadVideo endpoint */}
-                                        {/* 
+                                        {/* Video Section */}
                                         <div className="variant-field variant-field-media">
                                             <div className="media-upload-row">
-                                                <label className="media-label" htmlFor={`video-${variant.id}`}>Video</label>
+                                                <label className="media-label" htmlFor={`video-${variant.id}`}>{t('variant.video')}</label>
                                                 <div className="media-controls">
                                                     <input
                                                         type="file"
-                                                        accept="video/*"
+                                                        accept="video/mp4,video/quicktime,video/webm,video/avi,video/x-matroska"
                                                         onChange={(e) => handleVideoChange(variant.id, e.target.files?.[0] || null)}
                                                         className="file-input"
                                                         id={`video-${variant.id}`}
-                                                        aria-label="Upload video for variant"
+                                                        aria-label={t('variant.uploadVideoAriaLabel')}
                                                     />
                                                     <label htmlFor={`video-${variant.id}`} className="file-label">
-                                                        Choose Video
+                                                        {t('variant.chooseVideo')}
                                                     </label>
                                                 </div>
                                                 <div className="media-preview">
                                                     {variant.videoUrl && (
-                                                        <div className="video-preview-item">
-                                                            <video 
-                                                                src={variant.videoUrl} 
-                                                                className="video-preview"
-                                                                controls
+                                                        <div className="image-preview-item">
+                                                            <video
+                                                                src={variant.videoUrl}
+                                                                className="thumbnail-preview"
+                                                                muted
+                                                                playsInline
+                                                                preload="metadata"
                                                             />
                                                             <button
                                                                 type="button"
                                                                 onClick={() => handleRemoveVideo(variant.id)}
                                                                 className="remove-media-btn"
-                                                                title="Remove video"
-                                                                aria-label="Remove video"
+                                                                title={t('variant.removeVideo')}
+                                                                aria-label={t('variant.removeVideo')}
                                                             >
                                                                 ×
                                                             </button>
@@ -1304,7 +1341,6 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 </div>
                                             </div>
                                         </div>
-                                        */}
                                     </div>
                                 </div>
 
@@ -1595,7 +1631,14 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                             aria-label={getPreviewText('Product images', 'Images du produit')}
                                         >
                                             <div className="product-main-image-wrapper">
-                                                {previewImages.length > 0 ? (
+                                                {previewIsVideoActive && previewVariant?.videoUrl ? (
+                                                    <video
+                                                        src={previewVariant.videoUrl}
+                                                        className="product-main-video"
+                                                        controls
+                                                        autoPlay
+                                                    />
+                                                ) : previewImages.length > 0 ? (
                                                     <img
                                                         src={previewImages[previewSelectedImageIndex]}
                                                         alt={language === 'fr' ? step1Data.name_fr : step1Data.name}
@@ -1608,16 +1651,16 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 )}
                                             </div>
 
-                                            {previewImages.length > 0 && (
+                                            {(previewImages.length > 0 || previewVariant?.videoUrl) && (
                                                 <ul className="product-thumbnails" aria-label={getPreviewText('Image thumbnails', 'Miniatures d’images')}>
                                                     {previewImages.map((imageUrl, index) => (
                                                         <li key={`${imageUrl}-${index}`}>
                                                             <button
                                                                 type="button"
-                                                                className={`product-thumbnail-btn${previewSelectedImageIndex === index ? ' active' : ''}`}
-                                                                onClick={() => setPreviewSelectedImageIndex(index)}
+                                                                className={`product-thumbnail-btn${!previewIsVideoActive && previewSelectedImageIndex === index ? ' active' : ''}`}
+                                                                onClick={() => { setPreviewSelectedImageIndex(index); setPreviewIsVideoActive(false); }}
                                                                 aria-label={getPreviewText(`Select image ${index + 1}`, `Sélectionner l’image ${index + 1}`)}
-                                                                aria-pressed={previewSelectedImageIndex === index}
+                                                                aria-pressed={!previewIsVideoActive && previewSelectedImageIndex === index}
                                                             >
                                                                 <img
                                                                     src={imageUrl}
@@ -1627,6 +1670,26 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                             </button>
                                                         </li>
                                                     ))}
+                                                    {previewVariant?.videoUrl && (
+                                                        <li>
+                                                            <button
+                                                                type="button"
+                                                                className={`product-thumbnail-btn product-thumbnail-video-btn${previewIsVideoActive ? ' active' : ''}`}
+                                                                onClick={() => setPreviewIsVideoActive(true)}
+                                                                aria-label={getPreviewText('Play product video', 'Lire la vidéo du produit')}
+                                                                aria-pressed={previewIsVideoActive}
+                                                            >
+                                                                <video
+                                                                    src={previewVariant.videoUrl}
+                                                                    className="product-thumbnail-img"
+                                                                    muted
+                                                                    playsInline
+                                                                    preload="metadata"
+                                                                />
+                                                                <span className="product-video-play-icon" aria-hidden="true">▶</span>
+                                                            </button>
+                                                        </li>
+                                                    )}
                                                 </ul>
                                             )}
 

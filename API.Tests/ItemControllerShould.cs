@@ -1521,7 +1521,7 @@ namespace API.Tests
             };
             _mockItemService.Setup(x => x.GetItemByVariantIdAsync(variantId, userId))
                            .ReturnsAsync(Result.Success(itemResponse));
-            _mockItemService.Setup(x => x.UpdateVariantImageUrlsAsync(variantId, It.IsAny<string?>(), It.IsAny<List<string>>()))
+            _mockItemService.Setup(x => x.UpdateVariantImageUrlsAsync(variantId, It.IsAny<string?>(), It.IsAny<List<string>>(), It.IsAny<string?>()))
                            .ReturnsAsync(Result.Success());
 
             var request = new UpdateVariantImageUrlsRequest
@@ -1537,7 +1537,7 @@ namespace API.Tests
             // Assert
             var okResult = Assert.IsType<OkResult>(response);
             Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
-            _mockItemService.Verify(x => x.UpdateVariantImageUrlsAsync(variantId, request.ThumbnailUrl, request.ImageUrls), Times.Once);
+            _mockItemService.Verify(x => x.UpdateVariantImageUrlsAsync(variantId, request.ThumbnailUrl, request.ImageUrls, request.VideoUrl), Times.Once);
         }
 
         [Fact]
@@ -1632,7 +1632,7 @@ namespace API.Tests
             };
             _mockItemService.Setup(x => x.GetItemByVariantIdAsync(variantId, userId))
                            .ReturnsAsync(Result.Success(itemResponse));
-            _mockItemService.Setup(x => x.UpdateVariantImageUrlsAsync(variantId, It.IsAny<string?>(), It.IsAny<List<string>>()))
+            _mockItemService.Setup(x => x.UpdateVariantImageUrlsAsync(variantId, It.IsAny<string?>(), It.IsAny<List<string>>(), It.IsAny<string?>()))
                            .ReturnsAsync(Result.Failure("DB error.", StatusCodes.Status500InternalServerError));
 
             var request = new UpdateVariantImageUrlsRequest { VariantId = variantId };

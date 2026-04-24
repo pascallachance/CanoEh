@@ -11,6 +11,7 @@ namespace Infrastructure.Data
         public string? ProductIdentifierValue { get; set; }
         public string? ImageUrls { get; set; } // Comma-separated URLs
         public string? ThumbnailUrl { get; set; }
+        public string? VideoUrl { get; set; }
         public string? ItemVariantName_en { get; set; }
         public string? ItemVariantName_fr { get; set; }
         public List<ItemVariantAttribute> ItemVariantAttributes { get; set; } = [];

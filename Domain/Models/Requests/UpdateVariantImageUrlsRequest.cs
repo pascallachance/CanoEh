@@ -13,6 +13,7 @@ namespace Domain.Models.Requests
         public Guid VariantId { get; set; }
         public string? ThumbnailUrl { get; set; }
         public List<string> ImageUrls { get; set; } = new();
+        public string? VideoUrl { get; set; }
 
         public Result Validate()
         {
@@ -37,6 +38,11 @@ namespace Domain.Models.Requests
             if (ThumbnailUrl != null && ThumbnailUrl.Length > MaxUrlLength)
             {
                 return Result.Failure($"Thumbnail URL exceeds the maximum allowed length of {MaxUrlLength} characters.", StatusCodes.Status400BadRequest);
+            }
+
+            if (VideoUrl != null && VideoUrl.Length > MaxUrlLength)
+            {
+                return Result.Failure($"Video URL exceeds the maximum allowed length of {MaxUrlLength} characters.", StatusCodes.Status400BadRequest);
             }
 
             return Result.Success();

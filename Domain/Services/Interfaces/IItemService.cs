@@ -20,7 +20,8 @@ namespace Domain.Services.Interfaces
         Task<Result<GetItemResponse>> GetItemByVariantIdAsync(Guid variantId, Guid userId);
         Task<Result> UpdateItemVariantAsync(ItemVariant variant);
         Task<Result> UpdateItemVariantImageAsync(Guid variantId, string imageType, string imageUrl, int imageNumber);
-        Task<Result> UpdateVariantImageUrlsAsync(Guid variantId, string? thumbnailUrl, List<string> imageUrls);
+        Task<Result> UpdateVariantImageUrlsAsync(Guid variantId, string? thumbnailUrl, List<string> imageUrls, string? videoUrl = null);
+        Task<Result> UpdateItemVariantVideoAsync(Guid variantId, string videoUrl);
         Task<Result<IEnumerable<GetItemResponse>>> GetRecentlyAddedProductsAsync(int count = 100);
         Task<Result<IEnumerable<GetItemResponse>>> GetSuggestedProductsAsync(int count = 4);
         Task<Result<IEnumerable<GetItemResponse>>> GetProductsWithOffersAsync(int count = 10);

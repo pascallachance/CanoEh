@@ -1094,10 +1094,7 @@ namespace API.Controllers
                 {
                     try
                     {
-                        var existingRelativePath = existingVideoUrl.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase)
-                            ? existingVideoUrl["/uploads/".Length..]
-                            : existingVideoUrl.TrimStart('/');
-                        await _fileStorageService.DeleteFileAsync(existingRelativePath);
+                        await _fileStorageService.DeleteFileAsync(GetUploadsRelativePath(existingVideoUrl));
                     }
                     catch (Exception cleanupEx)
                     {
@@ -1112,10 +1109,7 @@ namespace API.Controllers
                     // Attempt to clean up the newly uploaded file since we cannot reference it in the DB
                     try
                     {
-                        var relativePath = videoUrl.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase)
-                            ? videoUrl["/uploads/".Length..]
-                            : videoUrl.TrimStart('/');
-                        await _fileStorageService.DeleteFileAsync(relativePath);
+                        await _fileStorageService.DeleteFileAsync(GetUploadsRelativePath(videoUrl));
                     }
                     catch (Exception cleanupEx)
                     {
@@ -1132,5 +1126,15 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
         }
+
+        /// <summary>
+        /// Converts a public video/image URL (e.g. "/uploads/companyId/variantId/file.mp4") to
+        /// a path relative to the uploads root (e.g. "companyId/variantId/file.mp4") so that
+        /// <see cref="IFileStorageService.DeleteFileAsync"/> receives the correct argument.
+        /// </summary>
+        private static string GetUploadsRelativePath(string url) =>
+            url.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase)
+                ? url["/uploads/".Length..]
+                : url.TrimStart('/');
     }
 }

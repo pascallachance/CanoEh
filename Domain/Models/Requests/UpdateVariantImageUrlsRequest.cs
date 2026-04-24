@@ -9,7 +9,7 @@ namespace Domain.Models.Requests
         private const int MaxImageCount = 10;
         // Maximum length for a single image/thumbnail URL to guard against oversized data
         private const int MaxUrlLength = 2048;
-        // Maximum length for the video URL – must match the VideoUrl NVARCHAR(500) column in the DB
+        // Maximum length for the video URL - must match the VideoUrl NVARCHAR(500) column in the DB
         private const int MaxVideoUrlLength = 500;
 
         public Guid VariantId { get; set; }

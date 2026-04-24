@@ -248,6 +248,48 @@ namespace API.Controllers
         }
 
         /// <summary>
+        /// Gets the top N best rated products (Items with their Variants, ItemAttributes, and ItemVariantAttributes).
+        /// Products are ordered by average rating descending, then by rating count descending.
+        /// Only items that have at least one review are returned.
+        /// </summary>
+        /// <param name="count">Number of products to retrieve. Default is 100. Maximum is 1000.</param>
+        /// <returns>Returns a list of best rated products or an error response.</returns>
+        [HttpGet("GetBestRatedProducts")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetBestRatedProducts([FromQuery] int count = 100)
+        {
+            try
+            {
+                // Validate count parameter
+                if (count <= 0)
+                {
+                    return BadRequest("Count must be greater than 0.");
+                }
+
+                if (count > 1000)
+                {
+                    return BadRequest("Count cannot exceed 1000.");
+                }
+
+                var result = await _itemService.GetBestRatedProductsAsync(count);
+
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? StatusCodes.Status500InternalServerError, result.Error);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An error occurred: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
+        }
+
+        /// <summary>
         /// Gets random suggested products (Items with their Variants, ItemAttributes, and ItemVariantAttributes).
         /// Returns only items that have at least one variant with ImageUrls.
         /// Returns at most one Item per product; each returned Item includes all of its variants and related attributes.

@@ -1341,6 +1341,145 @@ namespace API.Tests
             _mockItemService.Verify(x => x.GetSuggestedCategoriesProductsAsync(4), Times.Once);
         }
 
+        // ===== GetBestRatedProducts Controller Tests =====
+
+        [Fact]
+        public async Task GetBestRatedProducts_ReturnOk_WhenProductsExist()
+        {
+            // Arrange
+            var items = new List<GetItemResponse>
+            {
+                new GetItemResponse
+                {
+                    Id = Guid.NewGuid(),
+                    SellerID = Guid.NewGuid(),
+                    Name_en = "Best Rated Item 1",
+                    Name_fr = "Article le mieux noté 1",
+                    Description_en = "Test Description EN",
+                    Description_fr = "Test Description FR",
+                    CategoryNodeID = Guid.NewGuid(),
+                    Variants = new List<ItemVariantDto>
+                    {
+                        new ItemVariantDto
+                        {
+                            Id = Guid.NewGuid(),
+                            Price = 29.99m,
+                            StockQuantity = 10,
+                            Sku = "TEST-001",
+                            ImageUrls = "https://example.com/image1.jpg",
+                            ThumbnailUrl = "https://example.com/thumb1.jpg",
+                            ItemVariantAttributes = new List<ItemVariantAttributeDto>(),
+                            Deleted = false
+                        }
+                    },
+                    ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = null,
+                    AverageRating = 4.8m,
+                    RatingCount = 100,
+                    Deleted = false
+                },
+                new GetItemResponse
+                {
+                    Id = Guid.NewGuid(),
+                    SellerID = Guid.NewGuid(),
+                    Name_en = "Best Rated Item 2",
+                    Name_fr = "Article le mieux noté 2",
+                    Description_en = "Test Description EN",
+                    Description_fr = "Test Description FR",
+                    CategoryNodeID = Guid.NewGuid(),
+                    Variants = new List<ItemVariantDto>(),
+                    ItemVariantFeatures = new List<ItemVariantFeaturesDto>(),
+                    CreatedAt = DateTime.UtcNow.AddMinutes(-1),
+                    UpdatedAt = null,
+                    AverageRating = 4.5m,
+                    RatingCount = 50,
+                    Deleted = false
+                }
+            };
+
+            var result = Result.Success<IEnumerable<GetItemResponse>>(items);
+            _mockItemService.Setup(x => x.GetBestRatedProductsAsync(It.IsAny<int>()))
+                           .ReturnsAsync(result);
+
+            // Act
+            var response = await _controller.GetBestRatedProducts(4);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(response);
+            Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetBestRatedProducts_ReturnBadRequest_WhenCountIsZero()
+        {
+            // Arrange & Act
+            var response = await _controller.GetBestRatedProducts(0);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+            Assert.Equal("Count must be greater than 0.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task GetBestRatedProducts_ReturnBadRequest_WhenCountIsNegative()
+        {
+            // Arrange & Act
+            var response = await _controller.GetBestRatedProducts(-5);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+            Assert.Equal("Count must be greater than 0.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task GetBestRatedProducts_ReturnBadRequest_WhenCountExceedsMaximum()
+        {
+            // Arrange & Act
+            var response = await _controller.GetBestRatedProducts(1001);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(response);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+            Assert.Equal("Count cannot exceed 1000.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task GetBestRatedProducts_ReturnInternalServerError_WhenServiceFails()
+        {
+            // Arrange
+            var result = Result.Failure<IEnumerable<GetItemResponse>>("Database error", StatusCodes.Status500InternalServerError);
+            _mockItemService.Setup(x => x.GetBestRatedProductsAsync(It.IsAny<int>()))
+                           .ReturnsAsync(result);
+
+            // Act
+            var response = await _controller.GetBestRatedProducts(100);
+
+            // Assert
+            var errorResult = Assert.IsType<ObjectResult>(response);
+            Assert.Equal(StatusCodes.Status500InternalServerError, errorResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetBestRatedProducts_UseDefaultCount_WhenCountNotProvided()
+        {
+            // Arrange
+            var items = new List<GetItemResponse>();
+            var result = Result.Success<IEnumerable<GetItemResponse>>(items);
+            _mockItemService.Setup(x => x.GetBestRatedProductsAsync(100))
+                           .ReturnsAsync(result);
+
+            // Act
+            var response = await _controller.GetBestRatedProducts();
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(response);
+            Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+            _mockItemService.Verify(x => x.GetBestRatedProductsAsync(100), Times.Once);
+        }
+
         // ===== UpdateVariantImageUrls Controller Tests =====
 
         private ControllerContext BuildControllerContext(string userEmail)

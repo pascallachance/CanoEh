@@ -424,6 +424,47 @@ WHERE Id = @Id";
             return items;
         }
 
+        public async Task<IEnumerable<Item>> GetBestRatedProductsAsync(int count = 100)
+        {
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+            }
+
+            // Get the top N non-deleted items ordered by average rating descending, then by rating count descending
+            var itemQuery = @"
+                WITH RatingSummary AS (
+                    SELECT ItemID,
+                           CAST(AVG(CAST(Rating AS DECIMAL(10,2))) AS DECIMAL(10,2)) AS AverageRating,
+                           COUNT(1) AS RatingCount
+                    FROM dbo.ItemReview
+                    GROUP BY ItemID
+                )
+                SELECT TOP (@count) i.*
+                FROM dbo.Item i
+                INNER JOIN RatingSummary rs ON i.Id = rs.ItemID
+                WHERE i.Deleted = 0
+                ORDER BY rs.AverageRating DESC, rs.RatingCount DESC";
+            var items = (await dbConnection.QueryAsync<Item>(itemQuery, new { count })).ToList();
+
+            if (!items.Any())
+            {
+                return items;
+            }
+
+            var itemIds = items.Select(i => i.Id).ToList();
+
+            // Get all ItemVariants for the items (exclude deleted variants)
+            var variantQuery = "SELECT * FROM dbo.ItemVariant WHERE ItemId IN @itemIds AND Deleted = 0";
+            var variants = (await dbConnection.QueryAsync<ItemVariant>(variantQuery, new { itemIds })).ToList();
+            var variantsByItemId = variants.GroupBy(v => v.ItemId).ToDictionary(g => g.Key, g => g.ToList());
+
+            await HydrateVariantAttributesAndFeaturesAsync(variants);
+            AssignVariantsToItems(items, variantsByItemId);
+
+            return items;
+        }
+
         public async Task<IEnumerable<Item>> GetItemsByCategoryNodeAsync(Guid nodeId)
         {
             if (dbConnection.State != ConnectionState.Open)

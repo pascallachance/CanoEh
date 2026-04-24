@@ -104,6 +104,8 @@ const SUGGESTED_ITEMS_FETCH_COUNT = 24; // Fetch more to ensure we get enough wi
 const OFFERS_COUNT = 16;
 const SUGGESTED_CATEGORIES_FETCH_COUNT = 24;
 const SUGGESTED_CATEGORIES_DISPLAY_COUNT = 16;
+const BEST_RATED_ITEMS_DISPLAY_COUNT = 16;
+const BEST_RATED_ITEMS_FETCH_COUNT = 24; // Fetch more to ensure we get enough with images
 
 /**
  * Returns true if the variant has an active (non-expired and started) offer.
@@ -196,6 +198,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
     const [rawSuggestedProducts, setRawSuggestedProducts] = useState<GetItemResponse[]>([]);
     const [rawOfferProducts, setRawOfferProducts] = useState<GetItemResponse[]>([]);
     const [rawCategoriesProducts, setRawCategoriesProducts] = useState<GetItemResponse[]>([]);
+    const [rawBestRatedProducts, setRawBestRatedProducts] = useState<GetItemResponse[]>([]);
 
     const recentProducts = useMemo(
         () => extractProductImages(rawRecentProducts, language, RECENT_ITEMS_DISPLAY_COUNT),
@@ -250,6 +253,10 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         () => extractProductImages(rawCategoriesProducts, language, SUGGESTED_CATEGORIES_DISPLAY_COUNT, true),
         [rawCategoriesProducts, language]
     );
+    const bestRatedProducts = useMemo(
+        () => extractProductImages(rawBestRatedProducts, language, BEST_RATED_ITEMS_DISPLAY_COUNT),
+        [rawBestRatedProducts, language]
+    );
 
     useEffect(() => {
         // Set language based on user or system settings
@@ -265,6 +272,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         fetchSuggestedProducts();
         fetchProductsWithOffers();
         fetchSuggestedCategoriesProducts();
+        fetchBestRatedProducts();
     }, [isAuthenticated]);
 
     const fetchRecentlyAddedProducts = async () => {
@@ -358,6 +366,30 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
             }
         } catch (error) {
             console.error('Error fetching suggested categories products:', error);
+        }
+    };
+
+    const fetchBestRatedProducts = async () => {
+        try {
+            const apiBaseUrl = import.meta.env.VITE_API_STORE_BASE_URL;
+            if (!apiBaseUrl) {
+                console.warn('API base URL not configured');
+                return;
+            }
+
+            // Fetch more products than needed to ensure we get enough with images
+            const response = await fetch(`${apiBaseUrl}/api/Item/GetBestRatedProducts?count=${BEST_RATED_ITEMS_FETCH_COUNT}`);
+            if (!response.ok) {
+                console.error('Failed to fetch best rated products');
+                return;
+            }
+
+            const result: ApiResult<GetItemResponse[]> = await response.json();
+            if (result.isSuccess && result.value) {
+                setRawBestRatedProducts(result.value);
+            }
+        } catch (error) {
+            console.error('Error fetching best rated products:', error);
         }
     };
 
@@ -513,7 +545,13 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 />
                 <ItemPreviewCard
                     title={getText("Best Rated", "Mieux notés")}
-                    onClick={() => handleCardClick('rated')}
+                    {...(bestRatedProducts.length > 0
+                        ? {
+                            products: bestRatedProducts,
+                            language,
+                            onItemClick: (product: ProductPreviewItem) => navigate(`/product/${product.id}`),
+                        }
+                        : {})}
                 />
                 <ItemPreviewCard
                     title={getText("Recently added items", "Articles récemment ajoutés")}
@@ -560,8 +598,9 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
  *   `<img>`-backed item. When `onItemClick` is also provided, each item is wrapped in a
  *   `<button>` with the `item-placeholder-clickable` class.
  * - **Static placeholder mode** (`products` undefined): iterates over `items` and renders
- *   labelled placeholder divs. Used by cards (e.g. Best Sellers, Best Rated) that do not
- *   yet have real product data. `items` defaults to `ITEM_PLACEHOLDER_ARRAY` when omitted.
+ *   labelled placeholder divs. Used by cards (e.g. Best Sellers) that do not
+ *   yet have real product data, or by any card before its data has loaded.
+ *   `items` defaults to `ITEM_PLACEHOLDER_ARRAY` when omitted.
  */
 interface ItemPreviewCardProps {
     title: string;

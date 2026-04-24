@@ -1310,6 +1310,21 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             }
         }
 
+        public async Task<Result<IEnumerable<GetItemResponse>>> GetBestRatedProductsAsync(int count = 100)
+        {
+            try
+            {
+                var items = await _itemRepository.GetBestRatedProductsAsync(count);
+                var response = await MapItemsToGetItemResponsesWithRatingsAsync(items);
+
+                return Result.Success(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<IEnumerable<GetItemResponse>>($"An error occurred while retrieving best rated products: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
         public async Task<Result<IEnumerable<GetItemResponse>>> GetItemsByCategoryNodeAsync(Guid nodeId)
         {
             try

@@ -254,13 +254,7 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
         [rawCategoriesProducts, language]
     );
     const bestRatedProducts = useMemo(
-        () => {
-            const sorted = [...rawBestRatedProducts].sort((a, b) => {
-                if (b.averageRating !== a.averageRating) return b.averageRating - a.averageRating;
-                return b.ratingCount - a.ratingCount;
-            });
-            return extractProductImages(sorted, language, BEST_RATED_ITEMS_DISPLAY_COUNT);
-        },
+        () => extractProductImages(rawBestRatedProducts, language, BEST_RATED_ITEMS_DISPLAY_COUNT),
         [rawBestRatedProducts, language]
     );
 

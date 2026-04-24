@@ -349,7 +349,10 @@ function extractVideoFrame(videoSrc: string): Promise<string | null> {
         };
 
         const video = document.createElement('video');
-        video.crossOrigin = 'anonymous';
+        // Only set crossOrigin for non-blob URLs to avoid CORS issues with local files
+        if (!videoSrc.startsWith('blob:')) {
+            video.crossOrigin = 'anonymous';
+        }
         video.muted = true;
         video.playsInline = true;
         video.preload = 'metadata';
@@ -1147,6 +1150,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                             muted
                                                             playsInline
                                                             preload="metadata"
+                                                            onLoadedMetadata={(e) => { (e.target as HTMLVideoElement).currentTime = 0.1; }}
                                                         />
                                                     )}
                                                     <span className="product-video-play-icon" aria-hidden="true">▶</span>

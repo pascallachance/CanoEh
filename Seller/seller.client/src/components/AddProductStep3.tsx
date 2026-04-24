@@ -121,7 +121,10 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             };
 
             const video = document.createElement('video');
-            video.crossOrigin = 'anonymous';
+            // Only set crossOrigin for non-blob URLs to avoid CORS issues with local files
+            if (!videoSrc.startsWith('blob:')) {
+                video.crossOrigin = 'anonymous';
+            }
             video.muted = true;
             video.playsInline = true;
             video.preload = 'metadata';
@@ -1412,6 +1415,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 </div>
                                             </div>
                                         </div>
+                                        </div>{/* end media-sections-row */}
 
                                         {/* Video Section */}
                                         <div className="variant-field variant-field-media video-media-section">
@@ -1446,6 +1450,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                     muted
                                                                     playsInline
                                                                     preload="metadata"
+                                                                    onLoadedMetadata={(e) => { (e.target as HTMLVideoElement).currentTime = 0.1; }}
                                                                 />
                                                             )}
                                                             <button
@@ -1462,7 +1467,6 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 </div>
                                             </div>
                                         </div>
-                                        </div>{/* end media-sections-row - now includes video */}
 
                                     </div>
                                 </div>
@@ -1815,6 +1819,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                         muted
                                                                         playsInline
                                                                         preload="metadata"
+                                                                        onLoadedMetadata={(e) => { (e.target as HTMLVideoElement).currentTime = 0.1; }}
                                                                     />
                                                                 )}
                                                                 <span className="product-video-play-icon" aria-hidden="true">▶</span>

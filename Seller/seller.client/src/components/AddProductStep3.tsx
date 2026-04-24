@@ -98,6 +98,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
     const [previewSelectedAttributes, setPreviewSelectedAttributes] = useState<Record<string, string>>({});
     const [previewSelectedImageIndex, setPreviewSelectedImageIndex] = useState(0);
     const [previewIsVideoActive, setPreviewIsVideoActive] = useState(false);
+    const [videoThumbnails, setVideoThumbnails] = useState<Record<string, string>>({});
+    const processedVideoUrls = useRef<Record<string, string>>({});
     const previewModalRef = useRef<HTMLDivElement>(null);
     const variantsRef = useRef<ItemVariant[]>([]);
 
@@ -105,6 +107,62 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
     useEffect(() => {
         variantsRef.current = variants;
     }, [variants]);
+
+    // Extract first frame from a video as a JPEG data-URL. Returns null on failure.
+    const extractVideoFrame = useCallback((videoSrc: string): Promise<string | null> => {
+        return new Promise((resolve) => {
+            const video = document.createElement('video');
+            video.crossOrigin = 'anonymous';
+            video.muted = true;
+            video.playsInline = true;
+            video.preload = 'metadata';
+            const cleanup = () => { video.src = ''; };
+            video.onloadedmetadata = () => {
+                video.currentTime = Math.min(0.5, video.duration / 4);
+            };
+            video.onseeked = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth || 320;
+                canvas.height = video.videoHeight || 180;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    try {
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.8));
+                    } catch {
+                        resolve(null);
+                    }
+                } else {
+                    resolve(null);
+                }
+                cleanup();
+            };
+            video.onerror = () => { cleanup(); resolve(null); };
+            video.src = videoSrc;
+        });
+    }, []);
+
+    // Extract video frames for variants whenever their videoUrl changes
+    useEffect(() => {
+        variants.forEach(variant => {
+            if (variant.videoUrl && processedVideoUrls.current[variant.id] !== variant.videoUrl) {
+                processedVideoUrls.current[variant.id] = variant.videoUrl;
+                extractVideoFrame(variant.videoUrl).then(thumbnail => {
+                    if (thumbnail) {
+                        setVideoThumbnails(prev => ({ ...prev, [variant.id]: thumbnail }));
+                    }
+                });
+            }
+            if (!variant.videoUrl && processedVideoUrls.current[variant.id]) {
+                delete processedVideoUrls.current[variant.id];
+                setVideoThumbnails(prev => {
+                    const next = { ...prev };
+                    delete next[variant.id];
+                    return next;
+                });
+            }
+        });
+    }, [variants, extractVideoFrame]);
 
     // Handle escape key to cancel
     useEffect(() => {
@@ -1303,10 +1361,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 </div>
                                             </div>
                                         </div>
-                                        </div>{/* end media-sections-row */}
 
                                         {/* Video Section */}
-                                        <div className="variant-field variant-field-media">
+                                        <div className="variant-field variant-field-media video-media-section">
                                             <div className="media-upload-row">
                                                 <label className="media-label" htmlFor={`video-${variant.id}`}>{t('variant.video')}</label>
                                                 <div className="media-controls">
@@ -1325,13 +1382,21 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 <div className="media-preview">
                                                     {variant.videoUrl && (
                                                         <div className="image-preview-item">
-                                                            <video
-                                                                src={variant.videoUrl}
-                                                                className="thumbnail-preview"
-                                                                muted
-                                                                playsInline
-                                                                preload="metadata"
-                                                            />
+                                                            {videoThumbnails[variant.id] ? (
+                                                                <img
+                                                                    src={videoThumbnails[variant.id]}
+                                                                    alt={t('variant.videoThumbnailAlt')}
+                                                                    className="thumbnail-preview"
+                                                                />
+                                                            ) : (
+                                                                <video
+                                                                    src={variant.videoUrl}
+                                                                    className="thumbnail-preview"
+                                                                    muted
+                                                                    playsInline
+                                                                    preload="metadata"
+                                                                />
+                                                            )}
                                                             <button
                                                                 type="button"
                                                                 onClick={() => handleRemoveVideo(variant.id)}
@@ -1346,6 +1411,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 </div>
                                             </div>
                                         </div>
+                                        </div>{/* end media-sections-row - now includes video */}
+
                                     </div>
                                 </div>
 
@@ -1684,13 +1751,21 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                 aria-label={getPreviewText('Play product video', 'Lire la vidéo du produit')}
                                                                 aria-pressed={previewIsVideoActive}
                                                             >
-                                                                <video
-                                                                    src={previewVariant.videoUrl}
-                                                                    className="product-thumbnail-img"
-                                                                    muted
-                                                                    playsInline
-                                                                    preload="metadata"
-                                                                />
+                                                                {previewVariant.id && videoThumbnails[previewVariant.id] ? (
+                                                                    <img
+                                                                        src={videoThumbnails[previewVariant.id]}
+                                                                        alt={getPreviewText('Video thumbnail', 'Miniature vidéo')}
+                                                                        className="product-thumbnail-img"
+                                                                    />
+                                                                ) : (
+                                                                    <video
+                                                                        src={previewVariant.videoUrl}
+                                                                        className="product-thumbnail-img"
+                                                                        muted
+                                                                        playsInline
+                                                                        preload="metadata"
+                                                                    />
+                                                                )}
                                                                 <span className="product-video-play-icon" aria-hidden="true">▶</span>
                                                             </button>
                                                         </li>

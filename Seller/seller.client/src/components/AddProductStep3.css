@@ -907,6 +907,10 @@
     flex: 0 0 auto;
 }
 
+.media-sections-row .video-media-section {
+    flex: 0 0 auto;
+}
+
 .media-upload-row {
     display: flex;
     gap: 0.5rem;

@@ -545,10 +545,13 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
                 />
                 <ItemPreviewCard
                     title={getText("Best Rated", "Mieux notés")}
-                    products={bestRatedProducts}
-                    language={language}
-                    onClick={() => handleCardClick('rated')}
-                    onItemClick={(product) => navigate(`/product/${product.id}`)}
+                    {...(bestRatedProducts.length > 0
+                        ? {
+                            products: bestRatedProducts,
+                            language,
+                            onItemClick: (product: ProductPreviewItem) => navigate(`/product/${product.id}`),
+                        }
+                        : {})}
                 />
                 <ItemPreviewCard
                     title={getText("Recently added items", "Articles récemment ajoutés")}
@@ -595,8 +598,9 @@ function Home({ isAuthenticated = false, onLogout }: HomeProps) {
  *   `<img>`-backed item. When `onItemClick` is also provided, each item is wrapped in a
  *   `<button>` with the `item-placeholder-clickable` class.
  * - **Static placeholder mode** (`products` undefined): iterates over `items` and renders
- *   labelled placeholder divs. Used by cards (e.g. Best Sellers, Best Rated) that do not
- *   yet have real product data. `items` defaults to `ITEM_PLACEHOLDER_ARRAY` when omitted.
+ *   labelled placeholder divs. Used by cards (e.g. Best Sellers) that do not
+ *   yet have real product data, or by any card before its data has loaded.
+ *   `items` defaults to `ITEM_PLACEHOLDER_ARRAY` when omitted.
  */
 interface ItemPreviewCardProps {
     title: string;

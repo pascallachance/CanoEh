@@ -51,11 +51,13 @@ function mockFetchByUrl({
     suggested = emptyApiResponse,
     offers = emptyApiResponse,
     categories = emptyApiResponse,
+    bestRated = emptyApiResponse,
 }: {
     recently?: object;
     suggested?: object;
     offers?: object;
     categories?: object;
+    bestRated?: object;
 } = {}) {
     (global.fetch as ReturnType<typeof vi.fn>).mockImplementation((url: string) => {
         if (url.includes('GetRecentlyAddedProducts')) {
@@ -69,6 +71,9 @@ function mockFetchByUrl({
         }
         if (url.includes('GetSuggestedCategoriesProducts')) {
             return Promise.resolve({ ok: true, json: async () => categories });
+        }
+        if (url.includes('GetBestRatedProducts')) {
+            return Promise.resolve({ ok: true, json: async () => bestRated });
         }
         return Promise.resolve({ ok: false, json: async () => ({}) });
     });
@@ -232,6 +237,55 @@ describe('Home - Clickable item placeholders', () => {
 
         const clickableButtons = card?.querySelectorAll('button.item-placeholder-clickable');
         expect(clickableButtons?.length).toBe(0);
+    });
+
+    it('should render product items in Best Rated card as clickable buttons when products are loaded', async () => {
+        mockFetchByUrl({
+            bestRated: {
+                isSuccess: true,
+                value: [makeProduct('br1', [{ imageUrls: 'https://example.com/br1.jpg' }])],
+            },
+        });
+
+        render(<BrowserRouter><Home /></BrowserRouter>);
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith(
+                expect.stringContaining('/api/Item/GetBestRatedProducts')
+            );
+        });
+
+        const cardTitle = await screen.findByText(/Best Rated|Mieux notés/);
+        const card = cardTitle.closest('.item-preview-card');
+        expect(card).toBeInTheDocument();
+
+        const clickableItems = card?.querySelectorAll('button.item-placeholder-clickable');
+        expect(clickableItems?.length).toBeGreaterThan(0);
+    });
+
+    it('should navigate to /product/:id when a Best Rated item is clicked', async () => {
+        mockFetchByUrl({
+            bestRated: {
+                isSuccess: true,
+                value: [makeProduct('br42', [{ imageUrls: 'https://example.com/br42.jpg' }])],
+            },
+        });
+
+        render(<BrowserRouter><Home /></BrowserRouter>);
+
+        let itemButton: HTMLElement | null = null;
+        await waitFor(() => {
+            const title = screen.getByText(/Best Rated|Mieux notés/);
+            const card = title.closest('.item-preview-card');
+            const btn = card?.querySelector('button.item-placeholder-clickable');
+            expect(btn).not.toBeNull();
+            itemButton = btn as HTMLElement;
+        });
+
+        const user = userEvent.setup();
+        await user.click(itemButton as HTMLElement);
+
+        expect(mockNavigate).toHaveBeenCalledWith('/product/br42');
     });
 
     // ─── Card title button (see-all) still works when items are clickable ─────

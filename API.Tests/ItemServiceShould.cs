@@ -1933,11 +1933,12 @@ namespace API.Tests
         public async Task GetBestRatedProductsAsync_ReturnSuccess_WhenItemsExist()
         {
             // Arrange
+            var itemId1 = Guid.NewGuid();
             var items = new List<Item>
             {
                 new Item
                 {
-                    Id = Guid.NewGuid(),
+                    Id = itemId1,
                     SellerID = Guid.NewGuid(),
                     Name_en = "Best Rated Item 1",
                     Name_fr = "Article le mieux noté 1",
@@ -1949,7 +1950,7 @@ namespace API.Tests
                         new ItemVariant
                         {
                             Id = Guid.NewGuid(),
-                            ItemId = Guid.NewGuid(),
+                            ItemId = itemId1,
                             Price = 29.99m,
                             StockQuantity = 10,
                             Sku = "TEST-001",

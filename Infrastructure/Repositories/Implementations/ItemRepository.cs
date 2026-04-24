@@ -435,7 +435,7 @@ WHERE Id = @Id";
             var itemQuery = @"
                 WITH RatingSummary AS (
                     SELECT ItemID,
-                           CAST(AVG(Rating) AS DECIMAL(10,2)) AS AverageRating,
+                           CAST(AVG(CAST(Rating AS DECIMAL(10,2))) AS DECIMAL(10,2)) AS AverageRating,
                            COUNT(1) AS RatingCount
                     FROM dbo.ItemReview
                     GROUP BY ItemID

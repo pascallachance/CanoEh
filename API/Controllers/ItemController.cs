@@ -1089,7 +1089,17 @@ namespace API.Controllers
                 if (updateResult.IsFailure)
                 {
                     _logger.LogError("Failed to update variant video URL in database: {Error}", updateResult.Error);
-                    return Ok(new { videoUrl, warning = "File uploaded but database update failed: " + updateResult.Error });
+                    // Attempt to clean up the uploaded file since we cannot reference it in the DB
+                    try
+                    {
+                        var relativePath = videoUrl.TrimStart('/');
+                        await _fileStorageService.DeleteFileAsync(relativePath);
+                    }
+                    catch (Exception cleanupEx)
+                    {
+                        _logger.LogError(cleanupEx, "Failed to delete orphaned video file after DB update failure: {Url}", videoUrl);
+                    }
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Video uploaded but database update failed. Please try again.");
                 }
 
                 return Ok(new { videoUrl });

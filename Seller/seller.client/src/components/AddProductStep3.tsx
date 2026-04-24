@@ -609,14 +609,19 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
 
                 // Determine the video URL to preserve in DB.
                 // If a new videoFile is provided the upload step will overwrite it, so pass null.
-                const syncedVideoUrl =
-                    variant.videoFile
-                        ? null
-                        : variant.videoUrl &&
-                          !variant.videoUrl.startsWith('blob:') &&
-                          !variant.videoUrl.startsWith('data:')
-                            ? toRelativeUrl(variant.videoUrl)
-                            : (variant.videoUrl === '' ? '' : null);
+                let syncedVideoUrl: string | null;
+                if (variant.videoFile) {
+                    // New video file will be uploaded separately; DB update happens there
+                    syncedVideoUrl = null;
+                } else if (variant.videoUrl && !variant.videoUrl.startsWith('blob:') && !variant.videoUrl.startsWith('data:')) {
+                    // Server-hosted URL: normalize to relative path to keep in DB
+                    syncedVideoUrl = toRelativeUrl(variant.videoUrl);
+                } else if (variant.videoUrl === '') {
+                    // Explicitly cleared: pass empty string so the service removes it from DB
+                    syncedVideoUrl = '';
+                } else {
+                    syncedVideoUrl = null;
+                }
 
                 const syncResponse = await fetch(
                     `${import.meta.env.VITE_API_SELLER_BASE_URL}/api/Item/UpdateVariantImageUrls`,

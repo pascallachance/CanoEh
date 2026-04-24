@@ -228,7 +228,8 @@ namespace Infrastructure.Services
                 if (!string.IsNullOrWhiteSpace(subPath))
                 {
                     subPath = subPath.Replace('\\', '/');
-                    if (subPath.Contains("..") || subPath.StartsWith('/') || subPath.StartsWith('\\'))
+                    if (subPath.Contains("..") || subPath.StartsWith('/') || subPath.StartsWith('\\') ||
+                        subPath.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
                     {
                         return Result.Failure<string>("Invalid sub-path.", StatusCodes.Status400BadRequest);
                     }

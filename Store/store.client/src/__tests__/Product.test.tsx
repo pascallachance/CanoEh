@@ -22,6 +22,7 @@ function makeVariant(overrides: {
     productIdentifierValue?: string;
     imageUrls?: string;
     thumbnailUrl?: string;
+    videoUrl?: string;
     offer?: number | null;
     offerStart?: string | null;
     offerEnd?: string | null;
@@ -38,6 +39,7 @@ function makeVariant(overrides: {
         productIdentifierValue: overrides.productIdentifierValue,
         imageUrls: overrides.imageUrls ?? 'https://example.com/img1.jpg',
         thumbnailUrl: overrides.thumbnailUrl,
+        videoUrl: overrides.videoUrl,
         offer: overrides.offer ?? null,
         offerStart: overrides.offerStart ?? null,
         offerEnd: overrides.offerEnd ?? null,
@@ -1834,5 +1836,152 @@ describe('Product page – stock display thresholds', () => {
         await waitForProductLoaded();
         expect(document.querySelector('.product-stock-low')).toBeInTheDocument();
         expect(document.querySelector('.product-stock-low')?.textContent).toMatch(/out of stock/i);
+    });
+});
+
+describe('Product page – video thumbnail', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.stubEnv('VITE_API_STORE_BASE_URL', API_BASE_URL);
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('does not show a video thumbnail when variant has no videoUrl', async () => {
+        setupFetchWithCategories(makeProduct({
+            variants: [makeVariant({
+                imageUrls: 'https://example.com/img1.jpg,https://example.com/img2.jpg',
+            })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+        expect(document.querySelector('.product-thumbnail-video-btn')).toBeNull();
+    });
+
+    it('shows a video thumbnail as the last thumbnail when variant has a videoUrl', async () => {
+        const videoUrl = 'https://example.com/product.mp4';
+        setupFetchWithCategories(makeProduct({
+            variants: [makeVariant({
+                imageUrls: 'https://example.com/img1.jpg,https://example.com/img2.jpg',
+                videoUrl,
+            })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const allThumbs = document.querySelectorAll('.product-thumbnail-btn');
+        expect(allThumbs.length).toBe(3); // 2 images + 1 video
+
+        const videoThumb = document.querySelector('.product-thumbnail-video-btn');
+        expect(videoThumb).toBeInTheDocument();
+        expect(allThumbs[allThumbs.length - 1]).toBe(videoThumb);
+    });
+
+    it('shows the play icon overlay on the video thumbnail', async () => {
+        const videoUrl = 'https://example.com/product.mp4';
+        setupFetchWithCategories(makeProduct({
+            variants: [makeVariant({
+                imageUrls: 'https://example.com/img1.jpg',
+                videoUrl,
+            })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const playIcon = document.querySelector('.product-video-play-icon');
+        expect(playIcon).toBeInTheDocument();
+    });
+
+    it('clicking the video thumbnail switches main display to the video player', async () => {
+        const user = userEvent.setup();
+        const videoUrl = 'https://example.com/product.mp4';
+        setupFetchWithCategories(makeProduct({
+            variants: [makeVariant({
+                imageUrls: 'https://example.com/img1.jpg',
+                videoUrl,
+            })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        // Initially the main image is shown
+        expect(document.querySelector('.product-main-image')).toBeInTheDocument();
+        expect(document.querySelector('.product-main-video')).toBeNull();
+
+        // Click the video thumbnail button
+        const videoBtn = screen.getByRole('button', { name: /Play product video/i });
+        await user.click(videoBtn);
+
+        await waitFor(() => {
+            expect(document.querySelector('.product-main-video')).toBeInTheDocument();
+            expect(document.querySelector('.product-main-image')).toBeNull();
+        });
+    });
+
+    it('video thumbnail button has aria-pressed=true when video is active', async () => {
+        const user = userEvent.setup();
+        const videoUrl = 'https://example.com/product.mp4';
+        setupFetchWithCategories(makeProduct({
+            variants: [makeVariant({
+                imageUrls: 'https://example.com/img1.jpg',
+                videoUrl,
+            })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const videoBtn = screen.getByRole('button', { name: /Play product video/i });
+        expect(videoBtn).toHaveAttribute('aria-pressed', 'false');
+
+        await user.click(videoBtn);
+
+        await waitFor(() => {
+            expect(videoBtn).toHaveAttribute('aria-pressed', 'true');
+        });
+    });
+
+    it('clicking an image thumbnail after video reverts to image display', async () => {
+        const user = userEvent.setup();
+        const videoUrl = 'https://example.com/product.mp4';
+        setupFetchWithCategories(makeProduct({
+            variants: [makeVariant({
+                imageUrls: 'https://example.com/img1.jpg,https://example.com/img2.jpg',
+                videoUrl,
+            })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        // Click video button
+        const videoBtn = screen.getByRole('button', { name: /Play product video/i });
+        await user.click(videoBtn);
+        await waitFor(() => expect(document.querySelector('.product-main-video')).toBeInTheDocument());
+
+        // Click an image thumbnail
+        const imgBtns = screen.getAllByRole('button', { name: /View image/i });
+        await user.click(imgBtns[0]);
+
+        await waitFor(() => {
+            expect(document.querySelector('.product-main-image')).toBeInTheDocument();
+            expect(document.querySelector('.product-main-video')).toBeNull();
+        });
+    });
+
+    it('shows thumbnails list when variant has no images but has a videoUrl', async () => {
+        const videoUrl = 'https://example.com/product.mp4';
+        setupFetchWithCategories(makeProduct({
+            variants: [makeVariant({
+                imageUrls: '',
+                thumbnailUrl: undefined,
+                videoUrl,
+            })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        expect(document.querySelector('.product-thumbnails')).toBeInTheDocument();
+        expect(document.querySelector('.product-thumbnail-video-btn')).toBeInTheDocument();
     });
 });

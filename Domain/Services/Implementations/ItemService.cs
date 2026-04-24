@@ -1117,6 +1117,8 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             }
         }
 
+        private const int MaxVideoUrlLength = 500;
+
         public async Task<Result> UpdateItemVariantVideoAsync(Guid variantId, string videoUrl)
         {
             try
@@ -1129,6 +1131,11 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 if (string.IsNullOrWhiteSpace(videoUrl))
                 {
                     return Result.Failure("Video URL is required.", StatusCodes.Status400BadRequest);
+                }
+
+                if (videoUrl.Length > MaxVideoUrlLength)
+                {
+                    return Result.Failure($"Video URL exceeds the maximum allowed length of {MaxVideoUrlLength} characters.", StatusCodes.Status400BadRequest);
                 }
 
                 var variant = await _itemVariantRepository.GetByIdAsync(variantId);

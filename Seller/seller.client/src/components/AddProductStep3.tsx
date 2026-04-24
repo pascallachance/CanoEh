@@ -1657,7 +1657,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                             </div>
 
                                             {(previewImages.length > 0 || previewVariant?.videoUrl) && (
-                                                <ul className="product-thumbnails" aria-label={getPreviewText('Image thumbnails', 'Miniatures d’images')}>
+                                                <ul className="product-thumbnails" aria-label={getPreviewText('Media thumbnails', 'Miniatures de médias')}>
                                                     {previewImages.map((imageUrl, index) => (
                                                         <li key={`${imageUrl}-${index}`}>
                                                             <button

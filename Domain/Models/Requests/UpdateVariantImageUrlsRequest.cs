@@ -7,8 +7,10 @@ namespace Domain.Models.Requests
     {
         // Maximum number of images per variant (must match the upload endpoint's limit)
         private const int MaxImageCount = 10;
-        // Maximum length for a single URL to guard against oversized data
+        // Maximum length for a single image/thumbnail URL to guard against oversized data
         private const int MaxUrlLength = 2048;
+        // Maximum length for the video URL – must match the VideoUrl NVARCHAR(500) column in the DB
+        private const int MaxVideoUrlLength = 500;
 
         public Guid VariantId { get; set; }
         public string? ThumbnailUrl { get; set; }
@@ -40,9 +42,9 @@ namespace Domain.Models.Requests
                 return Result.Failure($"Thumbnail URL exceeds the maximum allowed length of {MaxUrlLength} characters.", StatusCodes.Status400BadRequest);
             }
 
-            if (VideoUrl != null && VideoUrl.Length > MaxUrlLength)
+            if (VideoUrl != null && VideoUrl.Length > MaxVideoUrlLength)
             {
-                return Result.Failure($"Video URL exceeds the maximum allowed length of {MaxUrlLength} characters.", StatusCodes.Status400BadRequest);
+                return Result.Failure($"Video URL exceeds the maximum allowed length of {MaxVideoUrlLength} characters.", StatusCodes.Status400BadRequest);
             }
 
             return Result.Success();

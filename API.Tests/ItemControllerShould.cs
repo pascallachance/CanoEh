@@ -1645,4 +1645,208 @@ namespace API.Tests
             Assert.Equal(StatusCodes.Status500InternalServerError, errorResult.StatusCode);
         }
     }
+
+    // ===== UploadVideo Controller Tests =====
+
+    public class UploadVideoControllerShould
+    {
+        private readonly Mock<IItemService> _mockItemService;
+        private readonly Mock<IUserService> _mockUserService;
+        private readonly Mock<IFileStorageService> _mockFileStorageService;
+        private readonly Mock<ILogger<ItemController>> _mockLogger;
+        private readonly ItemController _controller;
+
+        public UploadVideoControllerShould()
+        {
+            _mockItemService = new Mock<IItemService>();
+            _mockUserService = new Mock<IUserService>();
+            _mockFileStorageService = new Mock<IFileStorageService>();
+            _mockLogger = new Mock<ILogger<ItemController>>();
+            _controller = new ItemController(_mockItemService.Object, _mockUserService.Object, _mockFileStorageService.Object, _mockLogger.Object);
+        }
+
+        private ControllerContext BuildControllerContext(string userEmail)
+        {
+            var claims = new List<System.Security.Claims.Claim>
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, userEmail)
+            };
+            var identity = new System.Security.Claims.ClaimsIdentity(claims);
+            var claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(identity);
+            return new ControllerContext { HttpContext = new DefaultHttpContext { User = claimsPrincipal } };
+        }
+
+        private IFormFile MakeFakeVideoFile(string fileName = "product.mp4", string contentType = "video/mp4", long length = 1024)
+        {
+            var mock = new Mock<IFormFile>();
+            mock.Setup(f => f.FileName).Returns(fileName);
+            mock.Setup(f => f.ContentType).Returns(contentType);
+            mock.Setup(f => f.Length).Returns(length);
+            mock.Setup(f => f.CopyToAsync(It.IsAny<System.IO.Stream>(), It.IsAny<System.Threading.CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            return mock.Object;
+        }
+
+        [Fact]
+        public async Task UploadVideo_ReturnOk_WhenVideoUploadedAndDbUpdatedSuccessfully()
+        {
+            // Arrange
+            var variantId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var userEmail = "seller@example.com";
+            var expectedVideoUrl = $"/uploads/{userId}/{variantId}/{variantId}_video.mp4";
+            _controller.ControllerContext = BuildControllerContext(userEmail);
+
+            var user = new User { ID = userId, Email = userEmail, Firstname = "Test", Lastname = "Seller", Password = "testpass" };
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ReturnsAsync(Result.Success(user));
+
+            var itemResponse = new GetItemResponse
+            {
+                Id = Guid.NewGuid(),
+                SellerID = userId,
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Description_en = "Desc",
+                Description_fr = "Desc",
+                CategoryNodeID = Guid.NewGuid(),
+                Variants = new List<ItemVariantDto>
+                {
+                    new ItemVariantDto { Id = variantId, Sku = "SKU-001" }
+                },
+                CreatedAt = DateTime.UtcNow,
+                Deleted = false
+            };
+            _mockItemService.Setup(x => x.GetItemByVariantIdAsync(variantId, userId))
+                           .ReturnsAsync(Result.Success(itemResponse));
+            _mockFileStorageService.Setup(x => x.UploadVideoAsync(It.IsAny<IFormFile>(), It.IsAny<string?>(), It.IsAny<string?>()))
+                                   .ReturnsAsync(Result.Success(expectedVideoUrl));
+            _mockItemService.Setup(x => x.UpdateItemVariantVideoAsync(variantId, expectedVideoUrl))
+                           .ReturnsAsync(Result.Success());
+
+            var file = MakeFakeVideoFile();
+
+            // Act
+            var response = await _controller.UploadVideo(file, variantId);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(response);
+            Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+            _mockItemService.Verify(x => x.UpdateItemVariantVideoAsync(variantId, expectedVideoUrl), Times.Once);
+        }
+
+        [Fact]
+        public async Task UploadVideo_ReturnUnauthorized_WhenUserNotAuthenticated()
+        {
+            // Arrange – no claims set
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = new System.Security.Claims.ClaimsPrincipal() }
+            };
+            var file = MakeFakeVideoFile();
+
+            // Act
+            var response = await _controller.UploadVideo(file, Guid.NewGuid());
+
+            // Assert
+            var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(response);
+            Assert.Equal(StatusCodes.Status401Unauthorized, unauthorizedResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task UploadVideo_ReturnBadRequest_WhenVariantIdIsEmpty()
+        {
+            // Arrange
+            var userEmail = "seller@example.com";
+            _controller.ControllerContext = BuildControllerContext(userEmail);
+            var user = new User { ID = Guid.NewGuid(), Email = userEmail, Firstname = "Test", Lastname = "Seller", Password = "testpass" };
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ReturnsAsync(Result.Success(user));
+            var file = MakeFakeVideoFile();
+
+            // Act
+            var response = await _controller.UploadVideo(file, Guid.Empty);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(response);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequest.StatusCode);
+        }
+
+        [Fact]
+        public async Task UploadVideo_ReturnNotFound_WhenVariantNotOwnedByUser()
+        {
+            // Arrange
+            var variantId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var userEmail = "seller@example.com";
+            _controller.ControllerContext = BuildControllerContext(userEmail);
+
+            var user = new User { ID = userId, Email = userEmail, Firstname = "Test", Lastname = "Seller", Password = "testpass" };
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ReturnsAsync(Result.Success(user));
+            _mockItemService.Setup(x => x.GetItemByVariantIdAsync(variantId, userId))
+                           .ReturnsAsync(Result.Failure<GetItemResponse>("Variant not found.", StatusCodes.Status404NotFound));
+
+            var file = MakeFakeVideoFile();
+
+            // Act
+            var response = await _controller.UploadVideo(file, variantId);
+
+            // Assert
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(response);
+            Assert.Equal(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task UploadVideo_ReturnInternalServerError_AndDeletesFile_WhenDbUpdateFails()
+        {
+            // Arrange
+            var variantId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var userEmail = "seller@example.com";
+            var uploadedVideoUrl = $"/uploads/{userId}/{variantId}/{variantId}_video.mp4";
+            _controller.ControllerContext = BuildControllerContext(userEmail);
+
+            var user = new User { ID = userId, Email = userEmail, Firstname = "Test", Lastname = "Seller", Password = "testpass" };
+            _mockUserService.Setup(x => x.GetUserEntityAsync(userEmail))
+                           .ReturnsAsync(Result.Success(user));
+
+            var itemResponse = new GetItemResponse
+            {
+                Id = Guid.NewGuid(),
+                SellerID = userId,
+                Name_en = "Test Item",
+                Name_fr = "Article de test",
+                Description_en = "Desc",
+                Description_fr = "Desc",
+                CategoryNodeID = Guid.NewGuid(),
+                Variants = new List<ItemVariantDto>
+                {
+                    new ItemVariantDto { Id = variantId, Sku = "SKU-001" }
+                },
+                CreatedAt = DateTime.UtcNow,
+                Deleted = false
+            };
+            _mockItemService.Setup(x => x.GetItemByVariantIdAsync(variantId, userId))
+                           .ReturnsAsync(Result.Success(itemResponse));
+            _mockFileStorageService.Setup(x => x.UploadVideoAsync(It.IsAny<IFormFile>(), It.IsAny<string?>(), It.IsAny<string?>()))
+                                   .ReturnsAsync(Result.Success(uploadedVideoUrl));
+            _mockItemService.Setup(x => x.UpdateItemVariantVideoAsync(variantId, uploadedVideoUrl))
+                           .ReturnsAsync(Result.Failure("DB error.", StatusCodes.Status500InternalServerError));
+            _mockFileStorageService.Setup(x => x.DeleteFileAsync(It.IsAny<string>()))
+                                   .ReturnsAsync(Result.Success());
+
+            var file = MakeFakeVideoFile();
+
+            // Act
+            var response = await _controller.UploadVideo(file, variantId);
+
+            // Assert
+            var errorResult = Assert.IsType<ObjectResult>(response);
+            Assert.Equal(StatusCodes.Status500InternalServerError, errorResult.StatusCode);
+            // Verify it tried to delete the orphaned file with the correct relative path
+            var expectedRelativePath = uploadedVideoUrl["/uploads/".Length..];
+            _mockFileStorageService.Verify(x => x.DeleteFileAsync(expectedRelativePath), Times.Once);
+        }
+    }
 }

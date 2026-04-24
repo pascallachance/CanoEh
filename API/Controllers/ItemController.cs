@@ -1077,6 +1077,10 @@ namespace API.Controllers
                 var subPath = $"{companyId}/{variantId}";
                 var fileName = $"{variantId}_video";
 
+                // Capture the existing video URL before overwriting so we can clean up the old file
+                // if the new upload uses a different extension (prevents orphaned files on disk).
+                var existingVideoUrl = item.Variants?.FirstOrDefault(v => v.Id == variantId)?.VideoUrl;
+
                 var result = await _fileStorageService.UploadVideoAsync(file, fileName, subPath);
                 if (result.IsFailure)
                 {
@@ -1085,14 +1089,32 @@ namespace API.Controllers
 
                 var videoUrl = result.Value;
 
+                // Delete the previous video file if it had a different extension (prevents orphaned files)
+                if (!string.IsNullOrEmpty(existingVideoUrl) && existingVideoUrl != videoUrl)
+                {
+                    try
+                    {
+                        var existingRelativePath = existingVideoUrl.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase)
+                            ? existingVideoUrl["/uploads/".Length..]
+                            : existingVideoUrl.TrimStart('/');
+                        await _fileStorageService.DeleteFileAsync(existingRelativePath);
+                    }
+                    catch (Exception cleanupEx)
+                    {
+                        _logger.LogWarning(cleanupEx, "Could not delete previous video file {Url}; continuing.", existingVideoUrl);
+                    }
+                }
+
                 var updateResult = await _itemService.UpdateItemVariantVideoAsync(variantId, videoUrl);
                 if (updateResult.IsFailure)
                 {
                     _logger.LogError("Failed to update variant video URL in database: {Error}", updateResult.Error);
-                    // Attempt to clean up the uploaded file since we cannot reference it in the DB
+                    // Attempt to clean up the newly uploaded file since we cannot reference it in the DB
                     try
                     {
-                        var relativePath = videoUrl.TrimStart('/');
+                        var relativePath = videoUrl.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase)
+                            ? videoUrl["/uploads/".Length..]
+                            : videoUrl.TrimStart('/');
                         await _fileStorageService.DeleteFileAsync(relativePath);
                     }
                     catch (Exception cleanupEx)

@@ -336,6 +336,60 @@ function renderVariantPriceSection(
     );
 }
 
+// Extract the first frame from a video as a JPEG data-URL. Returns null on failure.
+function extractVideoFrame(videoSrc: string): Promise<string | null> {
+    return new Promise((resolve) => {
+        let settled = false;
+        const settle = (value: string | null) => {
+            if (settled) return;
+            settled = true;
+            video.src = '';
+            clearTimeout(timeoutId);
+            resolve(value);
+        };
+
+        const video = document.createElement('video');
+        video.crossOrigin = 'anonymous';
+        video.muted = true;
+        video.playsInline = true;
+        video.preload = 'metadata';
+
+        const drawFrame = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 320;
+            canvas.height = video.videoHeight || 180;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                try {
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    settle(canvas.toDataURL('image/jpeg', 0.8));
+                } catch {
+                    settle(null);
+                }
+            } else {
+                settle(null);
+            }
+        };
+
+        video.onloadedmetadata = () => {
+            const seekTime = Math.min(0.5, video.duration / 4);
+            if (seekTime === 0 || video.currentTime === seekTime) {
+                // onseeked won't fire; draw on loadeddata instead
+                video.onloadeddata = () => drawFrame();
+            } else {
+                video.currentTime = seekTime;
+            }
+        };
+        video.onseeked = () => drawFrame();
+        video.onerror = () => settle(null);
+
+        // Safety net: resolve null if nothing fires within 8 seconds
+        const timeoutId = setTimeout(() => settle(null), 8000);
+
+        video.src = videoSrc;
+    });
+}
+
 function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -365,8 +419,22 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     const [mainImageError, setMainImageError] = useState<boolean>(false);
     const [isVideoActive, setIsVideoActive] = useState<boolean>(false);
     const [variantVideoUrl, setVariantVideoUrl] = useState<string | null>(null);
+    const [videoThumbnailUrl, setVideoThumbnailUrl] = useState<string | null>(null);
 
     const getText = (en: string, fr: string) => language === 'fr' ? fr : en;
+
+    useEffect(() => {
+        setVideoThumbnailUrl(null);
+        if (!variantVideoUrl) return;
+        let cancelled = false;
+        const currentUrl = variantVideoUrl;
+        extractVideoFrame(currentUrl).then(thumbnail => {
+            if (!cancelled) {
+                setVideoThumbnailUrl(thumbnail);
+            }
+        });
+        return () => { cancelled = true; };
+    }, [variantVideoUrl]);
 
     useEffect(() => {
         const browserLang = navigator.language.toLowerCase();
@@ -1066,13 +1134,21 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                     aria-label={getText('Play product video', 'Lire la vidéo du produit')}
                                                     aria-pressed={isVideoActive}
                                                 >
-                                                    <video
-                                                        src={variantVideoUrl}
-                                                        className="product-thumbnail-img"
-                                                        muted
-                                                        playsInline
-                                                        preload="metadata"
-                                                    />
+                                                    {videoThumbnailUrl ? (
+                                                        <img
+                                                            src={videoThumbnailUrl}
+                                                            alt={getText('Video thumbnail', 'Miniature vidéo')}
+                                                            className="product-thumbnail-img"
+                                                        />
+                                                    ) : (
+                                                        <video
+                                                            src={variantVideoUrl}
+                                                            className="product-thumbnail-img"
+                                                            muted
+                                                            playsInline
+                                                            preload="metadata"
+                                                        />
+                                                    )}
                                                     <span className="product-video-play-icon" aria-hidden="true">▶</span>
                                                 </button>
                                             </li>

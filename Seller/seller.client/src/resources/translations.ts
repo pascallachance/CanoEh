@@ -957,6 +957,10 @@ export const translations: TranslationResources = {
   'variant.removeVideo': {
     en: 'Remove video',
     fr: 'Supprimer la vidéo'
+  },
+  'variant.videoThumbnailAlt': {
+    en: 'Video preview',
+    fr: 'Aperçu vidéo'
   }
 };
 

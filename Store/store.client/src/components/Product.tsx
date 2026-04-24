@@ -349,10 +349,10 @@ function extractVideoFrame(videoSrc: string): Promise<string | null> {
         };
 
         const video = document.createElement('video');
-        // Only set crossOrigin for non-blob URLs because setting it on blob: sources can prevent loading in some browsers
-        if (!videoSrc.startsWith('blob:')) {
-            video.crossOrigin = 'anonymous';
-        }
+        // Do not set crossOrigin: same-origin videos would fail CORS preflight
+        // because the server does not send CORS headers for its own resources.
+        // The try/catch in drawFrame handles any SecurityError from a tainted canvas
+        // if the video happens to be cross-origin.
         video.muted = true;
         video.playsInline = true;
         video.preload = 'metadata';
@@ -375,7 +375,9 @@ function extractVideoFrame(videoSrc: string): Promise<string | null> {
         };
 
         video.onloadedmetadata = () => {
-            const seekTime = Math.min(0.5, video.duration / 4);
+            // Guard against NaN/Infinity duration (some formats don't expose it from metadata alone)
+            const duration = video.duration;
+            const seekTime = (duration && isFinite(duration)) ? Math.min(0.5, duration / 4) : 0;
             if (seekTime === 0 || video.currentTime === seekTime) {
                 // onseeked won't fire; draw on loadeddata instead
                 video.onloadeddata = () => drawFrame();

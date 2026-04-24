@@ -175,6 +175,99 @@ namespace Infrastructure.Services
             return $"/{_uploadFolder}/{filePath}";
         }
 
+        public async Task<Result<string>> UploadVideoAsync(IFormFile file, string? fileName = null, string? subPath = null)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return Result.Failure<string>("File is empty or not provided.", StatusCodes.Status400BadRequest);
+                }
+
+                // Validate video file type
+                var allowedExtensions = new[] { ".mp4", ".mov", ".webm", ".avi", ".mkv" };
+                var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    return Result.Failure<string>($"Invalid file type. Allowed types: {string.Join(", ", allowedExtensions)}", StatusCodes.Status400BadRequest);
+                }
+
+                // Verify MIME type matches a video type
+                var allowedMimeTypes = new[] { "video/mp4", "video/quicktime", "video/webm", "video/avi", "video/x-msvideo", "video/x-matroska" };
+                if (!string.IsNullOrEmpty(file.ContentType) && !allowedMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
+                {
+                    return Result.Failure<string>("Invalid file content type.", StatusCodes.Status400BadRequest);
+                }
+
+                // Validate file size (max 100MB for videos)
+                const long maxFileSize = 100L * 1024 * 1024;
+                if (file.Length > maxFileSize)
+                {
+                    return Result.Failure<string>("File size exceeds the maximum allowed size of 100MB.", StatusCodes.Status400BadRequest);
+                }
+
+                // Generate unique file name if not provided
+                if (string.IsNullOrWhiteSpace(fileName))
+                {
+                    fileName = $"{Guid.NewGuid()}{fileExtension}";
+                }
+                else if (!fileName.EndsWith(fileExtension))
+                {
+                    fileName = $"{fileName}{fileExtension}";
+                }
+
+                // Validate fileName to prevent path traversal
+                if (fileName != Path.GetFileName(fileName) ||
+                    fileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+                {
+                    return Result.Failure<string>("Invalid file name.", StatusCodes.Status400BadRequest);
+                }
+
+                // Validate and sanitize subPath if provided
+                if (!string.IsNullOrWhiteSpace(subPath))
+                {
+                    subPath = subPath.Replace('\\', '/');
+                    if (subPath.Contains("..") || subPath.StartsWith('/') || subPath.StartsWith('\\') ||
+                        subPath.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
+                    {
+                        return Result.Failure<string>("Invalid sub-path.", StatusCodes.Status400BadRequest);
+                    }
+                }
+
+                // Build the upload directory
+                var uploadsRoot = Path.Combine(_contentRootPath, "wwwroot", _uploadFolder);
+                var uploadDirectory = string.IsNullOrWhiteSpace(subPath)
+                    ? uploadsRoot
+                    : Path.Combine(uploadsRoot, subPath.Replace('/', Path.DirectorySeparatorChar));
+
+                // Ensure upload directory exists
+                Directory.CreateDirectory(uploadDirectory);
+
+                var filePath = Path.Combine(uploadDirectory, fileName);
+
+                // Save the file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Build the relative path for URL
+                var relativePath = string.IsNullOrWhiteSpace(subPath)
+                    ? fileName
+                    : $"{subPath}/{fileName}";
+
+                var fileUrl = GetFileUrl(relativePath);
+                _logger.LogInformation("Video uploaded successfully: {FileUrl}", fileUrl);
+                return Result.Success(fileUrl);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading video: {Message}", ex.Message);
+                return Result.Failure<string>($"Error uploading video: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
         public Task<Result> DeleteFileAsync(string filePath)
         {
             try

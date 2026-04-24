@@ -859,7 +859,7 @@ namespace API.Controllers
                     return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving item by variant.");
                 }
 
-                var result = await _itemService.UpdateVariantImageUrlsAsync(request.VariantId, request.ThumbnailUrl, request.ImageUrls);
+                var result = await _itemService.UpdateVariantImageUrlsAsync(request.VariantId, request.ThumbnailUrl, request.ImageUrls, request.VideoUrl);
                 if (result.IsFailure)
                 {
                     _logger.LogError("UpdateVariantImageUrlsAsync failed for variantId: {VariantId}, Error: {Error}", request.VariantId, result.Error);
@@ -1026,5 +1026,115 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
         }
+
+        /// <summary>
+        /// Uploads a product video for a variant.
+        /// </summary>
+        /// <param name="file">The video file to upload.</param>
+        /// <param name="variantId">The variant ID to associate the video with.</param>
+        /// <returns>Returns the video URL or an error response.</returns>
+        [HttpPost("UploadVideo")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UploadVideo(IFormFile file, [FromQuery] Guid variantId)
+        {
+            try
+            {
+                if (variantId == Guid.Empty)
+                {
+                    return BadRequest("variantId is required.");
+                }
+
+                var authenticatedEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(authenticatedEmail))
+                {
+                    return Unauthorized("User not authenticated.");
+                }
+
+                var userResult = await _userService.GetUserEntityAsync(authenticatedEmail);
+                if (userResult.IsFailure || userResult.Value == null)
+                {
+                    return Unauthorized("Invalid user.");
+                }
+
+                var userId = userResult.Value.ID;
+
+                var itemResult = await _itemService.GetItemByVariantIdAsync(variantId, userId);
+                if (itemResult.IsFailure)
+                {
+                    if (itemResult.ErrorCode == StatusCodes.Status404NotFound)
+                        return NotFound("Variant not found or you do not have permission to upload a video for this variant.");
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving item by variant.");
+                }
+
+                var item = itemResult.Value;
+                var companyId = item.SellerID;
+                var subPath = $"{companyId}/{variantId}";
+                var fileName = $"{variantId}_video";
+
+                // Capture the existing video URL before overwriting so we can clean up the old file
+                // if the new upload uses a different extension (prevents orphaned files on disk).
+                var existingVideoUrl = item.Variants?.FirstOrDefault(v => v.Id == variantId)?.VideoUrl;
+
+                var result = await _fileStorageService.UploadVideoAsync(file, fileName, subPath);
+                if (result.IsFailure)
+                {
+                    return StatusCode(result.ErrorCode ?? 500, result.Error);
+                }
+
+                var videoUrl = result.Value;
+
+                // Delete the previous video file if it had a different extension (prevents orphaned files)
+                if (!string.IsNullOrEmpty(existingVideoUrl) && existingVideoUrl != videoUrl)
+                {
+                    try
+                    {
+                        await _fileStorageService.DeleteFileAsync(GetUploadsRelativePath(existingVideoUrl));
+                    }
+                    catch (Exception cleanupEx)
+                    {
+                        _logger.LogWarning(cleanupEx, "Could not delete previous video file {Url}; continuing.", existingVideoUrl);
+                    }
+                }
+
+                var updateResult = await _itemService.UpdateItemVariantVideoAsync(variantId, videoUrl);
+                if (updateResult.IsFailure)
+                {
+                    _logger.LogError("Failed to update variant video URL in database: {Error}", updateResult.Error);
+                    // Attempt to clean up the newly uploaded file since we cannot reference it in the DB
+                    try
+                    {
+                        await _fileStorageService.DeleteFileAsync(GetUploadsRelativePath(videoUrl));
+                    }
+                    catch (Exception cleanupEx)
+                    {
+                        _logger.LogError(cleanupEx, "Failed to delete orphaned video file after DB update failure: {Url}", videoUrl);
+                    }
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Video uploaded but database update failed. Please try again.");
+                }
+
+                return Ok(new { videoUrl });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "UploadVideo failed: {Message}", ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
+        }
+
+        /// <summary>
+        /// Converts a public video/image URL (e.g. "/uploads/companyId/variantId/file.mp4") to
+        /// a path relative to the uploads root (e.g. "companyId/variantId/file.mp4") so that
+        /// <see cref="IFileStorageService.DeleteFileAsync"/> receives the correct argument.
+        /// </summary>
+        private static string GetUploadsRelativePath(string url) =>
+            url.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase)
+                ? url["/uploads/".Length..]
+                : url.TrimStart('/');
     }
 }

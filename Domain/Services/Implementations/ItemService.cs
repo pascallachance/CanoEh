@@ -1066,7 +1066,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             }
         }
 
-        public async Task<Result> UpdateVariantImageUrlsAsync(Guid variantId, string? thumbnailUrl, List<string> imageUrls)
+        public async Task<Result> UpdateVariantImageUrlsAsync(Guid variantId, string? thumbnailUrl, List<string> imageUrls, string? videoUrl = null)
         {
             try
             {
@@ -1086,6 +1086,12 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 }
 
                 variant.ThumbnailUrl = string.IsNullOrWhiteSpace(thumbnailUrl) ? null : thumbnailUrl;
+
+                // Update VideoUrl if provided (null means no change; empty string means clear it)
+                if (videoUrl != null)
+                {
+                    variant.VideoUrl = string.IsNullOrWhiteSpace(videoUrl) ? null : videoUrl;
+                }
 
                 // Build comma-separated string, removing trailing empty slots.
                 // Null entries are treated as empty strings (via null-coalescing) to maintain position alignment.
@@ -1108,6 +1114,44 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
             catch (Exception ex)
             {
                 return Result.Failure($"An error occurred while updating the variant image URLs: {ex.Message}", StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        private const int MaxVideoUrlLength = 500;
+
+        public async Task<Result> UpdateItemVariantVideoAsync(Guid variantId, string videoUrl)
+        {
+            try
+            {
+                if (variantId == Guid.Empty)
+                {
+                    return Result.Failure("Invalid variant ID.", StatusCodes.Status400BadRequest);
+                }
+
+                if (string.IsNullOrWhiteSpace(videoUrl))
+                {
+                    return Result.Failure("Video URL is required.", StatusCodes.Status400BadRequest);
+                }
+
+                if (videoUrl.Length > MaxVideoUrlLength)
+                {
+                    return Result.Failure($"Video URL exceeds the maximum allowed length of {MaxVideoUrlLength} characters.", StatusCodes.Status400BadRequest);
+                }
+
+                var variant = await _itemVariantRepository.GetByIdAsync(variantId);
+                if (variant == null)
+                {
+                    return Result.Failure("Variant not found.", StatusCodes.Status404NotFound);
+                }
+
+                variant.VideoUrl = videoUrl;
+                await _itemVariantRepository.UpdateAsync(variant);
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"An error occurred while updating the variant video URL: {ex.Message}", StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -1182,6 +1226,7 @@ VALUES (@ItemVariantID, @AttributeName_en, @AttributeName_fr, @Attributes_en, @A
                 ProductIdentifierValue = variant.ProductIdentifierValue,
                 ImageUrls = variant.ImageUrls,
                 ThumbnailUrl = variant.ThumbnailUrl,
+                VideoUrl = variant.VideoUrl,
                 ItemVariantName_en = variant.ItemVariantName_en,
                 ItemVariantName_fr = variant.ItemVariantName_fr,
                 ItemVariantAttributes = variant.ItemVariantAttributes?.Select(MapToItemVariantAttributeDto).ToList() ?? [],

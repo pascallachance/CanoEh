@@ -903,7 +903,8 @@
     flex: 1;
 }
 
-.media-sections-row .thumbnail-media-section {
+.media-sections-row .thumbnail-media-section,
+.media-sections-row .video-media-section {
     flex: 0 0 auto;
 }
 

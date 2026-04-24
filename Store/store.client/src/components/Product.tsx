@@ -349,9 +349,17 @@ function extractVideoFrame(videoSrc: string): Promise<string | null> {
         };
 
         const video = document.createElement('video');
-        // Only set crossOrigin for non-blob URLs because setting it on blob: sources can prevent loading in some browsers
-        if (!videoSrc.startsWith('blob:')) {
-            video.crossOrigin = 'anonymous';
+        // Enable CORS mode only for cross-origin videos so canvas frame extraction can
+        // succeed when the remote server sends appropriate CORS headers. Skip blob/data
+        // URLs, and leave same-origin URLs unchanged.
+        try {
+            const resolvedVideoUrl = new URL(videoSrc, window.location.href);
+            const isSpecialScheme = resolvedVideoUrl.protocol === 'blob:' || resolvedVideoUrl.protocol === 'data:';
+            if (!isSpecialScheme && resolvedVideoUrl.origin !== window.location.origin) {
+                video.crossOrigin = 'anonymous';
+            }
+        } catch {
+            // Ignore URL parsing issues and preserve existing fallback behavior.
         }
         video.muted = true;
         video.playsInline = true;
@@ -375,7 +383,9 @@ function extractVideoFrame(videoSrc: string): Promise<string | null> {
         };
 
         video.onloadedmetadata = () => {
-            const seekTime = Math.min(0.5, video.duration / 4);
+            // Guard against non-finite or non-positive duration (some formats don't expose it from metadata alone)
+            const duration = video.duration;
+            const seekTime = (Number.isFinite(duration) && duration > 0) ? Math.min(0.5, duration / 4) : 0;
             if (seekTime === 0 || video.currentTime === seekTime) {
                 // onseeked won't fire; draw on loadeddata instead
                 video.onloadeddata = () => drawFrame();

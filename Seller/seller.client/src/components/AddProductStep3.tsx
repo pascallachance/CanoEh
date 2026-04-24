@@ -121,10 +121,18 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             };
 
             const video = document.createElement('video');
-            // Only set crossOrigin for non-blob URLs; setting it on blob/object URLs can
-            // break loading in some browsers (for example Safari), so it is skipped here.
-            if (!videoSrc.startsWith('blob:')) {
-                video.crossOrigin = 'anonymous';
+            // For cross-origin videos, use anonymous CORS so canvas extraction can succeed
+            // when the remote resource sends the appropriate CORS headers. Skip blob:/data:
+            // URLs and same-origin URLs, which do not need crossOrigin.
+            try {
+                const resolvedUrl = new URL(videoSrc, window.location.href);
+                const isSpecialScheme = resolvedUrl.protocol === 'blob:' || resolvedUrl.protocol === 'data:';
+                const isCrossOrigin = resolvedUrl.origin !== window.location.origin;
+                if (!isSpecialScheme && isCrossOrigin) {
+                    video.crossOrigin = 'anonymous';
+                }
+            } catch {
+                // Leave crossOrigin unset if the URL cannot be parsed.
             }
             video.muted = true;
             video.playsInline = true;
@@ -148,7 +156,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             };
 
             video.onloadedmetadata = () => {
-                const seekTime = Math.min(0.5, video.duration / 4);
+                // Guard against NaN/Infinity duration (some formats don't expose it from metadata alone)
+                const duration = video.duration;
+                const seekTime = (Number.isFinite(duration) && duration > 0) ? Math.min(0.5, duration / 4) : 0;
                 if (seekTime === 0 || video.currentTime === seekTime) {
                     video.onloadeddata = () => drawFrame();
                 } else {
@@ -1292,7 +1302,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 />
                                             </div>
                                         </div>
-                                        {/* Thumbnail + Product Images side by side */}
+                                        {/* Thumbnail + Product Images + Video side by side */}
                                         <div className="media-sections-row">
                                         {/* Thumbnail Section */}
                                         <div className="variant-field variant-field-media thumbnail-media-section">
@@ -1416,7 +1426,6 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 </div>
                                             </div>
                                         </div>
-                                        </div>{/* end media-sections-row */}
 
                                         {/* Video Section */}
                                         <div className="variant-field variant-field-media video-media-section">
@@ -1468,6 +1477,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                 </div>
                                             </div>
                                         </div>
+                                        </div>{/* end media-sections-row */}
 
                                     </div>
                                 </div>

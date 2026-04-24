@@ -121,7 +121,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             };
 
             const video = document.createElement('video');
-            // Only set crossOrigin for non-blob URLs to avoid CORS issues with local files
+            // Only set crossOrigin for non-blob URLs; setting it on blob/object URLs can
+            // break loading in some browsers (for example Safari), so it is skipped here.
             if (!videoSrc.startsWith('blob:')) {
                 video.crossOrigin = 'anonymous';
             }
@@ -1450,7 +1451,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                     muted
                                                                     playsInline
                                                                     preload="metadata"
-                                                                    onLoadedMetadata={(e) => { (e.target as HTMLVideoElement).currentTime = 0.1; }}
+                                                                    onLoadedMetadata={(e) => { e.currentTarget.currentTime = 0.1; }}
                                                                 />
                                                             )}
                                                             <button
@@ -1819,7 +1820,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                         muted
                                                                         playsInline
                                                                         preload="metadata"
-                                                                        onLoadedMetadata={(e) => { (e.target as HTMLVideoElement).currentTime = 0.1; }}
+                                                                        onLoadedMetadata={(e) => { e.currentTarget.currentTime = 0.1; }}
                                                                     />
                                                                 )}
                                                                 <span className="product-video-play-icon" aria-hidden="true">▶</span>

@@ -339,16 +339,22 @@ function renderVariantPriceSection(
 // Extract the first frame from a video as a JPEG data-URL. Returns null on failure.
 function extractVideoFrame(videoSrc: string): Promise<string | null> {
     return new Promise((resolve) => {
+        let settled = false;
+        const settle = (value: string | null) => {
+            if (settled) return;
+            settled = true;
+            video.src = '';
+            clearTimeout(timeoutId);
+            resolve(value);
+        };
+
         const video = document.createElement('video');
         video.crossOrigin = 'anonymous';
         video.muted = true;
         video.playsInline = true;
         video.preload = 'metadata';
-        const cleanup = () => { video.src = ''; };
-        video.onloadedmetadata = () => {
-            video.currentTime = Math.min(0.5, video.duration / 4);
-        };
-        video.onseeked = () => {
+
+        const drawFrame = () => {
             const canvas = document.createElement('canvas');
             canvas.width = video.videoWidth || 320;
             canvas.height = video.videoHeight || 180;
@@ -356,16 +362,30 @@ function extractVideoFrame(videoSrc: string): Promise<string | null> {
             if (ctx) {
                 try {
                     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                    settle(canvas.toDataURL('image/jpeg', 0.8));
                 } catch {
-                    resolve(null);
+                    settle(null);
                 }
             } else {
-                resolve(null);
+                settle(null);
             }
-            cleanup();
         };
-        video.onerror = () => { cleanup(); resolve(null); };
+
+        video.onloadedmetadata = () => {
+            const seekTime = Math.min(0.5, video.duration / 4);
+            if (seekTime === 0 || video.currentTime === seekTime) {
+                // onseeked won't fire; draw on loadeddata instead
+                video.onloadeddata = () => drawFrame();
+            } else {
+                video.currentTime = seekTime;
+            }
+        };
+        video.onseeked = () => drawFrame();
+        video.onerror = () => settle(null);
+
+        // Safety net: resolve null if nothing fires within 8 seconds
+        const timeoutId = setTimeout(() => settle(null), 8000);
+
         video.src = videoSrc;
     });
 }
@@ -404,13 +424,16 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
     const getText = (en: string, fr: string) => language === 'fr' ? fr : en;
 
     useEffect(() => {
-        if (!variantVideoUrl) {
-            setVideoThumbnailUrl(null);
-            return;
-        }
-        extractVideoFrame(variantVideoUrl).then(thumbnail => {
-            setVideoThumbnailUrl(thumbnail);
+        setVideoThumbnailUrl(null);
+        if (!variantVideoUrl) return;
+        let cancelled = false;
+        const currentUrl = variantVideoUrl;
+        extractVideoFrame(currentUrl).then(thumbnail => {
+            if (!cancelled) {
+                setVideoThumbnailUrl(thumbnail);
+            }
         });
+        return () => { cancelled = true; };
     }, [variantVideoUrl]);
 
     useEffect(() => {

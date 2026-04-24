@@ -111,16 +111,22 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
     // Extract first frame from a video as a JPEG data-URL. Returns null on failure.
     const extractVideoFrame = useCallback((videoSrc: string): Promise<string | null> => {
         return new Promise((resolve) => {
+            let settled = false;
+            const settle = (value: string | null) => {
+                if (settled) return;
+                settled = true;
+                video.src = '';
+                clearTimeout(timeoutId);
+                resolve(value);
+            };
+
             const video = document.createElement('video');
             video.crossOrigin = 'anonymous';
             video.muted = true;
             video.playsInline = true;
             video.preload = 'metadata';
-            const cleanup = () => { video.src = ''; };
-            video.onloadedmetadata = () => {
-                video.currentTime = Math.min(0.5, video.duration / 4);
-            };
-            video.onseeked = () => {
+
+            const drawFrame = () => {
                 const canvas = document.createElement('canvas');
                 canvas.width = video.videoWidth || 320;
                 canvas.height = video.videoHeight || 180;
@@ -128,37 +134,82 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 if (ctx) {
                     try {
                         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.8));
+                        settle(canvas.toDataURL('image/jpeg', 0.8));
                     } catch {
-                        resolve(null);
+                        settle(null);
                     }
                 } else {
-                    resolve(null);
+                    settle(null);
                 }
-                cleanup();
             };
-            video.onerror = () => { cleanup(); resolve(null); };
+
+            video.onloadedmetadata = () => {
+                const seekTime = Math.min(0.5, video.duration / 4);
+                if (seekTime === 0 || video.currentTime === seekTime) {
+                    video.onloadeddata = () => drawFrame();
+                } else {
+                    video.currentTime = seekTime;
+                }
+            };
+            video.onseeked = () => drawFrame();
+            video.onerror = () => settle(null);
+
+            // Safety net: resolve null if nothing fires within 8 seconds
+            const timeoutId = setTimeout(() => settle(null), 8000);
+
             video.src = videoSrc;
         });
     }, []);
 
     // Extract video frames for variants whenever their videoUrl changes
     useEffect(() => {
+        const currentIds = new Set(variants.map(v => v.id));
+
+        // Prune entries for variants that no longer exist
+        Object.keys(processedVideoUrls.current).forEach(id => {
+            if (!currentIds.has(id)) {
+                delete processedVideoUrls.current[id];
+            }
+        });
+        setVideoThumbnails(prev => {
+            const pruned = Object.keys(prev).filter(id => !currentIds.has(id));
+            if (pruned.length === 0) return prev;
+            const next = { ...prev };
+            pruned.forEach(id => { delete next[id]; });
+            return next;
+        });
+
         variants.forEach(variant => {
             if (variant.videoUrl && processedVideoUrls.current[variant.id] !== variant.videoUrl) {
+                // Clear the stale thumbnail immediately so the UI falls back to <video>
+                setVideoThumbnails(prev => {
+                    if (prev[variant.id] === undefined) return prev;
+                    const { [variant.id]: _, ...rest } = prev;
+                    return rest;
+                });
                 processedVideoUrls.current[variant.id] = variant.videoUrl;
-                extractVideoFrame(variant.videoUrl).then(thumbnail => {
-                    if (thumbnail) {
-                        setVideoThumbnails(prev => ({ ...prev, [variant.id]: thumbnail }));
+                const capturedUrl = variant.videoUrl;
+                extractVideoFrame(capturedUrl).then(thumbnail => {
+                    // Only set if the variant still has the same URL (avoid stale updates)
+                    if (processedVideoUrls.current[variant.id] === capturedUrl) {
+                        if (thumbnail) {
+                            setVideoThumbnails(prev => ({ ...prev, [variant.id]: thumbnail }));
+                        } else {
+                            setVideoThumbnails(prev => {
+                                if (!(variant.id in prev)) return prev;
+                                const { [variant.id]: _, ...rest } = prev;
+                                return rest;
+                            });
+                        }
                     }
                 });
             }
             if (!variant.videoUrl && processedVideoUrls.current[variant.id]) {
                 delete processedVideoUrls.current[variant.id];
                 setVideoThumbnails(prev => {
-                    const next = { ...prev };
-                    delete next[variant.id];
-                    return next;
+                    if (!(variant.id in prev)) return prev;
+                    const { [variant.id]: _, ...rest } = prev;
+                    return rest;
                 });
             }
         });
@@ -1754,7 +1805,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                 {previewVariant.id && videoThumbnails[previewVariant.id] ? (
                                                                     <img
                                                                         src={videoThumbnails[previewVariant.id]}
-                                                                        alt={getPreviewText('Video thumbnail', 'Miniature vidéo')}
+                                                                        alt={t('variant.videoThumbnailAlt')}
                                                                         className="product-thumbnail-img"
                                                                     />
                                                                 ) : (

@@ -121,10 +121,19 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             };
 
             const video = document.createElement('video');
-            // Do not set crossOrigin: same-origin videos would fail CORS preflight
-            // because the server does not send CORS headers for its own resources.
-            // The try/catch in drawFrame handles any SecurityError from a tainted canvas
-            // if the video happens to be cross-origin.
+            // For cross-origin videos, use anonymous CORS so canvas extraction can succeed
+            // when the remote resource sends the appropriate CORS headers. Skip blob:/data:
+            // URLs and same-origin URLs, which do not need crossOrigin.
+            try {
+                const resolvedUrl = new URL(videoSrc, window.location.href);
+                const isSpecialScheme = resolvedUrl.protocol === 'blob:' || resolvedUrl.protocol === 'data:';
+                const isCrossOrigin = resolvedUrl.origin !== window.location.origin;
+                if (!isSpecialScheme && isCrossOrigin) {
+                    video.crossOrigin = 'anonymous';
+                }
+            } catch {
+                // Leave crossOrigin unset if the URL cannot be parsed.
+            }
             video.muted = true;
             video.playsInline = true;
             video.preload = 'metadata';
@@ -149,7 +158,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             video.onloadedmetadata = () => {
                 // Guard against NaN/Infinity duration (some formats don't expose it from metadata alone)
                 const duration = video.duration;
-                const seekTime = (duration && isFinite(duration)) ? Math.min(0.5, duration / 4) : 0;
+                const seekTime = (Number.isFinite(duration) && duration > 0) ? Math.min(0.5, duration / 4) : 0;
                 if (seekTime === 0 || video.currentTime === seekTime) {
                     video.onloadeddata = () => drawFrame();
                 } else {

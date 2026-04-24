@@ -25,6 +25,7 @@ namespace Domain.Services.Interfaces
         Task<Result<IEnumerable<GetItemResponse>>> GetSuggestedProductsAsync(int count = 4);
         Task<Result<IEnumerable<GetItemResponse>>> GetProductsWithOffersAsync(int count = 10);
         Task<Result<IEnumerable<GetItemResponse>>> GetSuggestedCategoriesProductsAsync(int count = 4);
+        Task<Result<IEnumerable<GetItemResponse>>> GetBestRatedProductsAsync(int count = 100);
         Task<Result<IEnumerable<GetItemResponse>>> GetItemsByCategoryNodeAsync(Guid nodeId);
         Task<Result> UpdateItemVariantOfferAsync(UpdateItemVariantOfferRequest request);
         Task<Result> BatchUpdateItemVariantOffersAsync(BatchUpdateItemVariantOffersRequest request, Guid userId);

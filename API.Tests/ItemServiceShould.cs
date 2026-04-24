@@ -1927,6 +1927,124 @@ namespace API.Tests
             Assert.Equal("Électronique", item.CategoryName_fr);
         }
 
+        // ===== GetBestRatedProductsAsync Service Tests =====
+
+        [Fact]
+        public async Task GetBestRatedProductsAsync_ReturnSuccess_WhenItemsExist()
+        {
+            // Arrange
+            var items = new List<Item>
+            {
+                new Item
+                {
+                    Id = Guid.NewGuid(),
+                    SellerID = Guid.NewGuid(),
+                    Name_en = "Best Rated Item 1",
+                    Name_fr = "Article le mieux noté 1",
+                    Description_en = "Test Description EN",
+                    Description_fr = "Test Description FR",
+                    CategoryNodeID = Guid.NewGuid(),
+                    Variants = new List<ItemVariant>
+                    {
+                        new ItemVariant
+                        {
+                            Id = Guid.NewGuid(),
+                            ItemId = Guid.NewGuid(),
+                            Price = 29.99m,
+                            StockQuantity = 10,
+                            Sku = "TEST-001",
+                            ImageUrls = "https://example.com/image1.jpg",
+                            ThumbnailUrl = "https://example.com/thumb1.jpg",
+                            ItemVariantAttributes = new List<ItemVariantAttribute>(),
+                            Deleted = false
+                        }
+                    },
+                    ItemVariantFeatures = new List<ItemVariantFeatures>(),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = null,
+                    Deleted = false
+                },
+                new Item
+                {
+                    Id = Guid.NewGuid(),
+                    SellerID = Guid.NewGuid(),
+                    Name_en = "Best Rated Item 2",
+                    Name_fr = "Article le mieux noté 2",
+                    Description_en = "Test Description EN",
+                    Description_fr = "Test Description FR",
+                    CategoryNodeID = Guid.NewGuid(),
+                    Variants = new List<ItemVariant>(),
+                    ItemVariantFeatures = new List<ItemVariantFeatures>(),
+                    CreatedAt = DateTime.UtcNow.AddMinutes(-1),
+                    UpdatedAt = null,
+                    Deleted = false
+                }
+            };
+
+            _mockItemRepository.Setup(x => x.GetBestRatedProductsAsync(It.IsAny<int>()))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _itemService.GetBestRatedProductsAsync(4);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            var resultList = result.Value.ToList();
+            Assert.Equal(2, resultList.Count);
+            Assert.Equal("Best Rated Item 1", resultList[0].Name_en);
+            Assert.Equal("Best Rated Item 2", resultList[1].Name_en);
+        }
+
+        [Fact]
+        public async Task GetBestRatedProductsAsync_ReturnSuccess_WhenNoItemsExist()
+        {
+            // Arrange
+            var items = new List<Item>();
+            _mockItemRepository.Setup(x => x.GetBestRatedProductsAsync(It.IsAny<int>()))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _itemService.GetBestRatedProductsAsync(100);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Empty(result.Value);
+        }
+
+        [Fact]
+        public async Task GetBestRatedProductsAsync_PassCorrectCountToRepository()
+        {
+            // Arrange
+            var items = new List<Item>();
+            _mockItemRepository.Setup(x => x.GetBestRatedProductsAsync(50))
+                              .ReturnsAsync(items);
+
+            // Act
+            var result = await _itemService.GetBestRatedProductsAsync(50);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            _mockItemRepository.Verify(x => x.GetBestRatedProductsAsync(50), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetBestRatedProductsAsync_ReturnFailure_WhenExceptionOccurs()
+        {
+            // Arrange
+            _mockItemRepository.Setup(x => x.GetBestRatedProductsAsync(It.IsAny<int>()))
+                              .ThrowsAsync(new Exception("Database connection failed"));
+
+            // Act
+            var result = await _itemService.GetBestRatedProductsAsync(100);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.ErrorCode);
+            Assert.Contains("An error occurred while retrieving best rated products", result.Error);
+        }
+
         // ===== UpdateVariantImageUrlsAsync Tests =====
 
         [Fact]

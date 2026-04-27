@@ -1022,6 +1022,123 @@ namespace API.Tests
             Assert.Contains("An error occurred while updating the variant image", result.Error);
         }
 
+        // ===== UpdateItemVariantVideoAsync Tests =====
+
+        [Fact]
+        public async Task UpdateItemVariantVideoAsync_ReturnSuccess_WhenVideoUrlSavedSuccessfully()
+        {
+            // Arrange
+            var variantId = Guid.NewGuid();
+            var videoUrl = "/uploads/company123/variant456/variant456_video.mp4";
+            var variant = new ItemVariant
+            {
+                Id = variantId,
+                ItemId = Guid.NewGuid(),
+                Price = 19.99m,
+                StockQuantity = 100,
+                Sku = "TEST-SKU-001",
+                VideoUrl = null
+            };
+
+            _mockItemVariantRepository.Setup(x => x.GetByIdAsync(variantId))
+                                     .ReturnsAsync(variant);
+            _mockItemVariantRepository.Setup(x => x.UpdateAsync(It.IsAny<ItemVariant>()))
+                                     .ReturnsAsync(variant);
+
+            // Act
+            var result = await _itemService.UpdateItemVariantVideoAsync(variantId, videoUrl);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.Equal(videoUrl, variant.VideoUrl);
+            _mockItemVariantRepository.Verify(x => x.UpdateAsync(It.Is<ItemVariant>(v => v.VideoUrl == videoUrl)), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateItemVariantVideoAsync_ReturnFailure_WhenVariantIdIsEmpty()
+        {
+            // Act
+            var result = await _itemService.UpdateItemVariantVideoAsync(Guid.Empty, "/uploads/c/v/v_video.mp4");
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+            _mockItemVariantRepository.Verify(x => x.UpdateAsync(It.IsAny<ItemVariant>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateItemVariantVideoAsync_ReturnFailure_WhenVideoUrlIsEmpty()
+        {
+            // Act
+            var result = await _itemService.UpdateItemVariantVideoAsync(Guid.NewGuid(), "");
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+            _mockItemVariantRepository.Verify(x => x.UpdateAsync(It.IsAny<ItemVariant>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateItemVariantVideoAsync_ReturnFailure_WhenVideoUrlExceedsMaxLength()
+        {
+            // Arrange
+            var longUrl = "/" + new string('a', 500); // 501 characters total
+
+            // Act
+            var result = await _itemService.UpdateItemVariantVideoAsync(Guid.NewGuid(), longUrl);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.ErrorCode);
+            Assert.Contains("exceeds the maximum allowed length", result.Error);
+            _mockItemVariantRepository.Verify(x => x.UpdateAsync(It.IsAny<ItemVariant>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateItemVariantVideoAsync_ReturnFailure_WhenVariantNotFound()
+        {
+            // Arrange
+            var variantId = Guid.NewGuid();
+            _mockItemVariantRepository.Setup(x => x.GetByIdAsync(variantId))
+                                     .ThrowsAsync(new InvalidOperationException($"ItemVariant with id {variantId} not found"));
+
+            // Act
+            var result = await _itemService.UpdateItemVariantVideoAsync(variantId, "/uploads/c/v/v_video.mp4");
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.ErrorCode);
+            _mockItemVariantRepository.Verify(x => x.UpdateAsync(It.IsAny<ItemVariant>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateItemVariantVideoAsync_ReturnFailure_WhenRepositoryThrowsOnUpdate()
+        {
+            // Arrange
+            var variantId = Guid.NewGuid();
+            var variant = new ItemVariant
+            {
+                Id = variantId,
+                ItemId = Guid.NewGuid(),
+                Price = 19.99m,
+                StockQuantity = 100,
+                Sku = "TEST-SKU-001"
+            };
+
+            _mockItemVariantRepository.Setup(x => x.GetByIdAsync(variantId))
+                                     .ReturnsAsync(variant);
+            _mockItemVariantRepository.Setup(x => x.UpdateAsync(It.IsAny<ItemVariant>()))
+                                     .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _itemService.UpdateItemVariantVideoAsync(variantId, "/uploads/c/v/v_video.mp4");
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.ErrorCode);
+            Assert.Contains("An error occurred while updating the variant video URL", result.Error);
+        }
+
         [Fact]
         public async Task UnDeleteItemAsync_ReturnSuccess_WhenItemIsDeleted()
         {
@@ -2433,6 +2550,96 @@ namespace API.Tests
             Assert.True(result.IsSuccess);
             // Middle empty entry must be preserved; only trailing empties are stripped
             Assert.Equal("/img1.jpg,,/img3.jpg", variant.ImageUrls);
+        }
+
+        [Fact]
+        public async Task UpdateVariantImageUrlsAsync_PreservesVideoUrl_WhenVideoUrlParameterIsNull()
+        {
+            // Arrange - variant already has a video URL in the DB
+            var variantId = Guid.NewGuid();
+            var existingVideoUrl = "/uploads/company/variant/variant_video.mp4";
+            var variant = new ItemVariant
+            {
+                Id = variantId,
+                ItemId = Guid.NewGuid(),
+                Price = 19.99m,
+                StockQuantity = 100,
+                Sku = "TEST-SKU-001",
+                ThumbnailUrl = "/uploads/c/v/v_thumb.jpg",
+                VideoUrl = existingVideoUrl
+            };
+
+            _mockItemVariantRepository.Setup(x => x.GetByIdAsync(variantId))
+                                     .ReturnsAsync(variant);
+            _mockItemVariantRepository.Setup(x => x.UpdateAsync(It.IsAny<ItemVariant>()))
+                                     .ReturnsAsync(variant);
+
+            // Act – pass null for videoUrl, which means "do not change"
+            var result = await _itemService.UpdateVariantImageUrlsAsync(variantId, null, new List<string>(), videoUrl: null);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.Equal(existingVideoUrl, variant.VideoUrl); // VideoUrl must be unchanged
+            _mockItemVariantRepository.Verify(x => x.UpdateAsync(It.Is<ItemVariant>(v => v.VideoUrl == existingVideoUrl)), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateVariantImageUrlsAsync_ClearsVideoUrl_WhenVideoUrlIsEmptyString()
+        {
+            // Arrange – variant has an existing video URL that should be cleared
+            var variantId = Guid.NewGuid();
+            var variant = new ItemVariant
+            {
+                Id = variantId,
+                ItemId = Guid.NewGuid(),
+                Price = 19.99m,
+                StockQuantity = 100,
+                Sku = "TEST-SKU-001",
+                VideoUrl = "/uploads/company/variant/variant_video.mp4"
+            };
+
+            _mockItemVariantRepository.Setup(x => x.GetByIdAsync(variantId))
+                                     .ReturnsAsync(variant);
+            _mockItemVariantRepository.Setup(x => x.UpdateAsync(It.IsAny<ItemVariant>()))
+                                     .ReturnsAsync(variant);
+
+            // Act – pass empty string for videoUrl, which means "clear it"
+            var result = await _itemService.UpdateVariantImageUrlsAsync(variantId, null, new List<string>(), videoUrl: "");
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.Null(variant.VideoUrl); // VideoUrl must be cleared
+            _mockItemVariantRepository.Verify(x => x.UpdateAsync(It.Is<ItemVariant>(v => v.VideoUrl == null)), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateVariantImageUrlsAsync_UpdatesVideoUrl_WhenVideoUrlIsProvided()
+        {
+            // Arrange
+            var variantId = Guid.NewGuid();
+            var newVideoUrl = "/uploads/company/variant/variant_video.mp4";
+            var variant = new ItemVariant
+            {
+                Id = variantId,
+                ItemId = Guid.NewGuid(),
+                Price = 19.99m,
+                StockQuantity = 100,
+                Sku = "TEST-SKU-001",
+                VideoUrl = null
+            };
+
+            _mockItemVariantRepository.Setup(x => x.GetByIdAsync(variantId))
+                                     .ReturnsAsync(variant);
+            _mockItemVariantRepository.Setup(x => x.UpdateAsync(It.IsAny<ItemVariant>()))
+                                     .ReturnsAsync(variant);
+
+            // Act – pass a video URL, which should be saved
+            var result = await _itemService.UpdateVariantImageUrlsAsync(variantId, null, new List<string>(), videoUrl: newVideoUrl);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.Equal(newVideoUrl, variant.VideoUrl);
+            _mockItemVariantRepository.Verify(x => x.UpdateAsync(It.Is<ItemVariant>(v => v.VideoUrl == newVideoUrl)), Times.Once);
         }
 
         [Fact]

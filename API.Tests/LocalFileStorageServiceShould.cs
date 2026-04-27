@@ -282,7 +282,27 @@ namespace API.Tests
 
             // Assert
             Assert.True(result.IsFailure);
-            Assert.Contains("Invalid subpath", result.Error);
+            Assert.Contains("Invalid sub-path", result.Error);
+        }
+
+        [Fact]
+        public async Task UploadFile_ReturnFailure_WhenSubPathIsRooted()
+        {
+            // Arrange – rooted paths would cause Path.Combine to ignore the uploads root
+            var content = "fake image content"u8.ToArray();
+            using var stream = new MemoryStream(content);
+            var formFile = new FormFile(stream, 0, content.Length, "file", "test.jpg")
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = "image/jpeg"
+            };
+
+            // Act – use a Unix-rooted path that passes the leading-slash check after normalization
+            var result = await _service.UploadFileAsync(formFile, "test", "/etc/evil");
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Contains("Invalid sub-path", result.Error);
         }
 
         [Fact]
@@ -390,6 +410,139 @@ namespace API.Tests
             // Verify file content
             var fileContent = await File.ReadAllBytesAsync(expectedPath);
             Assert.Equal(content, fileContent);
+        }
+
+        // =====================================================================
+        // UploadVideoAsync tests – verify videos use the same storage strategy
+        // as product images (same directory structure, same file-save pipeline).
+        // =====================================================================
+
+        [Fact]
+        public async Task UploadVideo_ReturnSuccess_WhenValidVideoProvided()
+        {
+            // Arrange
+            var content = "fake video content"u8.ToArray();
+            using var stream = new MemoryStream(content);
+            var formFile = new FormFile(stream, 0, content.Length, "file", "product.mp4")
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = "video/mp4"
+            };
+
+            // Act
+            var result = await _service.UploadVideoAsync(formFile);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Contains("/uploads/", result.Value);
+        }
+
+        [Fact]
+        public async Task UploadVideo_ReturnFailure_WhenFileIsNull()
+        {
+            // Act
+            var result = await _service.UploadVideoAsync(null!);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Contains("empty or not provided", result.Error);
+        }
+
+        [Fact]
+        public async Task UploadVideo_ReturnFailure_WhenInvalidFileType()
+        {
+            // Arrange
+            var content = "fake content"u8.ToArray();
+            using var stream = new MemoryStream(content);
+            var formFile = new FormFile(stream, 0, content.Length, "file", "image.jpg")
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = "image/jpeg"
+            };
+
+            // Act
+            var result = await _service.UploadVideoAsync(formFile);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Contains("Invalid file", result.Error);
+        }
+
+        [Fact]
+        public async Task UploadVideo_FollowHierarchicalStructure_ForItemVariant()
+        {
+            // Arrange – mirrors the path used by the UploadVideo controller endpoint
+            var content = "fake video content"u8.ToArray();
+            var companyId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            var subPath = $"{companyId}/{variantId}";
+            var fileName = $"{variantId}_video";
+            using var stream = new MemoryStream(content);
+            var formFile = new FormFile(stream, 0, content.Length, "file", "product.mp4")
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = "video/mp4"
+            };
+
+            // Act
+            var result = await _service.UploadVideoAsync(formFile, fileName, subPath);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Contains($"{companyId}/{variantId}/{variantId}_video", result.Value);
+        }
+
+        [Fact]
+        public async Task UploadVideo_VerifyFileExistsOnDisk_AfterSuccessfulUpload()
+        {
+            // Arrange
+            var content = "fake video content"u8.ToArray();
+            var companyId = Guid.NewGuid();
+            var variantId = Guid.NewGuid();
+            var subPath = $"{companyId}/{variantId}";
+            var fileName = $"{variantId}_video";
+            using var stream = new MemoryStream(content);
+            var formFile = new FormFile(stream, 0, content.Length, "file", "product.mp4")
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = "video/mp4"
+            };
+
+            // Act
+            var result = await _service.UploadVideoAsync(formFile, fileName, subPath);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+
+            // Verify the file actually exists on disk – same structure as product images
+            var expectedPath = Path.Combine(_testContentRoot, "wwwroot", "uploads", subPath, $"{fileName}.mp4");
+            Assert.True(File.Exists(expectedPath), $"Expected video file to exist at {expectedPath}");
+
+            // Verify file content
+            var fileContent = await File.ReadAllBytesAsync(expectedPath);
+            Assert.Equal(content, fileContent);
+        }
+
+        [Fact]
+        public async Task UploadVideo_ReturnFailure_WhenSubPathContainsPathTraversal()
+        {
+            // Arrange
+            var content = "fake video content"u8.ToArray();
+            using var stream = new MemoryStream(content);
+            var formFile = new FormFile(stream, 0, content.Length, "file", "product.mp4")
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = "video/mp4"
+            };
+
+            // Act
+            var result = await _service.UploadVideoAsync(formFile, "video", "../../../etc/passwd");
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Contains("Invalid sub-path", result.Error);
         }
     }
 }

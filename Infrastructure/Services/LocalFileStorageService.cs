@@ -22,9 +22,9 @@ namespace Infrastructure.Services
             {
                 _logger.LogInformation("=== UploadFileAsync START ===");
                 _logger.LogInformation("ContentRootPath: {ContentRootPath}", _contentRootPath);
-                _logger.LogInformation("Input - FileName: {FileName}, SubPath: {SubPath}, FileLength: {FileLength}", 
+                _logger.LogInformation("Input - FileName: {FileName}, SubPath: {SubPath}, FileLength: {FileLength}",
                     fileName ?? "null", subPath ?? "null", file?.Length ?? 0);
-                
+
                 if (file == null || file.Length == 0)
                 {
                     _logger.LogWarning("File is empty or not provided");
@@ -34,7 +34,7 @@ namespace Infrastructure.Services
                 // Validate file type (images only)
                 var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
                 var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-                
+
                 if (!allowedExtensions.Contains(fileExtension))
                 {
                     return Result.Failure<string>($"Invalid file type. Allowed types: {string.Join(", ", allowedExtensions)}", StatusCodes.Status400BadRequest);
@@ -48,121 +48,29 @@ namespace Infrastructure.Services
                 }
 
                 // Validate file size (max 5MB)
-                const long maxFileSize = 5 * 1024 * 1024; // 5MB
-                if (file.Length > maxFileSize)
+                const long maxImageFileSize = 5 * 1024 * 1024; // 5MB
+                if (file.Length > maxImageFileSize)
                 {
                     return Result.Failure<string>("File size exceeds the maximum allowed size of 5MB.", StatusCodes.Status400BadRequest);
                 }
 
-                // Generate unique file name if not provided
-                if (string.IsNullOrWhiteSpace(fileName))
-                {
-                    fileName = $"{Guid.NewGuid()}{fileExtension}";
-                }
-                else if (!fileName.EndsWith(fileExtension))
-                {
-                    fileName = $"{fileName}{fileExtension}";
-                }
+                var result = await SaveFileToStorageAsync(file, fileExtension, fileName, subPath);
 
-                // Validate fileName to prevent path traversal
-                if (fileName != Path.GetFileName(fileName) ||
-                    fileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+                if (result.IsSuccess)
                 {
-                    return Result.Failure<string>("Invalid file name.", StatusCodes.Status400BadRequest);
-                }
-
-                // Validate and sanitize subPath if provided
-                if (!string.IsNullOrWhiteSpace(subPath))
-                {
-                    // Normalize path separators
-                    subPath = subPath.Replace('\\', '/');
-                    
-                    // Validate subPath to prevent path traversal
-                    if (subPath.Contains("..") || 
-                        subPath.StartsWith('/') ||
-                        subPath.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
-                    {
-                        return Result.Failure<string>("Invalid subpath.", StatusCodes.Status400BadRequest);
-                    }
-                }
-
-                // Build the full directory path
-                var uploadsPath = Path.Combine(_contentRootPath, "wwwroot", _uploadFolder);
-                _logger.LogInformation("Base uploads path: {UploadsPath}", uploadsPath);
-                
-                if (!string.IsNullOrWhiteSpace(subPath))
-                {
-                    uploadsPath = Path.Combine(uploadsPath, subPath);
-                    _logger.LogInformation("Full uploads path with subPath: {UploadsPath}", uploadsPath);
-                }
-
-                // Ensure the full directory path (including subdirectories) exists
-                // Directory.CreateDirectory creates all directories and subdirectories in the path
-                // It does not throw an exception if the directory already exists
-                // We check existence first to provide better logging (distinguish "created" vs "already exists")
-                _logger.LogInformation("Checking if directory exists: {Path}", uploadsPath);
-                if (!Directory.Exists(uploadsPath))
-                {
-                    _logger.LogInformation("Directory does not exist. Creating directory at {Path}", uploadsPath);
-                    Directory.CreateDirectory(uploadsPath);
-                    _logger.LogInformation("Successfully created directory at {Path}", uploadsPath);
+                    _logger.LogInformation("=== UploadFileAsync SUCCESS === File URL: {FileUrl}", result.Value);
                 }
                 else
                 {
-                    _logger.LogInformation("Directory already exists at {Path}", uploadsPath);
+                    _logger.LogError("=== UploadFileAsync FAILED === Error: {Error}", result.Error);
                 }
 
-                // Save the file
-                var filePath = Path.Combine(uploadsPath, fileName);
-                
-                _logger.LogInformation("Attempting to save file to {FilePath}", filePath);
-                _logger.LogInformation("File path details - Directory: {Directory}, FileName: {FileName}", 
-                    uploadsPath, fileName);
-                
-                // Overwrite existing file if it exists (allows updating images)
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    _logger.LogInformation("FileStream created, copying file data...");
-                    await file.CopyToAsync(stream);
-                    _logger.LogInformation("File data copied to stream. Stream position: {Position}, length: {Length}", stream.Position, stream.Length);
-                }
-
-                // Verify file was created and get file info
-                _logger.LogInformation("Verifying file creation at {FilePath}", filePath);
-                var fileInfo = new FileInfo(filePath);
-                if (!fileInfo.Exists)
-                {
-                    _logger.LogError("File was not created at expected location: {FilePath}", filePath);
-                    var directoryExists = Directory.Exists(uploadsPath);
-                    var directoryContents = directoryExists 
-                        ? string.Join(", ", Directory.GetFiles(uploadsPath)) 
-                        : "N/A";
-                    _logger.LogError("Directory exists: {DirectoryExists}, Directory contents: {Contents}", 
-                        directoryExists, directoryContents);
-                    return Result.Failure<string>("File upload failed - file not created on disk.", StatusCodes.Status500InternalServerError);
-                }
-
-                _logger.LogInformation("File saved successfully: {FilePath} (Size: {Size} bytes)", filePath, fileInfo.Length);
-                _logger.LogInformation("File attributes - CreationTime: {CreationTime}, LastWriteTime: {LastWriteTime}", fileInfo.CreationTime, fileInfo.LastWriteTime);
-
-                // Build the relative path for URL
-                var relativePath = string.IsNullOrWhiteSpace(subPath) 
-                    ? fileName 
-                    : $"{subPath}/{fileName}";
-
-                _logger.LogInformation("File uploaded successfully: {RelativePath}", relativePath);
-
-                // Return the URL
-                var fileUrl = GetFileUrl(relativePath);
-                _logger.LogInformation("Generated file URL: {FileUrl}", fileUrl);
-                _logger.LogInformation("=== UploadFileAsync SUCCESS ===");
-                return Result.Success(fileUrl);
+                return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "=== UploadFileAsync FAILED === Error uploading file: {Message}", ex.Message);
-                _logger.LogError("Stack trace: {StackTrace}", ex.StackTrace);
-                return Result.Failure<string>($"Error uploading file: {ex.Message}", StatusCodes.Status500InternalServerError);
+                _logger.LogError(ex, "=== UploadFileAsync FAILED === Unexpected exception while uploading image.");
+                return Result.Failure<string>("An error occurred while uploading the image.", StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -170,7 +78,7 @@ namespace Infrastructure.Services
         {
             // Normalize path separators for URL
             filePath = filePath.Replace('\\', '/');
-            
+
             // Return a relative URL that can be used by the frontend
             return $"/{_uploadFolder}/{filePath}";
         }
@@ -179,6 +87,10 @@ namespace Infrastructure.Services
         {
             try
             {
+                _logger.LogInformation("=== UploadVideoAsync START ===");
+                _logger.LogInformation("Input - FileName: {FileName}, SubPath: {SubPath}, FileLength: {FileLength}",
+                    fileName ?? "null", subPath ?? "null", file?.Length ?? 0);
+
                 if (file == null || file.Length == 0)
                 {
                     return Result.Failure<string>("File is empty or not provided.", StatusCodes.Status400BadRequest);
@@ -201,18 +113,47 @@ namespace Infrastructure.Services
                 }
 
                 // Validate file size (max 100MB for videos)
-                const long maxFileSize = 100L * 1024 * 1024;
-                if (file.Length > maxFileSize)
+                const long maxVideoFileSize = 100L * 1024 * 1024;
+                if (file.Length > maxVideoFileSize)
                 {
                     return Result.Failure<string>("File size exceeds the maximum allowed size of 100MB.", StatusCodes.Status400BadRequest);
                 }
 
+                // Use the same file-saving strategy as product images
+                var result = await SaveFileToStorageAsync(file, fileExtension, fileName, subPath);
+
+                if (result.IsSuccess)
+                {
+                    _logger.LogInformation("=== UploadVideoAsync SUCCESS === File URL: {FileUrl}", result.Value);
+                }
+                else
+                {
+                    _logger.LogError("=== UploadVideoAsync FAILED === Error: {Error}", result.Error);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "=== UploadVideoAsync FAILED === Unexpected exception while uploading video.");
+                return Result.Failure<string>("An error occurred while uploading the video.", StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        /// <summary>
+        /// Shared file-saving strategy used by both image and video uploads.
+        /// Handles filename generation, path validation, directory creation, file writing, and post-write verification.
+        /// </summary>
+        private async Task<Result<string>> SaveFileToStorageAsync(IFormFile file, string fileExtension, string? fileName, string? subPath)
+        {
+            try
+            {
                 // Generate unique file name if not provided
                 if (string.IsNullOrWhiteSpace(fileName))
                 {
                     fileName = $"{Guid.NewGuid()}{fileExtension}";
                 }
-                else if (!fileName.EndsWith(fileExtension))
+                else if (!fileName.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     fileName = $"{fileName}{fileExtension}";
                 }
@@ -227,44 +168,102 @@ namespace Infrastructure.Services
                 // Validate and sanitize subPath if provided
                 if (!string.IsNullOrWhiteSpace(subPath))
                 {
+                    // Normalize path separators
                     subPath = subPath.Replace('\\', '/');
-                    if (subPath.Contains("..") || subPath.StartsWith('/') || subPath.StartsWith('\\') ||
+
+                    // Validate subPath to prevent path traversal and rooted paths.
+                    // Path.IsPathRooted rejects Windows drive paths (e.g. "C:/temp") that would
+                    // cause Path.Combine to silently ignore the uploads root.
+                    if (subPath.Contains("..") ||
+                        subPath.StartsWith('/') ||
+                        Path.IsPathRooted(subPath) ||
                         subPath.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
+                    {
+                        return Result.Failure<string>("Invalid sub-path.", StatusCodes.Status400BadRequest);
+                    }
+
+                    // Final safety check: ensure the fully-resolved path stays under the uploads root
+                    var uploadsRoot = Path.GetFullPath(Path.Combine(_contentRootPath, "wwwroot", _uploadFolder));
+                    var resolvedPath = Path.GetFullPath(Path.Combine(uploadsRoot, subPath));
+                    if (!resolvedPath.StartsWith(uploadsRoot + Path.DirectorySeparatorChar) && resolvedPath != uploadsRoot)
                     {
                         return Result.Failure<string>("Invalid sub-path.", StatusCodes.Status400BadRequest);
                     }
                 }
 
-                // Build the upload directory
-                var uploadsRoot = Path.Combine(_contentRootPath, "wwwroot", _uploadFolder);
-                var uploadDirectory = string.IsNullOrWhiteSpace(subPath)
-                    ? uploadsRoot
-                    : Path.Combine(uploadsRoot, subPath.Replace('/', Path.DirectorySeparatorChar));
+                // Build the full directory path
+                var uploadsPath = Path.Combine(_contentRootPath, "wwwroot", _uploadFolder);
+                _logger.LogInformation("Base uploads path: {UploadsPath}", uploadsPath);
 
-                // Ensure upload directory exists
-                Directory.CreateDirectory(uploadDirectory);
+                if (!string.IsNullOrWhiteSpace(subPath))
+                {
+                    uploadsPath = Path.Combine(uploadsPath, subPath);
+                    _logger.LogInformation("Full uploads path with subPath: {UploadsPath}", uploadsPath);
+                }
 
-                var filePath = Path.Combine(uploadDirectory, fileName);
+                // Ensure the full directory path (including subdirectories) exists
+                _logger.LogInformation("Checking if directory exists: {Path}", uploadsPath);
+                if (!Directory.Exists(uploadsPath))
+                {
+                    _logger.LogInformation("Directory does not exist. Creating directory at {Path}", uploadsPath);
+                    Directory.CreateDirectory(uploadsPath);
+                    _logger.LogInformation("Successfully created directory at {Path}", uploadsPath);
+                }
+                else
+                {
+                    _logger.LogInformation("Directory already exists at {Path}", uploadsPath);
+                }
 
                 // Save the file
+                var filePath = Path.Combine(uploadsPath, fileName);
+
+                _logger.LogInformation("Attempting to save file to {FilePath}", filePath);
+                _logger.LogInformation("File path details - Directory: {Directory}, FileName: {FileName}",
+                    uploadsPath, fileName);
+
+                // Overwrite existing file if it exists (allows updating media)
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
+                    _logger.LogInformation("FileStream created, copying file data...");
                     await file.CopyToAsync(stream);
+                    _logger.LogInformation("File data copied to stream. Stream position: {Position}, length: {Length}", stream.Position, stream.Length);
                 }
+
+                // Verify file was created and get file info
+                _logger.LogInformation("Verifying file creation at {FilePath}", filePath);
+                var fileInfo = new FileInfo(filePath);
+                if (!fileInfo.Exists)
+                {
+                    _logger.LogError("File was not created at expected location: {FilePath}", filePath);
+                    var directoryExists = Directory.Exists(uploadsPath);
+                    var directoryContents = directoryExists
+                        ? string.Join(", ", Directory.GetFiles(uploadsPath))
+                        : "N/A";
+                    _logger.LogError("Directory exists: {DirectoryExists}, Directory contents: {Contents}",
+                        directoryExists, directoryContents);
+                    return Result.Failure<string>("File upload failed - file not created on disk.", StatusCodes.Status500InternalServerError);
+                }
+
+                _logger.LogInformation("File saved successfully: {FilePath} (Size: {Size} bytes)", filePath, fileInfo.Length);
+                _logger.LogInformation("File attributes - CreationTime: {CreationTime}, LastWriteTime: {LastWriteTime}", fileInfo.CreationTime, fileInfo.LastWriteTime);
 
                 // Build the relative path for URL
                 var relativePath = string.IsNullOrWhiteSpace(subPath)
                     ? fileName
                     : $"{subPath}/{fileName}";
 
+                _logger.LogInformation("File stored successfully: {RelativePath}", relativePath);
+
+                // Return the URL
                 var fileUrl = GetFileUrl(relativePath);
-                _logger.LogInformation("Video uploaded successfully: {FileUrl}", fileUrl);
+                _logger.LogInformation("Generated file URL: {FileUrl}", fileUrl);
                 return Result.Success(fileUrl);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error uploading video: {Message}", ex.Message);
-                return Result.Failure<string>($"Error uploading video: {ex.Message}", StatusCodes.Status500InternalServerError);
+                _logger.LogError(ex, "Error saving file to storage: {Message}", ex.Message);
+                _logger.LogError("Stack trace: {StackTrace}", ex.StackTrace);
+                return Result.Failure<string>($"Error saving file: {ex.Message}", StatusCodes.Status500InternalServerError);
             }
         }
 

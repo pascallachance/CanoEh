@@ -1097,17 +1097,18 @@ namespace API.Tests
         [Fact]
         public async Task UpdateItemVariantVideoAsync_ReturnFailure_WhenVariantNotFound()
         {
-            // Arrange
+            // Arrange – simulate the repository returning null (variant does not exist)
             var variantId = Guid.NewGuid();
             _mockItemVariantRepository.Setup(x => x.GetByIdAsync(variantId))
-                                     .ThrowsAsync(new InvalidOperationException($"ItemVariant with id {variantId} not found"));
+                                     .ReturnsAsync((ItemVariant)null!);
 
             // Act
             var result = await _itemService.UpdateItemVariantVideoAsync(variantId, "/uploads/c/v/v_video.mp4");
 
             // Assert
             Assert.True(result.IsFailure);
-            Assert.Equal(StatusCodes.Status500InternalServerError, result.ErrorCode);
+            Assert.Equal(StatusCodes.Status404NotFound, result.ErrorCode);
+            Assert.Equal("Variant not found.", result.Error);
             _mockItemVariantRepository.Verify(x => x.UpdateAsync(It.IsAny<ItemVariant>()), Times.Never);
         }
 

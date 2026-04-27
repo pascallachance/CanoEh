@@ -282,7 +282,7 @@ namespace API.Tests
 
             // Assert
             Assert.True(result.IsFailure);
-            Assert.Contains("Invalid subpath", result.Error);
+            Assert.Contains("Invalid sub-path", result.Error);
         }
 
         [Fact]
@@ -522,7 +522,7 @@ namespace API.Tests
 
             // Assert
             Assert.True(result.IsFailure);
-            Assert.Contains("Invalid subpath", result.Error);
+            Assert.Contains("Invalid sub-path", result.Error);
         }
     }
 }

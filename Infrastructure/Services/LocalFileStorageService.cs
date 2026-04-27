@@ -46,8 +46,8 @@ namespace Infrastructure.Services
             }
 
             // Validate file size (max 5MB)
-            const long maxFileSize = 5 * 1024 * 1024; // 5MB
-            if (file.Length > maxFileSize)
+            const long maxImageFileSize = 5 * 1024 * 1024; // 5MB
+            if (file.Length > maxImageFileSize)
             {
                 return Result.Failure<string>("File size exceeds the maximum allowed size of 5MB.", StatusCodes.Status400BadRequest);
             }
@@ -160,7 +160,7 @@ namespace Infrastructure.Services
                         subPath.StartsWith('/') ||
                         subPath.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
                     {
-                        return Result.Failure<string>("Invalid subpath.", StatusCodes.Status400BadRequest);
+                        return Result.Failure<string>("Invalid sub-path.", StatusCodes.Status400BadRequest);
                     }
                 }
 

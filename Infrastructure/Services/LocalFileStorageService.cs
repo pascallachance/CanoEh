@@ -18,52 +18,60 @@ namespace Infrastructure.Services
 
         public async Task<Result<string>> UploadFileAsync(IFormFile file, string? fileName = null, string? subPath = null)
         {
-            _logger.LogInformation("=== UploadFileAsync START ===");
-            _logger.LogInformation("ContentRootPath: {ContentRootPath}", _contentRootPath);
-            _logger.LogInformation("Input - FileName: {FileName}, SubPath: {SubPath}, FileLength: {FileLength}",
-                fileName ?? "null", subPath ?? "null", file?.Length ?? 0);
-
-            if (file == null || file.Length == 0)
+            try
             {
-                _logger.LogWarning("File is empty or not provided");
-                return Result.Failure<string>("File is empty or not provided.", StatusCodes.Status400BadRequest);
+                _logger.LogInformation("=== UploadFileAsync START ===");
+                _logger.LogInformation("ContentRootPath: {ContentRootPath}", _contentRootPath);
+                _logger.LogInformation("Input - FileName: {FileName}, SubPath: {SubPath}, FileLength: {FileLength}",
+                    fileName ?? "null", subPath ?? "null", file?.Length ?? 0);
+
+                if (file == null || file.Length == 0)
+                {
+                    _logger.LogWarning("File is empty or not provided");
+                    return Result.Failure<string>("File is empty or not provided.", StatusCodes.Status400BadRequest);
+                }
+
+                // Validate file type (images only)
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+                var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    return Result.Failure<string>($"Invalid file type. Allowed types: {string.Join(", ", allowedExtensions)}", StatusCodes.Status400BadRequest);
+                }
+
+                // Verify MIME type matches the file extension
+                var allowedMimeTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" };
+                if (!string.IsNullOrEmpty(file.ContentType) && !allowedMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
+                {
+                    return Result.Failure<string>("Invalid file content type.", StatusCodes.Status400BadRequest);
+                }
+
+                // Validate file size (max 5MB)
+                const long maxImageFileSize = 5 * 1024 * 1024; // 5MB
+                if (file.Length > maxImageFileSize)
+                {
+                    return Result.Failure<string>("File size exceeds the maximum allowed size of 5MB.", StatusCodes.Status400BadRequest);
+                }
+
+                var result = await SaveFileToStorageAsync(file, fileExtension, fileName, subPath);
+
+                if (result.IsSuccess)
+                {
+                    _logger.LogInformation("=== UploadFileAsync SUCCESS === File URL: {FileUrl}", result.Value);
+                }
+                else
+                {
+                    _logger.LogError("=== UploadFileAsync FAILED === Error: {Error}", result.Error);
+                }
+
+                return result;
             }
-
-            // Validate file type (images only)
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
-            var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-
-            if (!allowedExtensions.Contains(fileExtension))
+            catch (Exception ex)
             {
-                return Result.Failure<string>($"Invalid file type. Allowed types: {string.Join(", ", allowedExtensions)}", StatusCodes.Status400BadRequest);
+                _logger.LogError(ex, "=== UploadFileAsync FAILED === Unexpected exception while uploading image.");
+                return Result.Failure<string>("An error occurred while uploading the image.", StatusCodes.Status500InternalServerError);
             }
-
-            // Verify MIME type matches the file extension
-            var allowedMimeTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" };
-            if (!string.IsNullOrEmpty(file.ContentType) && !allowedMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
-            {
-                return Result.Failure<string>("Invalid file content type.", StatusCodes.Status400BadRequest);
-            }
-
-            // Validate file size (max 5MB)
-            const long maxImageFileSize = 5 * 1024 * 1024; // 5MB
-            if (file.Length > maxImageFileSize)
-            {
-                return Result.Failure<string>("File size exceeds the maximum allowed size of 5MB.", StatusCodes.Status400BadRequest);
-            }
-
-            var result = await SaveFileToStorageAsync(file, fileExtension, fileName, subPath);
-
-            if (result.IsSuccess)
-            {
-                _logger.LogInformation("=== UploadFileAsync SUCCESS === File URL: {FileUrl}", result.Value);
-            }
-            else
-            {
-                _logger.LogError("=== UploadFileAsync FAILED === Error: {Error}", result.Error);
-            }
-
-            return result;
         }
 
         public string GetFileUrl(string filePath)
@@ -77,51 +85,59 @@ namespace Infrastructure.Services
 
         public async Task<Result<string>> UploadVideoAsync(IFormFile file, string? fileName = null, string? subPath = null)
         {
-            _logger.LogInformation("=== UploadVideoAsync START ===");
-            _logger.LogInformation("Input - FileName: {FileName}, SubPath: {SubPath}, FileLength: {FileLength}",
-                fileName ?? "null", subPath ?? "null", file?.Length ?? 0);
-
-            if (file == null || file.Length == 0)
+            try
             {
-                return Result.Failure<string>("File is empty or not provided.", StatusCodes.Status400BadRequest);
+                _logger.LogInformation("=== UploadVideoAsync START ===");
+                _logger.LogInformation("Input - FileName: {FileName}, SubPath: {SubPath}, FileLength: {FileLength}",
+                    fileName ?? "null", subPath ?? "null", file?.Length ?? 0);
+
+                if (file == null || file.Length == 0)
+                {
+                    return Result.Failure<string>("File is empty or not provided.", StatusCodes.Status400BadRequest);
+                }
+
+                // Validate video file type
+                var allowedExtensions = new[] { ".mp4", ".mov", ".webm", ".avi", ".mkv" };
+                var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    return Result.Failure<string>($"Invalid file type. Allowed types: {string.Join(", ", allowedExtensions)}", StatusCodes.Status400BadRequest);
+                }
+
+                // Verify MIME type matches a video type
+                var allowedMimeTypes = new[] { "video/mp4", "video/quicktime", "video/webm", "video/avi", "video/x-msvideo", "video/x-matroska" };
+                if (!string.IsNullOrEmpty(file.ContentType) && !allowedMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
+                {
+                    return Result.Failure<string>("Invalid file content type.", StatusCodes.Status400BadRequest);
+                }
+
+                // Validate file size (max 100MB for videos)
+                const long maxVideoFileSize = 100L * 1024 * 1024;
+                if (file.Length > maxVideoFileSize)
+                {
+                    return Result.Failure<string>("File size exceeds the maximum allowed size of 100MB.", StatusCodes.Status400BadRequest);
+                }
+
+                // Use the same file-saving strategy as product images
+                var result = await SaveFileToStorageAsync(file, fileExtension, fileName, subPath);
+
+                if (result.IsSuccess)
+                {
+                    _logger.LogInformation("=== UploadVideoAsync SUCCESS === File URL: {FileUrl}", result.Value);
+                }
+                else
+                {
+                    _logger.LogError("=== UploadVideoAsync FAILED === Error: {Error}", result.Error);
+                }
+
+                return result;
             }
-
-            // Validate video file type
-            var allowedExtensions = new[] { ".mp4", ".mov", ".webm", ".avi", ".mkv" };
-            var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-
-            if (!allowedExtensions.Contains(fileExtension))
+            catch (Exception ex)
             {
-                return Result.Failure<string>($"Invalid file type. Allowed types: {string.Join(", ", allowedExtensions)}", StatusCodes.Status400BadRequest);
+                _logger.LogError(ex, "=== UploadVideoAsync FAILED === Unexpected exception while uploading video.");
+                return Result.Failure<string>("An error occurred while uploading the video.", StatusCodes.Status500InternalServerError);
             }
-
-            // Verify MIME type matches a video type
-            var allowedMimeTypes = new[] { "video/mp4", "video/quicktime", "video/webm", "video/avi", "video/x-msvideo", "video/x-matroska" };
-            if (!string.IsNullOrEmpty(file.ContentType) && !allowedMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
-            {
-                return Result.Failure<string>("Invalid file content type.", StatusCodes.Status400BadRequest);
-            }
-
-            // Validate file size (max 100MB for videos)
-            const long maxVideoFileSize = 100L * 1024 * 1024;
-            if (file.Length > maxVideoFileSize)
-            {
-                return Result.Failure<string>("File size exceeds the maximum allowed size of 100MB.", StatusCodes.Status400BadRequest);
-            }
-
-            // Use the same file-saving strategy as product images
-            var result = await SaveFileToStorageAsync(file, fileExtension, fileName, subPath);
-
-            if (result.IsSuccess)
-            {
-                _logger.LogInformation("=== UploadVideoAsync SUCCESS === File URL: {FileUrl}", result.Value);
-            }
-            else
-            {
-                _logger.LogError("=== UploadVideoAsync FAILED === Error: {Error}", result.Error);
-            }
-
-            return result;
         }
 
         /// <summary>
@@ -137,7 +153,7 @@ namespace Infrastructure.Services
                 {
                     fileName = $"{Guid.NewGuid()}{fileExtension}";
                 }
-                else if (!fileName.EndsWith(fileExtension))
+                else if (!fileName.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     fileName = $"{fileName}{fileExtension}";
                 }
@@ -155,10 +171,21 @@ namespace Infrastructure.Services
                     // Normalize path separators
                     subPath = subPath.Replace('\\', '/');
 
-                    // Validate subPath to prevent path traversal
+                    // Validate subPath to prevent path traversal and rooted paths.
+                    // Path.IsPathRooted rejects Windows drive paths (e.g. "C:/temp") that would
+                    // cause Path.Combine to silently ignore the uploads root.
                     if (subPath.Contains("..") ||
                         subPath.StartsWith('/') ||
+                        Path.IsPathRooted(subPath) ||
                         subPath.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
+                    {
+                        return Result.Failure<string>("Invalid sub-path.", StatusCodes.Status400BadRequest);
+                    }
+
+                    // Final safety check: ensure the fully-resolved path stays under the uploads root
+                    var uploadsRoot = Path.GetFullPath(Path.Combine(_contentRootPath, "wwwroot", _uploadFolder));
+                    var resolvedPath = Path.GetFullPath(Path.Combine(uploadsRoot, subPath));
+                    if (!resolvedPath.StartsWith(uploadsRoot + Path.DirectorySeparatorChar) && resolvedPath != uploadsRoot)
                     {
                         return Result.Failure<string>("Invalid sub-path.", StatusCodes.Status400BadRequest);
                     }

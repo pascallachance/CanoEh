@@ -286,6 +286,26 @@ namespace API.Tests
         }
 
         [Fact]
+        public async Task UploadFile_ReturnFailure_WhenSubPathIsRooted()
+        {
+            // Arrange – rooted paths would cause Path.Combine to ignore the uploads root
+            var content = "fake image content"u8.ToArray();
+            using var stream = new MemoryStream(content);
+            var formFile = new FormFile(stream, 0, content.Length, "file", "test.jpg")
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = "image/jpeg"
+            };
+
+            // Act – use a Unix-rooted path that passes the leading-slash check after normalization
+            var result = await _service.UploadFileAsync(formFile, "test", "/etc/evil");
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Contains("Invalid sub-path", result.Error);
+        }
+
+        [Fact]
         public async Task UploadFile_FollowHierarchicalStructure_ForItemVariant()
         {
             // Arrange

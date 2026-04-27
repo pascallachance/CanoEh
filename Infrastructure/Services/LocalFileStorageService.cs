@@ -105,9 +105,13 @@ namespace Infrastructure.Services
                     return Result.Failure<string>($"Invalid file type. Allowed types: {string.Join(", ", allowedExtensions)}", StatusCodes.Status400BadRequest);
                 }
 
-                // Verify MIME type matches a video type
-                var allowedMimeTypes = new[] { "video/mp4", "video/quicktime", "video/webm", "video/avi", "video/x-msvideo", "video/x-matroska" };
-                if (!string.IsNullOrEmpty(file.ContentType) && !allowedMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
+                // Verify MIME type is a video type.
+                // Use a prefix check ("video/") instead of an exact match because browsers may append
+                // codec parameters (e.g. "video/mp4; codecs=avc1") or use vendor-specific subtypes
+                // that would be incorrectly rejected by a strict allowlist.
+                // The file-extension check above is the primary guard; this is a secondary defence.
+                if (!string.IsNullOrEmpty(file.ContentType) &&
+                    !file.ContentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
                 {
                     return Result.Failure<string>("Invalid file content type.", StatusCodes.Status400BadRequest);
                 }

@@ -301,6 +301,7 @@ BEGIN
         ProductIdentifierValue NVARCHAR(100) NULL,
         ImageUrls NVARCHAR(MAX) NULL,
         ThumbnailUrl NVARCHAR(500) NULL,
+        VideoUrl NVARCHAR(500) NULL,
         ItemVariantName_en NVARCHAR(255) NULL,
         ItemVariantName_fr NVARCHAR(255) NULL,
         Deleted BIT NOT NULL DEFAULT 0,

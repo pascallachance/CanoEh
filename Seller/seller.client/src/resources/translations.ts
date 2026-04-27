@@ -700,6 +700,10 @@ export const translations: TranslationResources = {
     en: 'Each variant must include a thumbnail and at least one product image.',
     fr: 'Chaque variante doit inclure une miniature et au moins une image du produit.'
   },
+  'error.videoUploadFailed': {
+    en: 'The video could not be saved. Please try again.',
+    fr: 'La vidéo n\'a pas pu être enregistrée. Veuillez réessayer.'
+  },
   'error.nameEnTooLong': {
     en: 'Item name (English) cannot exceed 300 characters.',
     fr: 'Le nom de l\'article (anglais) ne peut pas dépasser 300 caractères.'

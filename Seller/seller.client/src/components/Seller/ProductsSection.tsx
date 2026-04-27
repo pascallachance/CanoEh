@@ -99,6 +99,7 @@ interface ApiItemVariant {
     productIdentifierValue?: string;
     imageUrls?: string;
     thumbnailUrl?: string;
+    videoUrl?: string;
     itemVariantName_en?: string;
     itemVariantName_fr?: string;
     itemVariantAttributes: ApiItemVariantAttribute[];
@@ -794,6 +795,7 @@ const ProductsSection = forwardRef<ProductsSectionRef, ProductsSectionProps>(
             productIdentifierValue: variant.productIdentifierValue,
             thumbnailUrl: variant.thumbnailUrl,
             imageUrls: variant.imageUrls,
+            videoUrl: variant.videoUrl,
             itemVariantAttributes: variant.itemVariantAttributes,
             itemVariantFeatures: variant.itemVariantFeatures || []
         }));

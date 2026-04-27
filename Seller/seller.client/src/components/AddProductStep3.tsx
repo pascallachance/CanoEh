@@ -861,9 +861,11 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 if (!uploadResponse.ok) {
                     const errorText = await uploadResponse.text();
                     console.error(`Failed to upload video for variant ${apiVariantId}: ${uploadResponse.status} ${uploadResponse.statusText}`, errorText);
+                    showError(t('error.videoUploadFailed'));
                 }
             } catch (error) {
                 console.error(`Error uploading video for variant ${apiVariantId}:`, error);
+                showError(t('error.videoUploadFailed'));
             }
         }
     };

@@ -1035,6 +1035,8 @@ namespace API.Controllers
         /// <returns>Returns the video URL or an error response.</returns>
         [HttpPost("UploadVideo")]
         [Authorize]
+        [RequestSizeLimit(104_857_600)] // 100 MB
+        [RequestFormLimits(MultipartBodyLengthLimit = 104_857_600)] // 100 MB
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

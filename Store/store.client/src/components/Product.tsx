@@ -382,7 +382,9 @@ function extractVideoFrame(videoSrc: string): Promise<string | null> {
             }
         };
 
+        let metadataLoaded = false;
         video.onloadedmetadata = () => {
+            metadataLoaded = true;
             // Guard against non-finite or non-positive duration (some formats don't expose it from metadata alone)
             const duration = video.duration;
             const seekTime = (Number.isFinite(duration) && duration > 0) ? Math.min(0.5, duration / 4) : 0;
@@ -393,7 +395,9 @@ function extractVideoFrame(videoSrc: string): Promise<string | null> {
                 video.currentTime = seekTime;
             }
         };
-        video.onseeked = () => drawFrame();
+        // Guard against onseeked firing before onloadedmetadata (can happen in Chrome
+        // with fast-loading sources like blob URLs), which would cause drawImage to throw.
+        video.onseeked = () => { if (metadataLoaded) drawFrame(); };
         video.onerror = () => settle(null);
 
         // Safety net: resolve null if nothing fires within 8 seconds

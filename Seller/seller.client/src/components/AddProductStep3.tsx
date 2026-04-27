@@ -38,6 +38,13 @@ interface ApiResponseVariant {
     stockQuantity: number;
 }
 
+interface ExistingItemVariantFeature {
+    attributeName_en?: string | null;
+    attributeName_fr?: string | null;
+    attributes_en?: string | null;
+    attributes_fr?: string | null;
+}
+
 interface AddProductStep3Props {
     onSubmit: () => void;
     onBack: () => void;
@@ -310,7 +317,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                     // Use != null checks (not truthiness) so that legitimate empty-string values are preserved.
                     const features_en: Record<string, string> = {};
                     const features_fr: Record<string, string> = {};
-                    (matchingExisting.itemVariantFeatures || []).forEach((feature: { attributeName_en?: string | null; attributeName_fr?: string | null; attributes_en?: string | null; attributes_fr?: string | null }) => {
+                    (matchingExisting.itemVariantFeatures || []).forEach((feature: ExistingItemVariantFeature) => {
                         if (feature.attributeName_en != null) {
                             features_en[feature.attributeName_en] = feature.attributes_en ?? '';
                         }

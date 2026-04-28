@@ -310,7 +310,29 @@ public class Program
 
         app.UseHttpsRedirection();
         app.UseCors("AllowClient"); // CORS must be before Authentication/Authorization
-        app.UseStaticFiles(); // Enable serving static files from wwwroot
+
+        // Explicitly add CORS headers to static file responses (e.g. /uploads/) so that
+        // cross-origin canvas frame extraction and cross-origin <video crossOrigin="anonymous">
+        // elements work correctly when the frontend is served from a different origin/port.
+        // UseCors alone may not reliably add CORS headers when UseStaticFiles short-circuits
+        // the middleware pipeline before the OnStarting callbacks fire.
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            OnPrepareResponse = ctx =>
+            {
+                var origin = ctx.Context.Request.Headers.Origin.ToString();
+                if (!string.IsNullOrEmpty(origin) && allowedOrigins.Contains(origin))
+                {
+                    var responseHeaders = ctx.Context.Response.Headers;
+                    if (!responseHeaders.ContainsKey("Access-Control-Allow-Origin"))
+                    {
+                        responseHeaders.Append("Access-Control-Allow-Origin", origin);
+                        responseHeaders.Append("Access-Control-Allow-Credentials", "true");
+                        responseHeaders.Append("Vary", "Origin");
+                    }
+                }
+            }
+        });
 
         app.UseAuthentication();
         app.UseAuthorization();

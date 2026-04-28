@@ -1984,4 +1984,26 @@ describe('Product page – video thumbnail', () => {
         expect(document.querySelector('.product-thumbnails')).toBeInTheDocument();
         expect(document.querySelector('.product-thumbnail-video-btn')).toBeInTheDocument();
     });
+
+    it('converts a relative videoUrl to an absolute URL using VITE_API_STORE_BASE_URL', async () => {
+        const relativeVideoUrl = '/uploads/company/variant/product.mp4';
+        const expectedAbsoluteUrl = `${API_BASE_URL}${relativeVideoUrl}`;
+        setupFetchWithCategories(makeProduct({
+            variants: [makeVariant({
+                imageUrls: 'https://example.com/img1.jpg',
+                videoUrl: relativeVideoUrl,
+            })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        // The video thumbnail button should be visible (videoUrl was non-empty)
+        const videoThumb = document.querySelector('.product-thumbnail-video-btn');
+        expect(videoThumb).toBeInTheDocument();
+
+        // The video element inside the thumbnail should use the absolute URL
+        const videoEl = videoThumb?.querySelector('video');
+        expect(videoEl).toBeInTheDocument();
+        expect(videoEl!.src).toBe(expectedAbsoluteUrl);
+    });
 });

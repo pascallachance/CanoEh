@@ -543,7 +543,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         setSelectedVariant(firstVariant);
         const images = parseImageUrls(firstVariant.imageUrls, firstVariant.thumbnailUrl);
         setVariantImages(images);
-        setVariantVideoUrl(firstVariant.videoUrl ?? null);
+        setVariantVideoUrl(firstVariant.videoUrl ? toAbsoluteUrl(firstVariant.videoUrl) : null);
         setMainImageIndex(0);
         setMainImageError(false);
         setIsVideoActive(false);
@@ -557,7 +557,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
         if (variant) {
             const images = parseImageUrls(variant.imageUrls, variant.thumbnailUrl);
             setVariantImages(images);
-            setVariantVideoUrl(variant.videoUrl ?? null);
+            setVariantVideoUrl(variant.videoUrl ? toAbsoluteUrl(variant.videoUrl) : null);
             setMainImageIndex(0);
             setMainImageError(false);
             setIsVideoActive(false);

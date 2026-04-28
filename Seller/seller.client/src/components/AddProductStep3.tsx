@@ -143,7 +143,10 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             }
             video.muted = true;
             video.playsInline = true;
-            video.preload = 'metadata';
+            // Use 'auto' so the browser loads actual frame data (not just metadata).
+            // With 'metadata', onseeked can fire before readyState reaches HAVE_CURRENT_DATA,
+            // causing ctx.drawImage() to throw and returning null instead of a thumbnail.
+            video.preload = 'auto';
 
             const drawFrame = () => {
                 const canvas = document.createElement('canvas');
@@ -162,21 +165,20 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 }
             };
 
-            let metadataLoaded = false;
-            video.onloadedmetadata = () => {
-                metadataLoaded = true;
-                // Guard against NaN/Infinity duration (some formats don't expose it from metadata alone)
+            // Wait for onloadeddata (not onloadedmetadata) so that frame data is guaranteed
+            // to be available (readyState >= HAVE_CURRENT_DATA) before calling drawImage.
+            video.onloadeddata = () => {
                 const duration = video.duration;
                 const seekTime = (Number.isFinite(duration) && duration > 0) ? Math.min(0.5, duration / 4) : 0;
-                if (seekTime === 0 || video.currentTime === seekTime) {
-                    video.onloadeddata = () => drawFrame();
+                if (seekTime === 0) {
+                    // First frame is already available; draw it immediately.
+                    drawFrame();
                 } else {
+                    // Seek to a more representative frame, then draw when seek completes.
+                    video.onseeked = () => drawFrame();
                     video.currentTime = seekTime;
                 }
             };
-            // Guard against onseeked firing before onloadedmetadata (can happen in Chrome
-            // with fast-loading sources like blob URLs), which would cause drawImage to throw.
-            video.onseeked = () => { if (metadataLoaded) drawFrame(); };
             video.onerror = () => settle(null);
 
             // Safety net: resolve null if nothing fires within 8 seconds

@@ -26,19 +26,19 @@ export function toAbsoluteUrl(url: string | undefined): string {
         return url;
     }
     
-    // If URL is relative (starts with /), prepend API base URL
-    if (url.startsWith('/')) {
+    // If URL is relative, prepend API base URL (or normalise to root-relative for proxy mode)
+    if (url.startsWith('/') || !import.meta.env.VITE_API_SELLER_BASE_URL) {
         const baseUrl = import.meta.env.VITE_API_SELLER_BASE_URL;
         
-        // When base URL is not configured or intentionally empty, return the relative URL
-        // as-is. The Vite dev proxy (or a production reverse-proxy) will forward it to the
-        // correct backend origin, keeping the resource same-origin from the browser's
-        // perspective and avoiding all cross-origin / CORS issues.
+        // When base URL is not configured or intentionally empty, return the URL as a
+        // root-relative path so the Vite dev proxy (or a production reverse-proxy) can
+        // forward it to the correct backend origin, keeping the resource same-origin from
+        // the browser's perspective and avoiding all cross-origin / CORS issues.
         if (!baseUrl) {
-            return url;
+            return url.startsWith('/') ? url : `/${url}`;
         }
         
-        const absoluteUrl = `${baseUrl}${url}`;
+        const absoluteUrl = `${baseUrl}${url.startsWith('/') ? url : `/${url}`}`;
         return absoluteUrl;
     }
     

@@ -64,6 +64,12 @@ describe('urlUtils', () => {
             const url = '/uploads/image.jpg';
             expect(toAbsoluteUrl(url)).toBe(url);
         });
+
+        it('should return a root-relative URL in proxy mode for paths without a leading slash', () => {
+            vi.stubEnv('VITE_API_STORE_BASE_URL', '');
+            const url = 'uploads/image.jpg';
+            expect(toAbsoluteUrl(url)).toBe('/uploads/image.jpg');
+        });
     });
 
     describe('toAbsoluteUrlArray', () => {

@@ -2003,8 +2003,7 @@ describe('Product page – video thumbnail', () => {
 
         // The video element inside the thumbnail should use the absolute URL
         const videoEl = videoThumb?.querySelector('video');
-        if (videoEl) {
-            expect(videoEl.src).toBe(expectedAbsoluteUrl);
-        }
+        expect(videoEl).toBeInTheDocument();
+        expect(videoEl!.src).toBe(expectedAbsoluteUrl);
     });
 });

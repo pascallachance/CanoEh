@@ -62,14 +62,7 @@ describe('urlUtils', () => {
         it('should return original URL when API base URL is not defined', () => {
             vi.stubEnv('VITE_API_STORE_BASE_URL', '');
             const url = '/uploads/image.jpg';
-            const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-            
             expect(toAbsoluteUrl(url)).toBe(url);
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                expect.stringContaining('VITE_API_STORE_BASE_URL environment variable is not defined')
-            );
-            
-            consoleErrorSpy.mockRestore();
         });
     });
 

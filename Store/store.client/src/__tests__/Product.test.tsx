@@ -2006,4 +2006,60 @@ describe('Product page – video thumbnail', () => {
         expect(videoEl).toBeInTheDocument();
         expect(videoEl!.src).toBe(expectedAbsoluteUrl);
     });
+
+    it('fallback video thumbnail has crossOrigin="anonymous" to prevent canvas taint', async () => {
+        const videoUrl = 'https://example.com/product.mp4';
+        setupFetchWithCategories(makeProduct({
+            variants: [makeVariant({
+                imageUrls: 'https://example.com/img1.jpg',
+                videoUrl,
+            })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const videoThumb = document.querySelector('.product-thumbnail-video-btn');
+        const videoEl = videoThumb?.querySelector('video');
+        expect(videoEl).toBeInTheDocument();
+        expect(videoEl).toHaveAttribute('crossorigin', 'anonymous');
+    });
+
+    it('fallback video thumbnail has pointer-events:none so button click is not intercepted', async () => {
+        const videoUrl = 'https://example.com/product.mp4';
+        setupFetchWithCategories(makeProduct({
+            variants: [makeVariant({
+                imageUrls: 'https://example.com/img1.jpg',
+                videoUrl,
+            })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const videoThumb = document.querySelector('.product-thumbnail-video-btn');
+        const videoEl = videoThumb?.querySelector('video') as HTMLVideoElement | null;
+        expect(videoEl).toBeInTheDocument();
+        expect(videoEl!.style.pointerEvents).toBe('none');
+    });
+
+    it('main video player is muted to allow autoplay', async () => {
+        const user = userEvent.setup();
+        const videoUrl = 'https://example.com/product.mp4';
+        setupFetchWithCategories(makeProduct({
+            variants: [makeVariant({
+                imageUrls: 'https://example.com/img1.jpg',
+                videoUrl,
+            })],
+        }));
+        renderProduct();
+        await waitForProductLoaded();
+
+        const videoBtn = screen.getByRole('button', { name: /Play product video/i });
+        await user.click(videoBtn);
+
+        await waitFor(() => {
+            const mainVideo = document.querySelector('.product-main-video') as HTMLVideoElement | null;
+            expect(mainVideo).toBeInTheDocument();
+            expect(mainVideo!.muted).toBe(true);
+        });
+    });
 });

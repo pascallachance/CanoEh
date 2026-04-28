@@ -1102,6 +1102,7 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                             className="product-main-video"
                                             controls
                                             autoPlay
+                                            muted
                                         />
                                     ) : mainImage && !mainImageError ? (
                                         <img
@@ -1164,6 +1165,8 @@ function Product({ isAuthenticated = false, onLogout }: ProductProps) {
                                                             muted
                                                             playsInline
                                                             preload="metadata"
+                                                            crossOrigin="anonymous"
+                                                            style={{ pointerEvents: 'none' }}
                                                             onLoadedMetadata={(e) => { e.currentTarget.currentTime = 0.1; }}
                                                         />
                                                     )}

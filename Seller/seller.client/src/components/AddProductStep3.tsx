@@ -1473,6 +1473,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                     muted
                                                                     playsInline
                                                                     preload="metadata"
+                                                                    crossOrigin="anonymous"
+                                                                    style={{ pointerEvents: 'none' }}
                                                                     onLoadedMetadata={(e) => { e.currentTarget.currentTime = 0.1; }}
                                                                 />
                                                             )}
@@ -1788,6 +1790,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                         className="product-main-video"
                                                         controls
                                                         autoPlay
+                                                        muted
                                                     />
                                                 ) : previewImages.length > 0 ? (
                                                     <img
@@ -1843,6 +1846,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                         muted
                                                                         playsInline
                                                                         preload="metadata"
+                                                                        crossOrigin="anonymous"
+                                                                        style={{ pointerEvents: 'none' }}
                                                                         onLoadedMetadata={(e) => { e.currentTarget.currentTime = 0.1; }}
                                                                     />
                                                                 )}

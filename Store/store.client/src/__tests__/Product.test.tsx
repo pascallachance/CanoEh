@@ -2007,7 +2007,7 @@ describe('Product page – video thumbnail', () => {
         expect(videoEl!.src).toBe(expectedAbsoluteUrl);
     });
 
-    it('fallback video thumbnail has crossOrigin="anonymous" to prevent canvas taint', async () => {
+    it('fallback video thumbnail does not set crossOrigin so it can display without CORS headers', async () => {
         const videoUrl = 'https://example.com/product.mp4';
         setupFetchWithCategories(makeProduct({
             variants: [makeVariant({
@@ -2021,7 +2021,7 @@ describe('Product page – video thumbnail', () => {
         const videoThumb = document.querySelector('.product-thumbnail-video-btn');
         const videoEl = videoThumb?.querySelector('video');
         expect(videoEl).toBeInTheDocument();
-        expect(videoEl).toHaveAttribute('crossorigin', 'anonymous');
+        expect(videoEl).not.toHaveAttribute('crossorigin');
     });
 
     it('fallback video thumbnail has pointer-events:none so button click is not intercepted', async () => {

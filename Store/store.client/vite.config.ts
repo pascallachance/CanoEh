@@ -46,12 +46,12 @@ export default defineConfig({
         proxy: {
             '^/api': {
                 target: 'https://localhost:7182',
-                secure: true,
+                secure: false, // Allow self-signed certificates in development
                 changeOrigin: true
             },
             '^/uploads': {
                 target: 'https://localhost:7182',
-                secure: true,
+                secure: false, // Allow self-signed certificates in development
                 changeOrigin: true
             }
         },

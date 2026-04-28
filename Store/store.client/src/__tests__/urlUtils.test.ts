@@ -62,14 +62,13 @@ describe('urlUtils', () => {
         it('should return original URL when API base URL is not defined', () => {
             vi.stubEnv('VITE_API_STORE_BASE_URL', '');
             const url = '/uploads/image.jpg';
-            const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-            
             expect(toAbsoluteUrl(url)).toBe(url);
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                expect.stringContaining('VITE_API_STORE_BASE_URL environment variable is not defined')
-            );
-            
-            consoleErrorSpy.mockRestore();
+        });
+
+        it('should return a root-relative URL in proxy mode for paths without a leading slash', () => {
+            vi.stubEnv('VITE_API_STORE_BASE_URL', '');
+            const url = 'uploads/image.jpg';
+            expect(toAbsoluteUrl(url)).toBe('/uploads/image.jpg');
         });
     });
 

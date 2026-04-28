@@ -5,7 +5,11 @@
 /**
  * Converts a relative URL to an absolute URL by prepending the API base URL.
  * If the URL is already absolute (starts with http:// or https://), returns it unchanged.
- * 
+ *
+ * When VITE_API_SELLER_BASE_URL is empty or not set, relative URLs are returned as-is so
+ * that the Vite dev-server proxy can forward them to the backend. This is the recommended
+ * setup for local development.
+ *
  * @param url - The URL to convert (can be relative or absolute)
  * @returns The absolute URL, or empty string if input is falsy
  */
@@ -22,22 +26,18 @@ export function toAbsoluteUrl(url: string | undefined): string {
         return url;
     }
     
-    // If URL is relative (starts with /), prepend API base URL
-    if (url.startsWith('/')) {
-        const baseUrl = import.meta.env.VITE_API_SELLER_BASE_URL;
-        
-        // Guard against missing or empty environment variable
-        if (!baseUrl) {
-            console.error('[toAbsoluteUrl] VITE_API_SELLER_BASE_URL environment variable is not defined');
-            return url; // Return original URL as fallback
-        }
-        
-        const absoluteUrl = `${baseUrl}${url}`;
-        return absoluteUrl;
+    // Normalize relative path: ensure it starts with a leading slash
+    const normalizedPath = url.startsWith('/') ? url : `/${url}`;
+
+    // Prepend API base URL when configured; otherwise return root-relative so the
+    // Vite dev proxy (or a production reverse-proxy) forwards the request to the
+    // correct backend origin, keeping the resource same-origin from the browser's
+    // perspective and avoiding all cross-origin / CORS issues.
+    const baseUrl = import.meta.env.VITE_API_SELLER_BASE_URL;
+    if (!baseUrl) {
+        return normalizedPath;
     }
-    
-    // For other cases, return as-is
-    return url;
+    return `${baseUrl}${normalizedPath}`;
 }
 
 /**

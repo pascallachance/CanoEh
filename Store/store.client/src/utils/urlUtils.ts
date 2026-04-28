@@ -6,7 +6,11 @@
  * Converts a relative URL to an absolute URL by prepending the API base URL.
  * If the URL is already absolute (starts with http:// or https://), returns it unchanged.
  * Properly handles edge cases like missing leading slashes and trailing slashes in base URL.
- * 
+ *
+ * When VITE_API_STORE_BASE_URL is empty or not set, relative URLs are returned as-is so
+ * that the Vite dev-server proxy can forward them to the backend. This is the recommended
+ * setup for local development.
+ *
  * @param url - The URL to convert (can be relative or absolute)
  * @returns The absolute URL, or empty string if input is falsy
  */
@@ -26,10 +30,12 @@ export function toAbsoluteUrl(url: string | undefined): string {
     // Get the API base URL
     const baseUrl = import.meta.env.VITE_API_STORE_BASE_URL;
     
-    // Guard against missing or empty environment variable
+    // When base URL is not configured or intentionally empty, return the URL as a
+    // root-relative path so the Vite dev proxy (or a production reverse-proxy) can
+    // forward it to the correct backend origin, keeping the resource same-origin from
+    // the browser's perspective and avoiding all cross-origin / CORS issues.
     if (!baseUrl) {
-        console.error('[toAbsoluteUrl] VITE_API_STORE_BASE_URL environment variable is not defined');
-        return url; // Return original URL as fallback
+        return url.startsWith('/') ? url : `/${url}`;
     }
     
     // Normalize the base URL and relative path to prevent malformed URLs

@@ -164,22 +164,29 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 }
             };
 
-            // After metadata loads, seek to a small positive offset so the browser
-            // decodes an actual frame (time=0 often yields a black frame for many
-            // codecs before the first keyframe is processed).
-            // We listen for `seeked` rather than `loadeddata`/`canplay` because
-            // fully-buffered blob URLs may not re-fire those events after a seek.
-            video.onloadedmetadata = () => {
-                const seekTo =
-                    isFinite(video.duration) && video.duration > 0
-                        ? Math.min(0.5, video.duration / 4)
-                        : 0;
-                if (seekTo > 0) {
-                    video.onseeked = () => drawFrame();
-                    video.currentTime = seekTo;
+            // Wait for loadeddata so frame data is guaranteed to be available
+            // (readyState >= HAVE_CURRENT_DATA) before calling drawImage.
+            video.onloadeddata = () => {
+                const duration = video.duration;
+                const seekTo = (Number.isFinite(duration) && duration > 0)
+                    ? Math.min(0.5, duration / 4)
+                    : 0;
+                if (seekTo === 0) {
+                    // First frame is already available; draw it immediately.
+                    drawFrame();
                 } else {
-                    // Duration unknown or zero: fall back to drawing at position 0.
-                    video.onloadeddata = () => drawFrame();
+                    // Seek to a more representative frame, then draw when seek completes.
+                    // After onseeked, readyState may still be HAVE_METADATA if data at the
+                    // seeked position is not yet buffered. Guard with a readyState check and
+                    // fall back to loadeddata so drawImage never throws InvalidStateError.
+                    video.onseeked = () => {
+                        if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+                            drawFrame();
+                        } else {
+                            video.addEventListener('loadeddata', drawFrame, { once: true });
+                        }
+                    };
+                    video.currentTime = seekTo;
                 }
             };
             video.onerror = () => settle(null);

@@ -395,7 +395,16 @@ function extractVideoFrame(videoSrc: string): Promise<string | null> {
                 drawFrame();
             } else {
                 // Seek to a more representative frame, then draw when seek completes.
-                video.onseeked = () => drawFrame();
+                // After onseeked, readyState may still be HAVE_METADATA if data at the
+                // seeked position is not yet buffered. Guard with a readyState check and
+                // fall back to loadeddata so drawImage never throws InvalidStateError.
+                video.onseeked = () => {
+                    if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+                        drawFrame();
+                    } else {
+                        video.addEventListener('loadeddata', drawFrame, { once: true });
+                    }
+                };
                 video.currentTime = seekTime;
             }
         };

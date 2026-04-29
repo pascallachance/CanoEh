@@ -1513,9 +1513,13 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                     className="thumbnail-preview"
                                                                     muted
                                                                     playsInline
-                                                                    preload="auto"
+                                                                    preload="metadata"
                                                                     style={{ pointerEvents: 'none' }}
-                                                                    onLoadedMetadata={(e) => { e.currentTarget.currentTime = 0.1; }}
+                                                                    onLoadedData={(e) => {
+                                                                        if (e.currentTarget.duration > 0.1) {
+                                                                            e.currentTarget.currentTime = 0.1;
+                                                                        }
+                                                                    }}
                                                                 />
                                                             )}
                                                             <button
@@ -1885,9 +1889,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                         className="product-thumbnail-img"
                                                                         muted
                                                                         playsInline
-                                                                        preload="auto"
+                                                                        preload={previewVariant.videoUrl.startsWith('blob:') ? 'auto' : 'metadata'}
                                                                         style={{ pointerEvents: 'none' }}
-                                                                        onLoadedMetadata={(e) => { e.currentTarget.currentTime = 0.1; }}
+                                                                        onLoadedData={(e) => { e.currentTarget.currentTime = 0.1; }}
                                                                     />
                                                                 )}
                                                                 <span className="product-video-play-icon" aria-hidden="true">▶</span>

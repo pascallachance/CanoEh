@@ -143,9 +143,8 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             }
             video.muted = true;
             video.playsInline = true;
-            // Use 'auto' so the browser loads actual frame data (not just metadata).
-            // With 'metadata', onseeked can fire before readyState reaches HAVE_CURRENT_DATA,
-            // causing ctx.drawImage() to throw and returning null instead of a thumbnail.
+            // Use 'auto' so the browser fully loads frame data, ensuring readyState
+            // reaches HAVE_CURRENT_DATA by the time the loadeddata event fires.
             video.preload = 'auto';
 
             const drawFrame = () => {
@@ -165,28 +164,14 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 }
             };
 
-            // Wait for onloadeddata (not onloadedmetadata) so that frame data is guaranteed
-            // to be available (readyState >= HAVE_CURRENT_DATA) before calling drawImage.
+            // Draw the frame as soon as data for the current position is available.
+            // loadeddata fires with readyState >= HAVE_CURRENT_DATA, so drawImage is
+            // safe to call here and will not throw InvalidStateError.
+            // Seeking to a later time is intentionally avoided: for fully-buffered
+            // blob URLs the browser often does not re-fire loadeddata or canplay after
+            // a seek, causing the extraction to stall and reach the 8-second timeout.
             video.onloadeddata = () => {
-                const duration = video.duration;
-                const seekTime = (Number.isFinite(duration) && duration > 0) ? Math.min(0.5, duration / 4) : 0;
-                if (seekTime === 0) {
-                    // First frame is already available; draw it immediately.
-                    drawFrame();
-                } else {
-                    // Seek to a more representative frame, then draw when seek completes.
-                    // After onseeked, readyState may still be HAVE_METADATA if data at the
-                    // seeked position is not yet buffered. Guard with a readyState check and
-                    // fall back to loadeddata so drawImage never throws InvalidStateError.
-                    video.onseeked = () => {
-                        if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-                            drawFrame();
-                        } else {
-                            video.addEventListener('loadeddata', drawFrame, { once: true });
-                        }
-                    };
-                    video.currentTime = seekTime;
-                }
+                drawFrame();
             };
             video.onerror = () => settle(null);
 

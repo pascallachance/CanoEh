@@ -167,6 +167,11 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             // Wait for loadeddata so frame data is guaranteed to be available
             // (readyState >= HAVE_CURRENT_DATA) before calling drawImage.
             video.onloadeddata = () => {
+                // Nullify immediately so this handler does not fire a second time
+                // when loadeddata re-fires after the seek below.  Without this,
+                // the handler would initiate another seek, potentially dropping
+                // readyState before the { once: true } listener can call drawFrame.
+                video.onloadeddata = null;
                 const duration = video.duration;
                 const seekTo = (Number.isFinite(duration) && duration > 0)
                     ? Math.min(0.5, duration / 4)
@@ -178,12 +183,13 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                     // Seek to a more representative frame, then draw when seek completes.
                     // After onseeked, readyState may still be HAVE_METADATA if data at the
                     // seeked position is not yet buffered. Guard with a readyState check and
-                    // fall back to loadeddata so drawImage never throws InvalidStateError.
+                    // fall back to canplay (readyState >= HAVE_FUTURE_DATA) which is more
+                    // reliably re-fired by browsers after a seek than loadeddata.
                     video.onseeked = () => {
                         if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
                             drawFrame();
                         } else {
-                            video.addEventListener('loadeddata', drawFrame, { once: true });
+                            video.addEventListener('canplay', drawFrame, { once: true });
                         }
                     };
                     video.currentTime = seekTo;

@@ -122,6 +122,14 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             const settle = (value: string | null) => {
                 if (settled) return;
                 settled = true;
+                // Clear all handlers before resetting src so that no late-firing events
+                // (e.g. a buffered loadeddata or canplay arriving after the timeout) can
+                // re-enter this closure once the promise has already been resolved.
+                video.onloadeddata = null;
+                video.onseeked = null;
+                video.onerror = null;
+                video.removeEventListener('loadeddata', tryDrawWhenReady);
+                video.removeEventListener('canplay', tryDrawWhenReady);
                 video.src = '';
                 clearTimeout(timeoutId);
                 resolve(value);
@@ -164,13 +172,27 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 }
             };
 
+            // Shared fallback handler registered on both loadeddata and canplay after a
+            // seek when frame data is not immediately available (readyState < HAVE_CURRENT_DATA).
+            // Whichever event fires first and finds readyState >= HAVE_CURRENT_DATA triggers
+            // frame extraction and removes itself from both events.  Listening on both avoids
+            // the case where the media reaches HAVE_CURRENT_DATA but never advances to
+            // HAVE_FUTURE_DATA (canplay-only would then hang until the 8 s timeout).
+            const tryDrawWhenReady = () => {
+                if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+                    video.removeEventListener('loadeddata', tryDrawWhenReady);
+                    video.removeEventListener('canplay', tryDrawWhenReady);
+                    drawFrame();
+                }
+            };
+
             // Wait for loadeddata so frame data is guaranteed to be available
             // (readyState >= HAVE_CURRENT_DATA) before calling drawImage.
             video.onloadeddata = () => {
                 // Nullify immediately so this handler does not fire a second time
                 // when loadeddata re-fires after the seek below.  Without this,
                 // the handler would initiate another seek, potentially dropping
-                // readyState before the { once: true } listener can call drawFrame.
+                // readyState before the fallback listeners can call drawFrame.
                 video.onloadeddata = null;
                 const duration = video.duration;
                 const seekTo = (Number.isFinite(duration) && duration > 0)
@@ -181,15 +203,16 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                     drawFrame();
                 } else {
                     // Seek to a more representative frame, then draw when seek completes.
-                    // After onseeked, readyState may still be HAVE_METADATA if data at the
-                    // seeked position is not yet buffered. Guard with a readyState check and
-                    // fall back to canplay (readyState >= HAVE_FUTURE_DATA) which is more
-                    // reliably re-fired by browsers after a seek than loadeddata.
+                    // After onseeked, readyState may still be < HAVE_CURRENT_DATA if data at
+                    // the seeked position is not yet buffered.  Register tryDrawWhenReady on
+                    // both loadeddata and canplay so whichever fires first with sufficient
+                    // data unblocks drawFrame without waiting for the other.
                     video.onseeked = () => {
                         if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
                             drawFrame();
                         } else {
-                            video.addEventListener('canplay', drawFrame, { once: true });
+                            video.addEventListener('loadeddata', tryDrawWhenReady);
+                            video.addEventListener('canplay', tryDrawWhenReady);
                         }
                     };
                     video.currentTime = seekTo;

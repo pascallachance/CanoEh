@@ -1532,13 +1532,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                     className="thumbnail-preview"
                                                                     muted
                                                                     playsInline
-                                                                    preload={variant.videoUrl.startsWith('blob:') || variant.videoUrl.startsWith('data:') ? 'auto' : 'metadata'}
+                                                                    preload="metadata"
                                                                     style={{ pointerEvents: 'none' }}
-                                                                    onLoadedData={(e) => {
-                                                                        if (e.currentTarget.duration > 0.1) {
-                                                                            e.currentTarget.currentTime = 0.1;
-                                                                        }
-                                                                    }}
+                                                                    onLoadedMetadata={(e) => { e.currentTarget.currentTime = 0.1; }}
                                                                 />
                                                             )}
                                                             <button

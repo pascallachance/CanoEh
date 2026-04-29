@@ -164,7 +164,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 // browser hasn't fully rendered a frame despite readyState being
                 // HAVE_CURRENT_DATA).  Calling drawImage on a zero-sized video would
                 // produce a blank/black canvas, not a useful thumbnail.
-                if (video.videoWidth === 0) {
+                if (video.videoWidth === 0 || video.videoHeight === 0) {
                     settle(null);
                     return;
                 }
@@ -1532,7 +1532,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                     className="thumbnail-preview"
                                                                     muted
                                                                     playsInline
-                                                                    preload={variant.videoUrl.startsWith('blob:') ? 'auto' : 'metadata'}
+                                                                    preload={variant.videoUrl.startsWith('blob:') || variant.videoUrl.startsWith('data:') ? 'auto' : 'metadata'}
                                                                     style={{ pointerEvents: 'none' }}
                                                                     onLoadedData={(e) => {
                                                                         if (e.currentTarget.duration > 0.1) {

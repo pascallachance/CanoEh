@@ -1513,7 +1513,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                     className="thumbnail-preview"
                                                                     muted
                                                                     playsInline
-                                                                    preload="metadata"
+                                                                    preload="auto"
                                                                     style={{ pointerEvents: 'none' }}
                                                                     onLoadedMetadata={(e) => { e.currentTarget.currentTime = 0.1; }}
                                                                 />
@@ -1885,7 +1885,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                         className="product-thumbnail-img"
                                                                         muted
                                                                         playsInline
-                                                                        preload="metadata"
+                                                                        preload="auto"
                                                                         style={{ pointerEvents: 'none' }}
                                                                         onLoadedMetadata={(e) => { e.currentTarget.currentTime = 0.1; }}
                                                                     />

@@ -130,6 +130,10 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 video.onerror = null;
                 video.removeEventListener('loadeddata', tryDrawWhenReady);
                 video.removeEventListener('canplay', tryDrawWhenReady);
+                // Remove from DOM before clearing src to avoid a spurious error event.
+                if (video.parentNode) {
+                    video.parentNode.removeChild(video);
+                }
                 video.src = '';
                 clearTimeout(timeoutId);
                 resolve(value);
@@ -156,9 +160,17 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
             video.preload = 'auto';
 
             const drawFrame = () => {
+                // Guard against video dimensions not yet decoded (can happen if the
+                // browser hasn't fully rendered a frame despite readyState being
+                // HAVE_CURRENT_DATA).  Calling drawImage on a zero-sized video would
+                // produce a blank/black canvas, not a useful thumbnail.
+                if (video.videoWidth === 0) {
+                    settle(null);
+                    return;
+                }
                 const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth || 320;
-                canvas.height = video.videoHeight || 180;
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
                 const ctx = canvas.getContext('2d');
                 if (ctx) {
                     try {
@@ -222,6 +234,13 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
 
             // Safety net: resolve null if nothing fires within 8 seconds
             const timeoutId = setTimeout(() => settle(null), 8000);
+
+            // Attach to the DOM (hidden, off-screen) before assigning src.
+            // Some browsers — especially Safari and WebKit-based engines — do not
+            // fire media events (loadeddata, canplay, seeked) on detached elements,
+            // which would cause the 8 s timeout to fire and return null every time.
+            video.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+            document.body.appendChild(video);
 
             video.src = videoSrc;
         });
@@ -1513,7 +1532,7 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                     className="thumbnail-preview"
                                                                     muted
                                                                     playsInline
-                                                                    preload="metadata"
+                                                                    preload={variant.videoUrl.startsWith('blob:') ? 'auto' : 'metadata'}
                                                                     style={{ pointerEvents: 'none' }}
                                                                     onLoadedData={(e) => {
                                                                         if (e.currentTarget.duration > 0.1) {

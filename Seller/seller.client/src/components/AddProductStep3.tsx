@@ -164,14 +164,23 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                 }
             };
 
-            // Draw the frame as soon as data for the current position is available.
-            // loadeddata fires with readyState >= HAVE_CURRENT_DATA, so drawImage is
-            // safe to call here and will not throw InvalidStateError.
-            // Seeking to a later time is intentionally avoided: for fully-buffered
-            // blob URLs the browser often does not re-fire loadeddata or canplay after
-            // a seek, causing the extraction to stall and reach the 8-second timeout.
-            video.onloadeddata = () => {
-                drawFrame();
+            // After metadata loads, seek to a small positive offset so the browser
+            // decodes an actual frame (time=0 often yields a black frame for many
+            // codecs before the first keyframe is processed).
+            // We listen for `seeked` rather than `loadeddata`/`canplay` because
+            // fully-buffered blob URLs may not re-fire those events after a seek.
+            video.onloadedmetadata = () => {
+                const seekTo =
+                    isFinite(video.duration) && video.duration > 0
+                        ? Math.min(0.5, video.duration / 4)
+                        : 0;
+                if (seekTo > 0) {
+                    video.onseeked = () => drawFrame();
+                    video.currentTime = seekTo;
+                } else {
+                    // Duration unknown or zero: fall back to drawing at position 0.
+                    video.onloadeddata = () => drawFrame();
+                }
             };
             video.onerror = () => settle(null);
 

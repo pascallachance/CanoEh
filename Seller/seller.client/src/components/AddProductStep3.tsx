@@ -1904,9 +1904,9 @@ function AddProductStep3({ onSubmit, onBack, onCancel, step1Data, step2Data, com
                                                                         className="product-thumbnail-img"
                                                                         muted
                                                                         playsInline
-                                                                        preload={previewVariant.videoUrl.startsWith('blob:') ? 'auto' : 'metadata'}
+                                                                        preload="metadata"
                                                                         style={{ pointerEvents: 'none' }}
-                                                                        onLoadedData={(e) => { e.currentTarget.currentTime = 0.1; }}
+                                                                        onLoadedMetadata={(e) => { e.currentTarget.currentTime = 0.1; }}
                                                                     />
                                                                 )}
                                                                 <span className="product-video-play-icon" aria-hidden="true">▶</span>
